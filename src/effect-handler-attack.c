@@ -1636,7 +1636,7 @@ bool effect_handler_TAP_UNLIFE(effect_handler_context_t *context)
 	drain = MIN(mon->hp, amount) / 4;
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
 	if (OPT(player, show_damage)) {
-		msg("You draw power from the %s. (%d)", m_name, drain);
+		msg("You draw power from the %s. (%d)", m_name, amount);
 	} else {
 		msg("You draw power from the %s.", m_name);
 	}
