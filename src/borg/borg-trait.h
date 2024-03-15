@@ -463,10 +463,6 @@ extern int16_t borg_game_ratio; /* the ratio of borg time to game time */
 /* array of the strings that match the BI_* values */
 extern const char *prefix_pref[];
 
-/* !HACK! defined in the main game */
-extern const int adj_str_hold[STAT_RANGE];
-extern const int adj_str_blow[STAT_RANGE];
-
 /* Mega-Hack - indices of the player classes */
 #define CLASS_WARRIOR     0
 #define CLASS_MAGE        1

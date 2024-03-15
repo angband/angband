@@ -24,6 +24,7 @@
 #include "../generate.h"
 #include "../obj-slays.h"
 #include "../obj-util.h"
+#include "../player-calcs.h"
 #include "../ui-menu.h"
 
 #include "borg-cave-util.h"

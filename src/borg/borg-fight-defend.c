@@ -1302,8 +1302,11 @@ static int borg_defend_aux_hero(int p1)
         return (0);
 
     /* if we are in some danger but not much, go for a quick bless */
-    if ((p1 > avoidance * 1 / 10 && p1 < avoidance * 5 / 10)
-        || (borg_fighting_unique && p1 < avoidance * 7 / 10)) {
+    /* "some danger" defined as "10% of x and not more than 50% of x */
+    /* (not more than 70% when fighting a unique) */
+    /* where x is the danger we are avoiding, usually current hp */
+    if (p1 > avoidance / 10 && 
+        p1 < (avoidance * (borg_fighting_unique ? 7 : 5)) / 10) {
         /* Simulation */
         /* hero is a low priority */
         if (borg_simulate)
@@ -1346,9 +1349,12 @@ static int borg_defend_aux_regen(int p1)
     if (!borg_spell_okay_fail(RAPID_REGENERATION, fail_allowed))
         return (0);
 
-    /* if we are in some danger but not much, go for a quick bless */
-    if ((p1 > avoidance * 1 / 10 && p1 < avoidance * 5 / 10)
-        || (borg_fighting_unique && p1 < avoidance * 7 / 10)) {
+    /* if we are in some danger but not much, go for a quick regen */
+    /* "some danger" defined as "10% of x and not more than 50% of x */
+    /* (not more than 70% when fighting a unique) */
+    /* where x is the danger we are avoiding, usually current hp */
+    if (p1 > avoidance / 10 &&
+        p1 < (avoidance * (borg_fighting_unique ? 7 : 5)) / 10) {
         /* Simulation */
         /* regen is a low priority */
         if (borg_simulate)
@@ -1389,8 +1395,11 @@ static int borg_defend_aux_berserk(int p1)
         return (0);
 
     /* if we are in some danger but not much, go for a quick bless */
-    if ((p1 > avoidance * 1 / 10 && p1 < avoidance * 5 / 10)
-        || (borg_fighting_unique && p1 < avoidance * 7 / 10)) {
+    /* "some danger" defined as "10% of x and not more than 50% of x */
+    /* (not more than 70% when fighting a unique) */
+    /* where x is the danger we are avoiding, usually current hp */
+    if (p1 > avoidance / 10 &&
+        p1 < (avoidance * (borg_fighting_unique ? 7 : 5)) / 10) {
         /* Simulation */
         /* berserk is a low priority */
         if (borg_simulate)
@@ -1405,6 +1414,47 @@ static int borg_defend_aux_berserk(int p1)
     }
 
     return (0);
+}
+
+/* 
+ * See if the borg is near something evil 
+ */
+static bool near_evil(void)
+{
+    int        i;
+    borg_grid *ag;
+    borg_kill *kill;
+
+    /* Find "nearby" monsters */
+    for (i = 1; i < borg_kills_nxt; i++) {
+        /* Monster */
+        kill = &borg_kills[i];
+
+        /* Skip dead monsters */
+        if (!kill->r_idx)
+            continue;
+
+        /* Require current knowledge */
+        if (kill->when < borg_t - 2)
+            continue;
+
+        /* Get grid */
+        ag = &borg_grids[kill->pos.y][kill->pos.x];
+
+        /* don't count off-screen */
+        if (!(ag->info & BORG_OKAY))
+            continue;
+
+        /* Check the distance XXX XXX XXX */
+        if (distance(borg.c, kill->pos) > 3)
+            continue;
+
+        /* Monster race is evil */
+        if (rf_has((r_info[kill->r_idx].flags), RF_EVIL))
+            return true;
+    }
+
+    return false;
 }
 
 /*
@@ -1426,12 +1476,17 @@ static int borg_defend_aux_smite_evil(int p1)
     if (!borg_spell_okay_fail(SMITE_EVIL, fail_allowed))
         return (0);
 
-    // !FIX !TODO !AJG we should probably figure out if we are about to fight
-    // something evil.
+    // if the borg is not about to fight something evil.
+    if (!near_evil())
+        return 0;
 
-    /* if we are in some danger but not much, go for a quick bless */
-    if ((p1 > avoidance * 1 / 10 && p1 < avoidance * 5 / 10)
-        || (borg_fighting_unique && p1 < avoidance * 7 / 10)) {
+    /* if we are in some danger but not much, go for a quick smite */
+    /* "some danger" defined as "10% of x and not more than 50% of x */
+    /* (not more than 70% when fighting a unique) */
+    /* where x is the danger we are avoiding, usually current hp */
+    if (p1 > avoidance / 10 &&
+        p1 < (avoidance * (borg_fighting_unique ? 7 : 5)) / 10) {
+
         /* Simulation */
         /* smite evil is a low priority */
         if (borg_simulate)
@@ -2619,7 +2674,7 @@ static int borg_defend_aux_inviso(int p1)
  * Used only if I am hit by an unseen guy.
  * Lights up a hallway.
  */
-static int borg_defend_aux_lbeam(void)
+static int borg_defend_aux_lbeam(int p1)
 {
     bool hallway = false;
     int  x       = borg.c.x;
@@ -2631,7 +2686,7 @@ static int borg_defend_aux_lbeam(void)
         return (0);
 
     /* Light Beam section to spot non seen guys */
-    /* not recent, dont bother */
+    /* not recent, don't bother */
     if (borg_t > (borg.need_see_invis + 2))
         return (0);
 
@@ -2677,10 +2732,7 @@ static int borg_defend_aux_lbeam(void)
         return (0);
 
     /* Make sure I am not in too much danger */
-    /* XXX '(' replaces previous use of global variable that was always
-     * '('.  This is a BUG.  I however have no idea how to fix it bceause
-     * I don't know the code well enough. -AS */
-    if (borg_simulate && '(' > avoidance * 3 / 4)
+    if (borg_simulate && p1 > (avoidance * 3) / 4)
         return (0);
 
     /* test the beam function */
@@ -3312,7 +3364,7 @@ static int borg_defend_aux_light_morgoth(void)
  * Simulate/Apply the optimal result of using the given "type" of defense
  * p1 is the current danger level (passed in for effiency)
  */
-static int borg_defend_aux(int what, int p1)
+static int borg_calculate_defense_effectiveness(int what, int p1)
 {
     /* Analyze */
     switch (what) {
@@ -3395,7 +3447,7 @@ static int borg_defend_aux(int what, int p1)
         return (borg_defend_aux_inviso(p1));
     }
     case BD_LIGHT_BEAM: {
-        return (borg_defend_aux_lbeam());
+        return (borg_defend_aux_lbeam(p1));
     }
     case BD_SHIFT_PANEL: {
         return (borg_defend_aux_panel_shift());
@@ -3455,7 +3507,7 @@ bool borg_defend(int p1)
     /* Analyze the possible setup moves */
     for (g = 0; g < BD_MAX; g++) {
         /* Simulate */
-        n = borg_defend_aux(g, p1);
+        n = borg_calculate_defense_effectiveness(g, p1);
 
         /* Track "best" attack */
         if (n <= b_n)
@@ -3478,7 +3530,7 @@ bool borg_defend(int p1)
     borg_simulate = false;
 
     /* Instantiate */
-    (void)borg_defend_aux(b_g, p1);
+    (void)borg_calculate_defense_effectiveness(b_g, p1);
 
     /* Success */
     return (true);
