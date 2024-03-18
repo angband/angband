@@ -217,7 +217,7 @@ bool effect_handler_HEAL_HP(effect_handler_context_t *context)
 	if (num < minh) num = minh;
 	if (num <= 0) {
 		/*
-		 * There's no healing: either because not damaged enough for the
+		 * There's no healing: either because not damaged enough for
 		 * the bonus amount to matter or the effect was misconfigured.
 		 */
 		return true;

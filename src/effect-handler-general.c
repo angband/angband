@@ -2371,7 +2371,7 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 		/*
 		 * Skip "wrong" monsters (see warning above); for shape shifters
 		 * it is the original race that matters not whatever shape the
-		 * the monster has now.
+		 * monster has now.
 		 */
 		if (mon->original_race) {
 			if ((char) mon->original_race->d_char != typ) continue;

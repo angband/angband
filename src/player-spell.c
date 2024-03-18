@@ -677,7 +677,7 @@ static void spell_effect_append_value_info(const struct effect *effect,
 
 	/*
 	 * Only display if have dice and it isn't redundant with the
-	 * the previous one that was displayed.
+	 * previous one that was displayed.
 	 */
 	if ((rv.base > 0 || (rv.dice > 0 && rv.sides > 0))
 			&& (!ist->pre

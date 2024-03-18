@@ -1801,8 +1801,8 @@ static enum parser_error parse_entry_name(struct parser *p)
 		if (streq(name, embryo->entry->name)) {
 			/*
 			 * Strange case since the last record is the same as
-			 * the this one.  Simply proceeed to modify the
-			 * previous record without a warning.
+			 * this one.  Simply proceeed to modify the previous
+			 * record without a warning.
 			 */
 			return PARSE_ERROR_NONE;
 		}

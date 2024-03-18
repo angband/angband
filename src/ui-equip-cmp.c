@@ -2732,7 +2732,7 @@ static int display_page(struct equippable_summary *s, const struct player *p,
 
 	/*
 	 * Display the column labels and the combined values for @ and the
-	 * the current equipment.  The display of the labels bypasses what's
+	 * current equipment.  The display of the labels bypasses what's
 	 * done by ui_entry_renderer_apply() so the color of the label can
 	 * alternate between columns.
 	 */

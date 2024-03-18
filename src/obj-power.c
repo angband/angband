@@ -861,7 +861,7 @@ static int curse_power(const struct object *obj, int p, int verbose,
 					 * power: scale the contribution to
 					 * power attributed to the curse by
 					 * a factor that increases with the
-					 * the curse's resistance to removal.
+					 * curse's resistance to removal.
 					 */
 					int resistance = MAX(20, MIN(100,
 						obj->curses[i].power));
