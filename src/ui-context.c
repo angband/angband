@@ -1132,7 +1132,7 @@ static void cmd_sub_entry(struct menu *menu, int oid, bool cursor, int row,
 
 	/*
 	 * Include keypress for commands that aren't placeholders to drive the
-	 * the menu system.
+	 * menu system.
 	 */
 	if (kp.code) {
 		Term_addch(attr, L' ');

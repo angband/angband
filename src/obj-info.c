@@ -510,7 +510,7 @@ static void calculate_melee_crits(struct player_state *state, int weight,
 				if (min_power >= this_l->cutoff) {
 					/*
 					 * This band doesn't overlap the
-					 * the possible powers.
+					 * possible powers.
 					 */
 					this_l = this_l->next;
 					continue;
@@ -672,7 +672,7 @@ static void calculate_missile_crits(struct player_state *state, int weight,
 				if (min_power >= this_l->cutoff) {
 					/*
 					 * This band doesn't overlap the
-					 * the possible powers.
+					 * possible powers.
 					 */
 					this_l = this_l->next;
 					continue;

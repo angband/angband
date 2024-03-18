@@ -500,12 +500,12 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		 * If the object is on the floor, tentatively deduct the
 		 * amount used - the effect could leave the object inaccessible
 		 * making it difficult to do after a successful use.  For the
-		 * the same reason, get a copy of the object to use for
-		 * propagating knowledge and messaging (also do so for items in
-		 * the pack to keep later logic simpler).  Don't do the
-		 * deduction for an object in the pack because the
-		 * rearrangement of the pack, if using a stack of one single
-		 * use item, can distract the player, see
+		 * same reason, get a copy of the object to use for propagating
+		 * knowledge and messaging (also do so for items in the pack
+		 * to keep later logic simpler).  Don't do the deduction for
+		 * an object in the pack because the rearrangement of the
+		 * pack, if using a stack of one single use item, can distract
+		 * the player, see
 		 * https://github.com/angband/angband/issues/5543 .
 		 * If effects change so that the originating object can be
 		 * destroyed even if in the pack, the deduction would have to

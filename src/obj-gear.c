@@ -1190,7 +1190,7 @@ static bool inven_can_stack_partial(struct player *p, const struct object *obj1,
 
 	/*
 	 * Now verify the numbers are suitable for uneven stacks.  Want the
-	 * the leading stack, obj1, to have its count maximized.
+	 * leading stack, obj1, to have its count maximized.
 	 */
 	if (!(cmode & OSTACK_STORE)) {
 		/* The quiver may have stricter limits. */
