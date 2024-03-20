@@ -481,11 +481,11 @@ void borg_write_map(bool ask)
     }
 
     /* Dump the borg.trait[] information */
-    itemm = z_info->k_max;
-    to    = z_info->k_max + BI_MAX;
+    itemm = 0;
+    to    = BI_MAX;
     for (; itemm < to; itemm++) {
         file_putf(borg_map_file, "skill %d (%s) value= %d.\n", itemm,
-            prefix_pref[itemm - z_info->k_max], borg.has[itemm]);
+            prefix_pref[itemm], borg.trait[itemm]);
     }
 
 #if 0
