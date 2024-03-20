@@ -1011,7 +1011,7 @@ bool borg_think_home_buy_swap_weapon(void)
             /* Fix later */
             fix = true;
 
-            /* Examine the iventory and swap value*/
+            /* Examine the inventory and swap value*/
             borg_notice(true);
 
             /* Evaluate the new equipment */
