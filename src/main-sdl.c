@@ -2182,6 +2182,7 @@ static void RefreshFontBrowser(sdl_Button *sender)
 				ang_dir *dir2 = my_dopen(full_path);
 
 				if (dir2) {
+					my_dclose(dir2);
 					if (FontBrowserDirCount
 							== FontBrowserDirAlloc) {
 						if (FontBrowserDirAlloc
@@ -2203,7 +2204,6 @@ static void RefreshFontBrowser(sdl_Button *sender)
 					FontBrowserDirEntries[FontBrowserDirCount] =
 						string_make(file_part);
 					++FontBrowserDirCount;
-					my_dclose(dir2);
 				}
 			}
 		} else if (is_font_file(full_path)) {
