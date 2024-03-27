@@ -15,26 +15,26 @@ static int test_alloc(void *state) {
 	char buffer[64];
 
 	/* Check it functions at all */
-	strcpy(buffer, "1234567890");
+	my_strcpy(buffer, "1234567890", sizeof(buffer));
 	utf8_clipto(buffer, 5);
 	require(strcmp(buffer, "12345") == 0);
 
 	/* Extremely low input */
-	strcpy(buffer, "Test");
+	my_strcpy(buffer, "Test", sizeof(buffer));
 	utf8_clipto(buffer, 0);
 	require(buffer[0] == 0);
 
 	/* Overly high input */
-	strcpy(buffer, "Test");
+	my_strcpy(buffer, "Test", sizeof(buffer));
 	utf8_clipto(buffer, 10);
 	require(strcmp(buffer, "Test") == 0);
 
 	/* Non-ASCII clipping */
-	strcpy(buffer, "Lómin");
+	my_strcpy(buffer, "Lómin", sizeof(buffer));
 	utf8_clipto(buffer, 2);
 	require(strcmp(buffer, "Ló") == 0);
 
-	strcpy(buffer, "åéïø");
+	my_strcpy(buffer, "åéïø", sizeof(buffer));
 	utf8_clipto(buffer, 3);
 	require(strcmp(buffer, "åéï") == 0);
 
