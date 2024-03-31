@@ -37,6 +37,8 @@ static int test_unchanged(void *state) {
 		{ "\\\\rephial.org\\angband\\src\\Makefile", 22 },
 		{ "\\\\rephial.org\\angband\\src\\.hidden", 22 },
 		{ "\\\\rephial.org\\angband\\src\\..hidden2", 22 },
+		{ "\\\\.\\C:", 4 },
+		{ "\\\\?\\C:", 4 },
 #else
 		{ "/", 1 },
 		{ "/var", 1 },
@@ -246,6 +248,7 @@ static int test_redundant_separators(void *state) {
 			"\\\\rephial.org\\angband\\", 22 },
 		{ "\\\\rephial.org\\angband\\\\\\",
 			"\\\\rephial.org\\angband\\", 22 },
+		{ "\\\\.\\C:\\\\", "\\\\.\\C:\\", 4 },
 #else
 		{ "/var//tmp", "/var/tmp", 1 },
 		{ "/var///tmp", "/var/tmp", 1 },
