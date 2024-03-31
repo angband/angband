@@ -258,33 +258,48 @@ int path_normalize(char *buf, size_t len, const char *path_in,
 	if (path_in[0] == PATH_SEPC) {
 		if (path_in[1] == PATH_SEPC) {
 			/*
-			 * It's an UNC path ("\\<server_name>\<sharename>\...".
+			 * It is a device path ("\\.\..." or "\\?\..." or an
+			 * UNC path ("\\<server_name>\<sharename>\...".
 			 */
 			const char *s = strchr(path_in + 2, PATH_SEPC);
 
-			if (!s || !(s = strchr(s + 1, PATH_SEPC))) {
-				/*
-				 * It's an incomplete UNC path:  missing a
-				 * share name or the path separator to terminate
-				 * the share name.  Give up.
-				 */
-				goto ABNORMAL_RETURN;
+			if (s == path_in + 3 && (path_in[2] == '.'
+					|| path_in[2] == '?')) {
+				/* It is a device path. */
+				if (len > 0) {
+					(void)memcpy(buf, path_in, (4 < len) ?
+						4 : len);
+				}
+				iidx = 4;
+				root_size = 4;
+				oidx = 4;
+			} else {
+				/* It is an UNC path. */
+				if (!s || !(s = strchr(s + 1, PATH_SEPC))) {
+					/*
+					 * It is an incomplete UNC path:
+					 * missing a share name or the path
+					 * separator to terminate the share
+					 * name.  Give up.
+					 */
+					goto ABNORMAL_RETURN;
+				}
+				iidx = (s - path_in) + 1;
+				if (len > 0) {
+					(void)memcpy(buf, path_in,
+						(iidx < len) ? iidx : len);
+				}
+				root_size = iidx;
+				oidx = iidx;
 			}
-			iidx = (s - path_in) + 1;
-			if (len > 0) {
-				(void) memcpy(buf, path_in, (iidx < len) ?
-					iidx : len);
-			}
-			root_size = iidx;
-			oidx = iidx;
 		} else {
 			/*
 			 * It's a path from the root of the current drive
 			 * ("\my_path_here").  Get the current working
 			 * directory, but only the root portion is needed.
 			 */
-			DWORD lwd = GetCurrentDirectory(0, NULL);
-			LPTSTR work = mem_alloc((lwd + 1) * sizeof(*work));
+			DWORD lwd = GetCurrentDirectory(0, NULL), lwd2;
+			LPTSTR work = mem_alloc(lwd * sizeof(*work));
 
 			/*
 			 * The working directory changed to a longer name
@@ -292,8 +307,9 @@ int path_normalize(char *buf, size_t len, const char *path_in,
 			 * enough to be an UNC path or absolute DOS path.
 			 * Give up.
 			 */
-			if (GetCurrentDirectory(lwd, work) > lwd || lwd < 3) {
-				free(work);
+			lwd2 = GetCurrentDirectory(lwd, work);
+			if (lwd2 > lwd || lwd2 < 3) {
+				mem_free(work);
 				goto ABNORMAL_RETURN;
 			}
 			if (work[0] == PATH_SEPC) {
@@ -307,7 +323,7 @@ int path_normalize(char *buf, size_t len, const char *path_in,
 					 * It doesn't look like an UNC path.
 					 * Give up.
 					 */
-					free(work);
+					mem_free(work);
 					goto ABNORMAL_RETURN;
 				}
 				lwd = (s + 1) - work;
@@ -319,14 +335,14 @@ int path_normalize(char *buf, size_t len, const char *path_in,
 				 * It's neither an UNC path nor an absolute
 				 * DOS path.  Give up.
 				 */
-				free(work);
+				mem_free(work);
 				goto ABNORMAL_RETURN;
 			}
 			if (len > 0) {
 				(void) memcpy(buf, work, (lwd < len) ?
 					lwd : len);
 			}
-			free(work);
+			mem_free(work);
 			oidx = lwd;
 			iidx = 1;
 			root_size = lwd;
@@ -345,21 +361,28 @@ int path_normalize(char *buf, size_t len, const char *path_in,
 			/*
 			 * It's relative to the current directory on that drive.
 			 */
-			DWORD lwd = GetCurrentDirectory(0, NULL);
-			LPTSTR work = mem_alloc((lwd + 1) * sizeof(*work));
+			char drive[3];
+			DWORD lwd, lwd2;
+			LPSTR work;
 
+			drive[0] = path_in[0];
+			drive[1] = path_in[1];
+			drive[2] = '\0';
+			lwd = GetFullPathNameA(drive, 0, NULL, NULL);
+			work = mem_alloc(lwd * sizeof(*work));
 			/*
-			 * Either the working directory changed to a longer
-			 * name (presumably from another thread) or the working
-			 * directory does not start with the given drive
-			 * letter + ':' + PATH_SEPC which is what's expected
-			 * for an absolute DOS path on that drive.  Give up.
+			 * Either the current directory on that drive changed
+			 * to a longer name (presumably from another thread)
+			 * or the working directory does not start with the
+			 * given drive letter + ':' + PATH_SEPC which is
+			 * what's expected for an absolute DOS path on that
+			 * drive.  Give up.
 			 */
-			if (GetCurrentDirectory(lwd, work) > lwd
-					|| lwd < 3 || work[0] != path_in[0]
+			lwd2 = GetFullPathNameA(drive, lwd, work, NULL);
+			if (lwd2 > lwd || lwd2 < 3 || work[0] != path_in[0]
 					|| work[1] != ':'
 					|| work[2] != PATH_SEPC) {
-				free(work);
+				mem_free(work);
 				goto ABNORMAL_RETURN;
 			}
 			/*
@@ -368,9 +391,9 @@ int path_normalize(char *buf, size_t len, const char *path_in,
 			 * parts in the working directory are handled.
 			 */
 			result = path_normalize(buf, len, work,
-				(path_in[3]) ? true : false, &oidx_high,
+				(path_in[2]) ? true : false, &oidx_high,
 				&root_size);
-			free(work);
+			mem_free(work);
 			assert(root_size == 3);
 			if ((result != 0 && result != 1)
 					|| oidx_high <= root_size) {
@@ -383,16 +406,17 @@ int path_normalize(char *buf, size_t len, const char *path_in,
 		root_size = 3;
 	} else {
 		/* It's a path relative to the current working directory. */
-		DWORD lwd = GetCurrentDirectory(0, NULL);
-		LPTSTR work = mem_alloc((lwd + 1) * sizeof(*work));
+		DWORD lwd = GetCurrentDirectory(0, NULL), lwd2;
+		LPTSTR work = mem_alloc(lwd * sizeof(*work));
 
 		/*
 		 * Either the working directory changed to a longer
 		 * name (presumably from another thread) or is not long
 		 * enough to be an UNC path or an absoloute DOS path.  Give up.
 		 */
-		if (GetCurrentDirectory(lwd, work) > lwd || lwd < 3) {
-			free(work);
+		lwd2 = GetCurrentDirectory(lwd, work);
+		if (lwd2 > lwd || lwd2 < 3) {
+			mem_free(work);
 			goto ABNORMAL_RETURN;
 		}
 		if (work[0] == PATH_SEPC) {
@@ -405,7 +429,7 @@ int path_normalize(char *buf, size_t len, const char *path_in,
 				/*
 				 * It doesn't look like an UNC path.  Give up.
 				 */
-				free(work);
+				mem_free(work);
 				goto ABNORMAL_RETURN;
 			}
 		} else if (work[1] != ':' || work[2] != PATH_SEPC) {
@@ -413,7 +437,7 @@ int path_normalize(char *buf, size_t len, const char *path_in,
 			 * It's neither an UNC path nor an absolute DOS path.
 			 * Give up.
 			 */
-			free(work);
+			mem_free(work);
 			goto ABNORMAL_RETURN;
 		}
 		/*
@@ -423,7 +447,7 @@ int path_normalize(char *buf, size_t len, const char *path_in,
 		 */
 		result = path_normalize(buf, len, work,
 			(path_in[0]) ? true : false, &oidx_high, &root_size);
-		free(work);
+		mem_free(work);
 		assert(root_size >= 3);
 		if ((result != 0 && result != 1) || oidx_high <= root_size) {
 			goto ABNORMAL_RETURN;
@@ -588,7 +612,7 @@ int path_normalize(char *buf, size_t len, const char *path_in,
 			break;
 		}
 		/*
-		 * The output path generated so for should end with a path
+		 * The output path generated so far should end with a path
 		 * separator, unless it was necessary to truncate the result.
 		 */
 		assert((oidx <= len && oidx > 0 && buf[oidx - 1] == PATH_SEPC)
