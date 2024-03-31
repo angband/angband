@@ -13,8 +13,10 @@
 #include "project.h"
 #include "z-color.h"
 #include "z-form.h"
+#ifndef WINDOWS
 #include <locale.h>
 #include <langinfo.h>
+#endif
 
 static char dummy_torch_name[16] = "& Wooden Torch~";
 static char dummy_lantern_name[16] = "& Lantern~";
@@ -778,6 +780,7 @@ static int test_book_graphics0(void *state) {
 	eq(r, PARSE_ERROR_NONE);
 	eq(bk->d_char, L'?');
 	eq(bk->d_attr, COLOUR_L_RED);
+#ifndef WINDOWS
 	if (setlocale(LC_CTYPE, "") && streq(nl_langinfo(CODESET), "UTF-8")) {
 		/*
 		 * Check for glyph that is outside of the ASCII range.  Use
@@ -793,6 +796,7 @@ static int test_book_graphics0(void *state) {
 		eq(bk->d_char, wcs[0]);
 		eq(bk->d_attr, COLOUR_RED);
 	}
+#endif
 	ok;
 }
 

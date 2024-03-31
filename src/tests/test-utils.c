@@ -26,6 +26,16 @@ errr init_sound_sdl(struct sound_hooks *hooks, int argc, char **argv)
 
 #endif
 
+#if !defined(WIN32_CONSOLE_MODE) && defined(WINDOWS) && defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2)
+#include "sound.h"
+#include "snd-win.h"
+
+errr init_sound_win(struct sound_hooks *hooks, int argc, char **argv)
+{
+	return 0;
+}
+#endif
+
 /*
  * Call this to initialise Angband's file paths before calling init_angband()
  * or similar.

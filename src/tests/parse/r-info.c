@@ -7,8 +7,10 @@
 #include "mon-spell.h"
 #include "object.h"
 #include "obj-util.h"
+#ifndef WINDOWS
 #include <locale.h>
 #include <langinfo.h>
+#endif
 
 static char dummy_chest_1[24] = "& Small wooden chest~";
 static char dummy_chest_2[24] = "& Small iron chest~";
@@ -285,6 +287,7 @@ static int test_glyph0(void *state) {
 	mr = (struct monster_race*) parser_priv(p);
 	notnull(mr);
 	eq(mr->d_char, L'!');
+#ifndef WINDOWS
 	if (setlocale(LC_CTYPE, "") && streq(nl_langinfo(CODESET), "UTF-8")) {
 		/*
 		 * Check that a glyph outside of the ASCII range works.  Using
@@ -299,6 +302,7 @@ static int test_glyph0(void *state) {
 		eq(nc, 1);
 		eq(mr->d_char, wcs[0]);
 	}
+#endif
 	ok;
 }
 

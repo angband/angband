@@ -101,10 +101,10 @@ static int test_chain1_execute(void *state) {
 			0, 0, false, NULL);
 		free_effect(ec);
 	}
-	noteq(ec, NULL);
+	notnull(ec);
 	require(completed);
 	require(ident);
-	require(player->chp == player->mhp - 1);
+	eq(player->chp, player->mhp - 1);
 	ok;
 }
 
@@ -122,10 +122,10 @@ static int test_chain2_execute(void *state) {
 			0, 0, false, NULL);
 		free_effect(ec);
 	}
-	noteq(ec, NULL);
+	notnull(ec);
 	require(completed);
 	require(ident);
-	require(player->chp == player->mhp - 1);
+	eq(player->chp, player->mhp - 1);
 	ok;
 }
 
@@ -144,10 +144,10 @@ static int test_chain3_execute(void *state) {
 			0, 0, false, NULL);
 		free_effect(ec);
 	}
-	noteq(ec, NULL);
+	notnull(ec);
 	require(completed);
 	require(ident);
-	require(player->chp == player->mhp - 3);
+	eq(player->chp, player->mhp - 3);
 	ok;
 }
 
@@ -167,7 +167,7 @@ static int test_randomneg_execute(void *state) {
 			0, 0, false, NULL);
 		free_effect(ec);
 	}
-	noteq(ec, NULL);
+	notnull(ec);
 	require(completed);
 	require(ident);
 	ok;
@@ -186,7 +186,7 @@ static int test_random0_execute(void *state) {
 			0, 0, false, NULL);
 		free_effect(ec);
 	}
-	noteq(ec, NULL);
+	notnull(ec);
 	require(completed);
 	require(ident);
 	ok;
@@ -206,10 +206,10 @@ static int test_random1_execute(void *state) {
 			0, 0, false, NULL);
 		free_effect(ec);
 	}
-	noteq(ec, NULL);
+	notnull(ec);
 	require(completed);
 	require(ident);
-	require(player->chp == player->mhp - 1);
+	eq(player->chp, player->mhp - 1);
 	ok;
 }
 
@@ -229,7 +229,7 @@ static int test_random2_execute(void *state) {
 			0, 0, false, NULL);
 		free_effect(ec);
 	}
-	noteq(ec, NULL);
+	notnull(ec);
 	require(completed);
 	require(ident);
 	require((player->chp == player->mhp - 1 || player->timed[TMD_BOLD]) &&
@@ -253,7 +253,7 @@ static int test_randomover_execute(void *state) {
 			0, 0, false, NULL);
 		free_effect(ec);
 	}
-	noteq(ec, NULL);
+	notnull(ec);
 	require(completed);
 	require(ident);
 	ok;
@@ -329,7 +329,7 @@ static int test_nested_random_execute(void *state) {
 			0, 0, false, NULL);
 		free_effect(ec);
 	}
-	noteq(ec, NULL);
+	notnull(ec);
 	require(completed);
 	require(ident);
 	require((player->chp == player->mhp - 1 || player->timed[TMD_BOLD] ||
@@ -354,7 +354,7 @@ static int test_selectneg_execute(void *state) {
 			0, 0, false, NULL);
 		free_effect(ec);
 	}
-	noteq(ec, NULL);
+	notnull(ec);
 	require(completed);
 	require(ident);
 	ok;
@@ -373,7 +373,7 @@ static int test_select0_execute(void *state) {
 			0, 0, false, NULL);
 		free_effect(ec);
 	}
-	noteq(ec, NULL);
+	notnull(ec);
 	require(completed);
 	require(ident);
 	ok;
@@ -397,10 +397,10 @@ static int test_select1_execute(void *state) {
 			0, 0, false, NULL);
 		free_effect(ec);
 	}
-	noteq(ec, NULL);
+	notnull(ec);
 	require(completed);
 	require(ident);
-	require(player->chp == player->mhp - 1);
+	eq(player->chp, player->mhp - 1);
 	ok;
 }
 
@@ -429,7 +429,7 @@ static int test_select2_execute(void *state) {
 			0, 0, false, &cmd);
 		free_effect(ec);
 	}
-	noteq(ec, NULL);
+	notnull(ec);
 	require(completed);
 	require(ident);
 	require(choice == 0 || choice == 1);
@@ -463,7 +463,7 @@ static int test_selectover_execute(void *state) {
 			0, 0, false, &cmd);
 		free_effect(ec);
 	}
-	noteq(ec, NULL);
+	notnull(ec);
 	require(completed);
 	require(ident);
 	ok;
@@ -492,7 +492,7 @@ static int test_nested_select_execute(void *state) {
 			0, 0, false, NULL);
 		free_effect(ec);
 	}
-	noteq(ec, NULL);
+	notnull(ec);
 	require(completed);
 	require(ident);
 	require((player->chp == player->mhp - 1 || player->timed[TMD_BOLD] ||

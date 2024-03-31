@@ -9,8 +9,10 @@
 #include "mon-spell.h"
 #include "z-form.h"
 #include "z-virt.h"
+#ifndef WINDOWS
 #include <locale.h>
 #include <langinfo.h>
+#endif
 
 static struct monster_pain dummy_pain_messages[] = {
 	{ { NULL, NULL, NULL, NULL, NULL, NULL, NULL }, 0, NULL },
@@ -109,6 +111,7 @@ static int test_glyph0(void *state) {
 	rb = (struct monster_base*) parser_priv(p);
 	notnull(rb);
 	eq(rb->d_char, L'D');
+#ifndef WINDOWS
 	if (setlocale(LC_CTYPE, "") && streq(nl_langinfo(CODESET), "UTF-8")) {
 		/*
 		 * Check that a glyph outside of the ASCII range works.  Using
@@ -123,6 +126,7 @@ static int test_glyph0(void *state) {
 		eq(nc, 1);
 		eq(rb->d_char, wcs[0]);
 	}
+#endif
 	ok;
 }
 
@@ -229,7 +233,7 @@ static int test_combined0(void *state) {
 	notnull(rb->name);
 	require(streq(rb->name, "mold"));
 	eq(rb->d_char, L',');
-	eq(rb->pain, dummy_pain_messages + 2);
+	ptreq(rb->pain, dummy_pain_messages + 2);
 	rf_wipe(eflags);
 	rf_on(eflags, RF_NEVER_MOVE);
 	rf_on(eflags, RF_HURT_FIRE);
