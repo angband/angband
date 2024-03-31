@@ -147,7 +147,7 @@ static int test_name0(void *state) {
 
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
-	require(a);
+	notnull(a);
 	require(streq(a->name, "of Thrain"));
 	ok;
 }
@@ -170,7 +170,7 @@ static int test_base_object0(void *state) {
 
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
-	require(a);
+	notnull(a);
 	eq(a->tval, TV_LIGHT);
 	eq(a->sval, z_info->ordinary_kind_max);
 	ok;
@@ -444,9 +444,9 @@ static int test_time0(void *state) {
 
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
-	require(a);
+	notnull(a);
 	k = lookup_kind(a->tval, a->sval);
-	noteq(k, NULL);
+	notnull(k);
 	if (k->kidx >= z_info->ordinary_kind_max) {
 		eq(k->time.base, 20);
 		eq(k->time.sides, 30);
@@ -465,7 +465,7 @@ static int test_msg0(void *state) {
 	r = parser_parse(state, "msg:bar");
 	eq(r, 0);
 	a = parser_priv(state);
-	require(a);
+	notnull(a);
 	require(streq(a->alt_msg, "foobar"));
 	ok;
 }
@@ -479,7 +479,7 @@ static int test_desc0(void *state) {
 	r = parser_parse(state, "desc: quxx");
 	eq(r, 0);
 	a = parser_priv(state);
-	require(a);
+	notnull(a);
 	require(streq(a->text, "baz quxx"));
 	ok;
 }

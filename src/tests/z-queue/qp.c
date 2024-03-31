@@ -256,16 +256,16 @@ static int test_qp_resize(void *state)
 	qp_push_ptr(qp, 12, d);
 	eq(qp_len(qp), 4);
 	p = qp_pop_ptr(qp);
-	eq(p, b);
+	ptreq(p, b);
 	mem_free(b);
 	p = qp_pop_ptr(qp);
-	eq(p, c);
+	ptreq(p, c);
 	mem_free(c);
 	p = qp_pop_ptr(qp);
-	eq(p, a);
+	ptreq(p, a);
 	mem_free(a);
 	p = qp_pop_ptr(qp);
-	eq(p, d);
+	ptreq(p, d);
 	mem_free(d);
 	qp_free(qp, mem_free);
 

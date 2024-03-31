@@ -155,7 +155,7 @@ static int test_name0(void *state) {
 	ps = (struct timed_effect_parse_state*) parser_priv(p);
 	notnull(ps);
 	notnull(ps->t);
-	eq(ps->t, timed_effects + TMD_FOOD);
+	ptreq(ps->t, timed_effects + TMD_FOOD);
 	notnull(ps->t->name);
 	require(streq(ps->t->name, "FOOD"));
 	null(ps->t->desc);
