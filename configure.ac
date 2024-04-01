@@ -292,6 +292,11 @@ AC_ARG_ENABLE(sdl_mixer,
 
 MAINFILES="\$(BASEMAINFILES)"
 
+dnl The libraries needed when linking the test cases start out the same
+dnl as what is needed to link the game but, typically, do not need to pick
+dnl up the extra dependencies needed by the front ends.
+TEST_LIBS="${LIBS}"
+
 dnl The Windows front end does not allow access to the others so disable them
 dnl unless explicitly told to build them.
 if test x"$enable_win" = xyes; then
@@ -443,6 +448,7 @@ if test "$enable_win" = "yes"; then
 	CFLAGS="${CFLAGS} -static"
 	LDFLAGS="${LDFLAGS} -Lwin/lib"
 	LIBS="${LIBS} -mwindows -lwinmm -lzlib -llibpng -lmsimg32"
+	TEST_LIBS="${TEST_LIBS} -mwindows"
 dnl Note complete replacement of all main files
 	MAINFILES="\$(WINMAINFILES)"
 fi
@@ -516,7 +522,17 @@ if test "$enable_spoil" = "yes"; then
 	MAINFILES="${MAINFILES} \$(SPOILMAINFILES)"
 fi
 
+dnl Remember if we are cross compiling.  Currently used so "make tests" only
+dnl compiles but does not run test cases when cross compiling.
+if test x"$build_alias" = x"$host_alias" ; then
+	CROSS_COMPILE=no
+else
+	CROSS_COMPILE=yes
+fi
+AC_SUBST(CROSS_COMPILE)
+
 AC_SUBST(MAINFILES, ${MAINFILES})
+AC_SUBST(TEST_LIBS, ${TEST_LIBS})
 AC_CONFIG_FILES([mk/buildsys.mk mk/extra.mk])
 AC_OUTPUT
 
