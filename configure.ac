@@ -149,7 +149,7 @@ if test "x$bindir" = "x\${exec_prefix}/bin"; then
   bindir=${exec_prefix}/games
 fi
 
-if test "x$with_no_install" != "x"; then
+if test "x$with_no_install" != "x" || test "x$enable_win" = xyes ; then
 	configpath="${PWD}/lib/"
 else
 	configpath="${sysconfdir}/${PACKAGE}/"
@@ -161,7 +161,7 @@ case "/$configpath" in
 esac
 
 
-if test "x$with_no_install" != "x"; then
+if test "x$with_no_install" != "x" || test "x$enable_win" = xyes ; then
 	libpath="${PWD}/lib/"
 	bindir=".."
 else
@@ -187,7 +187,7 @@ case "/$docdir" in
 	*)  MY_EXPAND_DIR(docdatadir, "$docdir/") ;;
 esac
 
-if test "x$with_no_install" != "x"; then
+if test "x$with_no_install" != "x" || test "x$enable_win" = xyes ; then
 	varpath="${PWD}/lib/"
 else
 	varpath="${localstatedir}/games/${PACKAGE}/"
