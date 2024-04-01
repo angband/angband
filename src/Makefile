@@ -37,8 +37,8 @@ $(PROGNAME).o: $(OBJECTS)
 
 tests: $(PROGNAME).o
 	env CC="$(CC)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" \
-		LDFLAGS="$(LDFLAGS)" LDADD="$(LDADD)" LIBS="$(LIBS)" \
-		$(MAKE) -C tests all
+		LDFLAGS="$(LDFLAGS)" LDADD="$(LDADD)" LIBS="$(TEST_LIBS)" \
+		CROSS_COMPILE="$(CROSS_COMPILE)" $(MAKE) -C tests all
 
 test-depgen:
 	env CC="$(CC)" $(MAKE) -C tests depgen
