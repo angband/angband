@@ -13,6 +13,7 @@
 #include "mon-make.h"
 #include "mon-util.h"
 #include "test-utils.h"
+#include "unit-test.h"
 #include "z-util.h"
 
 #if defined(SOUND_SDL) || defined(SOUND_SDL2)
@@ -43,9 +44,24 @@ errr init_sound_win(struct sound_hooks *hooks, int argc, char **argv)
 void set_file_paths(void) {
 	char configpath[512], libpath[512], datapath[512];
 
+	/*
+	 * Allow TEST_DEFAULT_PATH to set all the paths for init_file_paths()
+	 * if it is set and the user has not requested that the default paths
+	 * be used.  TEST_DEFAULT_PATH would typically point to the top level
+	 * of a source distribution + PATH_SEP + lib.  Could use a relative
+	 * path, in which case it should be set so that it works from the
+	 * working directory when a test case is run.
+	 */
 	my_strcpy(configpath, DEFAULT_CONFIG_PATH, sizeof(configpath));
 	my_strcpy(libpath, DEFAULT_LIB_PATH, sizeof(libpath));
 	my_strcpy(datapath, DEFAULT_DATA_PATH, sizeof(datapath));
+#ifdef TEST_DEFAULT_PATH
+	if (!forcepath) {
+		my_strcpy(configpath, TEST_DEFAULT_PATH, sizeof(configpath));
+		my_strcpy(libpath, TEST_DEFAULT_PATH, sizeof(libpath));
+		my_strcpy(datapath, TEST_DEFAULT_PATH, sizeof(datapath));
+	}
+#endif /* TEST_DEFAULT_PATH */
 
 	configpath[511] = libpath[511] = datapath[511] = '\0';
 

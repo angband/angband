@@ -7,7 +7,8 @@ DISTCLEAN = config.status config.log docs/.deps \
 	mk/buildsys.mk mk/extra.mk
 REPOCLEAN = aclocal.m4 autom4te.cache configure src/autoconf.h.in version
 
-.PHONY: tests manual manual-optional dist
+.PHONY: check tests manual manual-optional dist
+check: tests
 tests:
 	$(MAKE) -C src tests
 

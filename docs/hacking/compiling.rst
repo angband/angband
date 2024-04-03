@@ -74,19 +74,21 @@ To compile and run the unit tests, do this::
     make -f Makefile.osx tests
 
 If you want to rerun just one part, say monster/attack, of the unit tests,
-that's most easily done by::
+that's most easily done from the top directory of the source distribution::
+
+    src/tests/monster/attack.exe
+
+Somewhat older versions configure the test cases so they should be run
+from src/tests.  For those you would either use::
 
     cd src/tests
     monster/attack.exe
 
-Previous versions put the test executables in src/tests/bin.  With those
-versions, the second line above would be::
+or, for the even older versions that put the test executables in src/tests/bin,
+use::
 
+    cd src/tests
     bin/monster/attack
-
-The reason for changing directories to src/tests is to match up with how the
-tests were compiled:  they expect Angband's configuration data to be in
-../../lib.
 
 Statistics build
 ~~~~~~~~~~~~~~~~
