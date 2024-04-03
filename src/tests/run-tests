@@ -4,13 +4,15 @@
 use warnings FATAL => 'all';
 use strict;
 use File::Basename qw(dirname basename);
+use File::Spec::Functions qw(rel2abs);
 use List::Util qw(first max);
 use Getopt::Long qw(:config bundling no_ignore_case);
 
 # some nice global variables
-my $quiet    = 0;
-my $verbose  = $ENV{VERBOSE};
-my $usecolor = 1;
+my $quiet     = 0;
+my $verbose   = $ENV{VERBOSE};
+my $forcepath = $ENV{FORCE_PATH};
+my $usecolor  = 1;
 
 sub usage {
     my $prog = basename($0);
@@ -18,11 +20,13 @@ sub usage {
 Usage: $prog [options]
 
 Options:
-    -h,--help        show this message
-    -c,--color       use ANSI colors (default)
-    -C,--no-color    don't use ANSI colors
-    -q,--quiet       only show summary output
-    -v,--verbose     show all test output
+    -h,--help          show this message
+    -c,--color         use ANSI colors (default)
+    -C,--no-color      don't use ANSI colors
+    -q,--quiet         only show summary output
+    -v,--verbose       show all test output
+    -f,--forcepath     force test cases to use the game's data file paths
+    -F,--no-forcepath  test cases use alternate data file paths (default)
 
 Runs all the unit tests and reports the results.
 USAGE
@@ -44,27 +48,37 @@ sub getcolor {
 
 sub main {
     GetOptions(
-        'help|h'     => sub { usage(0) },
-        'color|c'    => sub { $usecolor = 1 },
-        'no-color|C' => sub { $usecolor = 0 },
-        'verbose|v'  => sub { $verbose = 1; $quiet = 0 },
-        'quiet|q'    => sub { $quiet = 1; $verbose = 0 },
+        'help|h'         => sub { usage(0) },
+        'color|c'        => sub { $usecolor = 1 },
+        'no-color|C'     => sub { $usecolor = 0 },
+        'verbose|v'      => sub { $verbose = 1; $quiet = 0 },
+        'quiet|q'        => sub { $quiet = 1; $verbose = 0 },
+        'forcepath|f'    => sub { $forcepath = 1 },
+        'no-forcepath|F' => sub { $forcepath = 0 },
     ) || usage(1);
 
-    my $dir     = dirname($0);
+    # Want the absolute path so that changing directories before running the
+    # test does not invalidate the results from find.
+    my $dir     = rel2abs(dirname($0));
     my @paths   = `find $dir -mindepth 2 -maxdepth 2 -type f -perm -u+x`;
     my $pass    = 0;
     my $total   = 0;
     my $maxpath = (max map { length($_) } @paths) - 3;
-    my $len     = $maxpath + 1 + 7;
+    my $len     = $maxpath - length($dir) + 3 + 7;
+    my $workdir = $ENV{TEST_WORKING_DIRECTORY};
     my $exitcode = 0;
     
+    if (length($workdir)) {
+        chdir $workdir;
+    }
     print "Running ", scalar(@paths), " suites:\n" unless $quiet;
     foreach my $path (sort @paths) {
         chomp $path;
 
         # actually run the test program here, getting the lines of output
-        my @lines = $verbose ? `$path -v` : `$path`;
+        my @lines = ($verbose and $forcepath) ? `$path -vf` :
+                    $verbose ? `$path -v` :
+                    $forcepath ? `$path -f` : `$path`;
 
         if ($? != 0) {
             print red("$path: Suite died"), "\n";

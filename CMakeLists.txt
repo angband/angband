@@ -814,16 +814,22 @@ FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-test
 
 # Set up target for running all tests.  Those (from tests in the source tree)
 # using the test front end will be run directly.  The unit tests will be
-# handled through a dependency.  Note that when SHARED_INSTALL or
-# READONLY_INSTALL is set, the tests can only be successfully run after
-# installing.  In the SHARED_INSTALL case, some unit tests will fail even
-# after installation is done because the test case executables are not setgid.
+# handled through a dependency.  In the SHARED_INSTALL case, some unit tests
+# will always fail because the test case executables are not setgid.
 ADD_CUSTOM_TARGET(alltests
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/run-tests ${TEST_EXECUTABLE}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+# For unit tests, use a working directory so the data files can be found.
+# This complements how DEFAULT_CONFIG_PATH, DEFAULT_LIB_PATH, DEFAULT_DATA_PATH,
+# and TEST_OVERRIDE_PATHS are set below.
+IF((READONLY_INSTALL) OR (SHARED_INSTALL))
+    SET(TEST_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+ELSE()
+    SET(TEST_WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+ENDIF()
 ADD_CUSTOM_TARGET(allunittests
-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/unittests/run-tests
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    COMMAND "${CMAKE_CURRENT_BINARY_DIR}/unittests/run-tests"
+    WORKING_DIRECTORY "${TEST_WORKING_DIRECTORY}")
 IF(SUPPORT_TEST_FRONTEND)
     ADD_DEPENDENCIES(alltests OurExecutable)
     IF(SC_INSTALL)
@@ -851,6 +857,13 @@ TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
 TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D DEFAULT_CONFIG_PATH="${ANGBAND_CONFIG_PATH}")
 TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D DEFAULT_LIB_PATH="${ANGBAND_LIB_PATH}")
 TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D DEFAULT_DATA_PATH="${ANGBAND_DATA_PATH}")
+# If building for installation elsewhere allows those paths to be overridden
+# so the test cases can be run before installation.  To run the cases after
+# installation with the installed data files, set the environment variable
+# FORCE_PATH to be non-empty prior to running the tests.
+IF((READONLY_INSTALL) OR (SHARED_INSTALL))
+    TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D TEST_OVERRIDE_PATHS)
+ENDIF()
 
 # Set up targets for exercising the unit tests (from src/tests in the source
 # tree).
@@ -903,5 +916,13 @@ FOREACH(ANGBAND_TEST_CASE ${ANGBAND_TEST_CASE_LIST})
         TARGET_LINK_LIBRARIES(${ANGBAND_TEST_CASE_NAME} PRIVATE ${MATH_LIBRARY})
     ENDIF()
     ADD_DEPENDENCIES(allunittests ${ANGBAND_TEST_CASE_NAME})
+    # Add a shortcut for running (and compiling if necessary) this test case.
+    ADD_CUSTOM_TARGET(run-${ANGBAND_TEST_CASE_NAME}
+        COMMAND "${CMAKE_CURRENT_BINARY_DIR}/${ANGBAND_TEST_CASE_PATH}"
+        WORKING_DIRECTORY "${TEST_WORKING_DIRECTORY}")
+    ADD_DEPENDENCIES(run-${ANGBAND_TEST_CASE_NAME} ${ANGBAND_TEST_CASE_NAME})
+    IF(SC_INSTALL)
+        ADD_DEPENDENCIES(run-${ANGBAND_TEST_CASE_NAME} TransferLib)
+    ENDIF()
     MATH(EXPR ANGBAND_TEST_CASE_INDEX "${ANGBAND_TEST_CASE_INDEX} + 1")
 ENDFOREACH()

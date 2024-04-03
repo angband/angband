@@ -217,8 +217,12 @@ dist: install
 
 	rm -rf disttemp*
 
+check: tests
 tests: $(EXE).o
-	$(MAKE) -C tests all CFLAGS='-I.. -DDEFAULT_CONFIG_PATH=\"../../lib\" -DDEFAULT_LIB_PATH=\"../../lib\" -DDEFAULT_DATA_PATH=\"../../lib\" $(CFLAGS) -Wno-write-strings' LDFLAGS="$(LIBS)"
+	env CC="$(CC)" CFLAGS="$(CFLAGS) -I.. -DTEST_OVERRIDE_PATHS -Wno-write-strings" \
+		LDFLAGS="$(LDFLAGS)" LIBS="$(LIBS)" \
+		TEST_WORKING_DIRECTORY="../.." \
+		$(MAKE) -C tests all
 
 test-depgen:
 	$(MAKE) -C tests depgen
@@ -226,4 +230,4 @@ test-depgen:
 test-clean:
 	$(MAKE) -C tests clean
 
-.PHONY : tests test-clean
+.PHONY : check tests test-clean

@@ -149,29 +149,41 @@ if test "x$bindir" = "x\${exec_prefix}/bin"; then
   bindir=${exec_prefix}/games
 fi
 
-if test "x$with_no_install" != "x" || test "x$enable_win" = xyes ; then
+if test "x$with_no_install" != "x"; then
 	configpath="${PWD}/lib/"
+elif test "x$enable_win" = xyes; then
+	configpath=".\\\\lib\\\\"
 else
 	configpath="${sysconfdir}/${PACKAGE}/"
 fi
 
-case "/$configpath" in
-	*/) MY_EXPAND_DIR(configdir, "$configpath")  ;;
-	*)  MY_EXPAND_DIR(configdir, "$configpath/") ;;
-esac
+if test "x$enable_win" != xyes; then
+	case "/$configpath" in
+		*/) MY_EXPAND_DIR(configdir, "$configpath")  ;;
+		*)  MY_EXPAND_DIR(configdir, "$configpath/") ;;
+	esac
+else
+	configdir="$configpath"
+fi
 
 
-if test "x$with_no_install" != "x" || test "x$enable_win" = xyes ; then
+if test "x$with_no_install" != "x"; then
 	libpath="${PWD}/lib/"
 	bindir=".."
+elif test "x$enable_win" = xyes; then
+	libpath=".\\\\lib\\\\"
 else
 	libpath="${datarootdir}/${PACKAGE}/"
 fi
 
-case "/$libpath" in
-	*/) MY_EXPAND_DIR(libdatadir, "$libpath")  ;;
-	*)  MY_EXPAND_DIR(libdatadir, "$libpath/") ;;
-esac
+if test "x$enable_win" != xyes; then
+	case "/$libpath" in
+		*/) MY_EXPAND_DIR(libdatadir, "$libpath")  ;;
+		*)  MY_EXPAND_DIR(libdatadir, "$libpath/") ;;
+	esac
+else
+	libdatadir="$libpath"
+fi
 
 if test "x$with_no_install" != "x"; then
 	docdir="${PWD}/doc/"
@@ -187,16 +199,23 @@ case "/$docdir" in
 	*)  MY_EXPAND_DIR(docdatadir, "$docdir/") ;;
 esac
 
-if test "x$with_no_install" != "x" || test "x$enable_win" = xyes ; then
+if test "x$with_no_install" != "x"; then
 	varpath="${PWD}/lib/"
+elif test "x$enable_win" = xyes; then
+	varpath=".\\\\lib\\\\"
 else
 	varpath="${localstatedir}/games/${PACKAGE}/"
 fi
 
-case "/$varpath" in
-	*/) MY_EXPAND_DIR(vardatadir, "$varpath")  ;;
-	*)  MY_EXPAND_DIR(vardatadir, "$varpath/") ;;
-esac
+if test "x$enable_win" != xyes; then
+	case "/$varpath" in
+		*/) MY_EXPAND_DIR(vardatadir, "$varpath")  ;;
+		*)  MY_EXPAND_DIR(vardatadir, "$varpath/") ;;
+	esac
+else
+	vardatadir="$varpath"
+fi
+
 if test "x$with_private_dirs" != "x"; then
 	varshareddatadir="${vardatadir}user/"
 else
@@ -530,6 +549,25 @@ else
 	CROSS_COMPILE=yes
 fi
 AC_SUBST(CROSS_COMPILE)
+
+dnl If installing elsewhere or using the Windows front end, allow the test
+dnl cases which use set_file_paths() to find the data files.  This relies on
+dnl the setting for TEST_DEFAULT_PATH in src/tests/unit-test.h which uses a
+dnl relative path and has the drawback that a test case will not work if it
+dnl uses set_file_paths() and the working directory is not the top level
+dnl directory of a distribution.  Also set TEST_WORKING_DIRECTORY so, that
+dnl when run by src/tests/run-tests, the working directory will match that.
+if test x"$with_no_install" = x || test x"$enable_win" = xyes ; then
+	CFLAGS="${CFLAGS} -DTEST_OVERRIDE_PATHS"
+	case "$srcdir" in
+		.) TEST_WORKING_DIRECTORY="$PWD" ;;
+		[\\/]* | ?:[\\/]* ) TEST_WORKING_DIRECTORY="$srcdir" ;;
+		*) TEST_WORKING_DIRECTORY="$PWD/$srcdir" ;;
+	esac
+else
+	TEST_WORKING_DIRECTORY=
+fi
+AC_SUBST(TEST_WORKING_DIRECTORY)
 
 AC_SUBST(MAINFILES, ${MAINFILES})
 AC_SUBST(TEST_LIBS, ${TEST_LIBS})
