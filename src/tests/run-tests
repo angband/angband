@@ -75,7 +75,7 @@ sub main {
             $total += 1; 
             next;
         }
-        unless ($lines[-1] =~ m#^([^:]+) finished: (\d+)/(\d+) passed$#) {
+        unless ($lines[-1] =~ m#^([^:]+) finished: (\d+)/(\d+) passed\r?$#) {
             print red("$path: Malformed output"), "\n";
             $exitcode = 1;
             next;
