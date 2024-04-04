@@ -78,29 +78,27 @@ bool borg_decurse_weapon(void)
         return (false);
 
     /* Ability for curses */
-    if (borg_cfg[BORG_USES_SWAPS] && decurse_weapon_swap) {
-        if (-1 == borg_slot(TV_SCROLL, sv_scroll_remove_curse)
-            && !borg_equips_staff_fail(sv_staff_remove_curse)
-            && !borg_spell_okay_fail(REMOVE_CURSE, 40)
-            && -1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse)
-            && !borg_equips_item(act_remove_curse, true)
-            && !borg_equips_item(act_remove_curse2, true)) {
-            return (false);
-        }
+    if (-1 == borg_slot(TV_SCROLL, sv_scroll_remove_curse)
+        && !borg_equips_staff_fail(sv_staff_remove_curse)
+        && !borg_spell_okay_fail(REMOVE_CURSE, 40)
+        && -1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse)
+        && !borg_equips_item(act_remove_curse, true)
+        && !borg_equips_item(act_remove_curse2, true)) {
+        return (false);
+    }
 
-        /* remove the curse */
-        if (borg_read_scroll(sv_scroll_remove_curse)
-            || borg_use_staff(sv_staff_remove_curse) || borg_spell(REMOVE_CURSE)
-            || borg_read_scroll(sv_scroll_star_remove_curse)
-            || borg_activate_item(act_remove_curse)
-            || borg_activate_item(act_remove_curse2)) {
-            borg_keypress(all_letters_nohjkl[weapon_swap - 1]);
-            /* pick first curse */
-            borg_keypress(KC_ENTER);
+    /* remove the curse */
+    if (borg_read_scroll(sv_scroll_remove_curse)
+        || borg_use_staff(sv_staff_remove_curse) || borg_spell(REMOVE_CURSE)
+        || borg_read_scroll(sv_scroll_star_remove_curse)
+        || borg_activate_item(act_remove_curse)
+        || borg_activate_item(act_remove_curse2)) {
+        borg_keypress(all_letters_nohjkl[weapon_swap - 1]);
+        /* pick first curse */
+        borg_keypress(KC_ENTER);
 
-            /* Shekockazol! */
-            return (true);
-        }
+        /* Shekockazol! */
+        return (true);
     }
 
     /* Nothing to do */
