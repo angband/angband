@@ -470,10 +470,10 @@ static int test_uint1(void *state) {
 }
 
 static enum parser_error helper_char0(struct parser *p) {
-	char c = parser_getchar(p, "c");
+	wchar_t c = parser_getchar(p, "c");
 	int *wasok = parser_priv(p);
 
-	if (c != 'C')
+	if (c != L'C')
 		return PARSE_ERROR_GENERIC;
 	*wasok = 1;
 	return PARSE_ERROR_NONE;
@@ -492,13 +492,13 @@ static int test_char0(void *state) {
 }
 
 static enum parser_error helper_char1(struct parser *p) {
-	char c0 = parser_getchar(p, "c0");
-	char c1 = parser_getchar(p, "c1");
+	wchar_t c0 = parser_getchar(p, "c0");
+	wchar_t c1 = parser_getchar(p, "c1");
 	int i0 = parser_getint(p, "i0");
 	const char *s = parser_getstr(p, "s");
 	int *wasok = parser_priv(p);
 
-	if (c0 != ':' || c1 != ':' || i0 != 34 || !streq(s, "lala"))
+	if (c0 != L':' || c1 != L':' || i0 != 34 || !streq(s, "lala"))
 		return PARSE_ERROR_GENERIC;
 	*wasok = 1;
 	return PARSE_ERROR_NONE;
