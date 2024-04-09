@@ -65,6 +65,11 @@ enum {
     BI_WIS,
     BI_DEX,
     BI_CON,
+    BI_ASTR,
+    BI_AINT,
+    BI_AWIS,
+    BI_ADEX,
+    BI_ACON,
     BI_CSTR,
     BI_CINT,
     BI_CWIS,
@@ -104,6 +109,7 @@ enum {
     BI_REG,
     BI_SINV,
     BI_INFRA,
+    BI_FAST_SHOTS,
     BI_DISP,
     BI_DISM,
     BI_DEV,
@@ -156,7 +162,6 @@ enum {
     BI_SHLIFE,
     BI_SFRACT,
 
-    BI_DEPTH,
     BI_CDEPTH,
     BI_MAXDEPTH,
     BI_KING,
@@ -191,8 +196,15 @@ enum {
     BI_TODAM,
     BI_WTOHIT,
     BI_WTODAM,
+    BI_WID,
+    BI_WDD,
+    BI_WDS,
+    BI_WBLESSED,
+    BI_BID,
     BI_BTOHIT,
     BI_BTODAM,
+    BI_SLING,
+    BI_BART,
     BI_BLOWS,
     BI_EXTRA_BLOWS,
     BI_SHOTS,
@@ -423,7 +435,6 @@ struct borg_struct {
     int16_t stat_max[STAT_MAX]; /* Current "maximal" stat values    */
     int16_t stat_cur[STAT_MAX]; /* Current "natural" stat values    */
     int16_t stat_ind[STAT_MAX]; /* Current "additions" to stat values   */
-    int16_t stat_add[STAT_MAX]; /* additions to stats  */
 
     bool need_enchant_to_a; /* Need some enchantment */
     bool need_enchant_to_h; /* Need some enchantment */

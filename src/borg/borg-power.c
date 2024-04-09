@@ -27,6 +27,7 @@
 #include "../player-spell.h"
 
 #include "borg-flow-kill.h"
+#include "borg-formulas.h"
 #include "borg-home-notice.h"
 #include "borg-item-activation.h"
 #include "borg-item-analyze.h"
@@ -130,7 +131,7 @@ static int32_t borg_power_equipment(void)
         value += (dam * 1) / 2;
     if (borg.trait[BI_WS_TROLL])
         value += (dam * 2) / 2;
-    /* and the other 2/2 if SEvil not possesed */
+    /* and the other 2/2 if SEvil not possessed */
     if (borg.trait[BI_WS_ORC] && !borg.trait[BI_WS_EVIL])
         value += (dam * 1) / 2;
     if (borg.trait[BI_WS_TROLL] && !borg.trait[BI_WS_EVIL])
@@ -217,7 +218,6 @@ static int32_t borg_power_equipment(void)
 
     /* Reward "bonus to hit" */
     value += ((borg.trait[BI_TOHIT] + item->to_h) * 100L);
-    ;
 
     /* extra damage for some */
     if (borg_cfg[BORG_WORSHIPS_DAMAGE]) {
@@ -225,53 +225,13 @@ static int32_t borg_power_equipment(void)
     }
 
     /* Prefer bows */
-    if (player_has(player, PF_FAST_SHOT)
+    if (borg.trait[BI_FAST_SHOTS]
         && borg.trait[BI_AMMO_TVAL] == TV_ARROW)
         value += 30000L;
 
     /* Hack -- It is hard to hold a heavy weapon */
     if (hold < item->weight / 10)
         value -= 500000L;
-
-    /***  Analyze dragon armour  ***/
-
-    /* Examine current armor */
-    item = &borg_items[INVEN_BODY];
-
-    if (item->tval == TV_DRAG_ARMOR && !item->art_idx) {
-        if (item->sval == sv_dragon_black 
-            || item->sval == sv_dragon_blue
-            || item->sval == sv_dragon_white 
-            || item->sval == sv_dragon_red)
-            value += 1100;
-        else if (item->sval == sv_dragon_green)
-            value += 2750;
-        else if (item->sval == sv_dragon_multihued)
-            value += 3250;
-        else if (item->sval == sv_dragon_shining 
-                 || item->sval == sv_dragon_law
-                 || item->sval == sv_dragon_gold
-                 || item->sval == sv_dragon_chaos
-                 || item->sval == sv_dragon_balance
-                 || item->sval == sv_dragon_power)
-            value += 5150;
-    }
-
-    /*** Examine the Rings for special types ***/
-    for (i = INVEN_RIGHT; i <= INVEN_LEFT; i++) {
-        /* Obtain the item */
-        item = &borg_items[i];
-
-        /* Reward the [Elemental] protection rings for their activation */
-        if (item->sval == sv_ring_flames)
-            value += 25000;
-        if (item->sval == sv_ring_acid)
-            value += 10000;
-        if (item->sval == sv_ring_ice)
-            value += 15000;
-        if (item->sval == sv_ring_lightning)
-            value += 10000;
-    }
 
     /*** Reward various things ***/
 
@@ -315,7 +275,8 @@ static int32_t borg_power_equipment(void)
 
         if (borg.trait[BI_SPEED] >= 110 && borg.trait[BI_SPEED] <= 114)
             value += (((borg.trait[BI_SPEED] - 110) * 1500L) + 65000L);
-        else
+
+        if (borg.trait[BI_SPEED] < 110)
             value += (((borg.trait[BI_SPEED] - 110) * 2500L));
     } else {
         if (borg.trait[BI_SPEED] >= 140)
@@ -338,7 +299,8 @@ static int32_t borg_power_equipment(void)
 
         if (borg.trait[BI_SPEED] >= 110 && borg.trait[BI_SPEED] <= 114)
             value += (((borg.trait[BI_SPEED] - 110) * 1000L) + 55000L);
-        else
+
+        if (borg.trait[BI_SPEED] < 110)
             value += (((borg.trait[BI_SPEED] - 110) * 2500L));
     }
 
@@ -358,8 +320,8 @@ static int32_t borg_power_equipment(void)
                 value += (borg.trait[BI_SP_ADJ] / 2) * 155L;
             }
 
-            /* bonus for fail rate */
-            value += spell_chance(0) * 100;
+            /* bonus for low fail rate */
+            value += (100 - spell_chance(0)) * 100;
 
             /* should try to get min fail to 0 */
             if (player_has(player, PF_ZERO_FAIL)) {
@@ -410,7 +372,7 @@ static int32_t borg_power_equipment(void)
     /*        later it might be nice to swap to a weapon that does not */
     /*        have an int bonus */
     for (i = 0; i < STAT_MAX; i++)
-        value += borg.stat_add[i];
+        value += borg.trait[BI_ASTR+i];
 
     /* Hack -- tiny rewards */
     value += (borg.trait[BI_DISP] * 2L);
@@ -646,11 +608,14 @@ static int32_t borg_power_equipment(void)
 
     /* Hack-- Reward the borg for carrying a NON-ID items that have random
      * powers
+     * !FIX !TODO !AJG need to put this in dynamic 
      */
-    if (((borg_ego_has_random_power(&e_info[item->ego_idx])
-            && !borg_items[INVEN_OUTER].ident)))
-        value += 999999L;
-
+    if (borg_items[INVEN_OUTER].iqty) {
+        item = &borg_items[INVEN_OUTER];
+        if (((borg_ego_has_random_power(&e_info[item->ego_idx])
+            && !item->ident)))
+            value += 999999L;
+    }
     /*** Penalize various things ***/
 
     /* Penalize various flags */
@@ -701,9 +666,9 @@ static int32_t borg_power_equipment(void)
         value -= 100000L;
     if (borg.trait[BI_CRSSUND])
         value -= 100000L;
-    if (borg.trait[BI_CRSSTONE] && borg.trait[BI_SPEED] < 20)
+    if (borg.trait[BI_CRSSTONE] && borg.trait[BI_SPEED] < 140)
         value -= 10000L;
-    if (borg.trait[BI_CRSSTEELSKIN] && borg.trait[BI_SPEED] < 20)
+    if (borg.trait[BI_CRSSTEELSKIN] && borg.trait[BI_SPEED] < 140)
         value -= 10000L;
     if (borg.trait[BI_CRSNOTEL])
         value -= 700000L;
@@ -714,6 +679,7 @@ static int32_t borg_power_equipment(void)
     if (borg.trait[BI_CRSUNKNO])
         value -= 9999999L;
 
+ // !FIX need even for dynamic
     /*** Penalize armor weight ***/
     if (borg.stat_ind[STAT_STR] < 15) {
         if (borg_items[INVEN_BODY].weight > 200)
@@ -756,16 +722,8 @@ static int32_t borg_power_equipment(void)
     /*** Penalize bad magic ***/
 
     /*  Hack -- most edged weapons hurt magic for priests */
-    if (player_has(player, PF_BLESS_WEAPON)) {
-        item = &borg_items[INVEN_WIELD];
-
-        /* Penalize non-blessed edged weapons */
-        if ((item->tval == TV_SWORD || item->tval == TV_POLEARM)
-            && !of_has(item->flags, OF_BLESSED)) {
-            /* Hack -- Major penalty */
-            value -= 75000L;
-        }
-    }
+    if (player_has(player, PF_BLESS_WEAPON) && !borg.trait[BI_WBLESSED])
+        value -= 75000L;
 
 #if 0 /* I wonder if this causes the borg to change his gear so radically at   \
          depth 99 */
@@ -801,11 +759,12 @@ static int32_t borg_power_equipment(void)
     /* bonus for wearing something that needs an ID */
     value += 10000L * borg.trait[BI_ANEED_ID];
 
-    int activation_bonus = 0;
+    int activation_bonus ;
     int act;
     for (act = 1; act < z_info->act_max; act++) {
         if (!borg.activation[act])
             continue;
+        activation_bonus = 0;
         /* an extra bonus for activations */
         if (act_illumination == act)
             activation_bonus += 500;
@@ -1111,7 +1070,7 @@ static int32_t borg_power_equipment(void)
             activation_bonus += 0; /* !FIX no code to handle (currently no code
                                       for wands of drag breath) */
         else if (act_staff_magi == act)
-            borg.trait[BI_ASTFMAGI] += 10;
+            borg.trait[BI_ASTFMAGI] += 10;  /* !FIX this should be in borg_notice */
         else if (act_staff_holy == act)
             activation_bonus += 1000;
         else if (act_drink_breath == act)
@@ -1967,8 +1926,12 @@ int32_t borg_power(void)
     int     i     = 1;
     int32_t value = 0L;
 
-    /* Process the equipment */
-    value += borg_power_equipment();
+    // !FIX only equiptment currently coded for
+    if (borg_cfg[BORG_USES_DYNAMIC_CALCS])
+        value += borg_power_dynamic();
+    else
+        /* Process the equipment */
+        value += borg_power_equipment();
 
     /* Process the inventory */
     value += borg_power_inventory();

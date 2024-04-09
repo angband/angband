@@ -676,6 +676,7 @@ void do_cmd_borg(void)
 
         if (borg_init_failure) {
             borg_initialized = false;
+            borg_free();
             borg_note("** startup failure borg cannot run ** ");
             Term_fresh();
             return;

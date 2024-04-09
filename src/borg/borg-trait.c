@@ -741,259 +741,271 @@ int16_t borg_game_ratio; /* the ratio of borg time to game time */
 /* NOTE: This must exactly match the enum in borg-trait.h */
 const char *prefix_pref[] = {
     /* personal attributes */
-    "_STR",
-    "_INT",
-    "_WIS",
-    "_DEX",
-    "_CON",
-    "_CSTR",
-    "_CINT",
-    "_CWIS",
-    "_CDEX",
-    "_CCON",
-    "_SSTR",
-    "_SINT",
-    "_SWIS",
-    "_SDEX",
-    "_SCON",
-    "_CLASS",
-    "_LIGHT",
-    "_CURHP",
-    "_MAXHP",
-    "_ADJHP",
-    "_CURSP",
-    "_MAXSP",
-    "_ADJSP",
-    "_SFAIL1",
-    "_SFAIL2",
-    "_CLEVEL",
-    "_MAXCLEVEL",
-    "_ESP",
-    "_CURLITE",
-    "_RECALL",
-    "_FOOD",
-    "_FOOD_HI",
-    "_FOOD_LO",
-    "_FOOD_CURE_CONF",
-    "_FOOD_CURE_BLIND",
-    "_SPEED",
-    "_GOLD",
-    "_MOD_MOVES",
-    "_DAM_RED",
-    "_SDIG",
-    "_FEATH",
-    "_REG",
-    "_SINV",
-    "_INFRA",
-    "_DISP",
-    "_DISM",
-    "_DEV",
-    "_SAV",
-    "_STL",
-    "_SRCH",
-    "_THN",
-    "_THB",
-    "_THT",
-    "_DIG",
-    "_IFIRE",
-    "_IACID",
-    "_ICOLD",
-    "_IELEC",
-    "_IPOIS",
-    "_RFIRE",
-    "_RCOLD",
-    "_RELEC",
-    "_RACID",
-    "_RPOIS",
-    "_RFEAR",
-    "_RLITE",
-    "_RDARK",
-    "_RBLIND",
-    "_RCONF",
-    "_RSND",
-    "_RSHRD",
-    "_RNXUS",
-    "_RNTHR",
-    "_RKAOS",
-    "_RDIS",
-    "_HLIFE",
-    "_FRACT",
-    "_SRFIRE", /* same as without S but includes swap */
-    "_SRCOLD",
-    "_SRELEC",
-    "_SRACID",
-    "_SRPOIS",
-    "_SRFEAR",
-    "_SRLITE",
-    "_SRDARK",
-    "_SRBLIND",
-    "_SRCONF",
-    "_SRSND",
-    "_SRSHRD",
-    "_SRNXUS",
-    "_SRNTHR",
-    "_SRKAOS",
-    "_SRDIS",
-    "_SHLIFE",
-    "_SFRACT",
+    "str",
+    "int",
+    "wis",
+    "dex",
+    "con",
+    "str adj",
+    "int adj",
+    "wis adj",
+    "dex adj",
+    "con adj",
+    "cur str",
+    "cur int",
+    "cur wis",
+    "cur dex",
+    "cur con",
+    "sust str",
+    "sust int",
+    "sust wis",
+    "sust dex",
+    "sust con",
+    "class",
+    "light",
+    "cur hp",
+    "max hp",
+    "hp adj",
+    "cur sp",
+    "max sp",
+    "sp adj",
+    "SFAIL1",
+    "SFAIL2",
+    "clevel",
+    "max clevel",
+    "ESP",
+    "cur light",
+    "RECALL",
+    "FOOD",
+    "FOOD_HI",
+    "FOOD_LO",
+    "FOOD_CURE_CONF",
+    "FOOD_CURE_BLIND",
+    "SPEED",
+    "GOLD",
+    "extra moves",
+    "damage reduction",
+    "slow dig",
+    "feather fall",
+    "regen",
+    "see inv",
+    "infravison",
+    "fast shots",
+    "disarm ph",
+    "disarm mag",
+    "use device",
+    "save",
+    "stealth",
+    "search",
+    "to hit normal",
+    "to hit bow",
+    "to hit throw",
+    "dig",
+    "immune fire",
+    "immune acid",
+    "immune cold",
+    "immune elec",
+    "immune pois",
+    "resist fire",
+    "resist cold",
+    "resist elec",
+    "resist acid",
+    "resist poison",
+    "resist fear",
+    "resist lite",
+    "resist dark",
+    "resist blind",
+    "resist conf",
+    "resist sound",
+    "resist shards",
+    "resist nexus",
+    "resist nether",
+    "resist chaos",
+    "resist dis",
+    "hold life",
+    "free action",
+    "SRFIRE", /* same as without S but includes swap */
+    "SRCOLD",
+    "SRELEC",
+    "SRACID",
+    "SRPOIS",
+    "SRFEAR",
+    "SRLITE",
+    "SRDARK",
+    "SRBLIND",
+    "SRCONF",
+    "SRSND",
+    "SRSHRD",
+    "SRNXUS",
+    "SRNTHR",
+    "SRKAOS",
+    "SRDIS",
+    "SHLIFE",
+    "SFRACT",
 
     /* random extra variable */
-    "_DEPTH", /* current depth being tested */
-    "_CDEPTH", /* borgs current depth */
-    "_MAXDEPTH", /* recall depth */
-    "_KING", /* borg has won */
+    "depth", /* borgs current depth ? */
+    "max depth", /* recall depth */
+    "KING", /* borg has won */
 
     /* player state things */
-    "_ISWEAK",
-    "_ISHUNGRY",
-    "_ISFULL",
-    "_ISGORGED",
-    "_ISBLIND",
-    "_ISAFRAID",
-    "_ISCONFUSED",
-    "_ISPOISONED",
-    "_ISCUT",
-    "_ISSTUN",
-    "_ISHEAVYSTUN",
-    "_ISPARALYZED",
-    "_ISIMAGE",
-    "_ISFORGET",
-    "_ISENCUMB",
-    "_ISSTUDY",
-    "_ISFIXLEV",
-    "_ISFIXEXP",
-    "_ISFIXSTR",
-    "_ISFIXINT",
-    "_ISFIXWIS",
-    "_ISFIXDEX",
-    "_ISFIXCON",
-    "_ISFIXALL",
+    "is weak",
+    "is hungry",
+    "is full",
+    "is gorged",
+    "is blind",
+    "is afraid",
+    "is confused",
+    "is poisoned",
+    "is cut",
+    "is stun",
+    "is heavystun",
+    "is paralyzed",
+    "is image",
+    "is forget",
+    "is encumb",
+    "is study",
+    "is fixlev",
+    "is fixexp",
+    "is fixstr",
+    "is fixint",
+    "is fixwis",
+    "is fixdex",
+    "is fixcon",
+    "is fixall",
 
     /* some combat stuff */
-    "_ARMOR",
-    "_TOHIT", /* base to hit, does not include weapon */
-    "_TODAM", /* base to damage, does not include weapon */
-    "_WTOHIT", /* weapon to hit */
-    "_WTODAM", /* weapon to damage */
-    "_BTOHIT", /* bow to hit */
-    "_BTODAM", /* bow to damage */
-    "_BLOWS",
-    "_EXTRA_BLOWS",
-    "_SHOTS",
-    "_WMAXDAM", /* max damage per round with weapon (normal blow) */
+    "ARMOR",
+    "to hit", /* base to hit, does not include weapon */
+    "to damage", /* base to damage, does not include weapon */
+    "wep to hit", /* weapon to hit */
+    "wep to damage", /* weapon to damage */
+    "wep id", /* weapon identified */
+    "wep damage dice", /* weapon damage dice */
+    "wep damage sides", /* weapon to damage dice sides */
+    "wep blessed",
+    "bow id", /* weapon identified */
+    "bow to hit", /* bow to hit */
+    "bow to damage", /* bow to damage */
+    "bow is sling",
+    "bow artifact",
+    "blows",
+    "EXTRA_BLOWS",
+    "SHOTS",
+    "WMAXDAM", /* max damage per round with weapon (normal blow) */
     /* Assumes you can enchant to +8 if you are level 25+ */
-    "_WBASEDAM", /* max damage per round with weapon (normal blow) */
+    "WBASEDAM", /* max damage per round with weapon (normal blow) */
     /* Assumes you have no enchantment */
-    "_BMAXDAM", /* max damage per round with bow (normal hit) */
+    "BMAXDAM", /* max damage per round with bow (normal hit) */
     /* Assumes you can enchant to +8 if you are level 25+ */
-    "_HEAVYWEPON",
-    "_HEAVYBOW",
-    "_AMMO_COUNT", /* count of all ammo */
-    "_AMMO_TVAL",
-    "_AMMO_SIDES",
-    "_AMMO_POWER",
-    "_AMISSILES", /* only ones for your current bow count */
-    "_AMISSILES_SPECIAL", /* and are ego */
-    "_AMISSILES_CURSED", /* and are cursed */
-    "_QUIVER_SLOTS", /* number of inven slots the quivered items take */
-    "_FIRST_CURSED", /* first cursed item */
-    "_WHERE_CURSED", /* where curses are 1 inv, 2 equ, 4 quiv */
+    "heavy weapon",
+    "heavy bow",
+    "ammo count", /* count of all ammo */
+    "ammo tval",
+    "ammo sides",
+    "ammo power",
+    "AMISSILES", /* only ones for your current bow count */
+    "AMISSILES_SPECIAL", /* and are ego */
+    "AMISSILES_CURSED", /* and are cursed */
+    "QUIVER_SLOTS", /* number of inven slots the quivered items take */
+    "FIRST_CURSED", /* first cursed item */
+    "WHERE_CURSED", /* where curses are 1 inv, 2 equ, 4 quiv */
 
     /* curses */
-    "_CRSENVELOPING",
-    "_CRSIRRITATION",
-    "_CRSTELE",
-    "_CRSPOIS",
-    "_CRSSIREN",
-    "_CRSHALU",
-    "_CRSPARA",
-    "_CRSSDEM",
-    "_CRSSDRA",
-    "_CRSSUND",
-    "_CRSSTONE",
-    "_CRSNOTEL",
-    "_CRSTWEP",
-    "_CRSAGRV",
-    "_CRSHPIMP", /* Impaired HP recovery */
-    "_CRSMPIMP", /* Impaired MP recovery */
-    "_CRSSTEELSKIN",
-    "_CRSAIRSWING",
-    "_CRSFEAR", /* Fear curse flag */
-    "_CRSDRAIN_XP", /* drain XP flag */
-    "_CRSFVULN", /* Vulnerable to fire */
-    "_CRSEVULN", /* Vulnerable to elec */
-    "_CRSCVULN", /* Vulnerable to Cold */
-    "_CRSAVULN", /* Vulnerable to Acid */
-    "_CRSUNKNO",
+    "enveloping",
+    "irritation",
+    "teleport",
+    "curse poison",
+    "siren",
+    "halucinate",
+    "paralysis",
+    "summon demon",
+    "summon dragon",
+    "summon undead",
+    "curse stone",
+    "no teleport",
+    "treach wep",
+    "aggravate",
+    "impair hp", /* Impaired HP recovery */
+    "CRSMPIMP", /* Impaired MP recovery */
+    "curse steel",
+    "air swing",
+    "fear", /* Fear curse flag */
+    "drain xp", /* drain XP flag */
+    "vuln fire", /* Vulnerable to fire */
+    "vuln elec", /* Vulnerable to elec */
+    "vuln cold", /* Vulnerable to Cold */
+    "vuln acid", /* Vulnerable to Acid */
+    "unknown curse",
 
     /* weapon attributes */
-    "_WSANIMAL", /* WS = weapon slays */
-    "_WSEVIL",
-    "_WSUNDEAD",
-    "_WSDEMON",
-    "_WSORC",
-    "_WSTROLL",
-    "_WSGIANT",
-    "_WSDRAGON",
-    "_WKUNDEAD", /* WK = weapon kills */
-    "_WKDEMON",
-    "_WKDRAGON",
-    "_WIMPACT",
-    "_WBACID", /* WB = Weapon Branded With */
-    "_WBELEC",
-    "_WBFIRE",
-    "_WBCOLD",
-    "_WBPOIS",
+    "wep slay animal", /* WS = weapon slays */
+    "wep slay evil",
+    "wep slay undead",
+    "wep slay demon",
+    "wep slay orc",
+    "wep slay troll",
+    "wep slay giant",
+    "wep slay dragon",
+    "wep kill undead", /* WK = weapon kills */
+    "wep kill demon",
+    "wep kill dragon",
+    "wep impact",
+    "wep brand acid", /* WB = Weapon Branded With */
+    "wep brand elec",
+    "wep brand fire",
+    "wep brand cold",
+    "wep brand pois",
 
     /* amounts */
-    "_APHASE",
-    "_ATELEPORT", /* all sources of teleport */
-    "_AESCAPE", /* Staff, artifact (can be used when blind/conf) */
-    "_FUEL",
-    "_HEAL",
-    "_EZHEAL",
-    "_LIFE",
-    "_ID",
-    "_ASPEED",
-    "_ASTFMAGI", /* Amount Staff Charges */
-    "_ASTFDEST",
-    "_ATPORTOTHER", /* How many Teleport Other charges you got? */
-    "_ACUREPOIS",
-    "_ADETTRAP",
-    "_ADETDOOR",
-    "_ADETEVIL",
-    "_AMAGICMAP",
-    "_ALITE",
-    "_ARECHARGE",
-    "_APFE", /* Protection from Evil */
-    "_AGLYPH", /* Rune Protection */
-    "_ACCW", /* CCW potions (just because we use it so often) */
-    "_ACSW", /* CSW potions (+ CLW if cut) */
-    "_ACLW",
-    "_AENCH_TOH", /* enchant weapons and armor (+spells) */
-    "_AENCH_TOD",
-    "_AENCH_SWEP",
-    "_AENCH_ARM",
-    "_AENCH_SARM",
-    "_ABRAND",
-    "_ARESHEAT", /* potions of res heat */
-    "_ARESCOLD", /* pot of res cold */
-    "_ARESPOIS", /* Potions of Res Poison */
-    "_ATELEPORTLVL", /* scroll of teleport level */
-    "_AHWORD", /* Holy Word prayer Legal*/
-    "_AMASSBAN", /* ?Mass Banishment */
-    "_ASHROOM", /* Number of cool mushrooms */
-    "_AROD1", /* Attack rods */
-    "_AROD2", /* Attack rods */
-    "_ANEED_ID", /* a wielded item that needs ID */
-    "_ADIGGER", /* amount of diggers in inventory */
-    "_GOOD_S_CHG", /* good staff charges */
-    "_GOOD_W_CHG", /* good wand charges */
-    "_MULTI_BONUSES", /* Items with multiple useful bonuses */
-    "_DINV", /* See Inv Spell is Legal */
-    "_WEIGHT", /* weight of all inventory and equipment */
-    "_CARRY", /* carry capacity based on str */
-    "_EMPTY", /* number of empty slots */
+    "APHASE",
+    "ATELEPORT", /* all sources of teleport */
+    "AESCAPE", /* Staff, artifact (can be used when blind/conf) */
+    "FUEL",
+    "HEAL",
+    "EZHEAL",
+    "LIFE",
+    "ID",
+    "ASPEED",
+    "ASTFMAGI", /* Amount Staff Charges */
+    "ASTFDEST",
+    "ATPORTOTHER", /* How many Teleport Other charges you got? */
+    "ACUREPOIS",
+    "ADETTRAP",
+    "ADETDOOR",
+    "ADETEVIL",
+    "AMAGICMAP",
+    "ALITE",
+    "ARECHARGE",
+    "APFE", /* Protection from Evil */
+    "AGLYPH", /* Rune Protection */
+    "ACCW", /* CCW potions (just because we use it so often) */
+    "ACSW", /* CSW potions (+ CLW if cut) */
+    "ACLW",
+    "AENCH_TOH", /* enchant weapons and armor (+spells) */
+    "AENCH_TOD",
+    "AENCH_SWEP",
+    "AENCH_ARM",
+    "AENCH_SARM",
+    "ABRAND",
+    "ARESHEAT", /* potions of res heat */
+    "ARESCOLD", /* pot of res cold */
+    "ARESPOIS", /* Potions of Res Poison */
+    "ATELEPORTLVL", /* scroll of teleport level */
+    "AHWORD", /* Holy Word prayer Legal*/
+    "AMASSBAN", /* ?Mass Banishment */
+    "ASHROOM", /* Number of cool mushrooms */
+    "AROD1", /* Attack rods */
+    "AROD2", /* Attack rods */
+    "amt need id", /* a wielded item that needs ID */
+    "ADIGGER", /* amount of diggers in inventory */
+    "GOOD_S_CHG", /* good staff charges */
+    "GOOD_W_CHG", /* good wand charges */
+    "multi bonus", /* Items with multiple useful bonuses */
+    "detect inv", /* See Inv Spell is Legal */
+    "WEIGHT", /* weight of all inventory and equipment */
+    "CARRY", /* carry capacity based on str */
+    "EMPTY", /* number of empty slots */
     NULL
 };
 
@@ -1350,10 +1362,6 @@ static void borg_notice_equipment(void)
      * code above when the player flags are checked
      */
 
-    /* Clear the stat modifiers */
-    for (i = 0; i < STAT_MAX; i++)
-        borg.stat_add[i] = 0;
-
     /* track activations */
     /* note this is done first so that it we can use this */
     /* array in borg_equips_item */
@@ -1386,16 +1394,16 @@ static void borg_notice_equipment(void)
         }
 
         /* Affect stats */
-        borg.stat_add[STAT_STR] += item->modifiers[OBJ_MOD_STR]
-                                   * player->obj_k->modifiers[OBJ_MOD_STR];
-        borg.stat_add[STAT_INT] += item->modifiers[OBJ_MOD_INT]
-                                   * player->obj_k->modifiers[OBJ_MOD_INT];
-        borg.stat_add[STAT_WIS] += item->modifiers[OBJ_MOD_WIS]
-                                   * player->obj_k->modifiers[OBJ_MOD_WIS];
-        borg.stat_add[STAT_DEX] += item->modifiers[OBJ_MOD_DEX]
-                                   * player->obj_k->modifiers[OBJ_MOD_DEX];
-        borg.stat_add[STAT_CON] += item->modifiers[OBJ_MOD_CON]
-                                   * player->obj_k->modifiers[OBJ_MOD_CON];
+        borg.trait[BI_ASTR] += item->modifiers[OBJ_MOD_STR]
+                               * player->obj_k->modifiers[OBJ_MOD_STR];
+        borg.trait[BI_AINT] += item->modifiers[OBJ_MOD_INT]
+                               * player->obj_k->modifiers[OBJ_MOD_INT];
+        borg.trait[BI_AWIS] += item->modifiers[OBJ_MOD_WIS]
+                               * player->obj_k->modifiers[OBJ_MOD_WIS];
+        borg.trait[BI_ADEX] += item->modifiers[OBJ_MOD_DEX]
+                               * player->obj_k->modifiers[OBJ_MOD_DEX];
+        borg.trait[BI_ACON] += item->modifiers[OBJ_MOD_CON]
+                               * player->obj_k->modifiers[OBJ_MOD_CON];
 
         /* various slays */
         borg.trait[BI_WS_ANIMAL] = item->slays[RF_ANIMAL];
@@ -1730,7 +1738,7 @@ static void borg_notice_equipment(void)
     for (i = 0; i < STAT_MAX; i++) {
         int add, use, ind;
 
-        add = borg.stat_add[i];
+        add = borg.trait[BI_ASTR + i];
 
         /* Modify the stats for race/class */
         add += (player->race->r_adj[i] + player->class->c_adj[i]);
@@ -1801,11 +1809,16 @@ static void borg_notice_equipment(void)
         item->to_d   = 0;
         item->to_h   = 0;
         item->weight = 0;
+        item->ident  = true;
+        item->sval = 0;
     }
 
     /* Real bonuses */
     borg.trait[BI_BTOHIT] = item->to_h;
     borg.trait[BI_BTODAM] = item->to_d;
+    borg.trait[BI_BID] = item->ident;
+    borg.trait[BI_SLING] = item->sval == sv_sling;
+    borg.trait[BI_BART] = item->art_idx;
 
     /* It is hard to carholdry a heavy bow */
     if (hold < item->weight / 10) {
@@ -1843,15 +1856,17 @@ static void borg_notice_equipment(void)
         borg.trait[BI_AMMO_POWER] += extra_might;
 
         /* Hack -- Reward High Level Rangers using Bows */
-        if (player_has(player, PF_FAST_SHOT)
-            && (borg.trait[BI_AMMO_TVAL] == TV_ARROW)) {
-            /* Extra shot at level 20 */
-            if (borg.trait[BI_CLEVEL] >= 20)
-                my_num_fire++;
+        if (player_has(player, PF_FAST_SHOT)) {
+            if ((borg.trait[BI_AMMO_TVAL] == TV_ARROW))
+                /* Extra shot at level 20 */
+                if (borg.trait[BI_CLEVEL] >= 20)
+                    my_num_fire++;
 
             /* Extra shot at level 40 */
             if (borg.trait[BI_CLEVEL] >= 40)
                 my_num_fire++;
+
+            borg.trait[BI_FAST_SHOTS] = true;
         }
 
         /* Add in the "bonus shots" */
@@ -1878,11 +1893,15 @@ static void borg_notice_equipment(void)
         item->to_d   = 0;
         item->to_h   = 0;
         item->weight = 0;
+        item->ident  = true;
     }
 
     /* Real values */
     borg.trait[BI_WTOHIT] = item->to_h;
     borg.trait[BI_WTODAM] = item->to_d;
+    borg.trait[BI_WID] = item->ident;
+    borg.trait[BI_WDD] = item->dd;
+    borg.trait[BI_WDS] = item->ds;
 
     /* It is hard to hold a heavy weapon */
     if (hold < item->weight / 10) {
@@ -1989,6 +2008,8 @@ static void borg_notice_equipment(void)
         borg.trait[BI_TOHIT] -= 2;
         borg.trait[BI_TODAM] -= 2;
     }
+    else 
+        borg.trait[BI_WBLESSED] = true;
 
     /*** Count needed enchantment ***/
 

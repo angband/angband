@@ -317,6 +317,8 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/borg/borg-flow-stairs.c
         src/borg/borg-flow-take.c
         src/borg/borg-flow.c
+        src/borg/borg-formulas.c
+        src/borg/borg-formulas-calc.c
         src/borg/borg-home-notice.c
         src/borg/borg-home-power.c
         src/borg/borg-init.c

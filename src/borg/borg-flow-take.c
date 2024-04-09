@@ -408,7 +408,7 @@ bool borg_flow_take(bool viewable, int nearness)
 
     /* Missile carry limit */
     /* allow shooters to two quiver slots full */
-    if (player_has(player, PF_FAST_SHOT))
+    if (borg.trait[BI_FAST_SHOTS])
         full_quiver = (z_info->quiver_slot_size - 1) * 2;
     else
         full_quiver = z_info->quiver_slot_size - 1;
