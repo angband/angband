@@ -389,7 +389,7 @@ static int borg_best_mult(borg_item *obj, struct monster_race *r_ptr)
         struct slay *slay = &slays[i];
         if (obj) {
             /* Slay is on an object */
-            if (!obj->slays || !obj->slays[i])
+            if (!obj->slays[i])
                 continue;
         } else {
             /* Temporary slay */
