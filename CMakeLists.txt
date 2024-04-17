@@ -795,17 +795,97 @@ IF(SC_INSTALL)
     ENDIF()
 ENDIF()
 
-# Set up tests.  For now, don't bother on Windows since haven't worked out
-# replacements for the scripts used (src/tests/run-tests and
-# src/tests/list-tests).
-IF(SUPPORT_WINDOWS_FRONTEND)
-    RETURN()
-ENDIF()
+# This is the list of the unit test case source files relative to src/tests in
+# the source tree, one per test case executable.  List them alphabetically to
+# make maintenance easier though, when running them, it would be preferable to
+# run the lower level ones first.
+SET(ANGBAND_TEST_CASE_SOURCES
+    artifact/name.c
+    cave/find.c
+    cave/scatter.c
+    command/lookup.c
+    effects/chain.c
+    effects/destruction.c
+    effects/earthquake.c
+    effects/info.c
+    game/basic.c
+    game/mage.c
+    message/message.c
+    monster/attack.c
+    monster/desc.c
+    monster/monster.c
+    object/alloc.c
+    object/attack.c
+    object/info.c
+    object/pile.c
+    object/slays.c
+    object/util.c
+    parse/a-info.c
+    parse/blowe.c
+    parse/blowm.c
+    parse/body.c
+    parse/brand.c
+    parse/c-info.c
+    parse/curse.c
+    parse/e-info.c
+    parse/f-info.c
+    parse/flavor.c
+    parse/graphics.c
+    parse/h-info.c
+    parse/hints.c
+    parse/k-info.c
+    parse/lore.c
+    parse/mbase.c
+    parse/mspell.c
+    parse/names.c
+    parse/objact.c
+    parse/objbase.c
+    parse/objprop.c
+    parse/p-info.c
+    parse/pain.c
+    parse/parse.c
+    parse/partrap.c
+    parse/pit.c
+    parse/pprop.c
+    parse/proj.c
+    parse/ptimed.c
+    parse/r-info.c
+    parse/readstore.c
+    parse/realm.c
+    parse/shape.c
+    parse/slay.c
+    parse/ui_knowledge.c
+    parse/v-info.c
+    parse/world.c
+    parse/z-info.c
+    player/birth.c
+    player/calc-inventory.c
+    player/combine-pack.c
+    player/history.c
+    player/inven-carry-num.c
+    player/inven-wield.c
+    player/pathfind.c
+    player/playerstat.c
+    player/timed.c
+    player/util.c
+    trivial/trivial.c
+    z-dice/dice.c
+    z-expression/expression.c
+    z-file/filename-index.c
+    z-file/path-normalize.c
+    z-quark/quark.c
+    z-queue/qp.c
+    z-textblock/textblock.c
+    z-util/guard.c
+    z-util/meanvar.c
+    z-util/rational.c
+    z-util/util.c
+    z-virt/mem.c
+    z-virt/string.c
+)
 
 # First copy some scripts and, as necessary, test case data from the source
 # tree.
-FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/run-tests
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/unittests/)
 IF(SUPPORT_TEST_FRONTEND)
     FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 ENDIF()
@@ -818,9 +898,18 @@ FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-test
 # using the test front end will be run directly.  The unit tests will be
 # handled through a dependency.  In the SHARED_INSTALL case, some unit tests
 # will always fail because the test case executables are not setgid.
-ADD_CUSTOM_TARGET(alltests
-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/run-tests ${TEST_EXECUTABLE}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+IF((NOT CMAKE_CROSSCOMPILING) AND SUPPORT_TEST_FRONTEND)
+    ADD_CUSTOM_TARGET(alltests
+        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/run-tests ${TEST_EXECUTABLE}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    ADD_DEPENDENCIES(alltests OurExecutable)
+    IF(SC_INSTALL)
+        ADD_DEPENDENCIES(alltests TransferLib)
+    ENDIF()
+ELSE()
+    ADD_CUSTOM_TARGET(alltests)
+ENDIF()
+
 # For unit tests, use a working directory so the data files can be found.
 # This complements how DEFAULT_CONFIG_PATH, DEFAULT_LIB_PATH, DEFAULT_DATA_PATH,
 # and TEST_OVERRIDE_PATHS are set below.
@@ -828,19 +917,6 @@ IF((READONLY_INSTALL) OR (SHARED_INSTALL))
     SET(TEST_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 ELSE()
     SET(TEST_WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-ENDIF()
-ADD_CUSTOM_TARGET(allunittests
-    COMMAND "${CMAKE_CURRENT_BINARY_DIR}/unittests/run-tests"
-    WORKING_DIRECTORY "${TEST_WORKING_DIRECTORY}")
-IF(SUPPORT_TEST_FRONTEND)
-    ADD_DEPENDENCIES(alltests OurExecutable)
-    IF(SC_INSTALL)
-        ADD_DEPENDENCIES(alltests TransferLib)
-    ENDIF()
-ENDIF()
-ADD_DEPENDENCIES(alltests allunittests)
-IF(SC_INSTALL)
-    ADD_DEPENDENCIES(allunittests TransferLib)
 ENDIF()
 
 # Set up an object library with the shared code for unit tests.
@@ -866,34 +942,35 @@ TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D DEFAULT_DATA_PATH="${ANGBAN
 IF((READONLY_INSTALL) OR (SHARED_INSTALL))
     TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D TEST_OVERRIDE_PATHS)
 ENDIF()
+IF(SUPPORT_WINDOWS_FRONTEND)
+   CONFIGURE_WINDOWS_FRONTEND(OurUnitTestLib YES)
+ENDIF()
 
 # Set up targets for exercising the unit tests (from src/tests in the source
-# tree).
-EXECUTE_PROCESS(COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/src/tests/list-tests" -d
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/tests"
-    OUTPUT_VARIABLE ANGBAND_TEST_DIRS
-)
-STRING(REGEX REPLACE "[ \t\n\r]" ";" ANGBAND_TEST_DIR_LIST ${ANGBAND_TEST_DIRS})
-FOREACH(ANGBAND_TEST_DIR ${ANGBAND_TEST_DIR_LIST})
-    FILE(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/unittests/${ANGBAND_TEST_DIR}")
-ENDFOREACH()
-EXECUTE_PROCESS(COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/src/tests/list-tests"
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/tests"
-    OUTPUT_VARIABLE ANGBAND_TEST_CASES
-)
-STRING(REGEX REPLACE "[ \t\n\r]" ";" ANGBAND_TEST_CASE_LIST ${ANGBAND_TEST_CASES})
-SET(ANGBAND_TEST_CASE_INDEX 1)
-FOREACH(ANGBAND_TEST_CASE ${ANGBAND_TEST_CASE_LIST})
-    SET(ANGBAND_TEST_CASE_NAME "unittest${ANGBAND_TEST_CASE_INDEX}")
-    SET(ANGBAND_TEST_CASE_PATH "unittests/${ANGBAND_TEST_CASE}")
+# tree).  Create the directories needed to hold the test case executables.
+SET(ANGBAND_TEST_CASE_PATHS "")
+SET(ANGBAND_TEST_CASE_TARGETS "")
+FOREACH(ANGBAND_TEST_CASE_SOURCE ${ANGBAND_TEST_CASE_SOURCES})
+    STRING(REGEX REPLACE "/[^/]*$" "" ANGBAND_TEST_CASE_DIR ${ANGBAND_TEST_CASE_SOURCE})
+    STRING(REGEX REPLACE "\.[^\./]*$" "" ANGBAND_TEST_CASE_PATH ${ANGBAND_TEST_CASE_SOURCE})
+    STRING(REGEX REPLACE "^${ANGBAND_TEST_CASE_DIR}/" "" ANGBAND_TEST_CASE_FILE ${ANGBAND_TEST_CASE_PATH})
+    IF(ANGBAND_TEST_CASE_FILE STREQUAL "")
+        MESSAGE(FATAL_ERROR "Misconfigured test case source file, ${ANGBAND_TEST_CASE_SOURCE}: no file name")
+    ENDIF()
+    STRING(REGEX REPLACE "/" "-" ANGBAND_TEST_CASE_NAME
+        unittest- ${ANGBAND_TEST_CASE_PATH})
+    SET(ANGBAND_TEST_CASE_PATH "unittests/${ANGBAND_TEST_CASE_PATH}")
+    FILE(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/unittests/${ANGBAND_TEST_CASE_DIR}")
     ADD_EXECUTABLE(${ANGBAND_TEST_CASE_NAME} EXCLUDE_FROM_ALL
-            "src/tests/${ANGBAND_TEST_CASE}.c"
+            "src/tests/${ANGBAND_TEST_CASE_SOURCE}"
             $<TARGET_OBJECTS:OurUnitTestLib>
             $<TARGET_OBJECTS:OurCoreLib>
             $<$<BOOL:${SOUND_SUPPORT_LIB}>:$<TARGET_OBJECTS:${SOUND_SUPPORT_LIB}>>
     )
     SET_TARGET_PROPERTIES(${ANGBAND_TEST_CASE_NAME} PROPERTIES
-        C_STANDARD 99 OUTPUT_NAME "${ANGBAND_TEST_CASE_PATH}")
+        C_STANDARD 99
+        OUTPUT_NAME "${ANGBAND_TEST_CASE_FILE}"
+        RUNTIME_OUTPUT_DIRECTORY "${ANGBAND_TEST_CASE_PATH}")
     TARGET_INCLUDE_DIRECTORIES(${ANGBAND_TEST_CASE_NAME} PRIVATE
         ${ANGBAND_CORE_INCLUDE_DIRS}
         ${ANGBAND_UNIT_TEST_INCLUDE_DIRS}
@@ -911,20 +988,57 @@ FOREACH(ANGBAND_TEST_CASE ${ANGBAND_TEST_CASE_LIST})
     IF(SUPPORT_SDL2_SOUND)
         CONFIGURE_SDL2_SOUND(${ANGBAND_TEST_CASE_NAME} NO)
     ENDIF()
+    IF(SUPPORT_WINDOWS_FRONTEND)
+       CONFIGURE_WINDOWS_FRONTEND(${ANGBAND_TEST_CASE_NAME} YES)
+       # Guarantee that it is not marked as having a WinMain entry point
+       # regardless of the setting of CMAKE_WIN32_EXECUTABLE.
+       SET_TARGET_PROPERTIES(${ANGBAND_TEST_CASE_NAME} PROPERTIES
+           WIN32_EXECUTABLE OFF)
+       IF(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+           # Despite the guarantee above, the Visual Studio generator still
+           # needs this to avoid a linker about missing WinMain.
+           TARGET_LINK_OPTIONS(${ANGBAND_TEST_CASE_NAME} PRIVATE "/SUBSYSTEM:CONSOLE")
+       ENDIF()
+    ENDIF()
     # Very few of the test cases use the math library, but it is easier to
     # have all use it.
     FIND_LIBRARY(MATH_LIBRARY m)
     IF(MATH_LIBRARY)
         TARGET_LINK_LIBRARIES(${ANGBAND_TEST_CASE_NAME} PRIVATE ${MATH_LIBRARY})
     ENDIF()
-    ADD_DEPENDENCIES(allunittests ${ANGBAND_TEST_CASE_NAME})
     # Add a shortcut for running (and compiling if necessary) this test case.
     ADD_CUSTOM_TARGET(run-${ANGBAND_TEST_CASE_NAME}
-        COMMAND "${CMAKE_CURRENT_BINARY_DIR}/${ANGBAND_TEST_CASE_PATH}"
+        COMMAND ${ANGBAND_TEST_CASE_NAME}
         WORKING_DIRECTORY "${TEST_WORKING_DIRECTORY}")
     ADD_DEPENDENCIES(run-${ANGBAND_TEST_CASE_NAME} ${ANGBAND_TEST_CASE_NAME})
     IF(SC_INSTALL)
         ADD_DEPENDENCIES(run-${ANGBAND_TEST_CASE_NAME} TransferLib)
     ENDIF()
-    MATH(EXPR ANGBAND_TEST_CASE_INDEX "${ANGBAND_TEST_CASE_INDEX} + 1")
+    # Add it to the list that will be run by the target for all unit tests.
+    LIST(APPEND ANGBAND_TEST_CASE_PATHS "$<TARGET_FILE:${ANGBAND_TEST_CASE_NAME}>")
+    LIST(APPEND ANGBAND_TEST_CASE_TARGETS "${ANGBAND_TEST_CASE_NAME}")
 ENDFOREACH()
+
+# Set up a target to run all the test cases.
+IF((NOT CMAKE_CROSSCOMPILING) OR (DEFINED CMAKE_CROSSCOMPILING_EMULATOR))
+    IF(DEFINED CMAKE_CROSSCOMPILING_EMULATOR)
+        ADD_CUSTOM_TARGET(allunittests
+            COMMAND "${CMAKE_COMMAND}"
+                -DTOOL="${CMAKE_CROSSCOMPILING_EMULATOR}" -P
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/scripts/run_tests.cmake"
+                -- ${ANGBAND_TEST_CASE_PATHS}
+            WORKING_DIRECTORY "${TEST_WORKING_DIRECTORY}")
+    ELSE()
+        ADD_CUSTOM_TARGET(allunittests
+            COMMAND "${CMAKE_COMMAND}" -P
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/scripts/run_tests.cmake"
+                -- ${ANGBAND_TEST_CASE_PATHS}
+            WORKING_DIRECTORY "${TEST_WORKING_DIRECTORY}")
+    ENDIF()
+    IF(SC_INSTALL)
+        ADD_DEPENDENCIES(allunittests TransferLib ${ANGBAND_TEST_CASE_TARGETS})
+    ENDIF()
+ELSE()
+    ADD_CUSTOM_TARGET(allunittests)
+ENDIF()
+ADD_DEPENDENCIES(alltests allunittests)

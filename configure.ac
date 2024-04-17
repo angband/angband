@@ -226,7 +226,7 @@ AC_ARG_WITH(gamedata_in_lib,
 	[AS_HELP_STRING([--with-gamedata-in-lib], [store the game data in the lib path.])])
 
 GAMEDATA_IN_LIB="false"
-if test "x$with_gamedata_in_lib" == "xyes"; then
+if test "x$with_gamedata_in_lib" = "xyes"; then
 	GAMEDATA_IN_LIB="true"
 	AC_DEFINE(GAMEDATA_IN_LIB, 1, [Define to store the game data in the lib path.])
 fi
@@ -244,7 +244,7 @@ AC_DEFINE_UNQUOTED([DEFAULT_DATA_PATH], "${vardatadir}", [Path to the game's var
 
 NOINSTALL="$with_no_install"; AC_SUBST(NOINSTALL)
 SETEGID="$with_setgid";      AC_SUBST(SETEGID)
-if test "x$wsetgid" == "xyes"; then
+if test "x$wsetgid" = "xyes"; then
 	AC_DEFINE(SETGID, 1, [Define if running as a central install on a multiuser system that has setresgid or setegid support.])
 fi
 
@@ -456,25 +456,6 @@ if test "$enable_sdl" = "yes" || test "$enable_sdl_mixer" = "yes"; then
 fi
 ENABLESDL="$with_sdl"; AC_SUBST(ENABLESDL)
 
-dnl Windows checking
-if test "$enable_win" = "yes"; then
-	if test x"$with_no_install" != x || test x"$with_setgid" != x ; then
-		AC_MSG_ERROR([--enable-win is not compatible with --with-no-install or --with-setgid])
-	fi
-	AC_DEFINE(USE_WIN, 1, [Define to 1 if using the Windows interface.])
-	AC_DEFINE(SOUND, 1, [Define to 1 if including sound support.])
-	CPPFLAGS="${CPPFLAGS} -DWINDOWS -Iwin/include"
-	CFLAGS="${CFLAGS} -static"
-	LDFLAGS="${LDFLAGS} -Lwin/lib"
-	LIBS="${LIBS} -mwindows -lwinmm -lzlib -llibpng -lmsimg32"
-	TEST_LIBS="${TEST_LIBS} -mwindows"
-dnl Note complete replacement of all main files
-	MAINFILES="\$(WINMAINFILES)"
-fi
-# Set up for Windows-specific behavior in the Makefiles.
-ENABLEWIN="$enable_win"; AC_SUBST(ENABLEWIN)
-
-
 dnl Test checking
 if test "$enable_test" = "yes"; then
 	AC_DEFINE(USE_TEST, 1, [Define to 1 to build the test frontend])
@@ -482,7 +463,6 @@ if test "$enable_test" = "yes"; then
 fi
 
 dnl Stats checking
-
 LDFLAGS_SAVE="$LDFLAGS"
 if test "$enable_stats" = "yes"; then
 	# SQLite3 detection
@@ -540,6 +520,24 @@ if test "$enable_spoil" = "yes"; then
 	AC_DEFINE(USE_SPOIL, 1, [Define to 1 to build the command-line spoiler generation])
 	MAINFILES="${MAINFILES} \$(SPOILMAINFILES)"
 fi
+
+dnl Windows checking
+if test "$enable_win" = "yes"; then
+	if test x"$with_no_install" != x || test x"$with_setgid" != x ; then
+		AC_MSG_ERROR([--enable-win is not compatible with --with-no-install or --with-setgid])
+	fi
+	AC_DEFINE(USE_WIN, 1, [Define to 1 if using the Windows interface.])
+	AC_DEFINE(SOUND, 1, [Define to 1 if including sound support.])
+	CPPFLAGS="${CPPFLAGS} -DWINDOWS -Iwin/include"
+	CFLAGS="${CFLAGS} -static"
+	LDFLAGS="${LDFLAGS} -Lwin/lib"
+	LIBS="${LIBS} -mwindows -lwinmm -lzlib -llibpng -lmsimg32"
+	TEST_LIBS="${TEST_LIBS} -mwindows"
+dnl Note complete replacement of all main files
+	MAINFILES="\$(WINMAINFILES)"
+fi
+# Set up for Windows-specific behavior in the Makefiles.
+ENABLEWIN="$enable_win"; AC_SUBST(ENABLEWIN)
 
 dnl Remember if we are cross compiling.  Currently used so "make tests" only
 dnl compiles but does not run test cases when cross compiling.
@@ -607,7 +605,7 @@ echo "  config path:                            ${displayedconfigdir}"
 echo "  lib path:                               ${displayedlibdatadir}"
 echo "  doc path:                               ${displayeddocdir}"
 echo "  var path:                               ${displayedvardatadir}"
-if test "x$with_gamedata_in_lib" == "xyes"; then
+if test "x$with_gamedata_in_lib" = "xyes"; then
 	echo "  gamedata path:                          ${displayedlibdatadir}"
 else
 	echo "  gamedata path:                          ${displayedconfigdir}"
@@ -617,7 +615,7 @@ if test "x$wsetgid" = "xyes"; then
 elif test "x$with_private_dirs" = "xyes" && test ! "x$enable_win" = "xyes"; then
 	echo "  (with private save and score files in ~/.angband/Angband/)"
 fi
-if test "x$with_sphinx" == "xyes"; then
+if test "x$with_sphinx" = "xyes"; then
 	echo "  documentation:                          Yes"
 else
 	echo "  documentation:                          No"

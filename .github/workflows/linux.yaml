@@ -13,18 +13,18 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install gcc automake autoconf make libx11-dev
+          sudo apt-get install gcc make cmake libx11-dev
 
       - name: Clone Project
         uses: actions/checkout@v4
 
       - name: Build
         run: |
-          ./autogen.sh
-          ./configure --with-no-install --enable-test
-          make
-          make tests
-          ./run-tests
+          mkdir build
+          cd build
+          env CFLAGS=-Wall cmake -DSUPPORT_TEST_FRONTEND=ON ..
+          cmake --build .
+          cmake --build . --target alltests
 
   x11:
     name: X11
