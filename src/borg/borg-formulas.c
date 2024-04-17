@@ -28,6 +28,7 @@
 #include "borg-init.h"
 #include "borg-io.h"
 #include "borg-item-activation.h"
+#include "borg-item-analyze.h"
 #include "borg-item-val.h"
 #include "borg-magic.h"
 #include "borg-trait.h"
@@ -38,7 +39,7 @@ struct math_section {
     int32_t calculation_index;
 };
 
-struct range {
+struct range_sec {
     int32_t from;
     int32_t to;
 };
@@ -49,6 +50,7 @@ enum value_type {
     VT_TRAIT,
     VT_CONFIG,
     VT_ACTIVATION,
+    VT_CLASS,
 /* include the TV types */
 #define TV(a, b) VT_##a,
 #include "list-tvals.h"
@@ -65,30 +67,31 @@ static const grouper value_type_names[] = {
     { VT_TRAIT, "trait" },
     { VT_CONFIG, "config" },
     { VT_ACTIVATION, "activation" },
+    { VT_CLASS, "class" },
 #define TV(a, b) { VT_##a, b },
 #include "list-tvals.h"
 #undef TV
 };
 
-struct value {
+struct value_sec {
     enum value_type type;
     int32_t         index;
 };
 
-struct borg_power {
-    struct range        *range;
+struct borg_power_line {
+    struct range_sec    *range;
     struct math_section *reward;
-    struct value        *value;
+    struct value_sec    *value;
     struct math_section *condition;
 };
 
-struct borg_depth {
+struct borg_depth_line {
     int32_t              dlevel;
     char                *reason;
     struct math_section *condition;
 };
 
-struct borg_class_formula {
+struct borg_formulas {
     /* array of power formulas */
     struct borg_array power;
 
@@ -97,7 +100,7 @@ struct borg_class_formula {
 };
 
 /* array of depth and power per class plus one for "any" */
-struct borg_class_formula borg_class_formula[MAX_CLASSES + 1];
+struct borg_formulas borg_formulas;
 
 int borg_array_add(struct borg_array *a, void *item)
 {
@@ -122,7 +125,7 @@ static int borg_get_class(char *class_name)
 {
     struct player_class *c;
     for (c = classes; c; c = c->next) {
-        if (streq(c->name, class_name))
+        if (!my_stricmp(c->name, class_name))
             return c->cidx;
     }
     return -1;
@@ -155,8 +158,8 @@ static char *borg_trim(char *line)
 /*
  * give an error for when a formula fails
  */
-void borg_formula_error(
-    char *section, char *full_line, char *section_label, char *error)
+void borg_formula_error(const char *section, const char *full_line,
+    const char *section_label, const char *error)
 {
     borg_note("** borg formula failure ** ");
     borg_note(format("** error on line '%s'", full_line));
@@ -197,7 +200,7 @@ static int parse_depth(char *line, char *full_line)
     if (end[0] != ')')
         return -1;
 
-    return atoi(line++);
+    return l;
 }
 
 /*
@@ -217,8 +220,7 @@ static bool is_all_number(char *line)
  */
 static struct math_section *parse_formula_section(char *line, char *full_line)
 {
-    int   formula = -1;
-    char *start   = line;
+    int formula = -1;
 
     /* skip leading whitespace */
     while (isspace((unsigned char)*line))
@@ -302,8 +304,9 @@ static struct math_section *parse_reward(char *line, char *full_line)
  * this should allocate and return the range pointer and null if it fails
  * (for now n1 and n2 must be numbers, perhaps can make them formulas later)
  */
-static struct range *parse_range(char *line, char *full_line)
+static struct range_sec *parse_range(char *line, char *full_line)
 {
+    int   from, to;
     char *start = line;
     char *val1str;
     char *val2str;
@@ -336,7 +339,7 @@ static struct range *parse_range(char *line, char *full_line)
     /* remove the end ) */
     if (line[strlen(line) - 1] != ')') {
         borg_formula_error(
-            start, full_line, "range", "** first value is not a number ");
+            start, full_line, "range", "** first value is not a number");
         return NULL;
     }
     line[strlen(line) - 1] = 0;
@@ -346,19 +349,38 @@ static struct range *parse_range(char *line, char *full_line)
     }
     if (!is_all_number(val2str)) {
         borg_formula_error(
-            start, full_line, "range", "** second value is not a number ");
+            start, full_line, "range", "** second value is not a number");
         return NULL;
     }
-    struct range *r = mem_alloc(sizeof(struct range));
-    r->from         = atol(val1str);
-    r->to           = atol(val2str);
+
+    from = atol(val1str);
+    to   = atol(val2str);
+    if (from < 1) {
+        borg_formula_error(
+            start, full_line, "range", "** first value less than one");
+        return NULL;
+    }
+    if (to < 0) {
+        borg_formula_error(
+            start, full_line, "range", "** second value less than one");
+        return NULL;
+    }
+    if (to < from) {
+        borg_formula_error(
+            start, full_line, "range", "** second value less first value");
+        return NULL;
+    }
+
+    struct range_sec *r = mem_alloc(sizeof(struct range_sec));
+    r->from             = from;
+    r->to               = to;
 
     return r;
 }
 
 static enum value_type get_value_type(char *line)
 {
-    for (int i = 0; i < N_ELEMENTS(value_type_names); i++) {
+    for (int i = 0; i < (int)N_ELEMENTS(value_type_names); i++) {
         if (!my_stricmp(line, value_type_names[i].name)) {
             return value_type_names[i].tval;
         }
@@ -403,6 +425,12 @@ static int get_value_index(enum value_type t, char *name, char *full_line)
     case VT_RANGE_INDEX:
         return 1;
 
+    case VT_CLASS:
+        i = borg_get_class(name);
+        if (i == -1)
+            borg_formula_error(name, full_line, "value", "** invalid class");
+        return i;
+
     case VT_NONE:
     case VT_NULL:
     case VT_MAX:
@@ -433,7 +461,7 @@ static int get_value_index(enum value_type t, char *name, char *full_line)
 /*
  * Turn a value pointer into a value that can be used in a formula
  */
-int32_t calculate_from_value(struct value *value, int range_index)
+int32_t calculate_from_value(struct value_sec *value, int range_index)
 {
     switch (value->type) {
 
@@ -445,6 +473,9 @@ int32_t calculate_from_value(struct value *value, int range_index)
 
     case VT_CONFIG:
         return borg_cfg[value->index];
+
+    case VT_CLASS:
+        return borg.trait[BI_CLASS] == value->index;
 
     case VT_RANGE_INDEX:
         return range_index;
@@ -462,7 +493,7 @@ int32_t calculate_from_value(struct value *value, int range_index)
  *   associated array
  * The possible values for v2 depend on v1.
  */
-struct value *parse_value(char *line, char *full_line)
+struct value_sec *parse_value(char *line, char *full_line)
 {
     char *start = line;
     char *val1str;
@@ -500,7 +531,7 @@ struct value *parse_value(char *line, char *full_line)
     }
     line[strlen(line) - 1] = 0;
 
-    enum type t            = get_value_type(val1str);
+    enum value_type t      = get_value_type(val1str);
     if (t == VT_NONE) {
         borg_formula_error(start, full_line, "value",
             format("** value type (first parameter '%s') not found", val1str));
@@ -511,9 +542,9 @@ struct value *parse_value(char *line, char *full_line)
     if (index == -1)
         return NULL;
 
-    struct value *v = mem_alloc(sizeof(struct value));
-    v->type         = t;
-    v->index        = index;
+    struct value_sec *v = mem_alloc(sizeof(struct value_sec));
+    v->type             = t;
+    v->index            = index;
 
     return v;
 }
@@ -554,7 +585,7 @@ static bool get_section(char *line, char *name, char **value, char *full_line)
     return false;
 }
 
-static void depth_free(struct borg_depth *depth)
+static void depth_free(struct borg_depth_line *depth)
 {
     if (depth) {
         if (depth->condition)
@@ -570,7 +601,7 @@ static void depth_free(struct borg_depth *depth)
  * depth lines appear as
  *   depth(nnn):condition(xxx)
  */
-static bool parse_depth_line(char *line, int cclass, char *full_line)
+static bool parse_depth_line(char *line, char *full_line)
 {
     char *start       = line;
     bool  fail        = false;
@@ -597,9 +628,9 @@ static bool parse_depth_line(char *line, int cclass, char *full_line)
         fail = true;
     }
 
-    struct borg_depth *d = 0;
+    struct borg_depth_line *d = 0;
     if (!fail)
-        d = mem_zalloc(sizeof(struct borg_depth));
+        d = mem_zalloc(sizeof(struct borg_depth_line));
 
     if (s_depth) {
         if (!fail) {
@@ -625,7 +656,7 @@ static bool parse_depth_line(char *line, int cclass, char *full_line)
 
     /* add to the depth array */
     if (!fail)
-        borg_array_add(&borg_class_formula[cclass].depth, d);
+        borg_array_add(&borg_formulas.depth, d);
 
     if (fail)
         depth_free(d);
@@ -638,7 +669,7 @@ static bool parse_depth_line(char *line, int cclass, char *full_line)
  *   value(a, b):condition(xxx):range(n1, n2):reward(xxx)
  * value and range are optional
  */
-static bool parse_power_line(char *line, int cclass, char *full_line)
+static bool parse_power_line(char *line, char *full_line)
 {
     char *start       = line;
     bool  fail        = false;
@@ -666,9 +697,9 @@ static bool parse_power_line(char *line, int cclass, char *full_line)
         fail = true;
     }
 
-    struct borg_power *p = NULL;
+    struct borg_power_line *p = NULL;
     if (!fail)
-        p = mem_zalloc(sizeof(struct borg_power));
+        p = mem_zalloc(sizeof(struct borg_power_line));
 
     if (s_range) {
         if (!fail) {
@@ -710,93 +741,12 @@ static bool parse_power_line(char *line, int cclass, char *full_line)
     }
 
     if (!fail)
-        borg_array_add(&borg_class_formula[cclass].power, p);
+        borg_array_add(&borg_formulas.power, p);
 
     if (fail && p)
         mem_free(p);
 
     return fail;
-}
-
-static bool borg_read_formula_class(ang_file *fp, int cclass)
-{
-    enum e_section { SEC_NONE, SEC_POWER, SEC_DEPTH };
-    char           buf[1024];
-    bool           formula_fail = false;
-    enum e_section section      = SEC_NONE;
-    bool           skip_open    = true;
-
-    /* Parse the class section of formula section the file */
-    while (file_getl(fp, buf, sizeof(buf) - 1)) {
-
-        char *line = borg_trim(buf);
-
-        /* Skip comments and blank lines */
-        if (!line[0] || (line[0] == '#'))
-            continue;
-
-        /* sections are bounded in [] */
-        if (line[0] == '[') {
-            if (!skip_open)
-                formula_fail = true;
-
-            skip_open = false;
-            continue;
-        }
-        if (line[0] == ']') {
-            if (section == SEC_NONE)
-                return formula_fail;
-            section = SEC_NONE;
-            continue;
-        }
-
-        /* if we failed anywhere */
-        if (formula_fail)
-            continue;
-
-        if (prefix_i(line, "Power")) {
-            if (section != SEC_NONE)
-                formula_fail = true;
-
-            section   = SEC_POWER;
-            skip_open = true;
-            continue;
-        }
-        if (prefix_i(line, "Depth Requirement")) {
-            if (section != SEC_NONE)
-                formula_fail = true;
-
-            section   = SEC_DEPTH;
-            skip_open = true;
-            continue;
-        }
-
-        /* lines must end in ; */
-        if (line[strlen(line) - 1] != ';') {
-            if (section == SEC_DEPTH)
-                borg_formula_error(
-                    buf, buf, "depth", "** line must end in a ;");
-            else if (section == SEC_POWER)
-                borg_formula_error(
-                    buf, buf, "power", "** line must end in a ;");
-            else
-                borg_formula_error(buf, buf, "base", "** line must end in a ;");
-            formula_fail = true;
-        } else {
-            if (section == SEC_DEPTH)
-                formula_fail = parse_depth_line(line, cclass, buf);
-            if (section == SEC_POWER)
-                formula_fail = parse_power_line(line, cclass, buf);
-            if (section == SEC_NONE) {
-                borg_formula_error(buf, buf, "base",
-                    "** line must be part of a Power or Depth section");
-                formula_fail = true;
-            }
-        }
-        continue;
-    }
-
-    return formula_fail;
 }
 
 static bool check_condition(struct math_section *condition)
@@ -808,7 +758,7 @@ static bool check_condition(struct math_section *condition)
     return borg_calculate_dynamic(condition->calculation_index, 0);
 }
 
-static int32_t calc_power(struct borg_power *p)
+static int32_t calc_power(struct borg_power_line *p)
 {
     int32_t total = 0;
     if (p->condition)
@@ -818,13 +768,12 @@ static int32_t calc_power(struct borg_power *p)
     if (p->range) {
         int i;
 
-        /* loop from the from to the to or count, whichever is lower */
-        int count = calculate_from_value(p->value, 0);
-        int end   = MIN(count, p->range->to);
+        /* loop from the "from" to the count or the "to", whichever is lower */
+        int end = MIN(calculate_from_value(p->value, 0), p->range->to);
         for (i = p->range->from; i <= end; i++) {
             if (p->reward->is_calculation)
-                total
-                    += borg_calculate_dynamic(p->reward->calculation_index, i);
+                total += borg_calculate_dynamic(
+                    p->reward->calculation_index, i - 1);
             else
                 total += p->reward->calculation_index;
         }
@@ -847,66 +796,193 @@ int32_t borg_power_dynamic(void)
     int32_t total = 0;
 
     /* MAX is used for "any" */
-    struct borg_class_formula *bcc = &borg_class_formula[MAX_CLASSES];
-    for (i = 0; i < bcc->power.count; i++) {
-        total += calc_power(bcc->power.items[i]);
-    }
-    bcc = &borg_class_formula[borg.trait[BI_CLASS]];
-    for (i = 0; i < bcc->power.count; i++) {
-        total += calc_power(bcc->power.items[i]);
+    for (i = 0; i < borg_formulas.power.count; i++) {
+        total += calc_power(borg_formulas.power.items[i]);
     }
 
-    /* HUGE HACK need some extra stuff that is hard to make dynamic*/
-    if (borg_spell_stat() > 0)
-        total += (100 - spell_chance(0)) * 100;
+    if (borg_cfg[BORG_TEST_TEST] != 2) {
+        /* HUGE HACK need some extra stuff that is hard to make dynamic*/
+        if (borg_spell_stat() > 0)
+            total += (100 - spell_chance(0)) * 100;
 
-    /* should try to get min fail to 0 */
-    if (player_has(player, PF_ZERO_FAIL)) {
-        /* other fail rates */
-        if (spell_chance(0) < 1)
-            total += 30000L;
-    }
+        /* should try to get min fail to 0 */
+        if (player_has(player, PF_ZERO_FAIL)) {
+            /* other fail rates */
+            if (spell_chance(0) < 1)
+                total += 30000L;
+        }
 
-    /*** Penalize armor weight ***/
-    if (borg.stat_ind[STAT_STR] < 15) {
-        if (borg_items[INVEN_BODY].weight > 200)
-            total -= (borg_items[INVEN_BODY].weight - 200) * 15;
-        if (borg_items[INVEN_HEAD].weight > 30)
-            total -= 250;
-        if (borg_items[INVEN_ARM].weight > 10)
-            total -= 250;
-        if (borg_items[INVEN_FEET].weight > 50)
-            total -= 250;
-    }
+        /* 
+         * Hack-- Reward the borg for carrying a NON-ID items that have random
+         * powers
+         */
+        if (borg_items[INVEN_OUTER].iqty) {
+            borg_item *item = &borg_items[INVEN_OUTER];
+            if (((borg_ego_has_random_power(&e_info[item->ego_idx])
+                    && !item->ident)))
+                total += 999999L;
+        }
 
-    /* Compute the total armor weight */
-    int cur_wgt = borg_items[INVEN_BODY].weight;
-    cur_wgt += borg_items[INVEN_HEAD].weight;
-    cur_wgt += borg_items[INVEN_ARM].weight;
-    cur_wgt += borg_items[INVEN_OUTER].weight;
-    cur_wgt += borg_items[INVEN_HANDS].weight;
-    cur_wgt += borg_items[INVEN_FEET].weight;
+        /*** Penalize armor weight ***/
+        if (borg.stat_ind[STAT_STR] < 15) {
+            if (borg_items[INVEN_BODY].weight > 200)
+                total -= (borg_items[INVEN_BODY].weight - 200) * 15;
+            if (borg_items[INVEN_HEAD].weight > 30)
+                total -= 250;
+            if (borg_items[INVEN_ARM].weight > 10)
+                total -= 250;
+            if (borg_items[INVEN_FEET].weight > 50)
+                total -= 250;
+        }
 
-    /* Determine the weight allowance */
-    int max_wgt = player->class->magic.spell_weight;
+        /* Compute the total armor weight */
+        int cur_wgt = borg_items[INVEN_BODY].weight;
+        cur_wgt += borg_items[INVEN_HEAD].weight;
+        cur_wgt += borg_items[INVEN_ARM].weight;
+        cur_wgt += borg_items[INVEN_OUTER].weight;
+        cur_wgt += borg_items[INVEN_HANDS].weight;
+        cur_wgt += borg_items[INVEN_FEET].weight;
 
-    /* Hack -- heavy armor hurts magic */
-    if (player->class->magic.total_spells && ((cur_wgt - max_wgt) / 10) > 0) {
-        /* max sp must be calculated in case it changed with the armor */
-        int max_sp = borg.trait[BI_SP_ADJ] / 100 + 1;
-        max_sp -= ((cur_wgt - max_wgt) / 10);
-        /* Mega-Hack -- Penalize heavy armor which hurts mana */
-        if (max_sp >= 300 && max_sp <= 350)
-            total -= (((cur_wgt - max_wgt) / 10) * 400L);
-        if (max_sp >= 200 && max_sp <= 299)
-            total -= (((cur_wgt - max_wgt) / 10) * 800L);
-        if (max_sp >= 100 && max_sp <= 199)
-            total -= (((cur_wgt - max_wgt) / 10) * 1600L);
-        if (max_sp >= 1 && max_sp <= 99)
-            total -= (((cur_wgt - max_wgt) / 10) * 3200L);
+        /* Determine the weight allowance */
+        int max_wgt = player->class->magic.spell_weight;
+
+        /* Hack -- heavy armor hurts magic */
+        if (player->class->magic.total_spells
+            && ((cur_wgt - max_wgt) / 10) > 0) {
+            /* max sp must be calculated in case it changed with the armor */
+            int max_sp = borg.trait[BI_SP_ADJ] / 100 + 1;
+            max_sp -= ((cur_wgt - max_wgt) / 10);
+            /* Mega-Hack -- Penalize heavy armor which hurts mana */
+            if (max_sp >= 300 && max_sp <= 350)
+                total -= (((cur_wgt - max_wgt) / 10) * 400L);
+            if (max_sp >= 200 && max_sp <= 299)
+                total -= (((cur_wgt - max_wgt) / 10) * 800L);
+            if (max_sp >= 100 && max_sp <= 199)
+                total -= (((cur_wgt - max_wgt) / 10) * 1600L);
+            if (max_sp >= 1 && max_sp <= 99)
+                total -= (((cur_wgt - max_wgt) / 10) * 3200L);
+        }
     }
     /* END MAJOR HACK */
 
+    /* SECOND MAJOR HACK for inventory */
+    if (borg_cfg[BORG_TEST_TEST] != 1) {
+
+        /* Reward carrying a shovel if low level */
+        if (borg.trait[BI_MAXDEPTH] <= 40 && borg.trait[BI_MAXDEPTH] >= 25
+            && borg.trait[BI_GOLD] < 100000
+            && borg_items[INVEN_WIELD].tval != TV_DIGGING
+            && borg.trait[BI_ADIGGER] == 1)
+            total += 5000L;
+
+        /*** Hack -- books ***/
+        /*   Reward books    */
+        for (int book = 0; book < 9; book++) {
+            /* No copies */
+            if (!borg.amt_book[book])
+                continue;
+
+            /* The "hard" books */
+            if (player->class->magic.books[book].dungeon) {
+                int what;
+
+                /* Scan the spells */
+                for (what = 0; what < 9; what++) {
+                    borg_magic *as = borg_get_spell_entry(book, what);
+                    if (!as)
+                        break;
+
+                    /* Track minimum level */
+                    if (as->level > borg.trait[BI_MAXCLEVEL])
+                        continue;
+
+                    /* Track Mana req. */
+                    if (as->power > borg.trait[BI_MAXSP])
+                        continue;
+
+                    /* Reward the book based on the spells I can cast */
+                    total += 15000L;
+                }
+            }
+
+            /* The "easy" books */
+            else {
+                int what, when = 99;
+
+                /* Scan the spells */
+                for (what = 0; what < 9; what++) {
+                    borg_magic *as = borg_get_spell_entry(book, what);
+                    if (!as)
+                        break;
+
+                    /* Track minimum level */
+                    if (as->level < when)
+                        when = as->level;
+
+                    /* Track Mana req. */
+                    /* if (as->power < mana) mana = as->power; */
+                }
+
+                /* Hack -- Ignore "difficult" normal books */
+                if ((when > 5) && (when >= borg.trait[BI_MAXCLEVEL] + 2))
+                    continue;
+                /* if (mana > borg.trait[BI_MAXSP]) continue; */
+
+                /* Reward the book */
+                int k = 0;
+                for (; k < 1 && k < borg.amt_book[book]; k++)
+                    total += 500000L;
+                if (borg.trait[BI_STR] > 5)
+                    for (; k < 2 && k < borg.amt_book[book]; k++)
+                        total += 10000L;
+            }
+        }
+
+        /*  Hack -- Apply "encumbrance" from weight */
+
+        /* XXX XXX XXX Apply "encumbrance" from weight */
+        if (borg.trait[BI_WEIGHT] > borg.trait[BI_CARRY] / 2) {
+            /* *HACK*  when testing items, the borg puts them in the last empty
+             */
+            /* slot so this is POSSIBLY just a test item */
+            borg_item *item = NULL;
+            for (int i = PACK_SLOTS; i >= 0; i--) {
+                if (borg_items[i].iqty) {
+                    item = &borg_items[i];
+                    break;
+                }
+            }
+
+            /* Some items will be used immediately and should not contribute to
+             * encumbrance */
+            if (item && item->iqty
+                && ((item->tval == TV_SCROLL
+                        && ((item->sval == sv_scroll_enchant_armor
+                                && borg.trait[BI_AENCH_ARM] < 1000
+                                && borg.trait[BI_NEED_ENCHANT_TO_A])
+                            || (item->sval == sv_scroll_enchant_weapon_to_hit
+                                && borg.trait[BI_AENCH_TOH] < 1000
+                                && borg.trait[BI_NEED_ENCHANT_TO_H])
+                            || (item->sval == sv_scroll_enchant_weapon_to_dam
+                                && borg.trait[BI_AENCH_TOD] < 1000
+                                && borg.trait[BI_NEED_ENCHANT_TO_D])
+                            || item->sval == sv_scroll_star_enchant_weapon
+                            || item->sval == sv_scroll_star_enchant_armor))
+                    || (item->tval == TV_POTION
+                        && (item->sval == sv_potion_inc_str
+                            || item->sval == sv_potion_inc_int
+                            || item->sval == sv_potion_inc_wis
+                            || item->sval == sv_potion_inc_dex
+                            || item->sval == sv_potion_inc_con
+                            || item->sval == sv_potion_inc_all)))) {
+                /* No encumbrance penalty for purchasing these items */
+            } else {
+                total -= ((borg.trait[BI_WEIGHT] - (borg.trait[BI_CARRY] / 2))
+                          / (borg.trait[BI_CARRY] / 10) * 1000L);
+            }
+        }
+        /* END SECOND MAJOR HACK */
+    }
     return total;
 }
 
@@ -917,24 +993,14 @@ const char *borg_prepared_dynamic(int depth)
 {
     int i;
 
-    /* MAX is used for "any" */
-    struct borg_class_formula *bcc = &borg_class_formula[MAX_CLASSES];
-    for (i = 0; i < bcc->depth.count; i++) {
-        struct borg_depth *d = bcc->depth.items[i];
+    for (i = 0; i < borg_formulas.depth.count; i++) {
+        struct borg_depth_line *d = borg_formulas.depth.items[i];
         if (d->dlevel > depth)
             break;
         if (!check_condition(d->condition))
             return d->reason;
     }
 
-    bcc = &borg_class_formula[borg.trait[BI_CLASS]];
-    for (i = 0; i < bcc->depth.count; i++) {
-        struct borg_depth *d = bcc->depth.items[i];
-        if (d->dlevel > depth)
-            break;
-        if (!check_condition(d->condition))
-            return d->reason;
-    }
     return NULL;
 }
 
@@ -943,15 +1009,16 @@ const char *borg_prepared_dynamic(int depth)
  */
 bool borg_load_formulas(ang_file *fp)
 {
-    char buf[1024];
-    bool inClass = false;
-    int  cclass;
-    bool formulas_off = false;
+    enum e_section { SEC_NONE, SEC_POWER, SEC_DEPTH };
 
-    for (cclass = 0; cclass <= MAX_CLASSES; cclass++) {
-        borg_class_formula[cclass].depth.count = 0;
-        borg_class_formula[cclass].power.count = 0;
-    }
+    char           buf[1024];
+    bool           inClass      = false;
+    bool           formulas_off = false;
+    enum e_section section      = SEC_NONE;
+    bool           skip_open    = true;
+
+    borg_formulas.depth.count   = 0;
+    borg_formulas.power.count   = 0;
 
     /* read but don't process formulas if we aren't using them */
     if (!borg_cfg[BORG_USES_DYNAMIC_CALCS])
@@ -960,11 +1027,13 @@ bool borg_load_formulas(ang_file *fp)
     /* Parse the formula section of the file */
     while (file_getl(fp, buf, sizeof(buf) - 1)) {
 
+        char *line = borg_trim(buf);
+
         /* Skip comments and blank lines */
-        if (!buf[0] || (buf[0] == '#'))
+        if (!line[0] || (line[0] == '#'))
             continue;
 
-        if (prefix_i(buf, "[END FORMULA SECTION]")) {
+        if (prefix_i(line, "[END FORMULA SECTION]")) {
             if (formulas_off && borg_cfg[BORG_USES_DYNAMIC_CALCS])
                 borg_cfg[BORG_USES_DYNAMIC_CALCS] = false;
 
@@ -975,21 +1044,64 @@ bool borg_load_formulas(ang_file *fp)
         if (formulas_off)
             continue;
 
-        /* formula section is divided into classes */
-        cclass = borg_get_class(buf);
-
-        /* if we can't find that class it might be "any" */
-        /* if it isn't, error */
-        if (cclass == -1) {
-            if (!prefix_i(buf, "Any")) {
+        /* sections are bounded in [] */
+        if (line[0] == '[') {
+            if (!skip_open)
                 formulas_off = true;
-                borg_formula_error(buf, buf, "base", "class not found");
-                continue;
-            }
-            cclass = MAX_CLASSES;
+
+            skip_open = false;
+            continue;
+        }
+        if (line[0] == ']') {
+            if (section == SEC_NONE)
+                return formulas_off;
+            section = SEC_NONE;
+            continue;
         }
 
-        formulas_off = borg_read_formula_class(fp, cclass);
+        /* if we failed anywhere */
+        if (formulas_off)
+            continue;
+
+        if (prefix_i(line, "Power")) {
+            if (section != SEC_NONE)
+                formulas_off = true;
+
+            section   = SEC_POWER;
+            skip_open = true;
+            continue;
+        }
+        if (prefix_i(line, "Depth Requirement")) {
+            if (section != SEC_NONE)
+                formulas_off = true;
+
+            section   = SEC_DEPTH;
+            skip_open = true;
+            continue;
+        }
+
+        /* lines must end in ; */
+        if (line[strlen(line) - 1] != ';') {
+            if (section == SEC_DEPTH)
+                borg_formula_error(
+                    buf, buf, "depth", "** line must end in a ;");
+            else if (section == SEC_POWER)
+                borg_formula_error(
+                    buf, buf, "power", "** line must end in a ;");
+            else
+                borg_formula_error(buf, buf, "base", "** line must end in a ;");
+            formulas_off = true;
+        } else {
+            if (section == SEC_DEPTH)
+                formulas_off = parse_depth_line(line, buf);
+            if (section == SEC_POWER)
+                formulas_off = parse_power_line(line, buf);
+            if (section == SEC_NONE) {
+                borg_formula_error(buf, buf, "base",
+                    "** line must be part of a Power or Depth section");
+                formulas_off = true;
+            }
+        }
     }
     if (formulas_off && borg_cfg[BORG_USES_DYNAMIC_CALCS])
         borg_cfg[BORG_USES_DYNAMIC_CALCS] = false;
@@ -997,7 +1109,7 @@ bool borg_load_formulas(ang_file *fp)
     return formulas_off;
 }
 
-static void power_free(struct borg_power *power)
+static void power_free(struct borg_power_line *power)
 {
     if (power->condition)
         mem_free(power->condition);
@@ -1012,14 +1124,12 @@ static void power_free(struct borg_power *power)
 
 void borg_free_formulas(void)
 {
-    int i, j;
-    for (i = 0; i <= MAX_CLASSES; i++) {
-        for (j = 0; j < borg_class_formula[i].depth.count; j++)
-            depth_free(borg_class_formula[i].depth.items[j]);
+    int i;
+    for (i = 0; i < borg_formulas.depth.count; i++)
+        depth_free(borg_formulas.depth.items[i]);
 
-        for (j = 0; j < borg_class_formula[i].power.count; j++)
-            power_free(borg_class_formula[i].power.items[j]);
-    }
+    for (i = 0; i < borg_formulas.power.count; i++)
+        power_free(borg_formulas.power.items[i]);
 
     calculations_free();
 }

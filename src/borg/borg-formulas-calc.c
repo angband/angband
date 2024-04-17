@@ -193,7 +193,7 @@ static bool tokenize_math(
     while (*line) {
         if (get_value_string(line, &value_token)) {
             line += strlen(value_token);
-            struct value *v = parse_value(value_token, full_line);
+            struct value_sec *v = parse_value(value_token, full_line);
             if (v == NULL)
                 fail = true;
             mem_free(value_token);
@@ -432,18 +432,18 @@ static bool validate_calculation(
         return true;
     }
 
-    int           token;
+    int           ntoken;
     struct token *tok;
-    for (token = 0; token < f->token_array->count; token++) {
-        tok = f->token_array->items[token];
-        if (token % 2) {
+    for (ntoken = 0; ntoken < f->token_array->count; ntoken++) {
+        tok = f->token_array->items[ntoken];
+        if (ntoken % 2) {
             if (!is_operator(tok->type)) {
                 borg_formula_error(line, full_line, "calculation",
                     "** formula must be values separated by operators");
                 return true;
             }
         }
-        if (!(token % 2)) {
+        if (!(ntoken % 2)) {
             if (is_operator(tok->type)) {
                 borg_formula_error(line, full_line, "calculation",
                     "** formula must be values separated by operators");
@@ -538,7 +538,7 @@ static int32_t calculate_value_from_formula_depth(
             left_value = !left_value;
     } else if (left_token->type == TOK_VALUE) {
         left_value = calculate_from_value(
-            (struct value *)left_token->token, range_index);
+            (struct value_sec *)left_token->token, range_index);
         if (left_token->not )
             left_value = !left_value;
     }
@@ -562,7 +562,7 @@ static int32_t calculate_value_from_formula_depth(
             right_value = !right_value;
     } else if (right_token->type == TOK_VALUE) {
         right_value = calculate_from_value(
-            (struct value *)right_token->token, range_index);
+            (struct value_sec *)right_token->token, range_index);
         if (right_token->not )
             right_value = !right_value;
     }

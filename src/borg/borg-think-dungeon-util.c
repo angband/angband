@@ -811,7 +811,7 @@ bool borg_leave_level(bool bored)
     }
 
     /* Return to town to drop off some scumming stuff */
-    if (borg.scumming_pots && !vault_on_level
+    if (!vault_on_level
         && (borg.trait[BI_AEZHEAL] >= 3 || borg.trait[BI_ALIFE] >= 1)) {
         borg_note("# Going to town (Dropping off Potions).");
         borg.goal.rising = true;
@@ -821,7 +821,7 @@ bool borg_leave_level(bool bored)
      * Check to see if depth 99, if Sauron is dead and Im not read to fight
      * the final battle
      */
-    if (borg.trait[BI_CDEPTH] == 99 && borg_race_death[borg_sauron_id] == 1
+    if (borg.trait[BI_CDEPTH] == 99 && borg.trait[BI_SAURON_DEAD]
         && borg.ready_morgoth != 1) {
         borg_note("# Returning to level 98 to scum for items.");
         g = -1;

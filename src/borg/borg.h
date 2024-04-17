@@ -73,6 +73,7 @@ enum {
     BORG_ENCHANT_LIMIT,
     BORG_DUMP_LEVEL,
     BORG_SAVE_DEATH,
+    BORG_TEST_TEST,
     BORG_MAX_SETTINGS
 };
 extern int *borg_cfg;

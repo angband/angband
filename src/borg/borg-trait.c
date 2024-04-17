@@ -29,6 +29,7 @@
 #include "../player-util.h"
 
 #include "borg-flow.h"
+#include "borg-flow-kill.h"
 #include "borg-item-activation.h"
 #include "borg-item-analyze.h"
 #include "borg-item-id.h"
@@ -38,6 +39,7 @@
 #include "borg-magic.h"
 #include "borg-trait-swap.h"
 #include "borg.h"
+#include "borg-home-notice.h"
 
 /* MAJOR HACK copied in because it is static in the main code */
 /* I would just make them not static but trying not to change base code */
@@ -773,23 +775,23 @@ const char *prefix_pref[] = {
     "SFAIL2",
     "clevel",
     "max clevel",
-    "ESP",
+    "esp",
     "cur light",
-    "RECALL",
-    "FOOD",
-    "FOOD_HI",
-    "FOOD_LO",
-    "FOOD_CURE_CONF",
-    "FOOD_CURE_BLIND",
-    "SPEED",
-    "GOLD",
+    "recall",
+    "food",
+    "food high",
+    "food low",
+    "food cure conf",
+    "food cure blind",
+    "speed",
+    "gold",
     "extra moves",
     "damage reduction",
     "slow dig",
     "feather fall",
     "regen",
     "see inv",
-    "infravison",
+    "infravision",
     "fast shots",
     "disarm ph",
     "disarm mag",
@@ -805,7 +807,7 @@ const char *prefix_pref[] = {
     "immune acid",
     "immune cold",
     "immune elec",
-    "immune pois",
+    "immune poison",
     "resist fire",
     "resist cold",
     "resist elec",
@@ -867,6 +869,7 @@ const char *prefix_pref[] = {
     "is study",
     "is fixlev",
     "is fixexp",
+    "has fixexp",
     "is fixstr",
     "is fixint",
     "is fixwis",
@@ -875,7 +878,7 @@ const char *prefix_pref[] = {
     "is fixall",
 
     /* some combat stuff */
-    "ARMOR",
+    "armor",
     "to hit", /* base to hit, does not include weapon */
     "to damage", /* base to damage, does not include weapon */
     "wep to hit", /* weapon to hit */
@@ -891,7 +894,7 @@ const char *prefix_pref[] = {
     "bow artifact",
     "blows",
     "EXTRA_BLOWS",
-    "SHOTS",
+    "shots",
     "WMAXDAM", /* max damage per round with weapon (normal blow) */
     /* Assumes you can enchant to +8 if you are level 25+ */
     "WBASEDAM", /* max damage per round with weapon (normal blow) */
@@ -904,12 +907,12 @@ const char *prefix_pref[] = {
     "ammo tval",
     "ammo sides",
     "ammo power",
-    "AMISSILES", /* only ones for your current bow count */
-    "AMISSILES_SPECIAL", /* and are ego */
-    "AMISSILES_CURSED", /* and are cursed */
-    "QUIVER_SLOTS", /* number of inven slots the quivered items take */
-    "FIRST_CURSED", /* first cursed item */
-    "WHERE_CURSED", /* where curses are 1 inv, 2 equ, 4 quiv */
+    "amt missiles", /* only ones for your current bow count */
+    "amt ego missiles", /* and are ego */
+    "amt cursed missiles", /* and are cursed */
+    "quiver slots", /* number of inven slots the quivered items take */
+    "first cursed", /* first cursed item */
+    "where cursed", /* where curses are 1 inv, 2 equ, 4 quiv */
 
     /* curses */
     "enveloping",
@@ -917,7 +920,7 @@ const char *prefix_pref[] = {
     "teleport",
     "curse poison",
     "siren",
-    "halucinate",
+    "hallucinate",
     "paralysis",
     "summon demon",
     "summon dragon",
@@ -955,57 +958,64 @@ const char *prefix_pref[] = {
     "wep brand elec",
     "wep brand fire",
     "wep brand cold",
-    "wep brand pois",
+    "wep brand poison",
 
     /* amounts */
-    "APHASE",
-    "ATELEPORT", /* all sources of teleport */
-    "AESCAPE", /* Staff, artifact (can be used when blind/conf) */
-    "FUEL",
-    "HEAL",
-    "EZHEAL",
-    "LIFE",
-    "ID",
-    "ASPEED",
-    "ASTFMAGI", /* Amount Staff Charges */
-    "ASTFDEST",
-    "ATPORTOTHER", /* How many Teleport Other charges you got? */
-    "ACUREPOIS",
-    "ADETTRAP",
-    "ADETDOOR",
-    "ADETEVIL",
-    "AMAGICMAP",
-    "ALITE",
-    "ARECHARGE",
-    "APFE", /* Protection from Evil */
-    "AGLYPH", /* Rune Protection */
-    "ACCW", /* CCW potions (just because we use it so often) */
-    "ACSW", /* CSW potions (+ CLW if cut) */
-    "ACLW",
-    "AENCH_TOH", /* enchant weapons and armor (+spells) */
-    "AENCH_TOD",
-    "AENCH_SWEP",
-    "AENCH_ARM",
-    "AENCH_SARM",
-    "ABRAND",
-    "ARESHEAT", /* potions of res heat */
-    "ARESCOLD", /* pot of res cold */
-    "ARESPOIS", /* Potions of Res Poison */
-    "ATELEPORTLVL", /* scroll of teleport level */
-    "AHWORD", /* Holy Word prayer Legal*/
-    "AMASSBAN", /* ?Mass Banishment */
-    "ASHROOM", /* Number of cool mushrooms */
-    "AROD1", /* Attack rods */
-    "AROD2", /* Attack rods */
-    "amt need id", /* a wielded item that needs ID */
-    "ADIGGER", /* amount of diggers in inventory */
-    "GOOD_S_CHG", /* good staff charges */
-    "GOOD_W_CHG", /* good wand charges */
+    "amt phase",
+    "amt teleport", /* all sources of teleport */
+    "amt escape", /* Staff, artifact (can be used when blind/conf) */
+    "fuel",
+    "amt heal",
+    "amt ezheal",
+    "amt life",
+    "amt id",
+    "amt speed",
+    "amt staff magi", /* Amount Staff Charges */
+    "amt staff destruction",
+    "amt teleport other", /* How many Teleport Other charges you got? */
+    "amt cure poison",
+    "amt detect traps",
+    "amt detect door",
+    "amt detect evil",
+    "amt magic map",
+    "amt recharge",
+    "amt lite",
+    "amt prot evil", /* Protection from Evil */
+    "amt glyph", /* Rune Protection */
+    "amt potion ccw", /* CCW potions (just because we use it so often) */
+    "amt potion csw", /* CSW potions (+ CLW if cut) */
+    "amt potion clw",
+    "amt ench to hit", /* enchant weapons and armor (+spells) */
+    "amt ench to dam",
+    "amt *ench to wep*",
+    "amt ench to armor",
+    "amt *ench to armor*",
+    "amt brand",
+    "need ench to armor",
+    "need ench to hit",
+    "need ench to dam",
+    "need brand",
+    "amt resist heat", /* potions of res heat */
+    "amt resist cold", /* pot of res cold */
+    "amt resist poison", /* Potions of Res Poison */
+    "amt teleport level", /* scroll of teleport level */
+    "holy word", /* Holy Word prayer Legal*/
+    "mass banishment", /* ?Mass Banishment */
+    "amt cool shroom", /* Number of cool mushrooms */
+    "amt attack rods1", /* Attack rods */
+    "amt attack rods2", /* Attack rods */
+    "worn need id", /* a wielded item that needs ID */
+    "amt need id", /* number of ids needed (worn or not) */
+    "amt diggers", /* amount of diggers in inventory */
+    "amt good staff chg", /* good staff charges */
+    "amt good wand chg", /* good wand charges */
     "multi bonus", /* Items with multiple useful bonuses */
     "detect inv", /* See Inv Spell is Legal */
-    "WEIGHT", /* weight of all inventory and equipment */
-    "CARRY", /* carry capacity based on str */
-    "EMPTY", /* number of empty slots */
+    "weight", /* weight of all inventory and equipment */
+    "carry", /* carry capacity based on str */
+    "empty slots", /* number of empty slots */
+    "sauron dead",
+    "prep big fight",
     NULL
 };
 
@@ -1142,7 +1152,7 @@ static void borg_notice_ammo(int slot)
             /* Skip artifacts and ego-items */
             !item->ego_idx && !item->art_idx && item->ident
             && item->tval == borg.trait[BI_AMMO_TVAL]) {
-            borg.need_brand_weapon += 10L;
+            borg.trait[BI_NEED_BRAND_WEAPON] += 10L;
         }
 
         /* if we have loads of cash (as we will at level 35),  */
@@ -1150,19 +1160,19 @@ static void borg_notice_ammo(int slot)
         if (borg.trait[BI_CLEVEL] > 35) {
             if (borg_spell_legal_fail(ENCHANT_WEAPON, 65) && item->iqty >= 5) {
                 if (item->to_h < 10) {
-                    borg.need_enchant_to_h += (10 - item->to_h);
+                    borg.trait[BI_NEED_ENCHANT_TO_H] += (10 - item->to_h);
                 }
 
                 if (item->to_d < 10) {
-                    borg.need_enchant_to_d += (10 - item->to_d);
+                    borg.trait[BI_NEED_ENCHANT_TO_D] += (10 - item->to_d);
                 }
             } else {
                 if (item->to_h < 8) {
-                    borg.need_enchant_to_h += (8 - item->to_h);
+                    borg.trait[BI_NEED_ENCHANT_TO_H] += (8 - item->to_h);
                 }
 
                 if (item->to_d < 8) {
-                    borg.need_enchant_to_d += (8 - item->to_d);
+                    borg.trait[BI_NEED_ENCHANT_TO_D] += (8 - item->to_d);
                 }
             }
         }
@@ -1180,7 +1190,7 @@ static void borg_notice_ammo(int slot)
         /* Skip artifacts and ego-items */
         !item->art_idx && !item->ego_idx && item->ident
         && item->tval == borg.trait[BI_AMMO_TVAL]) {
-        borg.need_brand_weapon += 10L;
+        borg.trait[BI_NEED_BRAND_WEAPON] += 10L;
     }
 }
 
@@ -1216,8 +1226,6 @@ static void borg_notice_equipment(void)
     borg.trait[BI_AMMO_SIDES] = 4;
     borg.trait[BI_AMMO_POWER] = 0;
 
-    /* Reset the count of ID needed immediately */
-    borg.need_id = 0;
 
     /* Base infravision (purely racial) */
     borg.trait[BI_INFRA] = rb_ptr->infra;
@@ -1383,8 +1391,8 @@ static void borg_notice_equipment(void)
         borg.trait[BI_WEIGHT] += item->weight * item->iqty;
 
         if (borg_item_note_needs_id(item)) {
-            borg.need_id++;
-            borg.trait[BI_ANEED_ID] += 1;
+            borg.trait[BI_ALL_NEED_ID] += 1;
+            borg.trait[BI_WORN_NEED_ID] += 1;
         }
 
         /* track first cursed item */
@@ -2013,12 +2021,6 @@ static void borg_notice_equipment(void)
 
     /*** Count needed enchantment ***/
 
-    /* Assume no enchantment needed */
-    borg.need_enchant_to_a = 0;
-    borg.need_enchant_to_h = 0;
-    borg.need_enchant_to_d = 0;
-    borg.need_brand_weapon = 0;
-
     /* Hack -- enchant all the equipment (weapons) */
     for (i = INVEN_WIELD; i <= INVEN_BOW; i++) {
         item = &borg_items[i];
@@ -2045,24 +2047,24 @@ static void borg_notice_equipment(void)
         if ((borg_spell_legal_fail(ENCHANT_WEAPON, 65)
                 || borg.trait[BI_AENCH_SWEP] >= 1)) {
             if (item->to_h < borg_cfg[BORG_ENCHANT_LIMIT]) {
-                borg.need_enchant_to_h
+                borg.trait[BI_NEED_ENCHANT_TO_H]
                     += (borg_cfg[BORG_ENCHANT_LIMIT] - item->to_h);
             }
 
             /* Enchant all weapons (to damage) */
             if (item->to_d < borg_cfg[BORG_ENCHANT_LIMIT]) {
-                borg.need_enchant_to_d
+                borg.trait[BI_NEED_ENCHANT_TO_D]
                     += (borg_cfg[BORG_ENCHANT_LIMIT] - item->to_d);
             }
         } else /* I don't have the spell or *enchant* */
         {
             if (item->to_h < 8) {
-                borg.need_enchant_to_h += (8 - item->to_h);
+                borg.trait[BI_NEED_ENCHANT_TO_H] += (8 - item->to_h);
             }
 
             /* Enchant all weapons (to damage) */
             if (item->to_d < 8) {
-                borg.need_enchant_to_d += (8 - item->to_d);
+                borg.trait[BI_NEED_ENCHANT_TO_D] += (8 - item->to_d);
             }
         }
     }
@@ -2083,12 +2085,12 @@ static void borg_notice_equipment(void)
         if (borg_spell_legal_fail(ENCHANT_ARMOUR, 65)
             || borg.trait[BI_AENCH_SARM] >= 1) {
             if (item->to_a < borg_cfg[BORG_ENCHANT_LIMIT]) {
-                borg.need_enchant_to_a
+                borg.trait[BI_NEED_ENCHANT_TO_A]
                     += (borg_cfg[BORG_ENCHANT_LIMIT] - item->to_a);
             }
         } else {
             if (item->to_a < 8) {
-                borg.need_enchant_to_a += (8 - item->to_a);
+                borg.trait[BI_NEED_ENCHANT_TO_A] += (8 - item->to_a);
             }
         }
     }
@@ -2167,9 +2169,6 @@ static void borg_notice_inventory(void)
     for (i = 0; i < 9; i++)
         borg.amt_book[i] = 0;
 
-    /* Reset various */
-    borg.has_fix_exp = false;
-
     /*** Process the inventory ***/
 
     /* Scan the inventory */
@@ -2195,7 +2194,7 @@ static void borg_notice_inventory(void)
 
         /* Does the borg need to get an ID for it? */
         if (borg_item_note_needs_id(item))
-            borg.need_id++;
+            borg.trait[BI_ALL_NEED_ID] += 1;
 
         /* Hack -- skip un-aware items */
         if (!item->kind)
@@ -2333,7 +2332,7 @@ static void borg_notice_inventory(void)
                 borg.amt_statgain[STAT_DEX] += item->iqty;
                 borg.amt_statgain[STAT_CON] += item->iqty;
             } else if (item->sval == sv_potion_restore_life)
-                borg.has_fix_exp = true;
+                borg.trait[BI_HASFIXEXP] = true;
             else if (item->sval == sv_potion_speed)
                 borg.trait[BI_ASPEED] += item->iqty;
             break;
@@ -2739,7 +2738,7 @@ static void borg_notice_inventory(void)
         || borg_equips_item(act_restore_exp, false)
         || borg_equips_item(act_restore_st_lev, false)
         || borg_equips_item(act_restore_life, false)) {
-        borg.has_fix_exp = true;
+        borg.trait[BI_HASFIXEXP] = true;
     }
 
     /* Handle REMEMBRANCE -- is just as good as Hold Life */
@@ -2780,7 +2779,7 @@ static void borg_notice_inventory(void)
 
     /* No need for experience repair */
     if (!borg.trait[BI_ISFIXEXP])
-        borg.has_fix_exp = true;
+        borg.trait[BI_HASFIXEXP] = true;
 
     /* Correct the high and low calorie foods */
     borg.trait[BI_FOOD] += borg.trait[BI_FOOD_HI];
@@ -2889,6 +2888,20 @@ void borg_notice(bool notice_swap)
         borg_game_ratio = 100000 / (((borg.trait[BI_SPEED] - 110) * 10) + 100);
     } else {
         borg_game_ratio = 1000;
+    }
+
+    /* set if we are preparing for fighting morgoth or sauron */
+    borg.trait[BI_PREP_BIG_FIGHT] = false;
+    if (borg.trait[BI_MAXDEPTH] >= 99) {
+        /* pot of healing + *healing* */
+        int total_big_heal = borg.has[kv_potion_healing];
+        total_big_heal += borg.trait[BI_AEZHEAL];
+        /* plus the same at home */
+        total_big_heal = num_heal_true;
+        total_big_heal += num_ezheal_true;
+        /* want bunches of heal and speed to feel prepped for the fight */
+        if (total_big_heal < 30 || (num_speed + borg.trait[BI_ASPEED]) < 15)
+            borg.trait[BI_PREP_BIG_FIGHT] = true;
     }
 }
 
@@ -3077,6 +3090,9 @@ void borg_notice_player(void)
 
     /* Hack -- Access max depth */
     borg.trait[BI_MAXDEPTH] = player->max_depth;
+
+    /* Hack -- track if Sauron is dead */
+    borg.trait[BI_SAURON_DEAD] = borg_race_death[borg_sauron_id];
 }
 
 void borg_trait_init(void)

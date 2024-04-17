@@ -33,6 +33,8 @@ struct borg_array {
     void **items;
 };
 
+struct value_sec;
+
 /* quick array stuff */
 extern int borg_array_add(struct borg_array *a, void *item);
 
@@ -43,17 +45,17 @@ extern int borg_array_add(struct borg_array *a, void *item);
  * section_label is where in the parsing the system thinks it is
  * error for further error text to make the error clearer.
  */
-extern void borg_formula_error(char *section, char *full_line, char *section_label, char * error);
+extern void borg_formula_error(const char *section, const char *full_line, const char *section_label, const char * error);
 
 /*
  * turn a "value(x, y)" into a number
  */
-extern int32_t calculate_from_value(struct value *value, int range_index);
+extern int32_t calculate_from_value(struct value_sec *value, int range_index);
 
 /*
  * read a "value(x, y) and turn it into a structure
  */
-extern struct value *parse_value(char *line, char* full_line);
+extern struct value_sec *parse_value(char *line, char* full_line);
 
 /*
  * Calculate the basic "power"

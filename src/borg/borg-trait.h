@@ -184,6 +184,7 @@ enum {
     BI_ISSTUDY,
     BI_ISFIXLEV,
     BI_ISFIXEXP,
+    BI_HASFIXEXP,
     BI_ISFIXSTR,
     BI_ISFIXINT,
     BI_ISFIXWIS,
@@ -297,6 +298,10 @@ enum {
     BI_AENCH_ARM,
     BI_AENCH_SARM,
     BI_ABRAND,
+    BI_NEED_ENCHANT_TO_A,
+    BI_NEED_ENCHANT_TO_H,
+    BI_NEED_ENCHANT_TO_D,
+    BI_NEED_BRAND_WEAPON,
     BI_ARESHEAT,
     BI_ARESCOLD,
     BI_ARESPOIS,
@@ -306,7 +311,8 @@ enum {
     BI_ASHROOM,
     BI_AROD1, /* Attack rods */
     BI_AROD2, /* Attack rods */
-    BI_ANEED_ID,
+    BI_WORN_NEED_ID,
+    BI_ALL_NEED_ID,
     BI_ADIGGER,
     BI_GOOD_S_CHG,
     BI_GOOD_W_CHG,
@@ -315,6 +321,8 @@ enum {
     BI_WEIGHT, /* weight of all inventory and equipment */
     BI_CARRY, /* carry capacity */
     BI_EMPTY, /* number of empty slots */
+    BI_SAURON_DEAD,
+    BI_PREP_BIG_FIGHT,
 
     BI_MAX
 };
@@ -389,7 +397,6 @@ struct borg_struct {
     /* activity flags */
     bool lunal_mode;
     bool munchkin_mode;
-    bool scumming_pots;
 
     bool stair_less; /* Use the next "up" staircase */
     bool stair_more; /* Use the next "down" staircase */
@@ -435,14 +442,6 @@ struct borg_struct {
     int16_t stat_max[STAT_MAX]; /* Current "maximal" stat values    */
     int16_t stat_cur[STAT_MAX]; /* Current "natural" stat values    */
     int16_t stat_ind[STAT_MAX]; /* Current "additions" to stat values   */
-
-    bool need_enchant_to_a; /* Need some enchantment */
-    bool need_enchant_to_h; /* Need some enchantment */
-    bool need_enchant_to_d; /* Need some enchantment */
-    bool need_brand_weapon; /* Need to brand bolts */
-    bool has_fix_exp;
-
-    int16_t need_id; /* count of number of ID scrolls to buy */
 
     /* number of books */
     int16_t amt_book[9];

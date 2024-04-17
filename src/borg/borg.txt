@@ -305,537 +305,640 @@ borg_munchkin_depth = 16
 borg_enchant_limit = 12
 
 
+borg_test_test = 0
+
 [BEGIN FORMULA SECTION]
 
 # special formula:  
 #	range(from, to) - loop from until to and add value to power each time
-#	value( type, name ) - count of this item in the borg inventory or equipment
-#		ex: item(potion, Cure Critical Wounds) is the number of CCW potions
-#		types: types in object.txt and activation and trait and range (range == current iteration of range)
+#	value( type, name ) - returns a value dependent on the types
+#		type list:
+#		ACTIVATION: returns the number of items the borg is wearing that use that activation
+#		TRAIT: value from the borg.trait list.  This can be dumped by ^zh
+#		CONFIG: value from the configuration as read from borg.txt
+#		CLASS: true/false (1/0) if the borgs current class matches the name
+#		RANGE: index into the range(from, to) above,  returns -1 if no range is given
+#		type from object.txt with name matching the name from that file.  Count of that object that the borg is carrying or wearing.
+#			ex: value(potion, Cure Critical Wounds) is the number of CCW potions
+#				** worth noting value(trait, amt potion ccw) will be a calculated amount of ccw, which might include other healing
+#				such as spells that cure that amount so may not have the same value as value(potion, Cure Critical Wounds)
 #	reward: calculation of what power increase for each, if you have range, or just for having, if you don't
-#	condition: if calculates to zero you don't get the reward
+#	condition: if calculates to zero you don't get the reward.  For ranges, is calculated once before the range is processed
 #
 # note on calculations: some order of operations are handled, some are not.  When in doubt, parens are your friend
 
 #### future enhancement value_home( type, name) - same as above but in the home, HomePower ... 
-AnyClass
+Power
 [
-	Power
-	[
 # weapon stuff	
 # weilding unIDs weapon
-		condition((value(trait, depth) < 10) && (value(trait, max clevel) < 15) && !value(trait, wep id)): reward(1000000);
+	condition((value(trait, depth) < 10) && (value(trait, max clevel) < 15) && !value(trait, wep id)): reward(1000000);
 # "damage" and increased blows per round
-		reward(value(trait, wep damage dice) * value(trait, wep damage sides) * 20 * (value(trait, blows) + 1));
+	reward(value(trait, wep damage dice) * value(trait, wep damage sides) * 20 * (value(trait, blows) + 1));
 # "bonus to hit"
-		reward((value(trait, to hit) + value(trait, wep to hit)) * 100);
+	reward((value(trait, to hit) + value(trait, wep to hit)) * 100);
 # "bonus to dam"
-		reward((value(trait, to damage) + value(trait, wep to damage)) * 30);
+	reward((value(trait, to damage) + value(trait, wep to damage)) * 30);
 # extra damage? for some
-		condition(value(config, worships_damage)): reward((value(trait, to hit) + value(trait, wep to hit)) * 15);
+	condition(value(config, worships_damage)): reward((value(trait, to hit) + value(trait, wep to hit)) * 15);
 # extra boost for deep dungeon
-		condition(value(trait, max depth) >= 75): reward((value(trait, to hit) + value(trait, wep to hit)) * 15);
-		condition(value(trait, max depth)>= 75): reward(value(trait, wep damage dice) * value(trait, wep damage sides) * 40 * value(trait, blows));
+	condition(value(trait, max depth) >= 75): reward((value(trait, to hit) + value(trait, wep to hit)) * 15);
+	condition(value(trait, max depth)>= 75): reward(value(trait, wep damage dice) * value(trait, wep damage sides) * 40 * value(trait, blows));
 # assume 2x base damage for x% of creatures
-		condition(value(trait, wep slay animal)): reward(value(trait, blows) * 2 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20);
-		condition(value(trait, wep slay evil)): reward((((value(trait, blows) * 2 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 7) / 2));
+	condition(value(trait, wep slay animal)): reward(value(trait, blows) * 2 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20);
+	condition(value(trait, wep slay evil)): reward((((value(trait, blows) * 2 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 7) / 2));
 # extra damage for some 		
-		condition(value(config, worships_damage)): reward(value(trait, blows) * 2 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20);
+	condition(value(config, worships_damage)): reward(value(trait, blows) * 2 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20);
 # assume 3x base damage for x% of creatures 
-		condition(value(trait, wep slay undead) && !value(trait, wep kill undead)): reward((((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 5) / 2));
-		condition(value(trait, wep slay demon) && !value(trait, wep kill demon)): reward((((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 3) / 2));
-		condition(value(trait, wep slay dragon) && !value(trait, wep kill dragon)): reward((((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 6) / 2));
-		condition(value(trait, wep slay giant)): reward((((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 4) / 2));
-		condition(value(trait, wep brand acid)): reward((((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 4) / 2));
-		condition(value(trait, wep brand elec)): reward((((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 5) / 2));
-		condition(value(trait, wep brand fire)): reward((((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 3) / 2));
-		condition(value(trait, wep brand cold)): reward((((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 3) / 2));
-		condition(value(trait, wep slay orc)): reward(((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) / 2));
-		condition(value(trait, wep slay troll)): reward(value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20);
-		condition(value(trait, wep slay orc) && !value(trait, wep slay evil)): reward((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) / 2);
-		condition(value(trait, wep slay troll) && !value(trait, wep slay evil)): reward((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) / 2);
-		condition(value(config, worships_damage)): reward(value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20);
+	condition(value(trait, wep slay undead) && !value(trait, wep kill undead)): reward((((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 5) / 2));
+	condition(value(trait, wep slay demon) && !value(trait, wep kill demon)): reward((((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 3) / 2));
+	condition(value(trait, wep slay dragon) && !value(trait, wep kill dragon)): reward((((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 6) / 2));
+	condition(value(trait, wep slay giant)): reward((((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 4) / 2));
+	condition(value(trait, wep brand acid)): reward((((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 4) / 2));
+	condition(value(trait, wep brand elec)): reward((((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 5) / 2));
+	condition(value(trait, wep brand fire)): reward((((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 3) / 2));
+	condition(value(trait, wep brand cold)): reward((((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 3) / 2));
+	condition(value(trait, wep slay orc)): reward(((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) / 2));
+	condition(value(trait, wep slay troll)): reward(value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20);
+	condition(value(trait, wep slay orc) && !value(trait, wep slay evil)): reward((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) / 2);
+	condition(value(trait, wep slay troll) && !value(trait, wep slay evil)): reward((value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) / 2);
+	condition(value(config, worships_damage)): reward(value(trait, blows) * 3 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20);
 # assume 5x base damage for x% of creatures 
-		condition(value(trait, wep kill undead)): reward((((value(trait, blows) * 5 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 5) / 2));
-		condition(value(trait, wep kill demon)): reward((((value(trait, blows) * 5 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 5) / 2));
-		condition(value(trait, wep kill dragon)): reward((((value(trait, blows) * 5 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 5) / 2));
-		condition(value(config, worships_damage)): reward(value(trait, blows) * 5 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20);
+	condition(value(trait, wep kill undead)): reward((((value(trait, blows) * 5 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 5) / 2));
+	condition(value(trait, wep kill demon)): reward((((value(trait, blows) * 5 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 5) / 2));
+	condition(value(trait, wep kill dragon)): reward((((value(trait, blows) * 5 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20) * 5) / 2));
+	condition(value(config, worships_damage)): reward(value(trait, blows) * 5 * value(trait, wep damage dice) * value(trait, wep damage sides) * 20);
 # It used to be only on Grond
-		condition(value(trait, wep impact)): reward(50);
+	condition(value(trait, wep impact)): reward(50);
 # It is hard to hold a heavy weapon
-		condition(value(trait, heavy weapon)): reward(-500000);
+	condition(value(trait, heavy weapon)): reward(-500000);
 # We want low level borgs to have high blows (dagger, whips)
-		condition(value(trait, clevel) <= 10): reward(value(trait, blows) * 45000);
+	condition(value(trait, clevel) <= 10): reward(value(trait, blows) * 45000);
 
-# bow stuff	
+# bow stuff
 # wearing an unID'D bow but not at high level since bow likely to have traits
-		condition((value(trait, depth) < 10) && (value(trait, max clevel) < 15) && !value(trait, bow id)): reward(6000000);
+	condition((value(trait, depth) < 10) && (value(trait, max clevel) < 15) && !value(trait, bow id)): reward(6000000);
 # bow damage
-		condition(((value(trait, bow to damage) > 8) || (value(trait, clevel) < 25)) && value(config, worships_damage)): reward((value(trait, ammo sides) + value(trait, bow to damage)) * value(trait, ammo power) * value(trait, shots) * 11);
-		condition(((value(trait, bow to damage) > 8) || (value(trait, clevel) < 25)) && !value(config, worships_damage)): reward((value(trait, ammo sides) + value(trait, bow to damage)) * value(trait, ammo power) * value(trait, shots) * 9);
-		condition(((value(trait, bow to damage) <= 8) && (value(trait, clevel) >= 25)) && value(config, worships_damage)): reward((value(trait, ammo sides) + 8) * value(trait, ammo power) * value(trait, shots) * 11);
-		condition(((value(trait, bow to damage) <= 8) || (value(trait, clevel) >= 25)) && !value(config, worships_damage)): reward((value(trait, ammo sides) + 8) * value(trait, ammo power) * value(trait, shots) * 9);
+	condition(((value(trait, bow to damage) > 8) || (value(trait, clevel) < 25)) && value(config, worships_damage)): reward((value(trait, ammo sides) + value(trait, bow to damage)) * value(trait, ammo power) * value(trait, shots) * 11);
+	condition(((value(trait, bow to damage) > 8) || (value(trait, clevel) < 25)) && !value(config, worships_damage)): reward((value(trait, ammo sides) + value(trait, bow to damage)) * value(trait, ammo power) * value(trait, shots) * 9);
+	condition(((value(trait, bow to damage) <= 8) && (value(trait, clevel) >= 25)) && value(config, worships_damage)): reward((value(trait, ammo sides) + 8) * value(trait, ammo power) * value(trait, shots) * 11);
+	condition(((value(trait, bow to damage) <= 8) && (value(trait, clevel) >= 25)) && !value(config, worships_damage)): reward((value(trait, ammo sides) + 8) * value(trait, ammo power) * value(trait, shots) * 9);
 # extra bonus for low levels, they need a ranged weapon 
-		condition((value(trait, bow to damage) > 8 || value(trait, clevel) < 25) && value(trait, clevel) < 15): reward((value(trait, ammo sides) + value(trait, bow to damage)) * value(trait, ammo power) * value(trait, shots) * 200);
+	condition((value(trait, bow to damage) > 8 || value(trait, clevel) < 25) && value(trait, clevel) < 15): reward((value(trait, ammo sides) + value(trait, bow to damage)) * value(trait, ammo power) * value(trait, shots) * 200);
 # slings force you to carry heavy ammo.  Penalty for that unless you have lots of str 
-		condition(value(trait, bow is sling) && !value(trait, bow artifact) && (value(trait, str) < 9)): reward(-5000);
+	condition(value(trait, bow is sling) && !value(trait, bow artifact) && (value(trait, str) < 9)): reward(-5000);
 # "bonus to hit"
-		reward((value(trait, bow to hit) + value(trait, to hit)) * 100);
+	reward((value(trait, bow to hit) + value(trait, to hit)) * 100);
 # extra damage for some 
-		condition(value(config, worships_damage)): reward((value(trait, bow to hit) + value(trait, to hit)) * 25);
+	condition(value(config, worships_damage)): reward((value(trait, bow to hit) + value(trait, to hit)) * 25);
 # this is just rangers !FIX note ugly tval hardcode 
-		condition(value(trait, fast shots) && (value(trait, ammo tval) = 3)): reward(30000);
-		condition(value(trait, heavy bow)): reward(-500000);
+	condition(value(trait, fast shots) && (value(trait, ammo tval) = 3)): reward(30000);
+	condition(value(trait, heavy bow)): reward(-500000);
 
 #light radius
-		condition(value(trait, cur light) <= 3): reward(value(trait, cur light) * 10000);
-		condition(value(trait, cur light) > 3): reward(value(trait, cur light) * 1000 + 30000);
+	condition(value(trait, cur light) <= 3): reward(value(trait, cur light) * 10000);
+	condition(value(trait, cur light) > 3): reward(value(trait, cur light) * 1000 + 30000);
 
-		reward(value(trait, extra moves) * 3000);
-		reward(value(trait, damage reduction) * 10000);
+	reward(value(trait, extra moves) * 3000);
+	reward(value(trait, damage reduction) * 10000);
 
 #speed
-		condition(value(config, worships_speed) && value(trait, speed) >= 150): reward(((value(trait, speed) - 120) * 1500) + 185000);
-		condition(value(config, worships_speed) && value(trait, speed) >= 145 && value(trait, speed) <= 149): reward(((value(trait, speed) - 120) * 1500) + 180000);
-		condition(value(config, worships_speed) && value(trait, speed) >= 135 && value(trait, speed) <= 144): reward(((value(trait, speed) - 120) * 1500) + 175000);
-		condition(value(config, worships_speed) && value(trait, speed) >= 130 && value(trait, speed) <= 134): reward(((value(trait, speed) - 120) * 1500) + 160000);
-		condition(value(config, worships_speed) && value(trait, speed) >= 125 && value(trait, speed) <= 129): reward(((value(trait, speed) - 110) * 1500) + 135000);
-		condition(value(config, worships_speed) && value(trait, speed) >= 120 && value(trait, speed) <= 124): reward(((value(trait, speed) - 110) * 1500) + 110000);
-		condition(value(config, worships_speed) && value(trait, speed) >= 115 && value(trait, speed) <= 119): reward(((value(trait, speed) - 110) * 1500) + 85000);
-		condition(value(config, worships_speed) && value(trait, speed) >= 110 && value(trait, speed) <= 114): reward(((value(trait, speed) - 110) * 1500) + 65000);
+	condition(value(config, worships_speed) && value(trait, speed) >= 150): reward(((value(trait, speed) - 120) * 1500) + 185000);
+	condition(value(config, worships_speed) && value(trait, speed) >= 145 && value(trait, speed) <= 149): reward(((value(trait, speed) - 120) * 1500) + 180000);
+	condition(value(config, worships_speed) && value(trait, speed) >= 135 && value(trait, speed) <= 144): reward(((value(trait, speed) - 120) * 1500) + 175000);
+	condition(value(config, worships_speed) && value(trait, speed) >= 130 && value(trait, speed) <= 134): reward(((value(trait, speed) - 120) * 1500) + 160000);
+	condition(value(config, worships_speed) && value(trait, speed) >= 125 && value(trait, speed) <= 129): reward(((value(trait, speed) - 110) * 1500) + 135000);
+	condition(value(config, worships_speed) && value(trait, speed) >= 120 && value(trait, speed) <= 124): reward(((value(trait, speed) - 110) * 1500) + 110000);
+	condition(value(config, worships_speed) && value(trait, speed) >= 115 && value(trait, speed) <= 119): reward(((value(trait, speed) - 110) * 1500) + 85000);
+	condition(value(config, worships_speed) && value(trait, speed) >= 110 && value(trait, speed) <= 114): reward(((value(trait, speed) - 110) * 1500) + 65000);
 
-		condition(!value(config, worships_speed) && value(trait, speed) >= 140): reward(((value(trait, speed) - 120) * 1000) + 175000);
-		condition(!value(config, worships_speed) && value(trait, speed) >= 135 && value(trait, speed) <= 139): reward(((value(trait, speed) - 120) * 1000) + 165000);
-		condition(!value(config, worships_speed) && value(trait, speed) >= 130 && value(trait, speed) <= 134): reward(((value(trait, speed) - 120) * 1000) + 150000);
-		condition(!value(config, worships_speed) && value(trait, speed) >= 125 && value(trait, speed) <= 129): reward(((value(trait, speed) - 110) * 1000) + 125000);
-		condition(!value(config, worships_speed) && value(trait, speed) >= 120 && value(trait, speed) <= 124): reward(((value(trait, speed) - 110) * 1000) + 100000);
-		condition(!value(config, worships_speed) && value(trait, speed) >= 115 && value(trait, speed) <= 119): reward(((value(trait, speed) - 110) * 1000) + 75000);
-		condition(!value(config, worships_speed) && value(trait, speed) >= 110 && value(trait, speed) <= 114): reward(((value(trait, speed) - 110) * 1000) + 55000);
+	condition(!value(config, worships_speed) && value(trait, speed) >= 140): reward(((value(trait, speed) - 120) * 1000) + 175000);
+	condition(!value(config, worships_speed) && value(trait, speed) >= 135 && value(trait, speed) <= 139): reward(((value(trait, speed) - 120) * 1000) + 165000);
+	condition(!value(config, worships_speed) && value(trait, speed) >= 130 && value(trait, speed) <= 134): reward(((value(trait, speed) - 120) * 1000) + 150000);
+	condition(!value(config, worships_speed) && value(trait, speed) >= 125 && value(trait, speed) <= 129): reward(((value(trait, speed) - 110) * 1000) + 125000);
+	condition(!value(config, worships_speed) && value(trait, speed) >= 120 && value(trait, speed) <= 124): reward(((value(trait, speed) - 110) * 1000) + 100000);
+	condition(!value(config, worships_speed) && value(trait, speed) >= 115 && value(trait, speed) <= 119): reward(((value(trait, speed) - 110) * 1000) + 75000);
+	condition(!value(config, worships_speed) && value(trait, speed) >= 110 && value(trait, speed) <= 114): reward(((value(trait, speed) - 110) * 1000) + 55000);
 
-		condition(value(trait, speed) < 110): reward((value(trait, speed) - 110) * 2500);
+	condition(value(trait, speed) < 110): reward((value(trait, speed) - 110) * 2500);
 
 # strength bonus
-		reward(value(trait, str) * 100);
+	reward(value(trait, str) * 100);
+
+	condition((value(class, priest) || value(class, druid) || value(class, ranger) || value(class, paladin)) && value(trait, wis) <= 37): reward(value(trait, wis) * 500);
+	condition((value(class, priest) || value(class, druid) || value(class, ranger) || value(class, paladin)) && value(config, worships_mana) && value(trait, wis) <= 37): reward((value(trait, sp adj) / 2) * 255);
+	condition((value(class, priest) || value(class, druid) || value(class, ranger) || value(class, paladin)) && !value(config, worships_mana) && value(trait, wis) <= 37): reward((value(trait, sp adj) / 2) * 155);
+
+	condition((value(class, mage) || value(class, necromancer) || value(class, blackguard) || value(class, rogue)) && value(trait, int) <= 37): reward(value(trait, int) * 500);
+	condition((value(class, mage) || value(class, necromancer) || value(class, blackguard) || value(class, rogue)) && value(config, worships_mana) && value(trait, int) <= 37): reward((value(trait, sp adj) / 2) * 255);
+	condition((value(class, mage) || value(class, necromancer) || value(class, blackguard) || value(class, rogue)) && !value(config, worships_mana) && value(trait, int) <= 37): reward((value(trait, sp adj) / 2) * 155);
 
 # dex bonus
-		condition(value(trait, dex) <= 37): reward(value(trait, dex) * 120);
+	condition(value(trait, dex) <= 37): reward(value(trait, dex) * 120);
 # con bonus
-		condition(value(config, worships_hp) && (value(trait, con) <= 37)): reward(value(trait, con) * 250);
-		condition(value(config, worships_hp) && (value(trait, con) <= 37) && value(trait, hp adj) < 800): reward(value(trait, hp adj) * 450);
-		condition(value(config, worships_hp) && (value(trait, con) <= 37) && value(trait, hp adj) >= 800): reward(((value(trait, hp adj) - 800) * 100) + 175000);
-		condition(!value(config, worships_hp) && (value(trait, con) <= 37)): reward(value(trait, con) * 150);
-		condition(!value(config, worships_hp) && (value(trait, con) <= 37) && value(trait, hp adj) < 500): reward(value(trait, hp adj) * 350);
-		condition(!value(config, worships_hp) && (value(trait, con) <= 37) && value(trait, hp adj) >= 500): reward(((value(trait, hp adj) - 500) * 100) + 175000);
+	condition(value(config, worships_hp) && (value(trait, con) <= 37)): reward(value(trait, con) * 250);
+	condition(value(config, worships_hp) && (value(trait, con) <= 37) && value(trait, hp adj) < 800): reward(value(trait, hp adj) * 450);
+	condition(value(config, worships_hp) && (value(trait, con) <= 37) && value(trait, hp adj) >= 800): reward(((value(trait, hp adj) - 800) * 100) + 175000);
+	condition(!value(config, worships_hp) && (value(trait, con) <= 37)): reward(value(trait, con) * 150);
+	condition(!value(config, worships_hp) && (value(trait, con) <= 37) && value(trait, hp adj) < 500): reward(value(trait, hp adj) * 350);
+	condition(!value(config, worships_hp) && (value(trait, con) <= 37) && value(trait, hp adj) >= 500): reward(((value(trait, hp adj) - 500) * 100) + 175000);
 
 # adjust to stat
-		reward(value(trait, str adj));
-		reward(value(trait, int adj));
-		reward(value(trait, wis adj));
-		reward(value(trait, dex adj));
-		reward(value(trait, con adj));
+	reward(value(trait, str adj));
+	reward(value(trait, int adj));
+	reward(value(trait, wis adj));
+	reward(value(trait, dex adj));
+	reward(value(trait, con adj));
 
 # some extra attributes
-		reward(value(trait, disarm ph) * 2);
-		reward(value(trait, disarm mag) * 2);
-		reward(value(trait, use device) * 25);
-		reward(value(trait, save) * 25);
+	reward(value(trait, disarm ph) * 2);
+	reward(value(trait, disarm mag) * 2);
+	reward(value(trait, use device) * 25);
+	reward(value(trait, save) * 25);
 #  perfect save worth extra
-		condition(value(trait, save) > 99): reward(10000);
-		reward(value(trait, stealth) * 2);
-		reward(value(trait, search));
-		reward(value(trait, to hit normal) * 5);
-		reward(value(trait, to hit bow) * 35);
-		reward(value(trait, to hit throw) * 2);
-		reward(value(trait, dig) * 2);
+	condition(value(trait, save) > 99): reward(10000);
+	reward(value(trait, stealth) * 2);
+	reward(value(trait, search));
+	reward(value(trait, to hit normal) * 5);
+	reward(value(trait, to hit bow) * 35);
+	reward(value(trait, to hit throw) * 2);
+	reward(value(trait, dig) * 2);
 
-		condition(value(trait, slow dig)): reward(750);
-		condition(value(trait, slow dig) && value(trait, is hungry)): reward(7500);
-		condition(value(trait, slow dig) && value(trait, is weak)): reward(7500);
+	condition(value(trait, slow dig)): reward(750);
+	condition(value(trait, slow dig) && value(trait, is hungry)): reward(7500);
+	condition(value(trait, slow dig) && value(trait, is weak)): reward(7500);
 
-		condition((value(trait, max depth) < 20) && value(trait, feather fall)): reward(500);
-		condition((value(trait, max depth) >= 20) && value(trait, feather fall)): reward(50);
+	condition((value(trait, max depth) < 20) && value(trait, feather fall)): reward(500);
+	condition((value(trait, max depth) >= 20) && value(trait, feather fall)): reward(50);
 
-		condition(value(trait, light)): reward(2000);
-		condition(value(trait, esp) && value(trait, see inv)): reward(500);
-		condition(!value(trait, detect inv) && value(trait, see inv)): reward(5000);
-		condition(value(trait, free action)): reward(10000);
+	condition(value(trait, light)): reward(2000);
+	condition(value(trait, esp) && value(trait, see inv)): reward(500);
+	condition(!value(trait, detect inv) && value(trait, see inv)): reward(5000);
+	condition(value(trait, free action)): reward(10000);
 
-		condition((value(trait, max clevel) < 50) && value(trait, hold life)): reward(2000);
-		condition((value(trait, max clevel) = 50) && value(trait, hold life)): reward(200);
+	condition((value(trait, max clevel) < 50) && value(trait, hold life)): reward(2000);
+	condition((value(trait, max clevel) = 50) && value(trait, hold life)): reward(200);
 
-		condition(value(trait, regen)): reward(2000);
-		condition(value(trait, esp)): reward(80000);
+	condition(value(trait, regen)): reward(2000);
+	condition(value(trait, esp)): reward(80000);
 
 # Immunity flags
-		condition(value(trait, immune cold)): reward(65000);
-		condition(value(trait, immune elec)): reward(40000);
-		condition(value(trait, immune fire)): reward(80000);
-		condition(value(trait, immune acid)): reward(50000);
+	condition(value(trait, immune cold)): reward(65000);
+	condition(value(trait, immune elec)): reward(40000);
+	condition(value(trait, immune fire)): reward(80000);
+	condition(value(trait, immune acid)): reward(50000);
 
 # Resistance flags
-		condition(value(trait, resist cold)): reward(3000);
-		condition(value(trait, resist elec)): reward(4000);
-		condition(value(trait, resist fire)): reward(6000);
-		condition(value(trait, resist acid)): reward(8000);
+	condition(value(trait, resist cold)): reward(3000);
+	condition(value(trait, resist elec)): reward(4000);
+	condition(value(trait, resist fire)): reward(6000);
+	condition(value(trait, resist acid)): reward(8000);
 # extra bonus for getting all basic resist
-		condition(value(trait, resist cold) && value(trait, resist elec) && value(trait, resist fire) && value(trait, resist acid)): reward(10000);
-		condition(value(trait, resist poison)): reward(20000);
-		condition(value(trait, resist sound)): reward(3500);
-		condition(value(trait, resist lite)): reward(800);
-		condition(value(trait, resist dark)): reward(800);
-		condition(value(trait, resist chaos)): reward(5000);
-		condition(value(trait, resist conf)): reward(80000);
-		condition(value(trait, resist dis)): reward(5000);
-		condition(value(trait, resist shards)): reward(100);
-		condition(value(trait, resist nexus)): reward(100);
-		condition(value(trait, resist blind)): reward(5000);
-		condition(value(trait, resist nether)): reward(5500);
-		condition(value(trait, resist fear)): reward(2000);
+	condition(value(trait, resist cold) && value(trait, resist elec) && value(trait, resist fire) && value(trait, resist acid)): reward(10000);
+	condition(value(trait, resist poison)): reward(20000);
+	condition(value(trait, resist sound)): reward(3500);
+	condition(value(trait, resist lite)): reward(800);
+	condition(value(trait, resist dark)): reward(800);
+	condition(value(trait, resist chaos)): reward(5000);
+	condition(value(trait, resist conf)): reward(80000);
+	condition(value(class, mage) && value(trait, resist conf)): reward(2000);
+	condition(value(trait, resist dis)): reward(5000);
+	condition(value(trait, resist shards)): reward(100);
+	condition(value(trait, resist nexus)): reward(100);
+	condition(value(trait, resist blind)): reward(5000);
+	condition(value(trait, resist nether)): reward(5500);
+	condition(value(trait, resist fear)): reward(2000);
 
 # Sustain flags
-		condition(value(trait, sust str)): reward(50);
-		condition(value(trait, sust int)): reward(50);
-		condition(value(trait, sust wis)): reward(50);
-		condition(value(trait, sust con)): reward(50);
-		condition(value(trait, sust dex)): reward(50);
-		condition(value(trait, sust str) && value(trait, sust int) && value(trait, sust wis) && value(trait, sust con) && value(trait, sust dex)): reward(1000);
+	condition(value(trait, sust str)): reward(50);
+	condition(value(trait, sust int)): reward(50);
+	condition(value(trait, sust wis)): reward(50);
+	condition(value(trait, sust con)): reward(50);
+	condition(value(trait, sust dex)): reward(50);
+	condition(value(trait, sust str) && value(trait, sust int) && value(trait, sust wis) && value(trait, sust con) && value(trait, sust dex)): reward(1000);
 
 # "necessary" flags
-		condition((value(trait, see inv) || value(trait, esp)) && (value(trait, max depth) >= 9)): reward(100000);
-		condition(value(trait, free action) && (value(trait, max depth) >= 19)): reward(100000);
-		condition(value(trait, resist fire) && (value(trait, max depth) >= 24)): reward(100000);
-		condition(value(trait, resist poison) && (value(trait, max depth) >= 39)): reward(100000);
-		condition(value(trait, resist elec) && (value(trait, max depth) >= 39)): reward(100000);
-		condition(value(trait, resist acid) && (value(trait, max depth) >= 39)): reward(100000);
-		condition(value(trait, resist cold) && (value(trait, max depth) >= 39)): reward(100000);
-		condition(value(trait, hold life) && (value(trait, max clevel) < 50) && (value(trait, max depth) >= 45)): reward(100000);
-		condition((value(trait, speed) >= 115) && (value(trait, max depth) >= 45)): reward(100000);
-		condition(value(trait, resist conf) && (value(trait, max depth) >= 45)): reward(100000);
-		condition(value(trait, resist nether) && (value(trait, max depth) >= 49)): reward(55000);
-		condition(value(trait, resist sound) && (value(trait, max depth) >= 49)): reward(100000);
-		condition(value(trait, resist blind) && (value(trait, max depth) >= 55)): reward(100000);
-		condition(value(trait, esp) && (value(trait, max depth) >= 55)): reward(100000);
-		condition(value(trait, resist nether) && (value(trait, max depth) >= 59)): reward(55000);
-		condition(value(trait, resist chaos) && (value(trait, max depth) >= 59)): reward(104000);
-		condition(value(trait, resist dis) && (value(trait, max depth) >= 59)): reward(90000);
-		condition((value(trait, speed) >= 120) && (value(trait, max depth) >= 59)): reward(100000);
-		condition((value(trait, speed) >= 130) && (value(trait, max depth) >= 79)): reward(100000);
-		condition(value(trait, resist nether) && (value(trait, max depth) >= 79)): reward(15000);
-		condition(value(trait, resist dark) && (value(trait, max depth) >= 79)): reward(25000);
+	condition((value(trait, see inv) || value(trait, esp)) && (value(trait, max depth) >= 9)): reward(100000);
+	condition(value(trait, free action) && (value(trait, max depth) >= 19)): reward(100000);
+	condition(value(trait, resist fire) && (value(trait, max depth) >= 24)): reward(100000);
+	condition(value(trait, resist poison) && (value(trait, max depth) >= 39)): reward(100000);
+	condition(value(trait, resist elec) && (value(trait, max depth) >= 39)): reward(100000);
+	condition(value(trait, resist acid) && (value(trait, max depth) >= 39)): reward(100000);
+	condition(value(trait, resist cold) && (value(trait, max depth) >= 39)): reward(100000);
+	condition(value(trait, hold life) && (value(trait, max clevel) < 50) && (value(trait, max depth) >= 45)): reward(100000);
+	condition((value(trait, speed) >= 115) && (value(trait, max depth) >= 45)): reward(100000);
+	condition((value(class, warrior) && (value(trait, speed) >= 140) && (value(trait, max depth) >= 79))): reward(100000);
+	condition(value(trait, resist conf) && (value(trait, max depth) >= 45)): reward(100000);
+	condition(value(trait, resist nether) && (value(trait, max depth) >= 49)): reward(55000);
+	condition(value(trait, resist sound) && (value(trait, max depth) >= 49)): reward(100000);
+	condition(value(trait, resist blind) && (value(trait, max depth) >= 55)): reward(100000);
+	condition(value(trait, esp) && (value(trait, max depth) >= 55)): reward(100000);
+	condition(value(trait, resist nether) && (value(trait, max depth) >= 59)): reward(55000);
+	condition(value(trait, resist chaos) && (value(trait, max depth) >= 59)): reward(104000);
+	condition(value(trait, resist dis) && (value(trait, max depth) >= 59)): reward(90000);
+	condition((value(trait, speed) >= 120) && (value(trait, max depth) >= 59)): reward(100000);
+	condition((value(trait, speed) >= 130) && (value(trait, max depth) >= 79)): reward(100000);
+	condition(value(trait, resist nether) && (value(trait, max depth) >= 79)): reward(15000);
+	condition(value(trait, resist dark) && (value(trait, max depth) >= 79)): reward(25000);
 
 # ac
-		condition(value(config, worships_ac) && (value(trait, armor) < 15)): reward(value(trait, armor) * 2500);
-		condition(value(config, worships_ac) && (value(trait, armor) < 15) && (value(trait, armor) < 75)): reward((value(trait, armor) * 2000) + 28250);
-		condition(value(config, worships_ac) && (value(trait, armor) >= 75)): reward((value(trait, armor) * 1500) + 73750);
-		condition(!value(config, worships_ac) && (value(trait, armor) < 15)): reward(value(trait, armor) * 2000);
-		condition(!value(config, worships_ac) && (value(trait, armor) < 15) && (value(trait, armor) < 75)): reward((value(trait, armor) * 500) + 28350);
-		condition(!value(config, worships_ac) && (value(trait, armor) >= 75)): reward((value(trait, armor) * 100) + 73750);
+	condition(value(config, worships_ac) && (value(trait, armor) < 15)): reward(value(trait, armor) * 2500);
+	condition(value(config, worships_ac) && (value(trait, armor) < 15) && (value(trait, armor) < 75)): reward((value(trait, armor) * 2000) + 28250);
+	condition(value(config, worships_ac) && (value(trait, armor) >= 75)): reward((value(trait, armor) * 1500) + 73750);
+	condition(!value(config, worships_ac) && (value(trait, armor) < 15)): reward(value(trait, armor) * 2000);
+	condition(!value(config, worships_ac) && (value(trait, armor) < 15) && (value(trait, armor) < 75)): reward((value(trait, armor) * 500) + 28350);
+	condition(!value(config, worships_ac) && (value(trait, armor) >= 75)): reward((value(trait, armor) * 100) + 73750);
 
 # Penalize various flags
-		condition(value(trait, aggravate)): reward(-800000);
-		condition(value(trait, impair hp)): reward(-35000);
-		condition(value(trait, fear)): reward(-400000);
-		condition(value(trait, drain xp)): reward(-400000);
-		condition(value(trait, vuln fire)): reward(-30000);
-		condition(value(trait, vuln elec)): reward(-30000);
-		condition(value(trait, vuln acid)): reward(-30000);
-		condition(value(trait, vuln cold)): reward(-30000);
-		condition(value(trait, teleport)): reward(-100000);
-		condition(value(trait, enveloping)): reward(-50000);
-		condition(value(trait, irritation)): reward(-20000);
-		condition(value(trait, curse poison)): reward(-10000);
-		condition(value(trait, siren)): reward(-800000);
-		condition(value(trait, halucinate)): reward(-100000);
-		condition(value(trait, paralysis)): reward(-800000);
-		condition(value(trait, summon demon)): reward(-100000);
-		condition(value(trait, summon dragon)): reward(-100000);
-		condition(value(trait, summon undead)): reward(-100000);
-		condition(value(trait, curse stone) && (value(trait, speed) >= 140)): reward(-10000);
-		condition(value(trait, curse steel) && (value(trait, speed) >= 140)): reward(-10000);
-		condition(value(trait, no teleport)): reward(-700000);
-		condition(value(trait, treach wep)): reward(-100000);
-		condition(value(trait, air swing)): reward(-10000);
-		condition(value(trait, unknown curse)): reward(-9999999);
+	condition(value(trait, aggravate)): reward(-800000);
+	condition(value(trait, impair hp)): reward(-35000);
+	condition(!value(class, warrior) && value(trait, impair hp)): reward(-15000);
+	condition((value(class, mage) || value(class, priest) || value(class, druid) || value(class, necromancer)) && value(trait, impair hp)): reward(-15000);
+	condition(value(trait, fear)): reward(-400000);
+	condition(!value(class, mage) && value(trait, fear)): reward(-200000);
+	condition(value(trait, drain xp)): reward(-400000);
+	condition(value(trait, vuln fire)): reward(-30000);
+	condition(value(trait, vuln elec)): reward(-30000);
+	condition(value(trait, vuln acid)): reward(-30000);
+	condition(value(trait, vuln cold)): reward(-30000);
+	condition(value(trait, teleport)): reward(-100000);
+	condition(value(trait, enveloping)): reward(-50000);
+	condition(value(trait, irritation)): reward(-20000);
+	condition(value(trait, curse poison)): reward(-10000);
+	condition(value(trait, siren)): reward(-800000);
+	condition(value(trait, hallucinate)): reward(-100000);
+	condition(value(trait, paralysis)): reward(-800000);
+	condition(value(trait, summon demon)): reward(-100000);
+	condition(value(trait, summon dragon)): reward(-100000);
+	condition(value(trait, summon undead)): reward(-100000);
+	condition(value(trait, curse stone) && (value(trait, speed) >= 140)): reward(-10000);
+	condition(value(trait, curse steel) && (value(trait, speed) >= 140)): reward(-10000);
+	condition(value(trait, no teleport)): reward(-700000);
+	condition(value(trait, treach wep)): reward(-100000);
+	condition(value(trait, air swing)): reward(-10000);
+	condition(value(trait, unknown curse)): reward(-9999999);
 
-# weight (needs to be in code for now)
-# spell chance also in the code
+#	condition((value(class, priest) || value(class, paladin)) && !value(trait, wep blessed)): reward(-75000);
 
 # something with multiple useful bonuses
-		reward(value(trait, multi bonus) * 3000);
+	reward(value(trait, multi bonus) * 3000);
 
 # wearing something that needs an ID
-		reward(value(trait, amt need id) * 10000);
+	reward(value(trait, amt need id) * 10000);
 
 # activations. 
-		condition(value(activation, illumination)): reward(500 * value(activation, illumination));
-		condition(value(activation, mapping)): reward(550 * value(activation, mapping));
-		condition(value(activation, clairvoyance)): reward(600 * value(activation, clairvoyance));
-		condition(value(activation, fire_bolt)): reward(540 * value(activation, fire_bolt));
-		condition(value(activation, cold_bolt)): reward(527 * value(activation, cold_bolt));
-		condition(value(activation, elec_bolt)): reward(518 * value(activation, elec_bolt));
-		condition(value(activation, acid_bolt)): reward(522 * value(activation, acid_bolt));
-		condition(value(activation, mana_bolt)): reward(554 * value(activation, mana_bolt));
-		condition(value(activation, stinking_cloud)): reward(524 * value(activation, stinking_cloud));
-		condition(value(activation, cold_ball50)): reward(596 * value(activation, cold_ball50));
-		condition(value(activation, cold_ball100)): reward(700 * value(activation, cold_ball100));
-		condition(value(activation, fire_bolt72)): reward(572 * value(activation, fire_bolt72));
-		condition(value(activation, cold_bolt2)): reward(554 * value(activation, cold_bolt2));
-		condition(value(activation, fire_ball)): reward(644 * value(activation, fire_ball));
-		condition(value(activation, dispel_evil)): reward((500 + (10 + (value(trait, clevel) *5)/ 2)) * value(activation, dispel_evil));
-		condition(value(activation, detect_objects)): reward(10 * value(activation, detect_objects));
-		condition(value(activation, tele_other)): reward(1000 * value(activation, tele_other));
-		condition(value(activation, drain_life1)): reward(590 * value(activation, drain_life1));
-		condition(value(activation, drain_life2)): reward(620 * value(activation, drain_life2));
-		condition(value(activation, berserker)): reward(500 * value(activation, berserker));
-		condition(value(activation, loskill)): reward(700 * value(activation, loskill));
-		condition(value(activation, arrow)): reward(700 * value(activation, arrow));
-		condition(value(activation, tele_phase)): reward(500 * value(activation, tele_phase));
-		condition(value(activation, destroy_doors)): reward(50 * value(activation, destroy_doors));
-		condition(value(activation, banishment)): reward(1000 * value(activation, banishment));
-		condition(value(activation, tele_long)): reward(300 * value(activation, tele_long));
-		condition(value(activation, missile)): reward(507 * value(activation, missile));
-		condition(value(activation, cure_temp)): reward(500 * value(activation, cure_temp));
-		condition(value(activation, starlight2)): reward(145 * value(activation, starlight2));
+	condition(value(activation, illumination)): reward(500 * value(activation, illumination));
+	condition(value(activation, mapping)): reward(550 * value(activation, mapping));
+	condition(value(activation, clairvoyance)): reward(600 * value(activation, clairvoyance));
+	condition(value(activation, fire_bolt)): reward(540 * value(activation, fire_bolt));
+	condition(value(activation, cold_bolt)): reward(527 * value(activation, cold_bolt));
+	condition(value(activation, elec_bolt)): reward(518 * value(activation, elec_bolt));
+	condition(value(activation, acid_bolt)): reward(522 * value(activation, acid_bolt));
+	condition(value(activation, mana_bolt)): reward(554 * value(activation, mana_bolt));
+	condition(value(activation, stinking_cloud)): reward(524 * value(activation, stinking_cloud));
+	condition(value(activation, cold_ball50)): reward(596 * value(activation, cold_ball50));
+	condition(value(activation, cold_ball100)): reward(700 * value(activation, cold_ball100));
+	condition(value(activation, fire_bolt72)): reward(572 * value(activation, fire_bolt72));
+	condition(value(activation, cold_bolt2)): reward(554 * value(activation, cold_bolt2));
+	condition(value(activation, fire_ball)): reward(644 * value(activation, fire_ball));
+	condition(value(activation, dispel_evil)): reward((500 + (10 + (value(trait, clevel) *5)/ 2)) * value(activation, dispel_evil));
+	condition(value(activation, detect_objects)): reward(10 * value(activation, detect_objects));
+	condition(!value(class, mage) && value(activation, tele_other)): reward(1000 * value(activation, tele_other));
+	condition(value(class, mage) && value(activation, tele_other)): reward(500 * value(activation, tele_other));
+	condition(value(activation, drain_life1)): reward(590 * value(activation, drain_life1));
+	condition(value(activation, drain_life2)): reward(620 * value(activation, drain_life2));
+	condition(value(activation, berserker)): reward(500 * value(activation, berserker));
+	condition(value(activation, loskill)): reward(700 * value(activation, loskill));
+	condition(value(activation, arrow)): reward(700 * value(activation, arrow));
+	condition((value(class, mage) || value(class, priest) || value(class, druid)) && value(activation, rem_fear_pois)): reward(500 * value(activation, rem_fear_pois));
+	condition((!value(class, mage) && !value(class, priest) && !value(class, druid)) && value(activation, rem_fear_pois)): reward(700 * value(activation, rem_fear_pois));
+	condition(value(activation, tele_phase)): reward(500 * value(activation, tele_phase));
+	condition(value(activation, destroy_doors)): reward(50 * value(activation, destroy_doors));
+	condition(value(activation, banishment)): reward(1000 * value(activation, banishment));
+	condition(value(activation, resist_all)): reward(650 * value(activation, resist_all));
+	condition(!value(class, mage) && value(activation, resist_all)): reward(25000 * value(activation, resist_all));
+	condition(value(activation, sleepii)): reward(500 * value(activation, sleepii));
+	condition(!value(class, druid) && !value(class, necromancer) && value(activation, sleepii)): reward(200 * value(activation, sleepii));
+	condition(value(activation, recharge)): reward(500 * value(activation, recharge));
+	condition(!value(class, mage) && !value(class, rogue) && value(activation, recharge)): reward(100 * value(activation, recharge));
+	condition(value(activation, tele_long)): reward(300 * value(activation, tele_long));
+	condition(value(activation, missile)): reward(507 * value(activation, missile));
+	condition(value(activation, cure_temp)): reward(500 * value(activation, cure_temp));
+	condition(value(activation, starlight2)): reward(145 * value(activation, starlight2));
 # one ring
-		condition(value(activation, bizarre)): reward(999999 * value(activation, bizarre));
-		condition(value(activation, star_ball)): reward(800 * value(activation, star_ball));
-		condition(value(activation, starlight)): reward(127 * value(activation, starlight));
-		condition(value(activation, firebrand)): reward(500 * value(activation, firebrand));
-		condition(value(activation, enlightenment)): reward(500 * value(activation, enlightenment));
-		condition(value(activation, hero)): reward(500 * value(activation, hero));
-		condition(value(activation, shero)): reward(500 * value(activation, shero));
-		condition(value(activation, cure_paranoia)): reward(100 * value(activation, cure_paranoia));
-		condition(value(activation, cure_mind)): reward(1000 * value(activation, cure_mind));
-		condition(value(activation, cure_body)): reward(1000 * value(activation, cure_body));
-		condition(value(activation, mon_slow)): reward(500 * value(activation, mon_slow));
-		condition(value(activation, mon_confuse)): reward(500 * value(activation, mon_confuse));
-		condition(value(activation, sleep_all)): reward(500 * value(activation, sleep_all));
-		condition(value(activation, mon_scare)): reward(500 * value(activation, mon_scare));
-		condition(value(activation, light_line)): reward(50 * value(activation, light_line));
-		condition(value(activation, disable_traps)): reward(50 * value(activation, disable_traps));
-		condition(value(activation, drain_life3)): reward(650 * value(activation, drain_life3));
-		condition(value(activation, drain_life4)): reward(750 * value(activation, drain_life4));
-		condition(value(activation, elec_ball)): reward(564 * value(activation, elec_ball));
-		condition(value(activation, elec_ball2)): reward(750 * value(activation, elec_ball2));
-		condition(value(activation, acid_bolt2)): reward(545 * value(activation, acid_bolt2));
-		condition(value(activation, acid_bolt3)): reward(554 * value(activation, acid_bolt3));
-		condition(value(activation, acid_ball)): reward(620 * value(activation, acid_ball));
-		condition(value(activation, cold_ball160)): reward(660 * value(activation, cold_ball160));
-		condition(value(activation, cold_ball2)): reward(700 * value(activation, cold_ball2));
-		condition(value(activation, fire_ball2)): reward(620 * value(activation, fire_ball2));
-		condition(value(activation, fire_ball200)): reward(700 * value(activation, fire_ball200));
-		condition(value(activation, fire_bolt2)): reward(554 * value(activation, fire_bolt2));
-		condition(value(activation, fire_bolt3)): reward(572 * value(activation, fire_bolt3));
-		condition(value(activation, dispel_evil60)): reward(560 * value(activation, dispel_evil60));
-		condition(value(activation, dispel_undead)): reward(560 * value(activation, dispel_undead));
-		condition(value(activation, dispel_all)): reward(620 * value(activation, dispel_all));
-		condition(value(activation, earthquakes)): reward(500 * value(activation, earthquakes));
-		condition(value(activation, destruction2)): reward(500 * value(activation, destruction2));
-		condition(value(activation, losslow)): reward(50 * value(activation, losslow));
-		condition(value(activation, lossleep)): reward(100 * value(activation, lossleep));
-		condition(value(activation, losconf)): reward(100 * value(activation, losconf));
-		condition(value(activation, satisfy)): reward(50 * value(activation, satisfy));
-		condition(value(activation, blessing)): reward(50 * value(activation, blessing));
-		condition(value(activation, blessing2)): reward(50 * value(activation, blessing2));
-		condition(value(activation, blessing3)): reward(50 * value(activation, blessing3));
-		condition(value(activation, tele_level)): reward(5000 * value(activation, tele_level));
-		condition(value(activation, remove_curse)): reward(9000 * value(activation, remove_curse));
-		condition(value(activation, remove_curse2)): reward(10000 * value(activation, remove_curse2));
-		condition(value(activation, detect_invis)): reward(50 * value(activation, detect_invis));
-		condition(value(activation, detect_evil)): reward(50 * value(activation, detect_evil));
-		condition(value(activation, restore_mana)): reward(5000 * value(activation, restore_mana));
-		condition(value(activation, restore_int)): reward(50 * value(activation, restore_int));
-		condition(value(activation, restore_wis)): reward(50 * value(activation, restore_wis));
-		condition(value(activation, restore_dex)): reward(50 * value(activation, restore_dex));
-		condition(value(activation, restore_con)): reward(50 * value(activation, restore_con));
-		condition(value(activation, restore_all)): reward(150 * value(activation, restore_all));
-		condition(value(activation, tmd_sinvis)): reward(50 * value(activation, tmd_sinvis));
-		condition(value(activation, tmd_esp)): reward(50 * value(activation, tmd_esp));
-		condition(value(activation, resist_acid)): reward(100 * value(activation, resist_acid));
-		condition(value(activation, resist_elec)): reward(100 * value(activation, resist_elec));
-		condition(value(activation, resist_fire)): reward(100 * value(activation, resist_fire));
-		condition(value(activation, resist_cold)): reward(100 * value(activation, resist_cold));
-		condition(value(activation, resist_pois)): reward(150 * value(activation, resist_pois));
-		condition(value(activation, cure_confusion)): reward(50 * value(activation, cure_confusion));
-		condition(value(activation, wonder)): reward(300 * value(activation, wonder));
-		condition(value(activation, staff_holy)): reward(1000 * value(activation, staff_holy));
-		condition(value(activation, food_waybread)): reward(50 * value(activation, food_waybread));
-		condition(value(activation, shroom_stone)): reward(50 * value(activation, shroom_stone));
-		condition(value(activation, shroom_purging)): reward(50 * value(activation, shroom_purging));
-		condition(value(activation, ring_acid)): reward(10000 * value(activation, ring_acid));
-		condition(value(activation, ring_flames)): reward(25000 * value(activation, ring_flames));
-		condition(value(activation, ring_ice)): reward(15000 * value(activation, ring_ice));
-		condition(value(activation, ring_lightning)): reward(10000 * value(activation, ring_lightning));
-		condition(value(activation, dragon_blue)): reward(1100 * value(activation, dragon_blue));
-		condition(value(activation, dragon_green)): reward(2750 * value(activation, dragon_green));
-		condition(value(activation, dragon_red)): reward(1100 * value(activation, dragon_red));
-		condition(value(activation, dragon_multihued)): reward(3250 * value(activation, dragon_multihued));
-		condition(value(activation, dragon_gold)): reward(5150 * value(activation, dragon_gold));
-		condition(value(activation, dragon_chaos)): reward(5150 * value(activation, dragon_chaos));
-		condition(value(activation, dragon_law)): reward(5150 * value(activation, dragon_law));
-		condition(value(activation, dragon_balance)): reward(5150 * value(activation, dragon_balance));
-		condition(value(activation, dragon_shining)): reward(5150 * value(activation, dragon_shining));
-		condition(value(activation, dragon_power)): reward(5150 * value(activation, dragon_power));
+	condition(value(activation, bizarre)): reward(999999 * value(activation, bizarre));
+	condition(value(activation, star_ball)): reward(800 * value(activation, star_ball));
+	condition(value(activation, rage_bless_resist)): reward(650 * value(activation, rage_bless_resist));
+	condition(!value(class, mage) && value(activation, rage_bless_resist)): reward(25000 * value(activation, rage_bless_resist));
+	condition(value(activation, starlight)): reward(127 * value(activation, starlight));
+	condition(value(activation, firebrand)): reward(500 * value(activation, firebrand));
+	condition(value(activation, enlightenment)): reward(500 * value(activation, enlightenment));
+	condition(value(activation, hero)): reward(500 * value(activation, hero));
+	condition(value(activation, shero)): reward(500 * value(activation, shero));
+	condition(value(activation, cure_paranoia)): reward(100 * value(activation, cure_paranoia));
+	condition(value(activation, cure_mind)): reward(1000 * value(activation, cure_mind));
+	condition(value(activation, cure_body)): reward(1000 * value(activation, cure_body));
+	condition(value(activation, mon_slow)): reward(500 * value(activation, mon_slow));
+	condition(value(activation, mon_confuse)): reward(500 * value(activation, mon_confuse));
+	condition(value(activation, sleep_all)): reward(500 * value(activation, sleep_all));
+	condition(value(activation, mon_scare)): reward(500 * value(activation, mon_scare));
+	condition(value(activation, light_line)): reward(50 * value(activation, light_line));
+	condition(value(activation, disable_traps)): reward(50 * value(activation, disable_traps));
+	condition(value(activation, drain_life3)): reward(650 * value(activation, drain_life3));
+	condition(value(activation, drain_life4)): reward(750 * value(activation, drain_life4));
+	condition(value(activation, elec_ball)): reward(564 * value(activation, elec_ball));
+	condition(value(activation, elec_ball2)): reward(750 * value(activation, elec_ball2));
+	condition(value(activation, acid_bolt2)): reward(545 * value(activation, acid_bolt2));
+	condition(value(activation, acid_bolt3)): reward(554 * value(activation, acid_bolt3));
+	condition(value(activation, acid_ball)): reward(620 * value(activation, acid_ball));
+	condition(value(activation, cold_ball160)): reward(660 * value(activation, cold_ball160));
+	condition(value(activation, cold_ball2)): reward(700 * value(activation, cold_ball2));
+	condition(value(activation, fire_ball2)): reward(620 * value(activation, fire_ball2));
+	condition(value(activation, fire_ball200)): reward(700 * value(activation, fire_ball200));
+	condition(value(activation, fire_bolt2)): reward(554 * value(activation, fire_bolt2));
+	condition(value(activation, fire_bolt3)): reward(572 * value(activation, fire_bolt3));
+	condition(value(activation, dispel_evil60)): reward(560 * value(activation, dispel_evil60));
+	condition(value(activation, dispel_undead)): reward(560 * value(activation, dispel_undead));
+	condition(value(activation, dispel_all)): reward(620 * value(activation, dispel_all));
+	condition(value(activation, earthquakes)): reward(500 * value(activation, earthquakes));
+	condition(value(activation, destruction2)): reward(500 * value(activation, destruction2));
+	condition(value(activation, losslow)): reward(50 * value(activation, losslow));
+	condition(value(activation, lossleep)): reward(100 * value(activation, lossleep));
+	condition(value(activation, losconf)): reward(100 * value(activation, losconf));
+	condition(value(activation, satisfy)): reward(50 * value(activation, satisfy));
+	condition(value(activation, blessing)): reward(50 * value(activation, blessing));
+	condition(value(activation, blessing2)): reward(50 * value(activation, blessing2));
+	condition(value(activation, blessing3)): reward(50 * value(activation, blessing3));
+	condition(value(activation, tele_level)): reward(5000 * value(activation, tele_level));
+	condition(value(activation, remove_curse)): reward(9000 * value(activation, remove_curse));
+	condition(value(activation, remove_curse2)): reward(10000 * value(activation, remove_curse2));
+	condition(value(activation, detect_invis)): reward(50 * value(activation, detect_invis));
+	condition(value(activation, detect_evil)): reward(50 * value(activation, detect_evil));
+	condition(value(activation, restore_mana)): reward(5000 * value(activation, restore_mana));
+	condition(value(activation, restore_int)): reward(50 * value(activation, restore_int));
+	condition(value(activation, restore_wis)): reward(50 * value(activation, restore_wis));
+	condition(value(activation, restore_dex)): reward(50 * value(activation, restore_dex));
+	condition(value(activation, restore_con)): reward(50 * value(activation, restore_con));
+	condition(value(activation, restore_all)): reward(150 * value(activation, restore_all));
+	condition(value(activation, tmd_sinvis)): reward(50 * value(activation, tmd_sinvis));
+	condition(value(activation, tmd_esp)): reward(50 * value(activation, tmd_esp));
+	condition(value(activation, resist_acid)): reward(100 * value(activation, resist_acid));
+	condition(value(activation, resist_elec)): reward(100 * value(activation, resist_elec));
+	condition(value(activation, resist_fire)): reward(100 * value(activation, resist_fire));
+	condition(value(activation, resist_cold)): reward(100 * value(activation, resist_cold));
+	condition(value(activation, resist_pois)): reward(150 * value(activation, resist_pois));
+	condition(value(activation, cure_confusion)): reward(50 * value(activation, cure_confusion));
+	condition(value(activation, wonder)): reward(300 * value(activation, wonder));
+	condition(value(activation, staff_holy)): reward(1000 * value(activation, staff_holy));
+	condition(value(activation, food_waybread)): reward(50 * value(activation, food_waybread));
+	condition(value(activation, shroom_stone)): reward(50 * value(activation, shroom_stone));
+	condition(value(activation, shroom_purging)): reward(50 * value(activation, shroom_purging));
+	condition(value(activation, ring_acid)): reward(10000 * value(activation, ring_acid));
+	condition(value(activation, ring_flames)): reward(25000 * value(activation, ring_flames));
+	condition(value(activation, ring_ice)): reward(15000 * value(activation, ring_ice));
+	condition(value(activation, ring_lightning)): reward(10000 * value(activation, ring_lightning));
+	condition(value(activation, dragon_blue)): reward(1100 * value(activation, dragon_blue));
+	condition(value(activation, dragon_green)): reward(2750 * value(activation, dragon_green));
+	condition(value(activation, dragon_red)): reward(1100 * value(activation, dragon_red));
+	condition(value(activation, dragon_multihued)): reward(3250 * value(activation, dragon_multihued));
+	condition(value(activation, dragon_gold)): reward(5150 * value(activation, dragon_gold));
+	condition(value(activation, dragon_chaos)): reward(5150 * value(activation, dragon_chaos));
+	condition(value(activation, dragon_law)): reward(5150 * value(activation, dragon_law));
+	condition(value(activation, dragon_balance)): reward(5150 * value(activation, dragon_balance));
+	condition(value(activation, dragon_shining)): reward(5150 * value(activation, dragon_shining));
+	condition(value(activation, dragon_power)): reward(5150 * value(activation, dragon_power));
+
+#######################
+
 
 # inventory 
 # fuel
-#		value(trait, fuel): range(1, 6): reward(60000);
-#		value(trait, fuel): range(6, 10): condition(value(trait, str) >= 15): reward(6000 - (value(range, n) *100));
-#		value(trait, food): range(1, 1): condition(value(trait, ishungry) or value(trait, isweak)): reward(100000);
-	]
-	
-	Depth Requirement
-	[
-#		depth(10): condition(((value(potion, Cure Critical Wounds) + value(potion, Cure Serious Wounds)) > 2) or (value(trait, clevel) > 30));
-	]
+	value(trait, fuel): range(1, 6): reward(60000);
+	value(trait, fuel): range(7, 10): condition(value(trait, str) >= 15): reward(6000 - (value(range, n) *100));
+# food
+	condition(value(trait, food) and (value(trait, is hungry) or value(trait, is weak))): reward(100000);
+	value(trait, food): range(1, 7): reward(50000);
+	value(trait, food): range(8, 10): condition(value(trait, str) >= 15): reward(200);
+	value(trait, food): range(1, 15): condition(value(trait, regen) and value(trait, CLEVEL) <= 15): reward(700);
+# Prefer to buy HiCalorie foods over LowCalorie
+	condition(value(trait, food high) <= 5): reward(50 * value(trait, food high));
+
+# Cure Poison and Cuts
+	condition(value(trait, amt potion ccw) and (value(trait, is cut) or value(trait, is poisoned))): reward(100000);
+	condition(value(trait, amt heal) and (value(trait, is cut) or value(trait, is poisoned))): reward(50000);
+	value(trait, amt potion csw): range(1, 5): condition(value(trait, is cut) or value(trait, is poisoned)): reward(25000);
+
+	condition(value(trait, is poisoned) and value(trait, amt cure poison)): reward(15000);
+
+# collect Resistance pots if not immune
+	value(trait, amt resist poison): range(1, 4): condition(!value(trait, immune poison) and value(trait, amt cure poison) < 20 && (!value(config, munchkin_start) || value(trait, max clevel) >= value(config, munchkin_level))): reward(300);
+
+# Resistance Potions for Warriors
+	value(trait, amt resist heat): range(1, 4): condition((value(class, warrior) && !value(trait, immune fire) && value(trait, max depth) > 20) && (!value(config, munchkin_start) || value(trait, max clevel) >= value(config, munchkin_level))): reward(500);
+	value(trait, amt resist cold): range(1, 4): condition((value(class, warrior) && !value(trait, immune cold) && value(trait, max depth) > 20) && (!value(config, munchkin_start) || value(trait, max clevel) >= value(config, munchkin_level))): reward(500);
+	value(trait, amt resist poison): range(1, 4): condition((value(class, warrior) && !value(trait, immune poison) && value(trait, max depth) > 20) && (!value(config, munchkin_start) || value(trait, max clevel) >= value(config, munchkin_level))): reward(500);
+
+# ident
+	value(trait, amt id): range(1, 5): condition(value(trait, clevel) >= 10): reward(6000);
+	value(trait, amt id): range(6, 15): condition(value(trait, clevel) >= 10): reward(600);
+
+# ID if I am carrying a {magical} or {excellent} item
+	value(trait, amt need id): range(1, 20): condition(value(trait, amt need id) && value(trait, amt need id) <= value(trait, amt id)): reward(6000);
+	value(trait, amt id): range(1, 20): condition(value(trait, amt need id) && value(trait, amt need id) > value(trait, amt id)): reward(6000);
+
+# PFE carry lots of these
+	value(trait, amt prot evil): range(1, 10): condition(!value(config, munchkin_start) || value(trait, max clevel) >= value(config, munchkin_level)): reward(10000);
+	value(trait, amt prot evil): range(11, 25): condition(!value(config, munchkin_start) || value(trait, max clevel) >= value(config, munchkin_level)): reward(2000);
+
+# Glyph- Rune of Protection-  carry lots of these
+	value(trait, amt glyph): range(1, 10): reward(10000);
+	value(trait, amt glyph): range(11, 25): reward(2000);
+	value(trait, amt glyph): range(1, 10): condition(value(trait, max depth) >= 100): reward(10000);
+	value(trait, amt glyph): range(11, 75): condition(value(trait, max depth) >= 100): reward(2000);
+
+# Scroll of Mass Genocide, only when fighting Morgoth
+	value(trait, mass banishment): range(1, 99): condition(value(trait, max depth) >= 100): reward(2500);
+
+# recall
+	value(trait, recall): range(1, 3): condition(value(trait, clevel) > 7 && (!value(config, munchkin_start) || value(trait, max clevel) >= value(config, munchkin_level))): reward(50000);
+	value(trait, recall): range(4, 7): condition(value(trait, clevel) > 7 && value(trait, str) >= 15 && (!value(config, munchkin_start) || value(trait, max clevel) >= value(config, munchkin_level))): reward(5000);
+
+# Deep borgs need the rod to avoid low mana traps
+	condition(value(trait, max depth) >= 50 && value(rod, recall)): reward(12000);
+
+# phase
+	condition(value(trait, amt phase)): reward(50000);
+	value(trait, amt phase): range(2, 8): condition(!value(config, munchkin_start) || value(trait, max clevel) >= value(config, munchkin_level)): reward(500);
+	value(trait, amt phase): range(9, 15): condition(value(trait, str) >= 15 && (!value(config, munchkin_start) || value(trait, max clevel) >= value(config, munchkin_level))): reward(500);
+
+# escape (staff of teleport or artifact)
+	value(trait, amt escape): range(1, 2): condition(!value(config, munchkin_start) || value(trait, max clevel) >= value(config, munchkin_level)): reward(10000);
+	value(trait, amt escape): range(1, 3): condition(value(trait, max depth) > 70 && (!value(config, munchkin_start) || value(trait, max clevel) >= value(config, munchkin_level))): reward(10000);
+
+# teleport scrolls
+	condition(value(trait, amt teleport) && value(trait, clevel) >= 3): reward(10000);
+	value(trait, amt teleport): range(1, 3): condition(value(trait, clevel) >= 7): reward(10000);
+	value(trait, amt teleport): range(4, 10): condition(value(trait, clevel) >= 30): reward(10000);
+
+# Teleport Level scrolls 
+	value(trait, amt teleport level): range(1, 5): condition(value(trait, clevel) >= 15): reward(5000);
+
+# Healing 
+	value(trait, amt heal): range(1, 15): condition(value(class, warrior) || value(class, rogue) || value(class, blackguard)): reward(8000);
+# These guys need to carry the rods more, town runs low on supply.
+	value(rod, healing): range(1, 6): condition(value(class, warrior) || value(class, rogue) || value(class, blackguard)): reward(20000);
+
+	value(trait, amt heal): range(1, 10): condition(value(class, ranger) || value(class, paladin) || value(class, necromancer) || value(class, mage)): reward(4000);
+
+	value(potion, healing): range(1, 3): condition(value(class, paladin)): reward(5000);
+	value(rod, healing): range(1, 4): condition(value(class, ranger) || value(class, paladin) || value(class, necromancer) || value(class, mage)): reward(20000);
+
+# Level 1 priests are given a Potion of Healing.  It is better for them to sell that potion and buy equipment or several Cure Crits with it.
+	value(potion, healing): range(1, 10): condition((value(class, druid) || value(class, priest)) && value(trait, clevel) = 1): reward(-2000);
+	value(potion, healing): range(1, 5): condition(value(class, druid) || value(class, priest)): reward(2000);
+
+	value(trait, amt ezheal): range(1, 2): condition(value(trait, max depth) >= 46 && value(trait, prep big fight)): reward(10000);
+	value(trait, amt ezheal): range(1, 1): condition(value(trait, max depth) >= 46 && !value(trait, prep big fight)): reward(10000);
+
+# Collecting Potions, prepping for Morgoth/Sauron fight
+	value(potion, healing): range(1, 99): condition(value(trait, max depth) >= 99 && !value(trait, prep big fight)): reward(8000);
+	value(trait, amt ezheal): range(1, 99): condition(value(trait, max depth) >= 99 && !value(trait, prep big fight)): reward(10000);
+	value(trait, amt speed): range(1, 99): condition(value(trait, max depth) >= 99 && !value(trait, prep big fight)): reward(8000);
+	value(trait, amt life): range(1, 99): condition(value(trait, max depth) >= 99 && !value(trait, prep big fight)): reward(10000);
+	value(potion, restore mana): range(1, 99): condition(value(trait, max depth) >= 99  && !value(trait, prep big fight) && !value(class, warrior)): reward(5000);
+	value(mushroom, stoneskin): range(1, 40): condition(value(trait, max depth) >= 99 && !value(trait, prep big fight)): reward(5000);
+# Scroll of Mass Genocide, only when fighting Morgoth
+	value(trait, mass banishment): range(1, 40): condition(value(trait, max depth) >= 99 && value(trait, sauron dead) && !value(trait, prep big fight)): reward(2500);
+
+# Restore Mana
+	value(potion, restore mana): range(1, 10): condition(value(trait, max sp) > 100): reward(4000);
+	value(trait, amt staff magi): range(1, 100): condition(value(trait, max sp) > 100): reward(4000);
+
+# Cure Critical
+	value(trait, amt potion ccw): range(1, 10): condition(value(trait, clevel) < 35 && value(trait, clevel) > 10): reward(5000);
+	value(trait, amt potion ccw): range(1, 10): condition(value(trait, clevel) >= 35): reward(5000);
+	value(trait, amt potion ccw): range(11, 15): condition(value(trait, clevel) >= 35 && value(trait, str) > 15): reward(500);
+
+# Cure serious
+	value(trait, amt potion csw): range(1, 7): condition(value(trait, clevel) < 35 && value(trait, clevel) > 10 && value(trait, amt potion ccw) < 5 && !value(trait, resist conf)): reward(50);
+	value(trait, amt potion csw): range(8, 10): condition(value(trait, clevel) < 35 && value(trait, clevel) > 10 && value(trait, amt potion ccw) < 5 && !value(trait, resist conf) && value(trait, str) > 15): reward(5);
+
+# Cure light 
+	value(trait, amt potion clw): range(1, 5): condition((value(trait, amt potion ccw) + value(trait, amt potion csw)) < 5 && value(trait, clevel) < 10): reward(550);
+
+# Cures
+	value(trait, food cure conf): range(1, 10): condition(!value(trait, resist conf) && (!value(config, munchkin_start) || value(trait, max clevel) >= 10)): reward(400);
+	value(trait, food cure blind): range(1, 10): condition(!value(trait, resist blind) && (!value(config, munchkin_start) || value(trait, max clevel) >= 10)): reward(300);
+	value(trait, amt cure poison): range(1, 5): condition(!value(trait, resist poison) && (!value(config, munchkin_start) || value(trait, max clevel) >= 10)): reward(250);
+
+# detect
+	value(trait, amt detect traps): range(1, 1): reward(4000);
+	value(trait, amt detect door): range(1, 1): reward(2000);
+
+# detect evil 
+	value(trait, amt detect evil): range(1, 1): condition(!value(trait, esp)): reward(1000);
+
+# magic map
+	value(trait, amt magic map): range(1, 1): reward(4000);
+
+# lite
+	value(trait, amt lite): range(1, 1): reward(1000);
+
+# genocide
+	value(scroll, mass banishment): range(1, 10): condition(value(trait, max depth) >= 100): reward(10000);
+	value(scroll, mass banishment): range(11, 25): condition(value(trait, max depth) >= 100): reward(2000);
+
+# speed potions/rods/staves
+	value(trait, amt speed): range(1, 20): condition(!value(config, munchkin_start) || value(trait, max clevel) >= value(config, munchkin_level)): reward(5000);
+
+# Recharge ability
+	condition(value(trait, amt recharge) && value(trait, max depth) < 99): reward(5000);
+
+# missles
+	value(trait, amt missiles): range(1, 40): condition(value(class, warrior) || value(class, ranger)): reward(1000);
+	value(trait, amt missiles): range(41, 80): condition((value(class, warrior) || value(class, ranger)) && value(trait, str) > 15 && value(trait, str) <= 18): reward(100);
+	value(trait, amt missiles): range(81, 180): condition((value(class, warrior) || value(class, ranger)) && value(trait, str) > 18): reward(80);
+	value(trait, quiver slots): range(5, 10): condition(value(class, warrior) || value(class, ranger)): reward(-10000);
+
+	value(trait, amt missiles): range(1, 20): condition(!value(class, warrior) && !value(class, ranger)): reward(1000);
+	value(trait, amt missiles): range(21, 50): condition((!value(class, warrior) && !value(class, ranger)) && value(trait, str) > 15): reward(100);
+	condition((!value(class, warrior) && !value(class, ranger)) && value(trait, str) <= 15 && value(trait, amt missiles) > 20): reward(-1000);
+	value(trait, quiver slots): range(3, 10): condition(!value(class, warrior) && !value(class, ranger)): reward(-10000);
+
+#  cursed arrows are "bad"
+	reward(value(trait, amt cursed missiles) * -1000);
+
+# ego arrows are worth a bonus
+	reward(value(trait, amt ego missiles) * 1000);
+
+# carrying a staff of destruction
+	condition(value(trait, amt staff destruction)): reward(5000);
+	value(trait, amt staff destruction): range(1, 9): reward(200);
+
+# carrying a wand of Teleport Other
+	condition(value(trait, amt teleport other)): reward(5000);
+# greater reward for Warrior
+	condition(value(trait, amt teleport other) && value(class, warrior)): reward(50000);
+	value(trait, amt teleport other): range(1, 15): reward(5000);
+
+# carrying an attack wand
+	condition((value(wand, magic missile) || value(wand, stinking cloud)) && (value(trait, max depth) < 30)): reward(5000);
+	condition(value(wand, annihilation) && (value(trait, max depth) < 30)): reward(5000);
+# Much greater reward for Warrior or lower level
+	condition((value(wand, annihilation) || value(wand, magic missile) || value(wand, stinking cloud)) && ((value(trait, clevel) <= 20) || value(class, warrior))): reward(10000);
+	reward(value(trait, amt good wand chg) * 50);
+
+# These staves are great but do not clutter inven with them
+#  -- Reward carrying a staff of holiness/power
+	condition(value(trait, amt good staff chg)): reward(2500);
+	value(trait, amt good staff chg): range(1, 3): reward(500);
+
+# Rods of attacking are good too
+#   bolt rods 
+	value(trait, amt attack rods1): range(1, 6): reward(8000);
+#   ball rods & drain life
+	value(trait, amt attack rods2): range(1, 6): reward(12000);
+
+# Reward being at max stat
+	condition(value(trait, cur str) >= 118): reward(50000);
+	condition(value(trait, cur int) >= 118): reward(20000);
+	condition(value(trait, cur wis) >= 118): reward(20000);
+	condition(value(trait, cur dex) >= 118): reward(50000);
+	condition(value(trait, cur con) >= 118): reward(50000);
+
+	condition(value(trait, cur int) >= 118 && (value(class, mage) || value(class, necromancer) || value(class, blackguard) || value(class, rogue))): reward(50000);
+	condition(value(trait, cur wis) >= 118 && (value(class, priest) || value(class, druid) || value(class, ranger) || value(class, paladin))): reward(50000);
+
+# Reward stat potions
+	condition((value(potion, strength) + value(potion, augmentation)) && value(trait, cur str) < 118): reward(550000);
+	condition((value(potion, intelligence) + value(potion, augmentation)) && value(trait, cur int) < 118): reward(520000);
+	condition((value(potion, intelligence) + value(potion, augmentation)) && value(trait, cur int) < 118 && (value(class, mage) || value(class, necromancer) || value(class, blackguard) || value(class, rogue))): reward(575000);
+	condition((value(potion, wisdom) + value(potion, augmentation)) && value(trait, cur wis) < 118): reward(520000);
+	condition((value(potion, wisdom) + value(potion, augmentation)) && value(trait, cur wis) < 118 && (value(class, priest) || value(class, druid) || value(class, ranger) || value(class, paladin))): reward(575000);
+	condition((value(potion, dexterity) + value(potion, augmentation)) && value(trait, cur dex) < 118): reward(550000);
+	condition((value(potion, constitution) + value(potion, augmentation)) && value(trait, cur con) < 118): reward(550000);
+
+# Remove Curse 
+	condition(value(trait, first cursed) && value(scroll, *remove curse*)): reward(90000);
+	condition(value(trait, first cursed) && value(scroll, remove curse)): reward(90000);
+
+# Restore experience
+	condition(value(trait, has fixexp) ): reward(50000);
+
+# Enchantment
+	condition((value(trait, amt ench to armor) < 1000) && value(trait, need ench to armor)): reward(540);
+	condition((value(trait, amt ench to hit) < 1000) && value(trait, need ench to hit)): reward(540);
+	condition((value(trait, amt ench to dam) < 1000) && value(trait, need ench to dam)): reward(500);
+	condition(value(trait, amt *ench to wep*)): reward(5000);
+	condition(value(trait, amt *ench to armor*)): reward(5000);
+
+#   empty slots (up to 6) 
+	value(trait, empty slots): range(1, 6): reward(40);
 ]
 
-Warrior
+Depth Requirement
 [
-	Power
-	[
-		condition((value(trait, speed) >= 140) && (value(trait, max depth) >= 79)): reward(100000);
-		condition(value(trait, impair hp)): reward(-15000);
-		condition(value(trait, fear)): reward(-200000);
-		condition(value(activation, rem_fear_pois)): reward(700 * value(activation, rem_fear_pois));
-		condition(value(activation, resist_all)): reward(25650 * value(activation, resist_all));
-		condition(value(activation, sleepii)): reward(700 * value(activation, sleepii));
-		condition(value(activation, recharge)): reward(600 * value(activation, recharge));
-		condition(value(activation, rage_bless_resist)): reward(25650 * value(activation, rage_bless_resist));
-	]
-	
+	depth(10): condition(((value(potion, Cure Critical Wounds) + value(potion, Cure Serious Wounds)) > 2) or (value(trait, clevel) > 30));
 ]
 
-Mage
-[
-	Power
-	[
-		condition(value(trait, int) <= 37): reward(value(trait, int) * 500);
-		condition(value(config, worships_mana) && value(trait, int) <= 37): reward((value(trait, sp adj) / 2) * 255);
-		condition(!value(config, worships_mana) && value(trait, int) <= 37): reward((value(trait, sp adj) / 2) * 155);
-		condition(value(trait, resist conf)): reward(2000);
-		condition(value(trait, impair hp)): reward(-15000);
-		condition(value(activation, tele_other)): reward(-500 * value(activation, tele_other));
-		condition(value(activation, rem_fear_pois)): reward(500 * value(activation, rem_fear_pois));
-		condition(value(activation, resist_all)): reward(650 * value(activation, resist_all));
-		condition(value(activation, sleepii)): reward(700 * value(activation, sleepii));
-		condition(value(activation, recharge)): reward(500 * value(activation, recharge));
-		condition(value(activation, rage_bless_resist)): reward(650 * value(activation, rage_bless_resist));
-	]
-]
-
-Priest
-[
-	Power
-	[
-		condition(value(trait, impair hp)): reward(-15000);
-		condition(value(trait, fear)): reward(-200000);
-		condition(!value(trait, wep blessed)): reward(-75000);
-		condition(value(trait, wis) <= 37): reward(value(trait, wis) * 500);
-		condition(value(config, worships_mana) && value(trait, wis) <= 37): reward((value(trait, sp adj) / 2) * 255);
-		condition(!value(config, worships_mana) && value(trait, wis) <= 37): reward((value(trait, sp adj) / 2) * 155);
-		condition(value(activation, rem_fear_pois)): reward(500 * value(activation, rem_fear_pois));
-		condition(value(activation, resist_all)): reward(25650 * value(activation, resist_all));
-		condition(value(activation, sleepii)): reward(500 * value(activation, sleepii));
-		condition(value(activation, recharge)): reward(600 * value(activation, recharge));
-		condition(value(activation, rage_bless_resist)): reward(25650 * value(activation, rage_bless_resist));
-	]
-]
-
-Druid
-[
-	Power
-	[
-		condition(value(trait, impair hp)): reward(-15000);
-		condition(value(trait, fear)): reward(-200000);
-		condition(value(trait, wis) <= 37): reward(value(trait, wis) * 500);
-		condition(value(config, worships_mana) && value(trait, wis) <= 37): reward((value(trait, sp adj) / 2) * 255);
-		condition(!value(config, worships_mana) && value(trait, wis) <= 37): reward((value(trait, sp adj) / 2) * 155);
-		condition(value(activation, rem_fear_pois)): reward(500 * value(activation, rem_fear_pois));
-		condition(value(activation, resist_all)): reward(25650 * value(activation, resist_all));
-		condition(value(activation, sleepii)): reward(500 * value(activation, sleepii));
-		condition(value(activation, recharge)): reward(600 * value(activation, recharge));
-		condition(value(activation, rage_bless_resist)): reward(25650 * value(activation, rage_bless_resist));
-	]
-]
-
-Necromancer
-[
-	Power
-	[
-		condition(value(trait, impair hp)): reward(-15000);
-		condition(value(trait, fear)): reward(-200000);
-		condition(value(trait, int) <= 37): reward(value(trait, int) * 500);
-		condition(value(config, worships_mana) && value(trait, int) <= 37): reward((value(trait, sp adj) / 2) * 255);
-		condition(!value(config, worships_mana) && value(trait, int) <= 37): reward((value(trait, sp adj) / 2) * 155);
-		condition(value(activation, rem_fear_pois)): reward(700 * value(activation, rem_fear_pois));
-		condition(value(activation, resist_all)): reward(25650 * value(activation, resist_all));
-		condition(value(activation, sleepii)): reward(700 * value(activation, sleepii));
-		condition(value(activation, recharge)): reward(600* value(activation, recharge));
-		condition(value(activation, rage_bless_resist)): reward(25650 * value(activation, rage_bless_resist));
-	]
-]
-
-Blackguard
-[
-	Power
-	[
-		condition(value(trait, fear)): reward(-200000);
-		condition(value(trait, int) <= 37): reward(value(trait, int) * 500);
-		condition(value(config, worships_mana) && value(trait, int) <= 37): reward((value(trait, sp adj) / 2) * 255);
-		condition(!value(config, worships_mana) && value(trait, int) <= 37): reward((value(trait, sp adj) / 2) * 155);
-		condition(value(activation, rem_fear_pois)): reward(700 * value(activation, rem_fear_pois));
-		condition(value(activation, resist_all)): reward(25650 * value(activation, resist_all));
-		condition(value(activation, sleepii)): reward(700 * value(activation, sleepii));
-		condition(value(activation, recharge)): reward(600 * value(activation, recharge));
-		condition(value(activation, rage_bless_resist)): reward(25650 * value(activation, rage_bless_resist));
-	]
-]
-
-Paladin
-[
-	Power
-	[
-		condition(value(trait, fear)): reward(-200000);
-		condition(!value(trait, wep blessed)): reward(-75000);
-		condition(value(trait, wis) <= 37): reward(value(trait, wis) * 500);
-		condition(value(config, worships_mana) && value(trait, wis) <= 37): reward((value(trait, sp adj) / 2) * 255);
-		condition(!value(config, worships_mana) && value(trait, wis) <= 37): reward((value(trait, sp adj) / 2) * 155);
-		condition(value(activation, rem_fear_pois)): reward(700 * value(activation, rem_fear_pois));
-		condition(value(activation, resist_all)): reward(25650 * value(activation, resist_all));
-		condition(value(activation, sleepii)): reward(700 * value(activation, sleepii));
-		condition(value(activation, recharge)): reward(600 * value(activation, recharge));
-		condition(value(activation, rage_bless_resist)): reward(25650 * value(activation, rage_bless_resist));
-	]
-]
-
-Rogue
-[
-	Power
-	[
-		condition(value(trait, fear)): reward(-200000);
-		condition(value(trait, int) <= 37): reward(value(trait, int) * 500);
-		condition(value(config, worships_mana) && value(trait, int) <= 37): reward((value(trait, sp adj) / 2) * 255);
-		condition(!value(config, worships_mana) && value(trait, int) <= 37): reward((value(trait, sp adj) / 2) * 155);
-		condition(value(activation, rem_fear_pois)): reward(700 * value(activation, rem_fear_pois));
-		condition(value(activation, resist_all)): reward(25650 * value(activation, resist_all));
-		condition(value(activation, sleepii)): reward(700 * value(activation, sleepii));
-		condition(value(activation, recharge)): reward(500 * value(activation, recharge));
-		condition(value(activation, rage_bless_resist)): reward(25650 * value(activation, rage_bless_resist));
-	]
-]
-
-Ranger
-[
-	Power
-	[
-		condition(value(trait, fear)): reward(-200000);
-		condition(value(trait, wis) <= 37): reward(value(trait, wis) * 500);
-		condition(value(config, worships_mana) && value(trait, wis) <= 37): reward((value(trait, sp adj) / 2) * 255);
-		condition(!value(config, worships_mana) && value(trait, wis) <= 37): reward((value(trait, sp adj) / 2) * 155);
-		condition(value(activation, rem_fear_pois)): reward(700 * value(activation, rem_fear_pois));
-		condition(value(activation, resist_all)): reward(25650 * value(activation, resist_all));
-		condition(value(activation, sleepii)): reward(700 * value(activation, sleepii));
-		condition(value(activation, rage_bless_resist)): reward(25650 * value(activation, rage_bless_resist));
-	]
-]
+[END FORMULA SECTION]

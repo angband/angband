@@ -114,7 +114,7 @@ static bool borg_enchant_to_a(void)
     int a, b_a = 99;
 
     /* Nothing to enchant */
-    if (!borg.need_enchant_to_a)
+    if (!borg.trait[BI_NEED_ENCHANT_TO_A])
         return (false);
 
     /* Need "enchantment" ability */
@@ -182,7 +182,7 @@ static bool borg_enchant_to_h(void)
     int a, s_a, b_a = 99;
 
     /* Nothing to enchant */
-    if (!borg.need_enchant_to_h && !enchant_weapon_swap_to_h)
+    if (!borg.trait[BI_NEED_ENCHANT_TO_H] && !enchant_weapon_swap_to_h)
         return (false);
 
     /* Need "enchantment" ability */
@@ -346,7 +346,7 @@ static bool borg_enchant_to_d(void)
     int a, s_a, b_a = 99;
 
     /* Nothing to enchant */
-    if (!borg.need_enchant_to_d && !enchant_weapon_swap_to_d)
+    if (!borg.trait[BI_NEED_ENCHANT_TO_D] && !enchant_weapon_swap_to_d)
         return (false);
 
     /* Need "enchantment" ability */
@@ -516,7 +516,7 @@ static bool borg_brand_weapon(void)
     int a, b_a = 0;
 
     /* Nothing to brand */
-    if (!borg.need_brand_weapon)
+    if (!borg.trait[BI_NEED_BRAND_WEAPON])
         return (false);
 
     /* Need "brand" ability */
