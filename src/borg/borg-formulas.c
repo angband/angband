@@ -20,6 +20,7 @@
 #include "borg-formulas.h"
 
 #ifdef ALLOW_BORG
+#include "../cmd-core.h"
 #include "../obj-util.h"
 #include "../player-spell.h"
 #include "../z-type.h"
@@ -44,20 +45,6 @@ struct range_sec {
     int32_t to;
 };
 
-enum value_type {
-    VT_NONE = -1, /* for error */
-    VT_RANGE_INDEX, /* the index into range processing */
-    VT_TRAIT,
-    VT_CONFIG,
-    VT_ACTIVATION,
-    VT_CLASS,
-/* include the TV types */
-#define TV(a, b) VT_##a,
-#include "list-tvals.h"
-#undef TV
-    VT_MAX
-};
-
 /**
  * List of { valuetype, name } pairs.
  */
@@ -73,10 +60,6 @@ static const grouper value_type_names[] = {
 #undef TV
 };
 
-struct value_sec {
-    enum value_type type;
-    int32_t         index;
-};
 
 struct borg_power_line {
     struct range_sec    *range;
@@ -121,7 +104,7 @@ int borg_array_add(struct borg_array *a, void *item)
 /*
  * get a class from a name
  */
-static int borg_get_class(char *class_name)
+static int borg_get_class(const char *class_name)
 {
     struct player_class *c;
     for (c = classes; c; c = c->next) {
@@ -174,7 +157,7 @@ void borg_formula_error(const char *section, const char *full_line,
  *    depth(nnn)
  * this should return the nnn as a number and -1 if it fails
  */
-static int parse_depth(char *line, char *full_line)
+static int parse_depth(char *line, const char *full_line)
 {
     line = strchr(line, '(');
     if (!line)
@@ -218,7 +201,7 @@ static bool is_all_number(char *line)
 /*
  *  parse a formula but check first if it is just a number.
  */
-static struct math_section *parse_formula_section(char *line, char *full_line)
+static struct math_section *parse_formula_section(char *line, const char *full_line)
 {
     int formula = -1;
 
@@ -249,7 +232,7 @@ static struct math_section *parse_formula_section(char *line, char *full_line)
  *    condition({formula})
  * this should allocate and return the condition pointer and null if it fails
  */
-static struct math_section *parse_condition(char *line, char *full_line)
+static struct math_section *parse_condition(char *line, const char *full_line)
 {
     char *start = line;
     line        = strchr(line, '(');
@@ -276,7 +259,7 @@ static struct math_section *parse_condition(char *line, char *full_line)
  *    reward({formula})
  * this should allocate and return the reward pointer and null if it fails
  */
-static struct math_section *parse_reward(char *line, char *full_line)
+static struct math_section *parse_reward(char *line, const char *full_line)
 {
     char *start = line;
     line        = strchr(line, '(');
@@ -304,7 +287,7 @@ static struct math_section *parse_reward(char *line, char *full_line)
  * this should allocate and return the range pointer and null if it fails
  * (for now n1 and n2 must be numbers, perhaps can make them formulas later)
  */
-static struct range_sec *parse_range(char *line, char *full_line)
+static struct range_sec *parse_range(char *line, const char *full_line)
 {
     int   from, to;
     char *start = line;
@@ -391,7 +374,7 @@ static enum value_type get_value_type(char *line)
 /*
  *  convert the name in value(type, name) to an index
  */
-static int get_value_index(enum value_type t, char *name, char *full_line)
+static int get_value_index(enum value_type t, const char *name, const char *full_line)
 {
     int i;
     switch (t) {
@@ -493,7 +476,7 @@ int32_t calculate_from_value(struct value_sec *value, int range_index)
  *   associated array
  * The possible values for v2 depend on v1.
  */
-struct value_sec *parse_value(char *line, char *full_line)
+struct value_sec *parse_value(char *line, const char *full_line)
 {
     char *start = line;
     char *val1str;
@@ -554,7 +537,8 @@ struct value_sec *parse_value(char *line, char *full_line)
  *   name(xxx):name(xxx):name(xxx)
  * and this allocates and returns (in the value) one "name(xxx)"
  */
-static bool get_section(char *line, char *name, char **value, char *full_line)
+static bool get_section(
+    char *line, const char *name, char **value, const char *full_line)
 {
     char *start = line;
     if (prefix_i(line, name)) {
@@ -601,7 +585,7 @@ static void depth_free(struct borg_depth_line *depth)
  * depth lines appear as
  *   depth(nnn):condition(xxx)
  */
-static bool parse_depth_line(char *line, char *full_line)
+static bool parse_depth_line(char *line, const char *full_line)
 {
     char *start       = line;
     bool  fail        = false;
@@ -669,7 +653,7 @@ static bool parse_depth_line(char *line, char *full_line)
  *   value(a, b):condition(xxx):range(n1, n2):reward(xxx)
  * value and range are optional
  */
-static bool parse_power_line(char *line, char *full_line)
+static bool parse_power_line(char *line, const char *full_line)
 {
     char *start       = line;
     bool  fail        = false;
@@ -749,20 +733,20 @@ static bool parse_power_line(char *line, char *full_line)
     return fail;
 }
 
-static bool check_condition(struct math_section *condition)
+static bool check_condition(struct math_section *condition, int range)
 {
     /* not sure why you would ever do this */
     if (!condition->is_calculation)
         return condition->calculation_index != 0;
 
-    return borg_calculate_dynamic(condition->calculation_index, 0);
+    return borg_calculate_dynamic(condition->calculation_index, range);
 }
 
 static int32_t calc_power(struct borg_power_line *p)
 {
     int32_t total = 0;
     if (p->condition)
-        if (!check_condition(p->condition))
+        if (!check_condition(p->condition, 0))
             return 0;
 
     if (p->range) {
@@ -812,7 +796,7 @@ int32_t borg_power_dynamic(void)
                 total += 30000L;
         }
 
-        /* 
+        /*
          * Hack-- Reward the borg for carrying a NON-ID items that have random
          * powers
          */
@@ -946,7 +930,7 @@ int32_t borg_power_dynamic(void)
              */
             /* slot so this is POSSIBLY just a test item */
             borg_item *item = NULL;
-            for (int i = PACK_SLOTS; i >= 0; i--) {
+            for (i = PACK_SLOTS; i >= 0; i--) {
                 if (borg_items[i].iqty) {
                     item = &borg_items[i];
                     break;
@@ -997,7 +981,7 @@ const char *borg_prepared_dynamic(int depth)
         struct borg_depth_line *d = borg_formulas.depth.items[i];
         if (d->dlevel > depth)
             break;
-        if (!check_condition(d->condition))
+        if (check_condition(d->condition, depth))
             return d->reason;
     }
 
@@ -1012,7 +996,6 @@ bool borg_load_formulas(ang_file *fp)
     enum e_section { SEC_NONE, SEC_POWER, SEC_DEPTH };
 
     char           buf[1024];
-    bool           inClass      = false;
     bool           formulas_off = false;
     enum e_section section      = SEC_NONE;
     bool           skip_open    = true;

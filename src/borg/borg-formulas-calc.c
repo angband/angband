@@ -179,7 +179,7 @@ static bool get_value_string(char *line, char **value)
  * turn formula into an array of strings
  */
 static bool tokenize_math(
-    struct borg_calculation *f, char *line, char *full_line)
+    struct borg_calculation *f, char *line, const char *full_line)
 {
     bool fail              = false;
     bool not               = false;
@@ -424,7 +424,7 @@ static bool adjust_order_operations(struct borg_calculation *f)
 
 /* check for format of formula */
 static bool validate_calculation(
-    struct borg_calculation *f, char *line, char *full_line)
+    struct borg_calculation *f, char *line, const char *full_line)
 {
     if (!f->token_array->count) {
         borg_formula_error(
@@ -464,7 +464,7 @@ static bool validate_calculation(
  * parse the formula into a structure that can be calculated from.
  */
 static bool parse_calculation(
-    struct borg_calculation *f, char *line, char *full_line)
+    struct borg_calculation *f, char *line, const char *full_line)
 {
     if (tokenize_math(f, line, full_line))
         return true;
@@ -502,7 +502,7 @@ void calc_free(struct borg_calculation *calc)
 /*
  * parse the formula and add it to the formula list
  */
-int parse_calculation_line(char *line, char *full_line)
+int parse_calculation_line(char *line, const char *full_line)
 {
     struct borg_calculation *f = mem_zalloc(sizeof(struct borg_calculation));
     if (parse_calculation(f, line, full_line)) {

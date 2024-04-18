@@ -314,6 +314,7 @@ ANGFILES0 = \
 	borg/borg-flow-take.o \
 	borg/borg-flow.o \
 	borg/borg-formulas.o \
+	borg/borg-formulas-calc.o \
 	borg/borg-home-notice.o \
 	borg/borg-home-power.o \
 	borg/borg-init.o \

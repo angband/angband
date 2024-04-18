@@ -29,7 +29,7 @@
 /*
  * read a mathematic calculation from a dynamic formula.
  */
-extern int parse_calculation_line(char *line, char *full_line);
+extern int parse_calculation_line(char *line, const char *full_line);
 
 /*
  * Calculate a value from a dynamic formula read earlier

@@ -33,7 +33,27 @@ struct borg_array {
     void **items;
 };
 
-struct value_sec;
+enum value_type
+{
+    VT_NONE = -1, /* for error */
+    VT_RANGE_INDEX, /* the index into range processing */
+    VT_TRAIT,
+    VT_CONFIG,
+    VT_ACTIVATION,
+    VT_CLASS,
+    /* include the TV types */
+#define TV(a, b) VT_##a,
+#include "list-tvals.h"
+#undef TV
+    VT_MAX
+};
+
+
+struct value_sec
+{
+    enum value_type type;
+    int32_t         index;
+};
 
 /* quick array stuff */
 extern int borg_array_add(struct borg_array *a, void *item);
@@ -55,7 +75,7 @@ extern int32_t calculate_from_value(struct value_sec *value, int range_index);
 /*
  * read a "value(x, y) and turn it into a structure
  */
-extern struct value_sec *parse_value(char *line, char* full_line);
+extern struct value_sec *parse_value(char *line, const char* full_line);
 
 /*
  * Calculate the basic "power"

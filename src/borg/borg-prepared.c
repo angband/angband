@@ -432,9 +432,7 @@ static const char *borg_prepared_aux(int depth)
         return ("low CON");
 
     /* Hold Life */
-    if ((!borg.trait[BI_HLIFE] && !weapon_swap_hold_life
-            && !armour_swap_hold_life)
-        && (borg.trait[BI_MAXCLEVEL] < 50))
+    if (!borg.trait[BI_SHLIFE] && (borg.trait[BI_MAXCLEVEL] < 50))
         return ("hold life");
 
     /* Usually ready for level 46 to 55 */
@@ -702,10 +700,6 @@ const char *borg_restock(int depth)
     /* Must have "fuel" */
     if (borg.trait[BI_AFUEL] < 1 && !borg.trait[BI_LIGHT])
         return ("rs amt_fuel");
-
-    /* Must have "food" */
-    if (borg.trait[BI_FOOD] < 1)
-        return ("rs amt_food");
 
     /* Assume happy at level 1 */
     if (depth <= 1)

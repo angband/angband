@@ -826,29 +826,29 @@ const char *prefix_pref[] = {
     "resist dis",
     "hold life",
     "free action",
-    "SRFIRE", /* same as without S but includes swap */
-    "SRCOLD",
-    "SRELEC",
-    "SRACID",
-    "SRPOIS",
-    "SRFEAR",
-    "SRLITE",
-    "SRDARK",
-    "SRBLIND",
-    "SRCONF",
-    "SRSND",
-    "SRSHRD",
-    "SRNXUS",
-    "SRNTHR",
-    "SRKAOS",
-    "SRDIS",
-    "SHLIFE",
-    "SFRACT",
+    "resist fire with swap", /* same as without S but includes swap */
+    "resist cold with swap",
+    "resist elec with swap",
+    "resist acid with swap",
+    "resist poison with swap",
+    "resist fear with swap",
+    "resist lite with swap",
+    "resist dark with swap",
+    "resist blind with swap",
+    "resist conf with swap",
+    "resist sound with swap",
+    "resist shards with swap",
+    "resist nexus with swap",
+    "resist nether with swap",
+    "resist chaos with swap",
+    "resist dis with swap",
+    "hold life with swap",
+    "free action with swap",
 
     /* random extra variable */
     "depth", /* borgs current depth ? */
     "max depth", /* recall depth */
-    "KING", /* borg has won */
+    "king", /* borg has won */
 
     /* player state things */
     "is weak",
