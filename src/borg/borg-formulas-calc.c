@@ -234,7 +234,7 @@ static bool tokenize_math(
             continue;
         }
 
-        if (isdigit(*line) || *line == '-' && isdigit(*(line + 1))) {
+        if (isdigit(*line) || (*line == '-' && isdigit(*(line + 1)))) {
 
             int32_t *val = mem_alloc(sizeof(int32_t));
             *val         = atol(line);
@@ -333,7 +333,6 @@ static bool adjust_order_ops_depth_block(
     int                     i, j;
     int                     lvl;
     int                     l[4] = {0,0,0,0};
-    bool                    fail = false;
 
     for (tok = start; tok < end; tok++) {
         struct token *token = f->token_array->items[tok];
@@ -386,7 +385,7 @@ static bool adjust_order_ops_depth_block(
         mem_free(operators->items[i]);
     mem_free(operators);
 
-    return fail;
+    return false;
 }
 
 /*
@@ -419,7 +418,7 @@ static bool adjust_order_operations(struct borg_calculation *f)
             start = -1;
         }
     }
-    return false;
+    return fail;
 }
 
 /* check for format of formula */
@@ -489,7 +488,7 @@ static void token_free(struct token *t)
 /*
  * free memory used by a borg_calculation
  */
-void calc_free(struct borg_calculation *calc)
+static void calc_free(struct borg_calculation *calc)
 {
     if (calc->token_array) {
         for (int i = 0; i < calc->token_array->count; i++)
@@ -602,6 +601,10 @@ static int32_t calculate_value_from_formula_depth(
     case TOK_GE:
         total = left_value >= right_value;
         break;
+
+    default: /* should never get here. */
+        borg_note("** borg formula failure ** ");
+        borg_note("** error calculating a formula value");    
     }
     if ((*i) + 1 >= f->count)
         return total;
