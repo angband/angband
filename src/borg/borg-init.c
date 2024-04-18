@@ -84,7 +84,6 @@ struct borg_setting borg_settings[] = {
     { "borg_enchant_limit", 'i', 12 },
     { "borg_dump_level", 'i', 1 }, 
     { "borg_save_death", 'i', 1 },
-    { "borg_test_test", 'i', 0},
     { 0, 0, 0 }};
 
 

@@ -60,7 +60,6 @@ static const grouper value_type_names[] = {
 #undef TV
 };
 
-
 struct borg_power_line {
     struct range_sec    *range;
     struct math_section *reward;
@@ -80,6 +79,9 @@ struct borg_formulas {
 
     /* array of depth formulas */
     struct borg_array depth;
+
+    /* array of depth formulas for restocking */
+    struct borg_array restock;
 };
 
 /* array of depth and power per class plus one for "any" */
@@ -201,7 +203,8 @@ static bool is_all_number(char *line)
 /*
  *  parse a formula but check first if it is just a number.
  */
-static struct math_section *parse_formula_section(char *line, const char *full_line)
+static struct math_section *parse_formula_section(
+    char *line, const char *full_line)
 {
     int formula = -1;
 
@@ -374,7 +377,8 @@ static enum value_type get_value_type(char *line)
 /*
  *  convert the name in value(type, name) to an index
  */
-static int get_value_index(enum value_type t, const char *name, const char *full_line)
+static int get_value_index(
+    enum value_type t, const char *name, const char *full_line)
 {
     int i;
     switch (t) {
@@ -575,7 +579,7 @@ static void depth_free(struct borg_depth_line *depth)
         if (depth->condition)
             mem_free(depth->condition);
         if (depth->reason)
-            mem_free(depth->reason);
+            string_free(depth->reason);
 
         mem_free(depth);
     }
@@ -585,7 +589,7 @@ static void depth_free(struct borg_depth_line *depth)
  * depth lines appear as
  *   depth(nnn):condition(xxx)
  */
-static bool parse_depth_line(char *line, const char *full_line)
+static bool parse_depth_line(bool restock, char *line, const char *full_line)
 {
     char *start       = line;
     bool  fail        = false;
@@ -631,17 +635,19 @@ static bool parse_depth_line(char *line, const char *full_line)
     if (s_condition) {
         if (!fail) {
             d->condition = parse_condition(s_condition, full_line);
+            d->reason    = s_condition;
             if (d->condition == NULL)
                 fail = true;
-            else
-                d->reason = s_condition;
         }
     }
 
     /* add to the depth array */
-    if (!fail)
-        borg_array_add(&borg_formulas.depth, d);
-
+    if (!fail) {
+        if (restock)
+            borg_array_add(&borg_formulas.restock, d);
+        else
+            borg_array_add(&borg_formulas.depth, d);
+    }
     if (fail)
         depth_free(d);
 
@@ -784,189 +790,185 @@ int32_t borg_power_dynamic(void)
         total += calc_power(borg_formulas.power.items[i]);
     }
 
-    if (borg_cfg[BORG_TEST_TEST] != 2) {
-        /* HUGE HACK need some extra stuff that is hard to make dynamic*/
-        if (borg_spell_stat() > 0)
-            total += (100 - spell_chance(0)) * 100;
+    /* HUGE HACK need some extra stuff that is hard to make dynamic*/
+    if (borg_spell_stat() > 0)
+        total += (100 - spell_chance(0)) * 100;
 
-        /* should try to get min fail to 0 */
-        if (player_has(player, PF_ZERO_FAIL)) {
-            /* other fail rates */
-            if (spell_chance(0) < 1)
-                total += 30000L;
-        }
+    /* should try to get min fail to 0 */
+    if (player_has(player, PF_ZERO_FAIL)) {
+        /* other fail rates */
+        if (spell_chance(0) < 1)
+            total += 30000L;
+    }
 
-        /*
-         * Hack-- Reward the borg for carrying a NON-ID items that have random
-         * powers
-         */
-        if (borg_items[INVEN_OUTER].iqty) {
-            borg_item *item = &borg_items[INVEN_OUTER];
-            if (((borg_ego_has_random_power(&e_info[item->ego_idx])
-                    && !item->ident)))
-                total += 999999L;
-        }
+    /*
+     * Hack-- Reward the borg for carrying a NON-ID items that have random
+     * powers
+     */
+    if (borg_items[INVEN_OUTER].iqty) {
+        borg_item *item = &borg_items[INVEN_OUTER];
+        if (((borg_ego_has_random_power(&e_info[item->ego_idx])
+                && !item->ident)))
+            total += 999999L;
+    }
 
-        /*** Penalize armor weight ***/
-        if (borg.stat_ind[STAT_STR] < 15) {
-            if (borg_items[INVEN_BODY].weight > 200)
-                total -= (borg_items[INVEN_BODY].weight - 200) * 15;
-            if (borg_items[INVEN_HEAD].weight > 30)
-                total -= 250;
-            if (borg_items[INVEN_ARM].weight > 10)
-                total -= 250;
-            if (borg_items[INVEN_FEET].weight > 50)
-                total -= 250;
-        }
+    /*** Penalize armor weight ***/
+    if (borg.stat_ind[STAT_STR] < 15) {
+        if (borg_items[INVEN_BODY].weight > 200)
+            total -= (borg_items[INVEN_BODY].weight - 200) * 15;
+        if (borg_items[INVEN_HEAD].weight > 30)
+            total -= 250;
+        if (borg_items[INVEN_ARM].weight > 10)
+            total -= 250;
+        if (borg_items[INVEN_FEET].weight > 50)
+            total -= 250;
+    }
 
-        /* Compute the total armor weight */
-        int cur_wgt = borg_items[INVEN_BODY].weight;
-        cur_wgt += borg_items[INVEN_HEAD].weight;
-        cur_wgt += borg_items[INVEN_ARM].weight;
-        cur_wgt += borg_items[INVEN_OUTER].weight;
-        cur_wgt += borg_items[INVEN_HANDS].weight;
-        cur_wgt += borg_items[INVEN_FEET].weight;
+    /* Compute the total armor weight */
+    int cur_wgt = borg_items[INVEN_BODY].weight;
+    cur_wgt += borg_items[INVEN_HEAD].weight;
+    cur_wgt += borg_items[INVEN_ARM].weight;
+    cur_wgt += borg_items[INVEN_OUTER].weight;
+    cur_wgt += borg_items[INVEN_HANDS].weight;
+    cur_wgt += borg_items[INVEN_FEET].weight;
 
-        /* Determine the weight allowance */
-        int max_wgt = player->class->magic.spell_weight;
+    /* Determine the weight allowance */
+    int max_wgt = player->class->magic.spell_weight;
 
-        /* Hack -- heavy armor hurts magic */
-        if (player->class->magic.total_spells
-            && ((cur_wgt - max_wgt) / 10) > 0) {
-            /* max sp must be calculated in case it changed with the armor */
-            int max_sp = borg.trait[BI_SP_ADJ] / 100 + 1;
-            max_sp -= ((cur_wgt - max_wgt) / 10);
-            /* Mega-Hack -- Penalize heavy armor which hurts mana */
-            if (max_sp >= 300 && max_sp <= 350)
-                total -= (((cur_wgt - max_wgt) / 10) * 400L);
-            if (max_sp >= 200 && max_sp <= 299)
-                total -= (((cur_wgt - max_wgt) / 10) * 800L);
-            if (max_sp >= 100 && max_sp <= 199)
-                total -= (((cur_wgt - max_wgt) / 10) * 1600L);
-            if (max_sp >= 1 && max_sp <= 99)
-                total -= (((cur_wgt - max_wgt) / 10) * 3200L);
-        }
+    /* Hack -- heavy armor hurts magic */
+    if (player->class->magic.total_spells && ((cur_wgt - max_wgt) / 10) > 0) {
+        /* max sp must be calculated in case it changed with the armor */
+        int max_sp = borg.trait[BI_SP_ADJ] / 100 + 1;
+        max_sp -= ((cur_wgt - max_wgt) / 10);
+        /* Mega-Hack -- Penalize heavy armor which hurts mana */
+        if (max_sp >= 300 && max_sp <= 350)
+            total -= (((cur_wgt - max_wgt) / 10) * 400L);
+        if (max_sp >= 200 && max_sp <= 299)
+            total -= (((cur_wgt - max_wgt) / 10) * 800L);
+        if (max_sp >= 100 && max_sp <= 199)
+            total -= (((cur_wgt - max_wgt) / 10) * 1600L);
+        if (max_sp >= 1 && max_sp <= 99)
+            total -= (((cur_wgt - max_wgt) / 10) * 3200L);
     }
     /* END MAJOR HACK */
 
     /* SECOND MAJOR HACK for inventory */
-    if (borg_cfg[BORG_TEST_TEST] != 1) {
 
-        /* Reward carrying a shovel if low level */
-        if (borg.trait[BI_MAXDEPTH] <= 40 && borg.trait[BI_MAXDEPTH] >= 25
-            && borg.trait[BI_GOLD] < 100000
-            && borg_items[INVEN_WIELD].tval != TV_DIGGING
-            && borg.trait[BI_ADIGGER] == 1)
-            total += 5000L;
+    /* Reward carrying a shovel if low level */
+    if (borg.trait[BI_MAXDEPTH] <= 40 && borg.trait[BI_MAXDEPTH] >= 25
+        && borg.trait[BI_GOLD] < 100000
+        && borg_items[INVEN_WIELD].tval != TV_DIGGING
+        && borg.trait[BI_ADIGGER] == 1)
+        total += 5000L;
 
-        /*** Hack -- books ***/
-        /*   Reward books    */
-        for (int book = 0; book < 9; book++) {
-            /* No copies */
-            if (!borg.amt_book[book])
-                continue;
+    /*** Hack -- books ***/
+    /*   Reward books    */
+    for (int book = 0; book < 9; book++) {
+        /* No copies */
+        if (!borg.amt_book[book])
+            continue;
 
-            /* The "hard" books */
-            if (player->class->magic.books[book].dungeon) {
-                int what;
+        /* The "hard" books */
+        if (player->class->magic.books[book].dungeon) {
+            int what;
 
-                /* Scan the spells */
-                for (what = 0; what < 9; what++) {
-                    borg_magic *as = borg_get_spell_entry(book, what);
-                    if (!as)
-                        break;
-
-                    /* Track minimum level */
-                    if (as->level > borg.trait[BI_MAXCLEVEL])
-                        continue;
-
-                    /* Track Mana req. */
-                    if (as->power > borg.trait[BI_MAXSP])
-                        continue;
-
-                    /* Reward the book based on the spells I can cast */
-                    total += 15000L;
-                }
-            }
-
-            /* The "easy" books */
-            else {
-                int what, when = 99;
-
-                /* Scan the spells */
-                for (what = 0; what < 9; what++) {
-                    borg_magic *as = borg_get_spell_entry(book, what);
-                    if (!as)
-                        break;
-
-                    /* Track minimum level */
-                    if (as->level < when)
-                        when = as->level;
-
-                    /* Track Mana req. */
-                    /* if (as->power < mana) mana = as->power; */
-                }
-
-                /* Hack -- Ignore "difficult" normal books */
-                if ((when > 5) && (when >= borg.trait[BI_MAXCLEVEL] + 2))
-                    continue;
-                /* if (mana > borg.trait[BI_MAXSP]) continue; */
-
-                /* Reward the book */
-                int k = 0;
-                for (; k < 1 && k < borg.amt_book[book]; k++)
-                    total += 500000L;
-                if (borg.trait[BI_STR] > 5)
-                    for (; k < 2 && k < borg.amt_book[book]; k++)
-                        total += 10000L;
-            }
-        }
-
-        /*  Hack -- Apply "encumbrance" from weight */
-
-        /* XXX XXX XXX Apply "encumbrance" from weight */
-        if (borg.trait[BI_WEIGHT] > borg.trait[BI_CARRY] / 2) {
-            /* *HACK*  when testing items, the borg puts them in the last empty
-             */
-            /* slot so this is POSSIBLY just a test item */
-            borg_item *item = NULL;
-            for (i = PACK_SLOTS; i >= 0; i--) {
-                if (borg_items[i].iqty) {
-                    item = &borg_items[i];
+            /* Scan the spells */
+            for (what = 0; what < 9; what++) {
+                borg_magic *as = borg_get_spell_entry(book, what);
+                if (!as)
                     break;
-                }
-            }
 
-            /* Some items will be used immediately and should not contribute to
-             * encumbrance */
-            if (item && item->iqty
-                && ((item->tval == TV_SCROLL
-                        && ((item->sval == sv_scroll_enchant_armor
-                                && borg.trait[BI_AENCH_ARM] < 1000
-                                && borg.trait[BI_NEED_ENCHANT_TO_A])
-                            || (item->sval == sv_scroll_enchant_weapon_to_hit
-                                && borg.trait[BI_AENCH_TOH] < 1000
-                                && borg.trait[BI_NEED_ENCHANT_TO_H])
-                            || (item->sval == sv_scroll_enchant_weapon_to_dam
-                                && borg.trait[BI_AENCH_TOD] < 1000
-                                && borg.trait[BI_NEED_ENCHANT_TO_D])
-                            || item->sval == sv_scroll_star_enchant_weapon
-                            || item->sval == sv_scroll_star_enchant_armor))
-                    || (item->tval == TV_POTION
-                        && (item->sval == sv_potion_inc_str
-                            || item->sval == sv_potion_inc_int
-                            || item->sval == sv_potion_inc_wis
-                            || item->sval == sv_potion_inc_dex
-                            || item->sval == sv_potion_inc_con
-                            || item->sval == sv_potion_inc_all)))) {
-                /* No encumbrance penalty for purchasing these items */
-            } else {
-                total -= ((borg.trait[BI_WEIGHT] - (borg.trait[BI_CARRY] / 2))
-                          / (borg.trait[BI_CARRY] / 10) * 1000L);
+                /* Track minimum level */
+                if (as->level > borg.trait[BI_MAXCLEVEL])
+                    continue;
+
+                /* Track Mana req. */
+                if (as->power > borg.trait[BI_MAXSP])
+                    continue;
+
+                /* Reward the book based on the spells I can cast */
+                total += 15000L;
             }
         }
-        /* END SECOND MAJOR HACK */
+
+        /* The "easy" books */
+        else {
+            int what, when = 99;
+
+            /* Scan the spells */
+            for (what = 0; what < 9; what++) {
+                borg_magic *as = borg_get_spell_entry(book, what);
+                if (!as)
+                    break;
+
+                /* Track minimum level */
+                if (as->level < when)
+                    when = as->level;
+
+                /* Track Mana req. */
+                /* if (as->power < mana) mana = as->power; */
+            }
+
+            /* Hack -- Ignore "difficult" normal books */
+            if ((when > 5) && (when >= borg.trait[BI_MAXCLEVEL] + 2))
+                continue;
+            /* if (mana > borg.trait[BI_MAXSP]) continue; */
+
+            /* Reward the book */
+            int k = 0;
+            for (; k < 1 && k < borg.amt_book[book]; k++)
+                total += 500000L;
+            if (borg.trait[BI_STR] > 5)
+                for (; k < 2 && k < borg.amt_book[book]; k++)
+                    total += 10000L;
+        }
     }
+
+    /*  Hack -- Apply "encumbrance" from weight */
+
+    /* XXX XXX XXX Apply "encumbrance" from weight */
+    if (borg.trait[BI_WEIGHT] > borg.trait[BI_CARRY] / 2) {
+        /* *HACK*  when testing items, the borg puts them in the last empty
+         */
+        /* slot so this is POSSIBLY just a test item */
+        borg_item *item = NULL;
+        for (i = PACK_SLOTS; i >= 0; i--) {
+            if (borg_items[i].iqty) {
+                item = &borg_items[i];
+                break;
+            }
+        }
+
+        /* Some items will be used immediately and should not contribute to
+         * encumbrance */
+        if (item && item->iqty
+            && ((item->tval == TV_SCROLL
+                    && ((item->sval == sv_scroll_enchant_armor
+                            && borg.trait[BI_AENCH_ARM] < 1000
+                            && borg.trait[BI_NEED_ENCHANT_TO_A])
+                        || (item->sval == sv_scroll_enchant_weapon_to_hit
+                            && borg.trait[BI_AENCH_TOH] < 1000
+                            && borg.trait[BI_NEED_ENCHANT_TO_H])
+                        || (item->sval == sv_scroll_enchant_weapon_to_dam
+                            && borg.trait[BI_AENCH_TOD] < 1000
+                            && borg.trait[BI_NEED_ENCHANT_TO_D])
+                        || item->sval == sv_scroll_star_enchant_weapon
+                        || item->sval == sv_scroll_star_enchant_armor))
+                || (item->tval == TV_POTION
+                    && (item->sval == sv_potion_inc_str
+                        || item->sval == sv_potion_inc_int
+                        || item->sval == sv_potion_inc_wis
+                        || item->sval == sv_potion_inc_dex
+                        || item->sval == sv_potion_inc_con
+                        || item->sval == sv_potion_inc_all)))) {
+            /* No encumbrance penalty for purchasing these items */
+        } else {
+            total -= ((borg.trait[BI_WEIGHT] - (borg.trait[BI_CARRY] / 2))
+                      / (borg.trait[BI_CARRY] / 10) * 1000L);
+        }
+    }
+    /* END SECOND MAJOR HACK */
+
     return total;
 }
 
@@ -989,17 +991,36 @@ const char *borg_prepared_dynamic(int depth)
 }
 
 /*
+ * Determine if the borg needs to restock.
+ */
+const char *borg_restock_dynamic(int depth)
+{
+    int i;
+
+    for (i = 0; i < borg_formulas.restock.count; i++) {
+        struct borg_depth_line *d = borg_formulas.restock.items[i];
+        if (d->dlevel > depth)
+            break;
+        if (check_condition(d->condition, depth))
+            return d->reason;
+    }
+
+    return NULL;
+}
+
+/*
  * read the formula section of the borg.txt file
  */
 bool borg_load_formulas(ang_file *fp)
 {
-    enum e_section { SEC_NONE, SEC_POWER, SEC_DEPTH };
+    enum e_section { SEC_NONE, SEC_POWER, SEC_DEPTH, SEC_RESTOCK };
 
     char           buf[1024];
     bool           formulas_off = false;
     enum e_section section      = SEC_NONE;
     bool           skip_open    = true;
 
+    borg_formulas.restock.count = 0;
     borg_formulas.depth.count   = 0;
     borg_formulas.power.count   = 0;
 
@@ -1062,6 +1083,14 @@ bool borg_load_formulas(ang_file *fp)
             skip_open = true;
             continue;
         }
+        if (prefix_i(line, "Restock Requirement")) {
+            if (section != SEC_NONE)
+                formulas_off = true;
+
+            section   = SEC_RESTOCK;
+            skip_open = true;
+            continue;
+        }
 
         /* lines must end in ; */
         if (line[strlen(line) - 1] != ';') {
@@ -1071,12 +1100,17 @@ bool borg_load_formulas(ang_file *fp)
             else if (section == SEC_POWER)
                 borg_formula_error(
                     buf, buf, "power", "** line must end in a ;");
+            else if (section == SEC_RESTOCK)
+                borg_formula_error(
+                    buf, buf, "restock", "** line must end in a ;");
             else
                 borg_formula_error(buf, buf, "base", "** line must end in a ;");
             formulas_off = true;
         } else {
             if (section == SEC_DEPTH)
-                formulas_off = parse_depth_line(line, buf);
+                formulas_off = parse_depth_line(false, line, buf);
+            if (section == SEC_RESTOCK)
+                formulas_off = parse_depth_line(true, line, buf);
             if (section == SEC_POWER)
                 formulas_off = parse_power_line(line, buf);
             if (section == SEC_NONE) {
@@ -1088,6 +1122,10 @@ bool borg_load_formulas(ang_file *fp)
     }
     if (formulas_off && borg_cfg[BORG_USES_DYNAMIC_CALCS])
         borg_cfg[BORG_USES_DYNAMIC_CALCS] = false;
+
+    if (borg_cfg[BORG_USES_DYNAMIC_CALCS])
+        borg_note("Borg's dynamic calculations enabled.  You may see some "
+                  "performance hit (~20%).");
 
     return formulas_off;
 }
@@ -1108,6 +1146,9 @@ static void power_free(struct borg_power_line *power)
 void borg_free_formulas(void)
 {
     int i;
+    for (i = 0; i < borg_formulas.restock.count; i++)
+        depth_free(borg_formulas.restock.items[i]);
+
     for (i = 0; i < borg_formulas.depth.count; i++)
         depth_free(borg_formulas.depth.items[i]);
 

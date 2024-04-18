@@ -1883,39 +1883,14 @@ int32_t borg_power(void)
     int     i = 1;
     int32_t value = 0L;
 
-    if (borg_cfg[BORG_TEST_TEST] && borg_cfg[BORG_USES_DYNAMIC_CALCS]) {
-        int32_t value1 = 0L;
-        int32_t value2 = 0L;
-        value1 = borg_power_dynamic();
-
-        /* Process the inventory */
-        if (borg_cfg[BORG_TEST_TEST] != 2)
-            value2 += borg_power_equipment();
-        if (borg_cfg[BORG_TEST_TEST] != 1)
-            value2 += borg_power_inventory();
-
-        if (value1 != value2) {
-            borg_note("WARNING dynamic calc mismatch");
-            borg_note(format("dynamic   (%d)", value1));
-            borg_note(format("calculated(%d)", value2));
-        }
-
+    if (borg_cfg[BORG_USES_DYNAMIC_CALCS]) {
+        value += borg_power_dynamic();
+    } else {
         /* Process the equipment */
         value += borg_power_equipment();
 
         /* Process the inventory */
         value += borg_power_inventory();
-    }
-    else {
-        if (borg_cfg[BORG_USES_DYNAMIC_CALCS]) {
-            value += borg_power_dynamic();
-        } else {
-            /* Process the equipment */
-            value += borg_power_equipment();
-
-            /* Process the inventory */
-            value += borg_power_inventory();
-        }
     }
 
     /* Add a bonus for deep level prep */

@@ -304,12 +304,16 @@ borg_munchkin_depth = 16
 
 borg_enchant_limit = 12
 
-
-borg_test_test = 0
-
 [BEGIN FORMULA SECTION]
 
+# There are three sections 
+#	Power   - used to calculate the "power" of the borg
+#	Depth   - used to determine what depth a borg feels prepared for (don't go deeper than)
+#	Restock - used to determine if the borg feels it needs to go shopping
+#				this is a subset of being prepeared but is also used on its own.
+#
 # special formula:  
+#	depth( n ) - the depth to check for.  if condition true, don't go below this depth.
 #	range(from, to) - loop from until to and add value to power each time
 #	value( type, name ) - returns a value dependent on the types
 #		type list:
@@ -318,6 +322,7 @@ borg_test_test = 0
 #		CONFIG: value from the configuration as read from borg.txt
 #		CLASS: true/false (1/0) if the borgs current class matches the name
 #		RANGE: index into the range(from, to) above,  returns -1 if no range is given
+#				also used for depth checks as the depth being checked.
 #		type from object.txt with name matching the name from that file.  Count of that object that the borg is carrying or wearing.
 #			ex: value(potion, Cure Critical Wounds) is the number of CCW potions
 #				** worth noting value(trait, amt potion ccw) will be a calculated amount of ccw, which might include other healing
@@ -939,16 +944,13 @@ Power
 Depth Requirement
 [
 	depth(1): condition(value(trait, fuel) < 5 && !value(trait, light));
-	depth(1): condition(value(trait, cur light) < 1);
 	depth(1): condition(value(trait, food) < 5);
 
 # go no deeper than your char level
 # special hack using "range" as "depth being checked"
-	depth(2): condition(value(range, n) < value(trait, max clevel) && value(trait, max clevel) < 50);
-	depth(2): condition(value(range, n) < value(config, no_deeper));
+	depth(2): condition(value(trait, max clevel) < value(range, n) && value(trait, max clevel) < 50);
+	depth(2): condition(value(range, n) >= value(config, no_deeper));
 
-	depth(2): condition(value(trait, food) < 3);
-	depth(2): condition(value(trait, fuel) < 2 && !value(trait, light));
 	depth(2): condition(value(trait, max hp) < 30 && !value(config, plays_risky));
 
 	depth(3): condition((value(class, warrior) || value(class, blackguard)) && value(trait, max hp) < 50 && !value(config, plays_risky));
@@ -977,13 +979,6 @@ Depth Requirement
 
 	depth(5): condition(value(trait, recall) < 1);
 
-	depth(6): condition(value(trait, amt phase) < 1);
-#	depth(6): condition(value(trait, max clevel) < 30 && (value(trait,  amt potion clw) + value(trait,  amt potion csw) + value(trait,  amt potion ccw)) < 1);
-
-	depth(10): condition(value(trait, cur light) < 2);
-	depth(10): condition(value(trait, max clevel) < 30 && (value(trait,  amt potion clw) + value(trait,  amt potion csw) + value(trait,  amt potion ccw)) < 2);
-	depth(10): condition((value(trait,  amt teleport) + value(trait,  amt escape)) < 2);
-
 # skipping these because they seem redundant given the "go no deeper than your char level" check earlier
 #	depth(10): condition((value(class, warrior) || value(class, blackguard)) && value(trait, max clevel) < (value(range, n) - 4) && value(range, n) <= 19 && !value(config, plays_risky));
 #	depth(10): condition(value(class, rogue) && value(trait, max clevel) < value(range, n) && value(range, n) <= 19 && !value(config, plays_risky));
@@ -994,14 +989,11 @@ Depth Requirement
 	depth(10): condition(value(trait, max clevel) < 30 && value(trait,  amt potion ccw) < 3);
 	depth(10): condition(!value(trait, see inv) && !value(trait, detect inv) && !value(trait, esp));
 
-	depth(20): condition(value(trait, max clevel) < 30 && (value(trait,  amt potion csw) + value(trait,  amt potion ccw)) < 4);
-	depth(20): condition((value(trait,  amt teleport) + value(trait,  amt escape)) < 4);
 	depth(20): condition(!value(trait, free action));
 
 	depth(21): condition(!value(trait, resist fire));
 	depth(21): condition((value(trait, resist acid) + value(trait, resist cold) + value(trait, resist elec)) < 2);
 
-	depth(21): condition((value(trait,  amt teleport) + value(trait,  amt teleport level)) < 4);
 	depth(21): condition(value(trait, str) < 7);
 	depth(21): condition((value(class, priest) || value(class, druid) || value(class, ranger) || value(class, paladin)) && value(trait, wis) < 7);
 	depth(21): condition((value(class, mage) || value(class, necromancer) || value(class, blackguard) || value(class, rogue)) && value(trait, int) < 7);
@@ -1009,25 +1001,25 @@ Depth Requirement
 	depth(21): condition(value(trait, con) < 7);
 
 # skipping these because they seem redundant given the "go no deeper than your char level" check earlier
-#	depth(10): condition((value(class, warrior) || value(class, blackguard)) && value(trait, max clevel) < (value(range, n) - 5) && value(trait, max clevel) <= 38 && !value(config, plays_risky));
-#	depth(10): condition(value(class, rogue) && value(trait, max clevel) < value(range, n) + 10 && && value(trait, max clevel) <= 46 && !value(config, plays_risky));
-#	depth(10): condition((value(class, priest) || value(class, druid)) && value(trait, max clevel) < value(range, n) + 13 && && value(trait, max clevel) <= 46 && !value(config, plays_risky));
-#	depth(10): condition(value(class, paladin) && value(trait, max clevel) < value(range, n) + 7 && value(trait, max clevel) <= 40 && !value(config, plays_risky));
-#	depth(10): condition(value(class, ranger) && value(trait, max clevel) < value(range, n) + 8 && value(trait, max clevel) <= 41 && value(trait, max clevel) > 28 && !value(config, plays_risky));
-#	depth(10): condition((value(class, mage) || value(class, necromancer)) && value(trait, max clevel) < value(range, n) + 8 && value(trait, max clevel) <= 38 && !value(config, plays_risky));
-#	depth(10): condition((value(class, mage) || value(class, necromancer)) && ((value(trait, max clevel) - 38) * 2 + 30) < value(range, n) && value(trait, max clevel) <= 44 && value(trait, max clevel) > 38 && !value(config, plays_risky));
+#	depth(21): condition((value(class, warrior) || value(class, blackguard)) && value(trait, max clevel) < (value(range, n) - 5) && value(trait, max clevel) <= 38 && !value(config, plays_risky));
+#	depth(21): condition(value(class, rogue) && value(trait, max clevel) < value(range, n) + 10 && && value(trait, max clevel) <= 46 && !value(config, plays_risky));
+#	depth(21): condition((value(class, priest) || value(class, druid)) && value(trait, max clevel) < value(range, n) + 13 && && value(trait, max clevel) <= 46 && !value(config, plays_risky));
+#	depth(21): condition(value(class, paladin) && value(trait, max clevel) < value(range, n) + 7 && value(trait, max clevel) <= 40 && !value(config, plays_risky));
+#	depth(21): condition(value(class, ranger) && value(trait, max clevel) < value(range, n) + 8 && value(trait, max clevel) <= 41 && value(trait, max clevel) > 28 && !value(config, plays_risky));
+#	depth(21): condition((value(class, mage) || value(class, necromancer)) && value(trait, max clevel) < value(range, n) + 8 && value(trait, max clevel) <= 38 && !value(config, plays_risky));
+#	depth(21): condition((value(class, mage) || value(class, necromancer)) && ((value(trait, max clevel) - 38) * 2 + 30) < value(range, n) && value(trait, max clevel) <= 44 && value(trait, max clevel) > 38 && !value(config, plays_risky));
 
-	depth(26): condition(value(trait, resist cold with swap));
-	depth(26): condition(value(trait, resist elec with swap));
-	depth(26): condition(value(trait, resist acid with swap));
+	depth(26): condition(!value(trait, resist cold with swap));
+	depth(26): condition(!value(trait, resist elec with swap));
+	depth(26): condition(!value(trait, resist acid with swap));
 	depth(26): condition((value(trait,  amt teleport) + value(trait,  amt escape)) < 6);
 	depth(26): condition(value(trait, max clevel) < 30 && (value(trait,  amt potion csw) + value(trait,  amt potion ccw)) < 10);
 
 # skipping again redundant given the "go no deeper than your char level" check earlier
 #	depth(34): condition(value(trait, max clevel) < 40 && !value(config, plays_risky));
 
-	depth(40): condition(value(trait, resist poison with swap));
-	depth(40): condition(value(trait, resist conf with swap));
+	depth(40): condition(!value(trait, resist poison with swap));
+	depth(40): condition(!value(trait, resist conf with swap));
 	depth(40): condition(value(trait, cur str) < 16);
 	depth(40): condition((value(class, priest) || value(class, druid) || value(class, ranger) || value(class, paladin)) && value(trait, cur wis) < 16);
 	depth(40): condition((value(class, mage) || value(class, necromancer) || value(class, blackguard) || value(class, rogue)) && value(trait, cur int) < 16);
@@ -1045,15 +1037,13 @@ Depth Requirement
 	depth(46): condition(!value(trait, hold life with swap) && value(trait, max clevel) < 50);
 
 	depth(56): condition(value(trait, amt heal) < 2 && value(trait, amt ezheal) < 1);
-	depth(56): condition(value(trait, resist blind with swap));
-#	depth(56): condition(value(trait, resist nether with swap) && !value(config, plays_risky));
-	depth(56): condition(value(trait, esp));
+	depth(56): condition(!value(trait, resist blind with swap));
+#	depth(56): condition(!value(trait, resist nether with swap) && !value(config, plays_risky));
+	depth(56): condition(!value(trait, esp));
 
 	depth(60): condition(value(trait, speed) < 120);
-	depth(60): condition(value(trait, resist chaos with swap));
-	depth(60): condition(value(trait, resist dis with swap));
-
-	depth(65): condition((value(trait,  amt heal) + value(trait,  amt ezheal) + value(rod,  healing)) < 1);
+	depth(60): condition(!value(trait, resist chaos with swap));
+	depth(60): condition(!value(trait, resist dis with swap));
 
 	depth(81): condition(value(trait, speed) < 130);
 
@@ -1062,9 +1052,33 @@ Depth Requirement
 	depth(100): condition(!value(trait, king) && value(potion, healing) < 5);
 	depth(100): condition(!value(trait, king) && value(potion, *healing*) < 15);
 	depth(100): condition(!value(trait, king) && value(potion, speed) < 10);
+]
+
+Restock Requirement
+[
+	depth(1): condition(value(trait, cur light) < 1);
+	depth(1): condition(value(trait, fuel) < 1 && !value(trait, light));
+
+	depth(2): condition(value(trait, fuel) < 2 && !value(trait, light));
+	depth(2): condition(value(trait, food) < 3);
+
+	depth(6): condition(value(trait, amt phase) < 1);
+	depth(6): condition(value(trait, max clevel) < 30 && (value(trait,  amt potion clw) + value(trait,  amt potion csw) + value(trait,  amt potion ccw)) < 1);
+
+	depth(10): condition(value(trait, cur light) < 2);
+	depth(10): condition(value(trait, max clevel) < 30 && (value(trait,  amt potion clw) + value(trait,  amt potion csw) + value(trait,  amt potion ccw)) < 2);
+	depth(10): condition((value(trait,  amt teleport) + value(trait,  amt escape)) < 2);
+
+	depth(20): condition(value(trait, max clevel) < 30 && (value(trait,  amt potion csw) + value(trait,  amt potion ccw)) < 4);
+	depth(20): condition((value(trait,  amt teleport) + value(trait,  amt escape)) < 4);
+
+	depth(36): condition((value(trait,  amt teleport) + value(trait,  amt teleport level)) < 2);
+
+	depth(65): condition((value(trait,  amt heal) + value(trait,  amt ezheal) + value(rod,  healing)) < 1);
 
 # !FIX there is a "borg_t - borg_began < 10" but 10 steps is hardly anything so ... ignoring for now
 	depth(100): condition((value(trait,  amt ezheal)) < 15);
 ]
+
 
 [END FORMULA SECTION]

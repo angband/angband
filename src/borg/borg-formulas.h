@@ -88,6 +88,11 @@ extern int32_t borg_power_dynamic(void);
 extern const char *borg_prepared_dynamic(int depth);
 
 /*
+ * Determine if the Borg is out of "crucial" supplies.
+ */
+extern const char *borg_restock_dynamic(int depth);
+
+/*
  * Load the FORMULA SECTION from borg.txt
  */
 extern bool borg_load_formulas(ang_file *fp);
