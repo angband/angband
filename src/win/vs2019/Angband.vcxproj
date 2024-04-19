@@ -398,8 +398,8 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\borg\borg-flow-stairs.h" />
     <ClInclude Include="src\borg\borg-flow-take.h" />
     <ClInclude Include="src\borg\borg-flow.h" />
-    <ClCompile Include="src\borg\borg-formulas-calc.h" />
-    <ClCompile Include="src\borg\borg-formulas.h" />
+    <ClInclude Include="src\borg\borg-formulas-calc.h" />
+    <ClInclude Include="src\borg\borg-formulas.h" />
     <ClInclude Include="src\borg\borg-home-notice.h" />
     <ClInclude Include="src\borg\borg-home-power.h" />
     <ClInclude Include="src\borg\borg-init.h" />
