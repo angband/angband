@@ -545,10 +545,10 @@ const char *borg_prepared(int depth)
     if (borg_cfg[BORG_USES_DYNAMIC_CALCS]) {
 
         /* use the base restock so special checks can be done */
-        if (reason = borg_restock(depth))
+        if ((reason = borg_restock(depth)))
             return reason;
 
-        if (reason = borg_prepared_dynamic(depth))
+        if ((reason = borg_prepared_dynamic(depth)))
             return reason;
 
     } else {
