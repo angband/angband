@@ -333,6 +333,16 @@ borg_enchant_limit = 12
 # note on calculations: some order of operations are handled, some are not.  When in doubt, parens are your friend
 
 #### future enhancement value_home( type, name) - same as above but in the home, HomePower ... 
+
+# there are some values still done in the code (approximate values given)
+# 1) getting to zero fail on spell casting gives 30,000.  fail rate gives 100 per percent success on best spell
+# 2) Reward the borg for carrying a NON-ID items that have random powers (999999)
+# 3) Penalize armor weight (250 per item that is too heavy)
+# 4) Penalize heavy armor for redusing spell points (~400 per point lost)
+# 5) Reward carrying a shovel if low level (5000)
+# 6) books - 15000/spell you can cast from a book (50000 if it is a dungeon book)
+# 7) encumbrance loses ((weight - max carry/2) / max carry / 10) * 10000
+
 Power
 [
 # weapon stuff	

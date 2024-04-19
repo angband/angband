@@ -219,6 +219,9 @@ static struct math_section *parse_formula_section(
         return c;
     }
 
+    /* parse the formula so it can be calculated from */
+    /* the formula is stored in the "formulas" array and */
+    /* the index into the array is returned */
     formula = parse_calculation_line(line, full_line);
     if (formula == -1)
         return NULL;
@@ -267,7 +270,7 @@ static struct math_section *parse_reward(char *line, const char *full_line)
     char *start = line;
     line        = strchr(line, '(');
     if (!line) {
-        borg_formula_error(start, full_line, "reward", 0);
+        borg_formula_error(start, full_line, "reward", "** no starting '('");
         return NULL;
     }
 
@@ -299,7 +302,7 @@ static struct range_sec *parse_range(char *line, const char *full_line)
 
     line = strchr(line, '(');
     if (!line) {
-        borg_formula_error(start, full_line, "range", 0);
+        borg_formula_error(start, full_line, "range", "** no starting '('");
         return NULL;
     }
 
@@ -363,11 +366,13 @@ static struct range_sec *parse_range(char *line, const char *full_line)
 
     return r;
 }
-
-static enum value_type get_value_type(char *line)
+/*
+ *  Find the value type from the array matching names with enums
+ */
+static enum value_type get_value_type(char *value_type_name)
 {
     for (int i = 0; i < (int)N_ELEMENTS(value_type_names); i++) {
-        if (!my_stricmp(line, value_type_names[i].name)) {
+        if (!my_stricmp(value_type_name, value_type_names[i].name)) {
             return value_type_names[i].tval;
         }
     }
@@ -375,7 +380,9 @@ static enum value_type get_value_type(char *line)
 }
 
 /*
- *  convert the name in value(type, name) to an index
+ * Convert the name in value(type, name) to an index.
+ *  a later function (calculate_from_value) can take the index and type
+ *  and turn it into a number.
  */
 static int get_value_index(
     enum value_type t, const char *name, const char *full_line)
@@ -446,7 +453,7 @@ static int get_value_index(
 }
 
 /*
- * Turn a value pointer into a value that can be used in a formula
+ * Turn a value pointer into a value (number) that can be used in a formula
  */
 int32_t calculate_from_value(struct value_sec *value, int range_index)
 {
@@ -538,7 +545,7 @@ struct value_sec *parse_value(char *line, const char *full_line)
 
 /*
  * get a section from a dynamic formula line.  Lines are
- *   name(xxx):name(xxx):name(xxx)
+ *   name(xxx):name(xxx):name(xxx);
  * and this allocates and returns (in the value) one "name(xxx)"
  */
 static bool get_section(
@@ -573,6 +580,9 @@ static bool get_section(
     return false;
 }
 
+/*
+ * Deallocate any memory associated with a depth line
+ */
 static void depth_free(struct borg_depth_line *depth)
 {
     if (depth) {
@@ -748,6 +758,9 @@ static bool check_condition(struct math_section *condition, int range)
     return borg_calculate_dynamic(condition->calculation_index, range);
 }
 
+/*
+ * get a single value from a power line
+ */
 static int32_t calc_power(struct borg_power_line *p)
 {
     int32_t total = 0;
@@ -1037,12 +1050,8 @@ bool borg_load_formulas(ang_file *fp)
         if (!line[0] || (line[0] == '#'))
             continue;
 
-        if (prefix_i(line, "[END FORMULA SECTION]")) {
-            if (formulas_off && borg_cfg[BORG_USES_DYNAMIC_CALCS])
-                borg_cfg[BORG_USES_DYNAMIC_CALCS] = false;
-
-            return formulas_off;
-        }
+        if (prefix_i(line, "[END FORMULA SECTION]"))
+            break;
 
         /* if we failed anywhere */
         if (formulas_off)
@@ -1130,6 +1139,9 @@ bool borg_load_formulas(ang_file *fp)
     return formulas_off;
 }
 
+/*
+ * Free all memory used in one power line
+ */
 static void power_free(struct borg_power_line *power)
 {
     if (power->condition)
@@ -1143,6 +1155,9 @@ static void power_free(struct borg_power_line *power)
     mem_free(power);
 }
 
+/*
+ * Free all memory used in dynamic calculations 
+ */
 void borg_free_formulas(void)
 {
     int i;

@@ -31,6 +31,7 @@ struct borg_calculation {
 /* array of mathematic formulas */
 struct borg_array calculations;
 
+/* types of tokens that can be in a calculation */
 enum token_type {
     TOK_NONE,
     /* values */
@@ -50,8 +51,9 @@ enum token_type {
     TOK_GE,
 };
 
-#define OP_LEVELS  4
+#define OP_LEVELS 4
 
+/* a single token in the calculation */
 struct token {
     enum token_type type;
     bool not ;
@@ -59,6 +61,9 @@ struct token {
     int32_t pdepth;
 };
 
+/*
+ * Allocate and initialize a token structure
+ */
 static struct token *new_token(
     enum token_type ttype, void *token, int pdepth, bool not )
 {
@@ -70,6 +75,9 @@ static struct token *new_token(
     return tok;
 }
 
+/* 
+ * grab an operator (+, -, and, or etc) from the line 
+ */
 static bool get_operator(char **in, enum token_type *ttype)
 {
     char *line = *in;
@@ -151,8 +159,9 @@ static bool get_operator(char **in, enum token_type *ttype)
 }
 
 /*
- * get a "value()" from a formula
+ * get a "value()" from a formula string
  * this allocates and returns (in the value) one "name(xxx)"
+ * returns false if this string doesn't start "value"
  */
 static bool get_value_string(char *line, char **value)
 {
@@ -176,7 +185,7 @@ static bool get_value_string(char *line, char **value)
 }
 
 /*
- * turn formula into an array of strings
+ * turn formula into an array of tokens
  */
 static bool tokenize_math(
     struct borg_calculation *f, char *line, const char *full_line)
@@ -274,8 +283,18 @@ static bool tokenize_math(
     return fail;
 }
 
+/* 
+ * Quick helper to return if this token is an operator or a value
+ */
 static bool is_operator(enum token_type type) { return type >= TOK_MINUS; }
 
+/*
+ * Precedence order for operators
+ * 0) mult/div
+ * 1) add/sub
+ * 2) compare (eq, gt, lt, le, ge)
+ * 3) logic (and or)
+ */
 static int operation_level(enum token_type type)
 {
     if (type == TOK_DIV || type == TOK_MULT)
@@ -287,6 +306,10 @@ static int operation_level(enum token_type type)
     return 2;
 }
 
+/*
+ * This takes a calculation and the position of an operation and adds 
+ * "depth" (virtual parenthesis) to that operation.
+ */
 static void add_depth(struct borg_calculation *f, int pos)
 {
     struct token *tok    = f->token_array->items[pos];
@@ -318,7 +341,17 @@ static void add_depth(struct borg_calculation *f, int pos)
             f->max_depth = tok->pdepth;
     }
 }
-// !FIX add < > vs =
+
+/*
+ * adjust the formula so the depth reflects order of operation.
+ * 1) mult/div
+ * 2) add/sub
+ * 3) compare (eq, gt, lt, le, ge)
+ * 4) logic (and or)
+ *
+ * if there are more than one operator (so a + b * c = d)
+ * calculate as if (a + (b * c)) = d
+ */
 static bool adjust_order_ops_depth_block(
     struct borg_calculation *f, int pdepth, int start, int end)
 {
@@ -332,7 +365,7 @@ static bool adjust_order_ops_depth_block(
     int                     tok;
     int                     i, j;
     int                     lvl;
-    int                     l[4] = {0,0,0,0};
+    int                     l[4] = { 0, 0, 0, 0 };
 
     for (tok = start; tok < end; tok++) {
         struct token *token = f->token_array->items[tok];
@@ -347,13 +380,17 @@ static bool adjust_order_ops_depth_block(
             borg_array_add(operators, o);
         }
     }
-    /* if there are more than one operator (so a + b * c = d) */
-    /* loop and add precedence (proc as (a + (b * c)) = d */
-    /* there are four precedence levels */
-    /* 1) mult/div */
-    /* 2) add/sub */
-    /* 3) compare (eq, gt, lt, le, ge) */
-    /* 3) logic (and or) */
+
+    /* find groups at the same level so the formula */
+    /* 1 + 2 * (3 + 4 * 5) + 6 + 7 */
+    /* already has things at two levels */
+    /* "1 + 2 *" is at one level "3 + 4 * 5" is deeper (done first) and */
+    /* "+ 6 + 7" is back at the first level.  */
+    /* it grabs the groups and the adds depth (as if they were parenthesized) */
+    /* to higher operations levels.  so it grabs 1 + 2 * (deeper) and */
+    /* calculates "*" is first so it makes it as if it was 1 + (2 * (deeper)) */
+    /* by pushing the 2 and the "(deeper)" down.  Repeat until all levels are */
+    /* handled */
     bool higher;
     if (operators->count > 1) {
         int count_at_level = 0;
@@ -362,10 +399,11 @@ static bool adjust_order_ops_depth_block(
                 for (i = 0; i < operators->count; i++) {
                     o = operators->items[i];
                     if (o->level == lvl) {
-                        /* if there is an at higher level or this isn't the last */
+                        /* if there is an at higher level or this isn't the last
+                         */
                         /* the last check is for a*b*c needs to be (a*b)*c */
                         higher = false;
-                        for (j = lvl+1; j < OP_LEVELS; j++)
+                        for (j = lvl + 1; j < OP_LEVELS; j++)
                             if (l[j]) {
                                 higher = true;
                                 break;
@@ -421,7 +459,9 @@ static bool adjust_order_operations(struct borg_calculation *f)
     return fail;
 }
 
-/* check for format of formula */
+/* 
+ * check for format of a formula 
+ */
 static bool validate_calculation(
     struct borg_calculation *f, char *line, const char *full_line)
 {
@@ -517,10 +557,8 @@ int parse_calculation_line(char *line, const char *full_line)
 }
 
 /*
- * calc a current paren level
- * ((value(potion, Cure Critical Wounds) + value(potion, Cure Serious Wounds)) >
- * 2 or value(trait, clevel) > 30)
- */
+ * Turn a formula into a value for a given parenthesis level
+ *   this will use recursion to get deeper levels of the formula */
 static int32_t calculate_value_from_formula_depth(
     struct borg_array *f, int *i, int pdepth, int range_index)
 {
@@ -604,7 +642,7 @@ static int32_t calculate_value_from_formula_depth(
 
     default: /* should never get here. */
         borg_note("** borg formula failure ** ");
-        borg_note("** error calculating a formula value");    
+        borg_note("** error calculating a formula value");
     }
     if ((*i) + 1 >= f->count)
         return total;
@@ -630,6 +668,9 @@ int32_t borg_calculate_dynamic(int formula, int range_index)
         f->token_array, &i, 0, range_index);
 }
 
+/*
+ * Free up all memory used in calculations.
+ */
 void calculations_free(void)
 {
     for (int i = 0; i < calculations.count; i++) {

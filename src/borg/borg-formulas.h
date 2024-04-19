@@ -33,24 +33,22 @@ struct borg_array {
     void **items;
 };
 
-enum value_type
-{
+/* list of possible types for value(type, xxx) section or in a formula */
+enum value_type {
     VT_NONE = -1, /* for error */
     VT_RANGE_INDEX, /* the index into range processing */
     VT_TRAIT,
     VT_CONFIG,
     VT_ACTIVATION,
     VT_CLASS,
-    /* include the TV types */
+/* include the TV types */
 #define TV(a, b) VT_##a,
 #include "list-tvals.h"
 #undef TV
     VT_MAX
 };
 
-
-struct value_sec
-{
+struct value_sec {
     enum value_type type;
     int32_t         index;
 };
@@ -58,14 +56,15 @@ struct value_sec
 /* quick array stuff */
 extern int borg_array_add(struct borg_array *a, void *item);
 
-/* 
+/*
  * Note an error.
  * section is the section of the line the error is in, as found in borg.txt
  * full_line is the line as read from borg.txt
  * section_label is where in the parsing the system thinks it is
  * error for further error text to make the error clearer.
  */
-extern void borg_formula_error(const char *section, const char *full_line, const char *section_label, const char * error);
+extern void borg_formula_error(const char *section, const char *full_line,
+    const char *section_label, const char *error);
 
 /*
  * turn a "value(x, y)" into a number
@@ -75,7 +74,7 @@ extern int32_t calculate_from_value(struct value_sec *value, int range_index);
 /*
  * read a "value(x, y) and turn it into a structure
  */
-extern struct value_sec *parse_value(char *line, const char* full_line);
+extern struct value_sec *parse_value(char *line, const char *full_line);
 
 /*
  * Calculate the basic "power"
@@ -101,7 +100,6 @@ extern bool borg_load_formulas(ang_file *fp);
  * Free all memory used by formulas
  */
 extern void borg_free_formulas(void);
-
 
 #endif
 #endif
