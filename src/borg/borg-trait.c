@@ -1865,7 +1865,7 @@ static void borg_notice_equipment(void)
 
         /* Hack -- Reward High Level Rangers using Bows */
         if (player_has(player, PF_FAST_SHOT)) {
-            if ((borg.trait[BI_AMMO_TVAL] == TV_ARROW))
+            if (borg.trait[BI_AMMO_TVAL] == TV_ARROW)
                 /* Extra shot at level 20 */
                 if (borg.trait[BI_CLEVEL] >= 20)
                     my_num_fire++;
