@@ -88,7 +88,7 @@ static bool get_operator(char **in, enum token_type *ttype)
     }
 
     if (*line == '-') {
-        if (isdigit(*(line + 1)))
+        if (isdigit((int)(*(line + 1))))
             return false;
         (*in)++;
         *ttype = TOK_MINUS;
@@ -243,7 +243,8 @@ static bool tokenize_math(
             continue;
         }
 
-        if (isdigit(*line) || (*line == '-' && isdigit(*(line + 1)))) {
+        if (isdigit((int)(*line))
+            || (*line == '-' && isdigit((int)(*(line + 1))))) {
 
             int32_t *val = mem_alloc(sizeof(int32_t));
             *val         = atol(line);
