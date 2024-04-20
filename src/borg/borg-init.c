@@ -79,7 +79,7 @@ struct borg_setting borg_settings[] = {
     { "borg_delay_factor", 'i', 0 }, 
     { "borg_money_scum_amount", 'i', 0 },
     { "borg_self_scum", 'b', true }, 
-    { "borg.lunal_mode", 'b', false },
+    { "borg_lunal_mode", 'b', false },
     { "borg_self_lunal", 'b', false }, 
     { "borg_enchant_limit", 'i', 12 },
     { "borg_dump_level", 'i', 1 }, 
@@ -162,6 +162,8 @@ void borg_init_txt_file(void)
 {
     ang_file *fp;
 
+    bool formulas_found = false;
+    bool old_formulas_found = false;
     int i;
 
     if (borg_active)
@@ -237,45 +239,52 @@ void borg_init_txt_file(void)
                     borg_settings[i].setting_type, buf))
                 break;
         }
+        if (i != BORG_MAX_SETTINGS)
+            continue;
 
         /* other settings */
         if (prefix_i(buf, "REQ")) {
-#if false
-            if (!borg_load_requirement(buf + strlen("REQ")))
-                borg_note(buf);
-#endif
+            old_formulas_found = true;
             continue;
         }
         if (prefix_i(buf, "FORMULA")) {
-#if false
-            // For now ignore the dynamic formulas in borg.txt ... they are waaaay out of date !FIX !TODO !AJG
-            if (!borg_load_formula(buf + strlen("FORMULA")))
-                borg_note(buf);
-#endif
+            old_formulas_found = true;
             continue;
         }
         if (prefix_i(buf, "CND")) {
-#if false
-            if (!borg_load_formula(buf + strlen("CND")))
-                borg_note(buf);
-#endif
+            old_formulas_found = true;
             continue;
         }
         if (prefix_i(buf, "POWER")) {
-#if false
-            if (!borg_load_power(buf + strlen("POWER")))
-                borg_note(buf);
-#endif
+            old_formulas_found = true;
             continue;
         }
 
         if (prefix_i(buf, "[BEGIN FORMULA SECTION]")) {
+            formulas_found = true;
             borg_load_formulas(fp);
         }
     }
 
     /* Close it */
     file_close(fp);
+
+    if (borg_cfg[BORG_USES_DYNAMIC_CALCS]) {
+        if (old_formulas_found) {
+            borg_note("** Borg's dynamic calculations enabled but old formulas "
+                      "found in borg.txt.");
+            borg_note("** formulas disabled ** ");
+            borg_cfg[BORG_USES_DYNAMIC_CALCS] = false;
+        } else if (!formulas_found) {
+            borg_note("** Borg's dynamic calculations enabled but no formulas "
+                      "found in borg.txt.");
+            borg_note("** formulas disabled ** ");
+            borg_cfg[BORG_USES_DYNAMIC_CALCS] = false;
+        } else {
+            borg_note("Borg's dynamic calculations enabled.  You may see some "
+                      "performance loss (~20%).");
+        }
+    }
 
     /* lunal mode is a default rather than a setting */
     borg.lunal_mode = borg_cfg[BORG_LUNAL_MODE];

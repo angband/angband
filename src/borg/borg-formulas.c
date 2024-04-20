@@ -612,15 +612,25 @@ static bool parse_depth_line(bool restock, char *line, const char *full_line)
         if (get_section(line, "condition", &s_condition, full_line))
             line += strlen(s_condition);
 
+        if (*line && !isspace((unsigned char)*line) && line[0] != ':'
+            && line[0] != ';') {
+            char *err = string_make(
+                format("** unparsed information '%s' in depth line", line));
+            borg_formula_error(start, full_line, "depth", err);
+            string_free(err);
+            fail = true;
+            break;
+        }
+
         line++;
     }
 
-    if (!s_depth) {
+    if (!fail && !s_depth) {
         borg_formula_error(
             start, full_line, "value", "** depth section missing");
         fail = true;
     }
-    if (!s_condition) {
+    if (!fail && !s_condition) {
         borg_formula_error(
             start, full_line, "value", "** condition section missing");
         fail = true;
@@ -688,12 +698,27 @@ static bool parse_power_line(char *line, const char *full_line)
         if (get_section(line, "condition", &s_condition, full_line))
             line += strlen(s_condition);
 
+        if (*line &&!isspace((unsigned char)*line) && line[0] != ':' && line[0] != ';') {
+            char *err = string_make(
+                format("** unparsed information '%s' in power line", line));
+            borg_formula_error(start, full_line, "power", err);
+            string_free(err);
+            fail = true;
+            break;
+        }
+
         line++;
     }
 
-    if (s_range && !s_value) {
+    if (!fail && s_range && !s_value) {
         borg_formula_error(start, full_line, "power",
             "** if range() is specified value() must also be specified");
+        fail = true;
+    }
+
+    if (!fail && !s_reward) {
+        borg_formula_error(start, full_line, "power",
+            "** reward() must be specified specified");
         fail = true;
     }
 
@@ -1131,10 +1156,6 @@ bool borg_load_formulas(ang_file *fp)
     }
     if (formulas_off && borg_cfg[BORG_USES_DYNAMIC_CALCS])
         borg_cfg[BORG_USES_DYNAMIC_CALCS] = false;
-
-    if (borg_cfg[BORG_USES_DYNAMIC_CALCS])
-        borg_note("Borg's dynamic calculations enabled.  You may see some "
-                  "performance hit (~20%).");
 
     return formulas_off;
 }
