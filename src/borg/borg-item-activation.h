@@ -186,6 +186,8 @@ extern int act_cure_mind;
 extern int act_cure_confusion;
 extern int act_cure_paranoia;
 
+extern int borg_findact(const char *act_name);
+
 extern void borg_init_item_activation(void);
 
 #endif

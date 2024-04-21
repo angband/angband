@@ -25,10 +25,18 @@
 
 #ifdef ALLOW_BORG
 
+struct borg_setting
+{
+    const char *setting_string;
+    const char  setting_type; /* b (bool) or i (int) */
+    int         default_value;
+};
+
 extern bool borg_init_failure;
 
 extern bool borg_initialized; /* Hack -- Initialized */
 extern bool game_closed; /* Has the game been closed */
+extern struct borg_setting borg_settings[];
 
 /*
  * Initialize borg.txt

@@ -456,7 +456,7 @@ void borg_write_map(bool ask)
         borg_map_file, "borg_plays_risky; %d\n", borg_cfg[BORG_PLAYS_RISKY]);
     file_putf(borg_map_file, "borg_slow_optimizehome; %d\n\n",
         borg_cfg[BORG_SLOW_OPTIMIZEHOME]);
-    file_putf(borg_map_file, "borg.scumming_pots; %d\n\n", borg.scumming_pots);
+    file_putf(borg_map_file, "prepping for big fight; %d\n\n", borg.trait[BI_PREP_BIG_FIGHT]);
     file_putf(borg_map_file, "\n\n");
 
     /* Dump the spells */

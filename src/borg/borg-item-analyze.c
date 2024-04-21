@@ -440,6 +440,42 @@ void borg_item_analyze(
         if (o->activation->index == act_bizarre)
             item->one_ring = true;
         item->activ_idx = o->activation->index;
+    } else {
+        /* assign special activations that are now effects */
+        if (item->tval == TV_RING) {
+            if (item->sval == sv_ring_flames)
+                item->activ_idx = act_ring_flames;
+            if (item->sval == sv_ring_acid)
+                item->activ_idx = act_ring_acid;
+            if (item->sval == sv_ring_ice)
+                item->activ_idx = act_ring_ice;
+            if (item->sval == sv_ring_lightning)
+                item->activ_idx = act_ring_lightning;
+        }
+        /* NOTE two activations are missed (don't have activation indexes) */
+        /* white and black dragon */
+        if (item->tval == TV_DRAG_ARMOR) {
+            if (item->sval == sv_dragon_blue)
+                item->activ_idx = act_dragon_blue;
+            if (item->sval == sv_dragon_red)
+                item->activ_idx = act_dragon_red;
+            if (item->sval == sv_dragon_green)
+                item->activ_idx = act_dragon_green;
+            if (item->sval == sv_dragon_multihued)
+                item->activ_idx = act_dragon_multihued;
+            if (item->sval == sv_dragon_shining)
+                item->activ_idx = act_dragon_shining;
+            if (item->sval == sv_dragon_law)
+                item->activ_idx = act_dragon_law;
+            if (item->sval == sv_dragon_gold)
+                item->activ_idx = act_dragon_gold;
+            if (item->sval == sv_dragon_chaos)
+                item->activ_idx = act_dragon_chaos;
+            if (item->sval == sv_dragon_balance)
+                item->activ_idx = act_dragon_balance;
+            if (item->sval == sv_dragon_power)
+                item->activ_idx = act_dragon_power;
+        }
     }
 
     /* default the pval */

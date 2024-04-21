@@ -22,6 +22,7 @@
 #ifdef ALLOW_BORG
 
 #include "borg-flow-kill.h"
+#include "borg-formulas.h"
 #include "borg-home-notice.h"
 #include "borg-item-val.h"
 #include "borg-magic.h"
@@ -432,9 +433,7 @@ static const char *borg_prepared_aux(int depth)
         return ("low CON");
 
     /* Hold Life */
-    if ((!borg.trait[BI_HLIFE] && !weapon_swap_hold_life
-            && !armour_swap_hold_life)
-        && (borg.trait[BI_MAXCLEVEL] < 50))
+    if (!borg.trait[BI_SHLIFE] && (borg.trait[BI_MAXCLEVEL] < 50))
         return ("hold life");
 
     /* Usually ready for level 46 to 55 */
@@ -543,25 +542,36 @@ const char *borg_prepared(int depth)
     if (depth == 1)
         return ((char *)NULL);
 
-    /* Not prepared if I need to restock */
-    if ((reason = borg_restock(depth)))
-        return (reason);
+    if (borg_cfg[BORG_USES_DYNAMIC_CALCS]) {
 
-    /*** Require his Clevel to be greater than or equal to Depth */
-    if (borg.trait[BI_MAXCLEVEL] < depth && borg.trait[BI_MAXCLEVEL] < 50)
-        return ("Clevel < depth");
+        /* use the base restock so special checks can be done */
+        if ((reason = borg_restock(depth)))
+            return reason;
 
-    /* Must meet minimal requirements */
-    if (depth <= 99) {
-        if ((reason = borg_prepared_aux(depth)))
+        if ((reason = borg_prepared_dynamic(depth)))
+            return reason;
+
+    } else {
+        /* Not prepared if I need to restock */
+        if ((reason = borg_restock(depth)))
             return (reason);
-    }
 
-    /* Not if No_Deeper is set */
-    if (depth >= borg_cfg[BORG_NO_DEEPER]) {
-        strnfmt(borg_prepared_buffer, MAX_REASON, "No deeper %d.",
-            borg_cfg[BORG_NO_DEEPER]);
-        return (borg_prepared_buffer);
+        /*** Require his Clevel to be greater than or equal to Depth */
+        if (borg.trait[BI_MAXCLEVEL] < depth && borg.trait[BI_MAXCLEVEL] < 50)
+            return ("Clevel < depth");
+
+        /* Must meet minimal requirements */
+        if (depth <= 99) {
+            if ((reason = borg_prepared_aux(depth)))
+                return (reason);
+        }
+
+        /* Not if No_Deeper is set */
+        if (depth >= borg_cfg[BORG_NO_DEEPER]) {
+            strnfmt(borg_prepared_buffer, MAX_REASON, "No deeper %d.",
+                borg_cfg[BORG_NO_DEEPER]);
+            return (borg_prepared_buffer);
+        }
     }
 
     /* Once Morgoth is dead */
@@ -693,6 +703,9 @@ const char *borg_restock(int depth)
     if (borg_t - borg_began < 100 && borg.trait[BI_CDEPTH] != 100)
         return ((char *)NULL);
 
+    if (borg_cfg[BORG_USES_DYNAMIC_CALCS]) 
+        return borg_restock_dynamic(depth);
+
     /*** Level 1 ***/
 
     /* Must have some lite */
@@ -702,10 +715,6 @@ const char *borg_restock(int depth)
     /* Must have "fuel" */
     if (borg.trait[BI_AFUEL] < 1 && !borg.trait[BI_LIGHT])
         return ("rs amt_fuel");
-
-    /* Must have "food" */
-    if (borg.trait[BI_FOOD] < 1)
-        return ("rs amt_food");
 
     /* Assume happy at level 1 */
     if (depth <= 1)

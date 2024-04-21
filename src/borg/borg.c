@@ -676,6 +676,7 @@ void do_cmd_borg(void)
 
         if (borg_init_failure) {
             borg_initialized = false;
+            borg_free();
             borg_note("** startup failure borg cannot run ** ");
             Term_fresh();
             return;
@@ -1918,7 +1919,7 @@ void do_cmd_borg(void)
                         a_info[borg_items[item].art_idx].name));
                 break;
             default: {
-                borg_note(format("skill %d (%s) value= %d.", item,
+                borg_note(format("trait %d (%s) value= %d.", item,
                     prefix_pref[item], borg.trait[item]));
                 break;
             }
