@@ -112,12 +112,20 @@ static void handle_signal_simple(int sig)
 {
 	/* Protect errno from library calls in signal handler */
 	int save_errno = errno;
+	/*
+	 * Use own buffer to avoid interactions with the static variables
+	 * used to implement vformat() (and thus quit_fmt() and format()).
+	 */
+	char msg[48];
 
 	/* Disable handler */
 	(void)(*signal_aux)(sig, SIG_IGN);
 
+	/* Construct the exit message in case it is needed */
+	(void)strnfmt(msg, sizeof(msg), "Exiting on signal %d!", sig);
+
 	/* Nothing to save, just quit */
-	if (!character_generated || character_saved) quit(NULL);
+	if (!character_generated || character_saved) quit(msg);
 
 	/* Count the signals */
 	signal_count++;
@@ -134,7 +142,7 @@ static void handle_signal_simple(int sig)
 		close_game(false);
 
 		/* Quit */
-		quit("interrupt");
+		quit(msg);
 	} else if (signal_count >= 5) {
 #ifdef SETGID
 		/* Cause of "death" */
@@ -151,7 +159,7 @@ static void handle_signal_simple(int sig)
 #endif
 
 		/* Quit */
-		quit("interrupt");
+		quit(msg);
 	} else if (signal_count >= 4) {
 		/*
 		 * Remember where the cursor was so it can be restored after
@@ -198,11 +206,20 @@ static void handle_signal_simple(int sig)
  */
 static void handle_signal_abort(int sig)
 {
+	/*
+	 * Use own buffer to avoid interactions with the static variables
+	 * used to implement vformat() (and thus quit_fmt() and format()).
+	 */
+	char msg[48];
+
 	/* Disable handler */
 	(void)(*signal_aux)(sig, SIG_IGN);
 
+	/* Construct the exit message */
+	(void)strnfmt(msg, sizeof(msg), "Exiting on signal %d!", sig);
+
 	/* Nothing to save, just quit */
-	if (!character_generated || character_saved) quit(NULL);
+	if (!character_generated || character_saved) quit(msg);
 
 	/* Clear the bottom line */
 	Term_erase(0, 23, 255);
@@ -234,7 +251,7 @@ static void handle_signal_abort(int sig)
 	Term_fresh();
 
 	/* Quit */
-	quit("software bug");
+	quit(msg);
 }
 
 
