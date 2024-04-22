@@ -40,8 +40,9 @@ extern struct borg_setting borg_settings[];
 
 /*
  * Initialize borg.txt
+ *      returns true if it gave a warning
  */
-extern void borg_init_txt_file(void);
+extern bool borg_init_txt_file(void);
 
 /*
  * Reset the required options when returning from user control

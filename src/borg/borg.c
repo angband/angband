@@ -687,11 +687,7 @@ void do_cmd_borg(void)
         /* Command: Nothing */
     case '$': {
         /*** Hack -- initialize borg.ini options ***/
-        mem_free(borg.has);
-        mem_free(borg.activation);
-
         borg_init_txt_file();
-        borg_note("# Ready...");
         break;
     }
     /* Command: Activate */
