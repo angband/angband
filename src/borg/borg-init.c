@@ -158,13 +158,15 @@ static void borg_free_txt_file(void)
 /*
  * Initialize borg.txt
  */
-void borg_init_txt_file(void)
+bool borg_init_txt_file(void)
 {
     ang_file *fp;
 
     bool formulas_found = false;
     bool old_formulas_found = false;
     int i;
+    bool warning = false;
+
 
     if (borg_active)
         borg_free_txt_file();
@@ -197,8 +199,8 @@ void borg_init_txt_file(void)
 
         fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
         if (!fp) {
-            msg("*****WARNING***** unable to write default BORG.TXT file!");
-            return;
+            borg_warning("*****WARNING***** unable to write default BORG.TXT file!");
+            return true;
         }
         file_putf(fp, "# BORG.txt default settings \n");
         file_putf(
@@ -270,20 +272,27 @@ void borg_init_txt_file(void)
     file_close(fp);
 
     if (borg_cfg[BORG_USES_DYNAMIC_CALCS]) {
+        warning = true;
         if (old_formulas_found) {
-            borg_note("** Borg's dynamic calculations enabled but old formulas "
-                      "found in borg.txt.");
-            borg_note("** formulas disabled ** ");
+            borg_warning(
+                "** Borg's dynamic calculations enabled but old formulas "
+                "found in borg.txt.");
+            borg_warning("** formulas disabled ** ");
             borg_cfg[BORG_USES_DYNAMIC_CALCS] = false;
         } else if (!formulas_found) {
-            borg_note("** Borg's dynamic calculations enabled but no formulas "
-                      "found in borg.txt.");
-            borg_note("** formulas disabled ** ");
+            borg_warning(
+                "** Borg's dynamic calculations enabled but no formulas "
+                "found in borg.txt.");
+            borg_warning("** formulas disabled ** ");
             borg_cfg[BORG_USES_DYNAMIC_CALCS] = false;
         } else {
-            borg_note("Borg's dynamic calculations enabled.  You may see some "
-                      "performance loss (~20%).");
+            borg_warning(
+                "Borg's dynamic calculations enabled.  You may see some "
+                "performance loss (~20 percent).");
         }
+
+        /* Hack -- flush it */
+        Term_fresh();
     }
 
     /* lunal mode is a default rather than a setting */
@@ -318,7 +327,7 @@ void borg_init_txt_file(void)
         borg_cfg[BORG_STOP_KING] = false;
 
     /* Success */
-    return;
+    return warning;
 }
 
 /*
@@ -390,11 +399,14 @@ void borg_prepare_race_class_info(void)
 void borg_init(void)
 {
     uint8_t *memory_test;
+    bool    warning_given;
 
     /*** Hack -- verify system ***/
+    /* Redraw everything */
+    do_cmd_redraw();
 
     /* Message */
-    prt("Initializing the Borg... (memory)", 0, 0);
+    borg_note("Initializing the Borg... (memory)");
     borg_init_failure = false;
 
     /* Hack -- flush it */
@@ -413,13 +425,13 @@ void borg_init(void)
     /*** Hack -- initialize borg.ini options ***/
 
     /* Message */
-    prt("Initializing the Borg... (borg.txt)", 0, 0);
-    borg_init_txt_file();
+    borg_note("Initializing the Borg... (borg.txt)");
+    warning_given = borg_init_txt_file();
 
     /*** Hack -- initialize game options ***/
 
     /* Message */
-    prt("Initializing the Borg... (options)", 0, 0);
+    borg_note("Initializing the Borg... (options)");
 
     /* Hack -- flush it */
     Term_fresh();
@@ -470,12 +482,10 @@ void borg_init(void)
     /* Redraw map */
     player->upkeep->redraw |= (PR_MAP);
 
-    /* Redraw everything */
-    do_cmd_redraw();
     /*** Various ***/
 
     /* Message */
-    prt("Initializing the Borg... (various)", 0, 0);
+    borg_note("Initializing the Borg... (various)");
 
     /* Hack -- flush it */
     Term_fresh();
@@ -526,10 +536,7 @@ void borg_init(void)
     /*** All done ***/
 
     /* Done initialization */
-    prt("Initializing the Borg... done.", 0, 0);
-
-    /* Clear line */
-    prt("", 0, 0);
+    borg_note("Initializing the Borg... done.");
 
     /* Reset the clock */
     borg_t = 10;
@@ -550,7 +557,7 @@ void borg_init(void)
     }
 
     /* Official message */
-    if (!borg_init_failure)
+    if (!borg_init_failure && !warning_given)
         borg_note("# Ready...");
 
     /* Now it is ready */

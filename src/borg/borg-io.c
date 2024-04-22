@@ -137,10 +137,11 @@ errr borg_what_text(int x, int y, int n, uint8_t *a, char *s)
  */
 static void borg_info(const char *what) { }
 
+
 /*
  * Memorize a message, Log it, Search it, and Display it in pieces
  */
-void borg_note(const char *what)
+static void borg_note_internal(bool warning, const char *what)
 {
     int j, n, i, k;
 
@@ -149,7 +150,11 @@ void borg_note(const char *what)
     term *old = Term;
 
     /* Memorize it */
-    message_add(what, MSG_GENERIC);
+    if (warning) {
+        msg(what);
+    } else {
+        message_add(what, MSG_GENERIC);
+    }
 
     /* Log the message */
     borg_info(what);
@@ -261,6 +266,19 @@ void borg_note(const char *what)
         /* Use correct window */
         Term_activate(old);
     }
+}
+
+void borg_warning(const char *what)
+{
+    borg_note_internal(true, what);
+}
+
+/*
+ * Memorize a message, Log it, Search it, and Display it in pieces
+ */
+void borg_note(const char *what)
+{
+    borg_note_internal(false, what);
 }
 
 /*

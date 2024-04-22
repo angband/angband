@@ -48,6 +48,11 @@ extern errr borg_what_text(int x, int y, int n, uint8_t *a, char *s);
 extern void borg_note(const char *what);
 
 /*
+ * Memorize a warning, Log it, Search it, and Display it in pieces
+ */
+extern void borg_warning(const char *what);
+
+/*
  * Add a keypress to the "queue" (fake event)
  */
 extern errr borg_keypress(keycode_t k);
