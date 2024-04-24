@@ -2858,7 +2858,7 @@ void borg_near_monster_type(int dist)
 
         /* Nether breath is bad */
         if (!borg.trait[BI_SRNTHR]
-            && (strstr(r_ptr->name, "Azriel")
+            && (strstr(r_ptr->name, "Ossë, Herald of Ulmo")
                 || strstr(r_ptr->name, "Dracolich")
                 || strstr(r_ptr->name, "Dracolisk")))
             scaryguy_on_level = true;

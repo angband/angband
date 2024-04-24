@@ -159,7 +159,7 @@ sound:SPEED:pls_bell_sustain
 sound:SHIELD:pls_bell_bowl
 
 # You become blessed.
-sound:BLESSED:sum_angel_song
+sound:BLESSED:sum_ainu_song
 
 # You feel heroic.
 sound:HERO:pls_tone_goblet
@@ -304,7 +304,7 @@ sound:RUNE:id_good_hmm
 sound:SPELL:plm_spell1 plm_spell2 plm_spell3
 
 # You successfully pray a prayer.
-sound:PRAYER:sum_angel_song
+sound:PRAYER:sum_ainu_song
 
 #
 # Monster Sounds - combat
@@ -398,8 +398,8 @@ sound:MULTIPLY:mco_frog_trill
 # Summon one or more monsters.
 sound:SUM_MONSTER:sum_chime_jangle
 
-# Summon angels.
-sound:SUM_AINU:sum_angel_song
+# Summon Ainur.
+sound:SUM_AINU:sum_ainu_song
 
 # Summon undead.
 sound:SUM_UNDEAD:sum_ghost_oooo

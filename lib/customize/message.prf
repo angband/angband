@@ -355,7 +355,7 @@ message:BR_FORCE:w
 # MSG_SUM_MONSTER
 message:SUM_MONSTER:w
 
-# MSG_SUM_ANGEL
+# MSG_SUM_AINU
 message:SUM_AINU:w
 
 # MSG_SUM_UNDEAD

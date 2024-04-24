@@ -938,7 +938,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <Media Include="lib\sounds\sto_man_haha.mp3" />
     <Media Include="lib\sounds\sto_man_hey.mp3" />
     <Media Include="lib\sounds\sto_man_whoohaha.mp3" />
-    <Media Include="lib\sounds\sum_angel_song.mp3" />
+    <Media Include="lib\sounds\sum_ainu_song.mp3" />
     <Media Include="lib\sounds\sum_bell_crystal.mp3" />
     <Media Include="lib\sounds\sum_bell_hand.mp3" />
     <Media Include="lib\sounds\sum_bell_tone.mp3" />

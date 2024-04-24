@@ -60,7 +60,7 @@ DATA = amb_bell_metal1.mp3		mco_scurry_dry.mp3		plm_drop_boot.mp3 \
 	mco_dino_slur.mp3		plm_door_bolt.mp3		sto_man_haha.mp3 \
 	mco_dino_talk.mp3		plm_door_creak.mp3		sto_man_hey.mp3 \
 	mco_dino_yawn.mp3		plm_door_creakshut.mp3		sto_man_whoohaha.mp3 \
-	mco_dub_wobble.mp3		plm_door_dungeon.mp3		sum_angel_song.mp3 \
+	mco_dub_wobble.mp3		plm_door_dungeon.mp3		sum_ainu_song.mp3 \
 	mco_frog_trill.mp3		plm_door_echolock.mp3		sum_bell_crystal.mp3 \
 	mco_hit_whip.mp3		plm_door_entrance.mp3		sum_bell_hand.mp3 \
 	mco_howl_croak.mp3		plm_door_knob.mp3		sum_bell_tone.mp3 \
