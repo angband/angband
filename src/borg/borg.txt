@@ -506,8 +506,8 @@ Power
 # Resistance flags
 	condition(value(trait, resist cold)): reward(3000);
 	condition(value(trait, resist elec)): reward(4000);
-	condition(value(trait, resist fire)): reward(6000);
-	condition(value(trait, resist acid)): reward(8000);
+	condition(value(trait, resist acid)): reward(6000);
+	condition(value(trait, resist fire)): reward(8000);
 # extra bonus for getting all basic resist
 	condition(value(trait, resist cold) and value(trait, resist elec) and value(trait, resist fire) and value(trait, resist acid)): reward(10000);
 	condition(value(trait, resist poison)): reward(20000);
@@ -558,10 +558,10 @@ Power
 
 # ac
 	condition(value(config, worships_ac) and (value(trait, armor) < 15)): reward(value(trait, armor) * 2500);
-	condition(value(config, worships_ac) and (value(trait, armor) < 15) and (value(trait, armor) < 75)): reward((value(trait, armor) * 2000) + 28250);
+	condition(value(config, worships_ac) and (value(trait, armor) >= 15) and (value(trait, armor) < 75)): reward((value(trait, armor) * 2000) + 28250);
 	condition(value(config, worships_ac) and (value(trait, armor) >= 75)): reward((value(trait, armor) * 1500) + 73750);
 	condition(!value(config, worships_ac) and (value(trait, armor) < 15)): reward(value(trait, armor) * 2000);
-	condition(!value(config, worships_ac) and (value(trait, armor) < 15) and (value(trait, armor) < 75)): reward((value(trait, armor) * 500) + 28350);
+	condition(!value(config, worships_ac) and (value(trait, armor) >= 15) and (value(trait, armor) < 75)): reward((value(trait, armor) * 500) + 28350);
 	condition(!value(config, worships_ac) and (value(trait, armor) >= 75)): reward((value(trait, armor) * 100) + 73750);
 
 # Penalize various flags

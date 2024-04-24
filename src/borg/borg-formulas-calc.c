@@ -435,25 +435,25 @@ static bool adjust_order_ops_depth_block(
 static bool adjust_order_operations(struct borg_calculation *f)
 {
     bool fail = false;
-    int  pdepth, token;
+    int  pdepth, itoken;
     int  start;
     for (pdepth = 0; pdepth <= f->max_depth; pdepth++) {
         start = -1;
-        for (token = 0; token < f->token_array->count; token++) {
-            struct token *tok = f->token_array->items[token];
+        for (itoken = 0; itoken < f->token_array->count; itoken++) {
+            struct token *tok = f->token_array->items[itoken];
             if (start == -1 && tok->pdepth == pdepth) {
-                start = token;
+                start = itoken;
                 continue;
             }
             /* do a block of tokens */
             if (start != -1 && tok->pdepth < pdepth) {
                 fail
-                    = adjust_order_ops_depth_block(f, pdepth, start, token - 1);
+                    = adjust_order_ops_depth_block(f, pdepth, start, itoken - 1);
                 start = -1;
             }
         }
         if (start != -1) {
-            fail  = adjust_order_ops_depth_block(f, pdepth, start, token - 1);
+            fail  = adjust_order_ops_depth_block(f, pdepth, start, itoken - 1);
             start = -1;
         }
     }
@@ -677,6 +677,7 @@ void calculations_free(void)
     for (int i = 0; i < calculations.count; i++) {
         calc_free(calculations.items[i]);
     }
+    calculations.count = 0;
 }
 
 #endif
