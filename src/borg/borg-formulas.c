@@ -73,7 +73,7 @@ struct borg_depth_line {
     struct math_section *condition;
 };
 
-struct borg_formulas {
+struct borg_formula_arrays {
     /* array of power formulas */
     struct borg_array power;
 
@@ -85,7 +85,7 @@ struct borg_formulas {
 };
 
 /* array of depth and power per class plus one for "any" */
-struct borg_formulas borg_formulas;
+struct borg_formula_arrays borg_formulas;
 
 int borg_array_add(struct borg_array *a, void *item)
 {
@@ -1190,6 +1190,10 @@ void borg_free_formulas(void)
 
     for (i = 0; i < borg_formulas.power.count; i++)
         power_free(borg_formulas.power.items[i]);
+
+    borg_formulas.restock.count = 0;
+    borg_formulas.depth.count = 0;
+    borg_formulas.power.count = 0;
 
     calculations_free();
 }

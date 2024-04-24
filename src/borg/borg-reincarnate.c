@@ -411,7 +411,7 @@ static void borg_roll_hp(void)
 }
 
 /*
- * Allow the borg to play continously.  Reset all values,
+ * Allow the borg to play continuously.  Reset all values,
  */
 void reincarnate_borg(void)
 {
