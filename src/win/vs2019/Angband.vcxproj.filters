@@ -2352,7 +2352,7 @@
     <Media Include="lib\sounds\sto_man_whoohaha.mp3">
       <Filter>Resource Files\sounds</Filter>
     </Media>
-    <Media Include="lib\sounds\sum_angel_song.mp3">
+    <Media Include="lib\sounds\sum_ainu_song.mp3">
       <Filter>Resource Files\sounds</Filter>
     </Media>
     <Media Include="lib\sounds\sum_bell_crystal.mp3">

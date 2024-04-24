@@ -2119,7 +2119,7 @@ static int borg_defend_aux_genocide(int p1)
 }
 
 /* This will cast the genocide spell on Hounds and other
- * really nasty guys like Angels, Demons, Dragons and Liches
+ * really nasty guys like Ainur, Demons, Dragons and Liches
  * at the beginning of each level or when they get too numerous.
  * The acceptable numbers are defined in borg_nasties_limit[]
  * The definition for the list is in borg-fight-attack.h
