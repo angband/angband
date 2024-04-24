@@ -1892,6 +1892,8 @@ static void update_messages_subwindow(game_event_type type,
 	int i;
 	int w, h;
 	int x, y;
+	bool is_fresh = true;
+	static const char* prev_last_msg = NULL;
 
 	const char *msg;
 
@@ -1902,10 +1904,14 @@ static void update_messages_subwindow(game_event_type type,
 	Term_get_size(&w, &h);
 
 	/* Dump messages */
+	const char* last_msg = NULL;
 	for (i = 0; i < h; i++) {
-		uint8_t color = message_color(i);
 		uint16_t count = message_count(i);
 		const char *str = message_str(i);
+		if (is_fresh && prev_last_msg == str) {
+			is_fresh = false;
+		}
+		uint8_t color = is_fresh? COLOUR_RED: message_color(i);
 
 		if (count == 1)
 			msg = str;
@@ -1922,7 +1928,11 @@ static void update_messages_subwindow(game_event_type type,
 
 		/* Clear to end of line */
 		Term_erase(x, y, 255);
+		if (i == 0){
+			last_msg = str;
+		}
 	}
+	prev_last_msg = last_msg;
 
 	Term_fresh();
 	
