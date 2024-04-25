@@ -1917,8 +1917,10 @@ static void update_messages_subwindow(game_event_type type,
 			msg = str;
 		else if (count == 0)
 			msg = " ";
-		else
+		else {
 			msg = format("%s <%dx>", str, count);
+			color = COLOUR_RED;
+		}
 
 		Term_putstr(0, (h - 1) - i, -1, color, msg);
 
@@ -2271,7 +2273,7 @@ static void subwindow_flag_changed(int win_idx, uint32_t flag, bool new_state)
 
 		case PW_MESSAGE:
 		{
-			register_or_deregister(EVENT_MESSAGE,
+			register_or_deregister(EVENT_STATE,
 					       update_messages_subwindow,
 					       angband_term[win_idx]);
 			break;
