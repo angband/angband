@@ -1919,7 +1919,6 @@ static void update_messages_subwindow(game_event_type type,
 			msg = " ";
 		else {
 			msg = format("%s <%dx>", str, count);
-			color = COLOUR_RED;
 		}
 
 		Term_putstr(0, (h - 1) - i, -1, color, msg);
