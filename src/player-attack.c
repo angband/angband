@@ -938,6 +938,7 @@ static bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fea
 	bash_dam += adj_str_td[p->state.stat_ind[STAT_STR]];
 
 	/* Paranoia. */
+	if (bash_dam <= 0) return false;
 	bash_dam = MIN(bash_dam, 125);
 
 	if (OPT(p, show_damage)) {
