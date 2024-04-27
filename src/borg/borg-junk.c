@@ -1227,8 +1227,8 @@ bool borg_remove_stuff(void)
         if (!item->kind)
             continue;
 
-        /* Require "known" (or needs id) */
-        if (borg_item_note_needs_id(item))
+        /* Require "known" (or needs id) unless we know it is cursed */
+        if (borg_item_note_needs_id(item) && !item->cursed)
             continue;
 
         /* skip it if it has not been decursed */
