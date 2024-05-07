@@ -584,9 +584,10 @@ static int32_t calculate_value_from_formula_depth(
     if ((*i) + 1 >= f->count)
         return left_value;
 
-    struct token *operation = (struct token *)f->items[++(*i)];
+    struct token *operation = (struct token *)f->items[(*i) + 1];
     if (operation->pdepth < pdepth)
         return left_value;
+    ++(*i);
 
     /* get the value on the right */
     int32_t       right_value = 0;
