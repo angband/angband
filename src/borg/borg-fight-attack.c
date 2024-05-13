@@ -45,6 +45,11 @@
 #include "borg-update.h"
 #include "borg.h"
 
+/* The use of this is a bit random. */
+/*  Zero is "haven't shot" */
+/*  positive is "good to shoot current target" */
+/*  negative is "shot and missed" */
+/*  negative 12 and lower is "do not shoot" */
 int successful_target = 0;
 
 /*
@@ -1866,7 +1871,7 @@ static int borg_launch_arc_at_location(
             /* Stop if we missed previously */
             if (successful_target < 0) {
                 /* reset the "miss" so only one shot is skipped  */
-                if (successful_target <= -12)  // !FIX double check magic -12
+                if (successful_target <= -12)
                     successful_target = 0;
                 break;
             }

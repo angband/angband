@@ -1020,7 +1020,7 @@ static int32_t borg_power_equipment(void)
             activation_bonus += 0; /* !FIX no code to handle (currently no code
                                       for wands of drag breath) */
         else if (act_staff_magi == act)
-            borg.trait[BI_ASTFMAGI] += 10;  /* !FIX this should be in borg_notice */
+            activation_bonus += 0; /* handled by adding to BI_ASTFMAGI */
         else if (act_staff_holy == act)
             activation_bonus += 1000;
         else if (act_drink_breath == act)

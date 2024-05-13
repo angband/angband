@@ -1379,6 +1379,9 @@ static void borg_notice_equipment(void)
         }
     }
 
+    if (borg.activation[act_staff_magi])
+        borg.trait[BI_ASTFMAGI] += 10;
+
     /* Scan the usable inventory */
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
         item = &borg_items[i];

@@ -323,8 +323,10 @@ static struct keypress borg_inkey_hack(int flush_first)
         borg_enter_score();
 #endif
 
-        reincarnate_borg();
-        borg_respawning = 7;
+        if (!borg_cfg[BORG_CHEAT_DEATH]) {
+            reincarnate_borg();
+            borg_respawning = 7;
+        }
 #endif /* BABLOS */
 
         key.code = 'n';

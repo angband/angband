@@ -72,6 +72,7 @@ struct borg_setting borg_settings[] = {
     { "borg_stop_clevel", 'i', 51 },
     { "borg_no_deeper", 'i', 127 }, 
     { "borg_stop_king", 'b', true },
+    { "borg_cheat_death", 'b', false },
     { "borg_respawn_winners", 'b', false },
     { "borg_respawn_class", 'i', -1 }, 
     { "borg_respawn_race", 'i', -1 },
@@ -437,7 +438,7 @@ void borg_init(void)
     Term_fresh();
 
     /* Make sure it rolls up a new guy at death */
-    if (screensaver) {
+    if (screensaver || borg_cfg[BORG_CHEAT_DEATH]) {
         /* We need the borg to keep playing after he dies */
         option_set("cheat_live", true);
     }
