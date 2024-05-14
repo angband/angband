@@ -368,6 +368,17 @@ static struct keypress borg_inkey_hack(int flush_first)
         return key;
     }
 
+    /* Stepping on a stack when the inventory is full gives a message */
+    /* and the keypress when given this message is requeued so the borg */
+    /* thinks it is a user keypress when it isn't */
+    if (borg_prompt && !inkey_flag && (y == 0) && (x >= 12)
+        && (0 == borg_what_text(0, y, 16, &t_a, buf))
+        && (streq(buf, "You have no room"))) {
+        /* key code 0 seems to be a no-op and ignored as a user keypress */
+        key.code = 0;
+        return key;
+    }
+
     /* ***MEGA-HACK***  */
     /* This will be hit if the borg uses an unidentified effect that has */
     /* EF_SELECT/multiple effects. Always pick "one of the following at random"
