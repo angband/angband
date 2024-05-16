@@ -232,6 +232,7 @@ on-end:You feel bolder now.
 on-increase:You are more scared!
 msgt:AFRAID
 fail:1:PROT_FEAR
+flag-synonym:AFRAID:1
 
 name:IMAGE
 desc:hallucination
@@ -420,6 +421,7 @@ desc:terror
 grade:r:10000:Terror:You feel the need to run away and fast!
 on-end:The urge to run dissipates.
 msgt:AFRAID
+flag-synonym:AFRAID:0
 
 name:SPRINT
 desc:sprinting
