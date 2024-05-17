@@ -21,6 +21,7 @@
 
 #ifdef ALLOW_BORG
 
+#include "../cmds.h"
 #include "../game-input.h"
 #include "../game-world.h"
 #include "../player-timed.h"
@@ -326,7 +327,8 @@ static struct keypress borg_inkey_hack(int flush_first)
         if (!borg_cfg[BORG_CHEAT_DEATH]) {
             reincarnate_borg();
             borg_respawning = 7;
-        }
+        } else
+            do_cmd_wiz_cure_all(0);
 #endif /* BABLOS */
 
         key.code = 'n';
