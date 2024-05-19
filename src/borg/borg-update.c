@@ -415,7 +415,6 @@ static void borg_update_map(void)
             }
             /* lava */
             else if (g.f_idx == FEAT_LAVA) {
-                // !FIX !TODO !AJG need to do something about lava
             }
             /* Seams */
             else if (g.f_idx == FEAT_MAGMA || g.f_idx == FEAT_QUARTZ) {

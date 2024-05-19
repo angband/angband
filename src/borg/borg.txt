@@ -98,6 +98,13 @@ borg_slow_optimizehome = FALSE
 
 # Respawn
 
+# if borg_cheat_death is set, the option to cheat death will be set and, when 
+# the borg dies, he will cheat death and keep going.  If this is false and the 
+# option to cheat death in the game is true the borg will reincarnate (respawn)
+# as a player using the options below to pick the new player.  If the option 
+# to cheat death is false and this is false, the borg will stop on death.
+borg_cheat_death = FALSE
+
 # If the borg is in continual play mode (as with the screen saver),
 # he will respawn a randomly generated character at death.  This section
 # allows the user to make certain bias for the type of character generated.
@@ -167,7 +174,6 @@ borg_stop_dlevel = 128
 borg_stop_clevel = 51
 borg_no_deeper = 127
 borg_stop_king = TRUE
-
 
 # Chest Tolerance
 

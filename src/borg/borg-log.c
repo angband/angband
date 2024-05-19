@@ -50,6 +50,9 @@ void borg_log_death(void)
     ang_file *borg_log_file;
     time_t    death_time;
 
+    if (!borg_cfg[BORG_SAVE_DEATH])
+        return;
+
     /* Build path to location of the definition file */
     path_build(buf, 1024, ANGBAND_DIR_USER, "borg-log.txt");
 
@@ -92,6 +95,9 @@ void borg_log_death_data(void)
     char      buf[1024];
     ang_file *borg_log_file;
     time_t    death_time;
+
+    if (!borg_cfg[BORG_SAVE_DEATH])
+        return;
 
     path_build(buf, 1024, ANGBAND_DIR_USER, "borg.dat");
 
@@ -149,6 +155,9 @@ void borg_write_map(bool ask)
     int16_t m_idx;
 
     char o_name[80];
+
+    if (!borg_cfg[BORG_SAVE_DEATH])
+        return;
 
     /* Process the player name */
     for (i = 0; player->full_name[i]; i++) {
