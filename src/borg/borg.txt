@@ -605,7 +605,7 @@ Power
 	reward(value(trait, multi bonus) * 3000);
 
 # wearing something that needs an ID
-	reward(value(trait, amt need id) * 10000);
+	reward(value(trait, worn need id) * 10000);
 
 # activations. 
 	condition(value(activation, illumination)): reward(500 * value(activation, illumination));

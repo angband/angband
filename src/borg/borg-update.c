@@ -2350,6 +2350,9 @@ void borg_update(void)
                     x = o_w_x + dx;
                     y = o_w_y + dy;
 
+                    if (y >= AUTO_MAX_Y || x >= AUTO_MAX_X)
+                        continue;
+
                     /* Get the borg_grid */
                     ag = &borg_grids[y][x];
 
