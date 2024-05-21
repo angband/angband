@@ -416,6 +416,7 @@ void borg_init(void)
     /* Mega-Hack -- verify memory */
     memory_test = mem_zalloc(400 * 1024L * sizeof(uint8_t));
     mem_free(memory_test);
+    memory_test = NULL;
 
     /* Prapare a local random number seed */
     if (!borg_rand_local)

@@ -48,9 +48,8 @@ int16_t  track_worn_size;
 uint8_t *track_worn_name1;
 int16_t  track_worn_time;
 
-int16_t borg_best_fit_item
-    = -1; /* Item to be worn.  Index used to note which item not to sell */
-int borg_best_item = -1; /* Attempting to wear a best fit item */
+/* Item to be worn.  Index used to note which item not to sell */
+int16_t borg_best_fit_item = -1; 
 
 /*
  * Identify items if possible
@@ -1362,7 +1361,7 @@ bool borg_best_stuff(void)
                 /* wield the item */
                 borg_note(format("# Best Combo %s.", item->desc));
                 borg_keypress('w');
-                borg_best_item = i;
+                borg_keypress(all_letters_nohjkl[i]);
                 return (true);
             }
 
@@ -1398,7 +1397,7 @@ bool borg_best_stuff(void)
             /* Purchase that item */
             borg_keypress(purchase_target[0]);
             borg_keypress('p');
-            /* press ENTER twice (mulitple objects) */
+            /* press ENTER twice (multiple objects) */
             borg_keypress(KC_ENTER);
             borg_keypress(KC_ENTER);
 

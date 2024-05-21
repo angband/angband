@@ -209,6 +209,7 @@ static bool tokenize_math(
             value_token = NULL;
             if (fail) {
                 mem_free(v);
+                v = NULL;
                 break;
             }
             if (pdepth > f->max_depth)
@@ -420,9 +421,12 @@ static bool adjust_order_ops_depth_block(
     }
 
     /* free up the temporary memory */
-    for (i = 0; i < operators->count; i++)
+    for (i = 0; i < operators->count; i++) {
         mem_free(operators->items[i]);
+        operators->items[i] = NULL;
+    }
     mem_free(operators);
+    operators = NULL;
 
     return false;
 }
@@ -521,9 +525,12 @@ static bool parse_calculation(
  */
 static void token_free(struct token *t)
 {
-    if (t->token)
+    if (t->token) {
         mem_free(t->token);
+        t->token = NULL;
+    }
     mem_free(t);
+    t = NULL;
 }
 
 /*
@@ -532,11 +539,15 @@ static void token_free(struct token *t)
 static void calc_free(struct borg_calculation *calc)
 {
     if (calc->token_array) {
-        for (int i = 0; i < calc->token_array->count; i++)
+        for (int i = 0; i < calc->token_array->count; i++) {
             token_free(calc->token_array->items[i]);
+            calc->token_array->items[i] = NULL;
+        }
         mem_free(calc->token_array);
+        calc->token_array = NULL;
     }
     mem_free(calc);
+    calc = NULL;
 }
 
 /*
@@ -547,6 +558,7 @@ int parse_calculation_line(char *line, const char *full_line)
     struct borg_calculation *f = mem_zalloc(sizeof(struct borg_calculation));
     if (parse_calculation(f, line, full_line)) {
         calc_free(f);
+        f = NULL;
         return -1;
     }
 
@@ -677,6 +689,7 @@ void calculations_free(void)
 {
     for (int i = 0; i < calculations.count; i++) {
         calc_free(calculations.items[i]);
+        calculations.items[i] = NULL;
     }
     calculations.count = 0;
 }

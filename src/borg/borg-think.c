@@ -245,13 +245,9 @@ bool borg_think(void)
     }
 
     /* Parse "inven" mode */
-    if ((0 == borg_what_text(0, 0, 6, &t_a, buf)) && (streq(buf, "(Inven"))) {
-        if (borg_best_item != -1)
-            borg_keypress(all_letters_nohjkl[borg_best_item]);
-
+    if ((0 == borg_what_text(0, 0, 6, &t_a, buf)) && (streq(buf, "Wear o"))) {
         /* Leave this mode */
         borg_keypress(ESCAPE);
-        borg_best_item = -1;
 
         /* Done */
         return (true);

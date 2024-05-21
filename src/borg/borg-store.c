@@ -186,6 +186,7 @@ void borg_cheat_store(void)
         }
     }
     mem_free(list);
+    list = NULL;
 }
 
 void borg_init_store(void)
@@ -217,7 +218,9 @@ void borg_free_store(void)
 
     for (int i = 0; i < z_info->store_max; i++) {
         mem_free(borg_shops[i].ware);
+        borg_shops[i].ware = NULL;
         mem_free(safe_shops[i].ware);
+        safe_shops[i].ware = NULL;
     }
 
     mem_free(safe_shops);

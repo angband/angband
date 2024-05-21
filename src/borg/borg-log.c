@@ -262,7 +262,9 @@ void borg_write_map(bool ask)
         file_putf(borg_map_file, "%s\n", ch_line);
     }
     mem_free(line);
+    line = NULL;
     mem_free(ch_line);
+    ch_line = NULL;
 
     /* Known/Seen monsters */
     for (i = 1; i < borg_kills_nxt; i++) {
@@ -342,6 +344,7 @@ void borg_write_map(bool ask)
     }
     file_putf(borg_map_file, "\n\n");
     mem_free(list);
+    list = NULL;
 
     /* Write swap info */
     if (borg_cfg[BORG_USES_SWAPS]) {

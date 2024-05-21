@@ -568,7 +568,7 @@ bool borg_leave_level(bool bored)
     bool need_restock       = false;
 
     /* Hack -- waiting for "recall" other than depth 1 */
-    if (borg.goal.recalling && borg.trait[BI_CDEPTH] > 1)
+    if (borg.goal.recalling && borg.trait[BI_CDEPTH] != 1)
         return (false);
 
     /* Not bored if I have seen Morgoth recently */
