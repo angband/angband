@@ -586,12 +586,18 @@ static bool get_section(
 static void depth_free(struct borg_depth_line *depth)
 {
     if (depth) {
-        if (depth->condition)
+        if (depth->condition) {
             mem_free(depth->condition);
-        if (depth->reason)
+            depth->condition = NULL;
+        }
+
+        if (depth->reason) {
             string_free(depth->reason);
+            depth->reason = NULL;
+        }
 
         mem_free(depth);
+        depth = NULL;
     }
 }
 
@@ -768,8 +774,10 @@ static bool parse_power_line(char *line, const char *full_line)
     if (!fail)
         borg_array_add(&borg_formulas.power, p);
 
-    if (fail && p)
+    if (fail && p) {
         mem_free(p);
+        p = NULL;
+    }
 
     return fail;
 }
@@ -1165,15 +1173,26 @@ bool borg_load_formulas(ang_file *fp)
  */
 static void power_free(struct borg_power_line *power)
 {
-    if (power->condition)
-        mem_free(power->condition);
-    if (power->range)
-        mem_free(power->range);
-    if (power->reward)
-        mem_free(power->reward);
-    if (power->value)
-        mem_free(power->value);
-    mem_free(power);
+    if (power) {
+        if (power->condition) {
+            mem_free(power->condition);
+            power->condition = NULL;
+        }
+        if (power->range) {
+            mem_free(power->range);
+            power->range = NULL;
+        }
+        if (power->reward) {
+            mem_free(power->reward);
+            power->reward = NULL;
+        }
+        if (power->value) {
+            mem_free(power->value);
+            power->value = NULL;
+        }
+        mem_free(power);
+        power = NULL;
+    }
 }
 
 /*
@@ -1182,14 +1201,20 @@ static void power_free(struct borg_power_line *power)
 void borg_free_formulas(void)
 {
     int i;
-    for (i = 0; i < borg_formulas.restock.count; i++)
+    for (i = 0; i < borg_formulas.restock.count; i++) {
         depth_free(borg_formulas.restock.items[i]);
+        borg_formulas.restock.items[i] = NULL;
+    }
 
-    for (i = 0; i < borg_formulas.depth.count; i++)
+    for (i = 0; i < borg_formulas.depth.count; i++) {
         depth_free(borg_formulas.depth.items[i]);
+        borg_formulas.depth.items[i] = NULL;
+    }
 
-    for (i = 0; i < borg_formulas.power.count; i++)
+    for (i = 0; i < borg_formulas.power.count; i++) {
         power_free(borg_formulas.power.items[i]);
+        borg_formulas.power.items[i] = NULL;
+    }
 
     borg_formulas.restock.count = 0;
     borg_formulas.depth.count = 0;

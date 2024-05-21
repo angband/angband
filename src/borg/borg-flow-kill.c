@@ -3353,7 +3353,9 @@ void borg_free_flow_kill(void)
 
     mem_free(borg_race_death);
     borg_race_death = NULL;
+
     mem_free(borg_race_count);
+    borg_race_count = NULL;
 
     mem_free(borg_kills);
     borg_kills = NULL;

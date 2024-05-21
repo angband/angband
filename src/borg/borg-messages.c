@@ -1620,6 +1620,7 @@ void borg_free_messages(void)
     if (suffix_pain) {
         for (i = 0; suffix_pain[i]; ++i) {
             mem_free(suffix_pain[i]);
+            suffix_pain[i] = NULL;
         }
         mem_free(suffix_pain);
         suffix_pain = NULL;
