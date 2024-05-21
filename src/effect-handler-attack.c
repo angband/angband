@@ -1564,12 +1564,11 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 		}
 	}
 
-	/* Player may have moved */
-	pgrid = player->grid;
-
 	/* Important -- no wall on player */
-	map[16 + pgrid.y - centre.y][16 + pgrid.x - centre.x] = false;
-
+	if (ABS(player->grid.x - centre.x) <= 15
+			&& ABS(player->grid.y - centre.y) <= 15) {
+		map[16 + player->grid.y - centre.y][16 + player->grid.x - centre.x] = false;
+	}
 
 	/* Examine the quaked region and damage marked grids if possible */
 	for (offset.y = -r; offset.y <= r; offset.y++) {
