@@ -960,9 +960,7 @@ bool borg_excavate_vault(int range)
                 continue;
 
             /* only deal with excavatable walls */
-            if (borg_grids[y][x].feat != FEAT_FLOOR
-                && borg_grids[y][x].feat != FEAT_LAVA
-                && borg_grids[y][x].feat != FEAT_GRANITE
+            if (borg_grids[y][x].feat != FEAT_GRANITE
                 && borg_grids[y][x].feat != FEAT_RUBBLE
                 && borg_grids[y][x].feat != FEAT_QUARTZ
                 && borg_grids[y][x].feat != FEAT_MAGMA
@@ -997,10 +995,6 @@ bool borg_excavate_vault(int range)
                     borg_temp_x[ii] = x;
                     borg_temp_y[ii] = y;
                     borg_temp_n++;
-
-                    /* do not overflow */
-                    if (borg_temp_n > AUTO_TEMP_MAX)
-                        borg_temp_n = AUTO_TEMP_MAX;
                 }
             }
         }

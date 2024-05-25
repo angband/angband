@@ -881,9 +881,7 @@ bool borg_flow_vault(int nearness)
             uint8_t feat = borg_grids[y][x].feat;
 
             /* only deal with excavatable walls */
-            if (feat != FEAT_FLOOR 
-                && feat != FEAT_LAVA 
-                && feat != FEAT_RUBBLE
+            if (feat != FEAT_RUBBLE
                 && feat != FEAT_QUARTZ 
                 && feat != FEAT_MAGMA
                 && feat != FEAT_QUARTZ_K 
