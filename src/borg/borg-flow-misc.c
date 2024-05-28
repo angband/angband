@@ -950,6 +950,9 @@ bool borg_twitchy(void)
 {
     int dir = 5;
     int count;
+    bool all_walls = true;
+    borg_grid * grid = NULL;
+    struct loc l;
 
     /* This is a bad thing */
     borg_note("# Twitchy!");
@@ -967,13 +970,17 @@ bool borg_twitchy(void)
     }
 
     /* Pick a random direction */
-    count = 100;
+    count = 20;
     while (true) {
         dir = randint0(9);
         if (dir == 5 || dir == 0)
             continue;
-        if (!(count--))
+
+        if (!count)
             break;
+
+        count--;
+
         /* Hack -- set goal */
         borg.goal.g.x = borg.c.x + ddx[dir];
         borg.goal.g.y = borg.c.y + ddy[dir];
@@ -981,23 +988,45 @@ bool borg_twitchy(void)
         if (!square_in_bounds_fully(cave, borg.goal.g))
             continue;
 
-        if (borg_grids[borg.goal.g.y][borg.goal.g.x].feat >= FEAT_SECRET
-            && borg_grids[borg.goal.g.y][borg.goal.g.x].feat <= FEAT_PERM)
+        grid = &borg_grids[borg.goal.g.y][borg.goal.g.x];
+
+        /* don't twitch into walls */
+        if (grid->feat >= FEAT_SECRET && grid->feat <= FEAT_PERM)
             continue;
+
+        /* monsters count as walls if afraid */
+        if (grid->kill && borg.trait[BI_ISAFRAID])
+            continue;
+
         break;
     }
+
+    /* if we can't find a direction, maybe we are surrounded by walls */
     if (!count) {
-        bool all_walls = true;
         for (dir = 1; dir < 10; dir++) {
             if (dir == 5)
                 continue;
 
-            if (!square_in_bounds_fully(cave, borg.goal.g))
+            /* get the location of postion + direction */
+            l.x = borg.c.x + ddx[dir];
+            l.y = borg.c.y + ddy[dir];
+
+            if (!square_in_bounds_fully(cave, l))
                 continue;
 
-            if (borg_grids[borg.goal.g.y][borg.goal.g.x].feat >= FEAT_SECRET
-                && borg_grids[borg.goal.g.y][borg.goal.g.x].feat <= FEAT_PERM)
+            grid = &borg_grids[l.y][l.x];
+
+            /* don't twitch into walls */
+            if (grid->feat >= FEAT_SECRET && grid->feat <= FEAT_PERM) {
+                /* unless afraid (and even then, not perm walls) */
+                if (!borg.trait[BI_ISAFRAID] || grid->feat == FEAT_PERM)
+                    continue;
+            }
+
+            /* monsters count as walls if afraid */
+            if (grid->kill && borg.trait[BI_ISAFRAID])
                 continue;
+
             all_walls = false;
             break;
         }
@@ -1014,6 +1043,13 @@ bool borg_twitchy(void)
     }
 
     /* Normally move */
+
+    /* if afraid, we need to try to dig. We have tried everything else */
+    /* digging will at least take an action so maybe give time to not be */
+    /* afraid */
+    if (borg.trait[BI_ISAFRAID])
+        borg_keypress('+');
+
     /* Send direction */
     borg_keypress(I2D(dir));
 
