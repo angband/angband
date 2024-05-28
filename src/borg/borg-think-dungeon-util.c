@@ -1020,9 +1020,9 @@ bool borg_excavate_vault(int range)
             borg_note("# Excavation of vault");
             borg_keypress('5');
 
-            /* turn that wall into a floor grid.  If the spell failed, it will
-             * still look like a wall and the borg_update routine will redefine
-             * it as a wall
+            /* turn that wall into a floor grid.  If the spell failed and the
+             * grid is visible, it will still look like a wall and the
+             * borg_update routine will redefine it as a wall
              */
             borg_do_update_view = true;
             borg_do_update_lite = true;
@@ -1033,6 +1033,14 @@ bool borg_excavate_vault(int range)
             borg_grids[borg_temp_y[i]][borg_temp_x[i]].info |= BORG_GLOW;
             /* Feat Floor */
             borg_grids[borg_temp_y[i]][borg_temp_x[i]].feat = FEAT_FLOOR;
+            /*
+             * If the grid is not seen, prefer what the borg remembers over
+             * what map_info() returns (i.e. optimistically assume that the
+             * excavation was successfull.
+             */
+            borg_grids[borg_temp_y[i]][borg_temp_x[i]].info |= BORG_IGNORE_MAP;
+            /* Forget number of mineral veins to force rebuild of vein list */
+            track_vein.num = 0;
 
             return (true);
         }
