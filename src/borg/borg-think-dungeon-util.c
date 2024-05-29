@@ -1036,7 +1036,7 @@ bool borg_excavate_vault(int range)
             /*
              * If the grid is not seen, prefer what the borg remembers over
              * what map_info() returns (i.e. optimistically assume that the
-             * excavation was successfull.
+             * excavation was successful.
              */
             borg_grids[borg_temp_y[i]][borg_temp_x[i]].info |= BORG_IGNORE_MAP;
             /* Forget number of mineral veins to force rebuild of vein list */

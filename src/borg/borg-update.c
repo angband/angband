@@ -283,8 +283,11 @@ static void borg_update_map(void)
             ag->info |= BORG_OKAY;
 
             /* Notice "knowledge" */
-            if (g.f_idx != FEAT_NONE && (g.in_view
-                    || !(ag->info & BORG_IGNORE_MAP))) {
+            /* if this square is not in view and the borg previously */
+            /* cast stone to mud here, ignore the map info so repeated */
+            /* stone to mud aren't cast */
+            if (g.f_idx != FEAT_NONE
+                && (g.in_view || !(ag->info & BORG_IGNORE_MAP))) {
                 if (g.in_view) {
                     ag->info &= ~BORG_IGNORE_MAP;
                 }

@@ -438,7 +438,7 @@ bool borg_check_light(void)
             || borg_read_scroll(sv_scroll_mapping)
             || borg_use_staff(sv_staff_mapping) || borg_zap_rod(sv_rod_mapping)
             || borg_spell(SENSE_SURROUNDINGS)) {
-            int y;
+            int y, x;
 
             borg_note("# Checking for walls.");
 
@@ -452,8 +452,6 @@ bool borg_check_light(void)
              * remembers.
              */
             for (y = 0; y < AUTO_MAX_Y; ++y) {
-                int x;
-
                 for (x = 0; x < AUTO_MAX_X; ++x) {
                     borg_grids[y][x].info &= ~BORG_IGNORE_MAP;
                 }
