@@ -438,12 +438,24 @@ bool borg_check_light(void)
             || borg_read_scroll(sv_scroll_mapping)
             || borg_use_staff(sv_staff_mapping) || borg_zap_rod(sv_rod_mapping)
             || borg_spell(SENSE_SURROUNDINGS)) {
+            int y, x;
+
             borg_note("# Checking for walls.");
 
             borg_react("SELF:wall", "SELF:wall");
 
             borg.when_detect_walls = borg_t;
 
+            /*
+             * Clear the BORG_IGNORE_MAP flag:  immediately after detection
+             * want to use the map's information rather than what the borg
+             * remembers.
+             */
+            for (y = 0; y < AUTO_MAX_Y; ++y) {
+                for (x = 0; x < AUTO_MAX_X; ++x) {
+                    borg_grids[y][x].info &= ~BORG_IGNORE_MAP;
+                }
+            }
             return (true);
         }
     }

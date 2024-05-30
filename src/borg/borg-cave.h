@@ -70,16 +70,16 @@ typedef struct borg_grid borg_grid;
  * Hack -- note that the "char" zero will often crash the system!
  */
 struct borg_grid {
-    uint8_t feat; /* Grid type */
-    uint8_t info; /* Grid flags */
-    bool    trap;
-    bool    glyph;
-    uint8_t store;
+    uint8_t  feat; /* Grid type */
+    uint16_t info; /* Grid flags */
+    bool     trap;
+    bool     glyph;
+    uint8_t  store;
 
-    uint8_t take; /* Object index */
-    uint8_t kill; /* Monster index */
+    uint8_t  take; /* Object index */
+    uint8_t  kill; /* Monster index */
 
-    uint8_t xtra; /* Extra field (search count) */
+    uint8_t  xtra; /* Extra field (search count) */
 };
 /*
  * The current map

@@ -60,6 +60,9 @@
  *
  * The "BORG_XTRA" flag is used for various "extra" purposes, primarily
  * to assist with the "update_view()" code.
+ *
+ * The "BORG_IGNORE_MAP" flag causes the borg to prefer what it thinks
+ * is in a unseen grid to what is returned by map_info().
  */
 #define BORG_MARK  0x01 /* observed grid */
 #define BORG_GLOW  0x02 /* probably perma-lit */
@@ -69,6 +72,7 @@
 #define BORG_VIEW  0x20 /* in line of sight */
 #define BORG_TEMP  0x40 /* temporary flag */
 #define BORG_XTRA  0x80 /* extra flag */
+#define BORG_IGNORE_MAP 0x100 /* ignore unseen grid from map_info() */
 
 /*
  * Maintain a set of grids (viewable grids)
