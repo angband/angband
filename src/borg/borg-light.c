@@ -597,6 +597,7 @@ bool borg_light_beam(bool simulation)
     bool spell_ok = false;
     int  i;
     bool blocked  = false;
+    bool bold     = false;
 
     borg_grid *ag = &borg_grids[borg.c.y][borg.c.x];
 
@@ -617,20 +618,22 @@ bool borg_light_beam(bool simulation)
     if (borg.c.y - borg.trait[BI_CURLITE] - 1 > 0) {
         /* Look just beyond my light */
         ag = &borg_grids[borg.c.y - borg.trait[BI_CURLITE] - 1][borg.c.x];
+        bold = borg_cave_floor_bold(
+            borg.c.y - borg.trait[BI_CURLITE] - 1, borg.c.x);
 
         /* Must be on the panel */
         if (panel_contains(borg.c.y - borg.trait[BI_CURLITE] - 1, borg.c.x)) {
             /* Check each grid in our light radius along the course */
             for (i = 0; i <= borg.trait[BI_CURLITE]; i++) {
-                if (borg_cave_floor_bold(borg.c.y - i, borg.c.x)
-                    && !borg_cave_floor_bold(
-                        borg.c.y - borg.trait[BI_CURLITE] - 1, borg.c.x)
-                    && ag->feat < FEAT_OPEN && blocked == false) {
+                if (borg_cave_floor_bold(borg.c.y - i, borg.c.x) && !bold
+                    && ag->feat < FEAT_SECRET && ag->feat != FEAT_CLOSED
+                    && blocked == false) {
                     /* note the direction */
                     dir = 8;
                 } else {
                     dir     = 5;
                     blocked = true;
+                    break;
                 }
             }
         }
@@ -640,23 +643,26 @@ bool borg_light_beam(bool simulation)
 
     /* Quick Boundary check */
     if (borg.c.y + borg.trait[BI_CURLITE] + 1 < AUTO_MAX_Y && dir == 5) {
+        blocked = false;
         /* Look just beyond my light */
         ag = &borg_grids[borg.c.y + borg.trait[BI_CURLITE] + 1][borg.c.x];
+        bold = borg_cave_floor_bold(
+            borg.c.y + borg.trait[BI_CURLITE] + 1, borg.c.x);
 
         /* Must be on the panel */
         if (panel_contains(borg.c.y + borg.trait[BI_CURLITE] + 1, borg.c.x)) {
             /* Check each grid in our light radius along the course */
             for (i = 0; i <= borg.trait[BI_CURLITE]; i++) {
                 /* all floors */
-                if (borg_cave_floor_bold(borg.c.y + i, borg.c.x)
-                    && !borg_cave_floor_bold(
-                        borg.c.y + borg.trait[BI_CURLITE] + 1, borg.c.x)
-                    && ag->feat < FEAT_OPEN && blocked == false) {
+                if (borg_cave_floor_bold(borg.c.y + i, borg.c.x) && !bold
+                    && ag->feat < FEAT_SECRET && ag->feat != FEAT_CLOSED
+                    && blocked == false) {
                     /* note the direction */
                     dir = 2;
                 } else {
                     dir     = 5;
                     blocked = true;
+                    break;
                 }
             }
         }
@@ -666,23 +672,26 @@ bool borg_light_beam(bool simulation)
 
     /* Quick Boundary check */
     if (borg.c.x + borg.trait[BI_CURLITE] + 1 < AUTO_MAX_X && dir == 5) {
+        blocked = false;
         /* Look just beyond my light */
         ag = &borg_grids[borg.c.y][borg.c.x + borg.trait[BI_CURLITE] + 1];
+        bold = borg_cave_floor_bold(
+            borg.c.y, borg.c.x + borg.trait[BI_CURLITE] + 1);
 
         /* Must be on the panel */
         if (panel_contains(borg.c.y, borg.c.x + borg.trait[BI_CURLITE] + 1)) {
             /* Check each grid in our light radius along the course */
             for (i = 0; i <= borg.trait[BI_CURLITE]; i++) {
                 /* all floors */
-                if (borg_cave_floor_bold(borg.c.y, borg.c.x + i)
-                    && !borg_cave_floor_bold(
-                        borg.c.y, borg.c.x + borg.trait[BI_CURLITE] + 1)
-                    && ag->feat < FEAT_OPEN && blocked == false) {
+                if (borg_cave_floor_bold(borg.c.y, borg.c.x + i) && !bold
+                    && ag->feat < FEAT_SECRET && ag->feat != FEAT_CLOSED
+                    && blocked == false) {
                     /* note the direction */
                     dir = 6;
                 } else {
                     dir     = 5;
                     blocked = true;
+                    break;
                 }
             }
         }
@@ -692,8 +701,11 @@ bool borg_light_beam(bool simulation)
 
     /* Quick Boundary check */
     if (borg.c.x - borg.trait[BI_CURLITE] - 1 > 0 && dir == 5) {
+        blocked = false;
         /* Look just beyond my light */
-        ag = &borg_grids[borg.c.y][borg.c.x - borg.trait[BI_CURLITE] - 1];
+        ag   = &borg_grids[borg.c.y][borg.c.x - borg.trait[BI_CURLITE] - 1];
+        bold = borg_cave_floor_bold(
+            borg.c.y, borg.c.x - borg.trait[BI_CURLITE] - 1);
 
         /* Must be on the panel */
         if (panel_contains(borg.c.y, borg.c.x - borg.trait[BI_CURLITE] - 1)) {
@@ -702,16 +714,15 @@ bool borg_light_beam(bool simulation)
                 /* Verify that there are no blockers in my light radius and
                  * the 1st grid beyond my light is not a floor nor a blocker
                  */
-                if (borg_cave_floor_bold(borg.c.y, borg.c.x - i)
-                    && /* all see through */
-                    !borg_cave_floor_bold(
-                        borg.c.y, borg.c.x - borg.trait[BI_CURLITE] - 1)
-                    && ag->feat < FEAT_OPEN && blocked == false) {
+                if (borg_cave_floor_bold(borg.c.y, borg.c.x - i) && !bold
+                    && ag->feat < FEAT_SECRET && ag->feat != FEAT_CLOSED
+                    && blocked == false) {
                     /* note the direction */
                     dir = 4;
                 } else {
                     dir     = 5;
                     blocked = true;
+                    break;
                 }
             }
         }
@@ -719,6 +730,7 @@ bool borg_light_beam(bool simulation)
 
     /* Don't do it if on the edge of shifting the panel. */
     if (dir == 5 || spell_ok == false || blocked == true
+// !FIX !TODO !AJG make sure these panel edge checks are right.
         || (dir == 2
             && (borg.c.y == 18 
                 || borg.c.y == 19 
