@@ -807,7 +807,8 @@ static bool borg_good_sell(borg_item *item, int who)
     }
 
     /* Never sell valuable non-id'd items */
-    if (borg_item_note_needs_id(item))
+    /* unless you have a stack, in which case, sell one to ID them */
+    if (borg_item_note_needs_id(item) && item->iqty < 2)
         return (false);
 
     /* Worshipping gold or scumming will allow the sale */
@@ -846,7 +847,7 @@ static bool borg_good_sell(borg_item *item, int who)
 
             /* Never sell if not "known" */
             if (!item->ident && borg_item_worth_id(item)
-                && (borg.trait[BI_MAXDEPTH] > 35))
+                && (borg.trait[BI_MAXDEPTH] > 35) && item->iqty == 1)
                 return (false);
 
             break;
@@ -867,7 +868,7 @@ static bool borg_good_sell(borg_item *item, int who)
         case TV_DRAG_ARMOR:
 
             /* Only sell "known" items (unless "icky") */
-            if (!item->ident && borg_item_worth_id(item))
+            if (!item->ident && borg_item_worth_id(item) && item->iqty == 1)
                 return (false);
 
             break;
@@ -881,7 +882,7 @@ static bool borg_good_sell(borg_item *item, int who)
         return (false);
     }
     /* Do not sell stuff that is not fully id'd and should be  */
-    if (!item->ident && item->ego_idx) {
+    if (!item->ident && item->ego_idx && item->iqty == 1) {
         if (borg_ego_has_random_power(
                 &e_info[borg_items[INVEN_OUTER].ego_idx])) {
             return (false);
