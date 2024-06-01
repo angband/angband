@@ -526,12 +526,11 @@ static bool source_can_light_wall(struct chunk *c, struct player *p,
  * \param c Is the chunk in which to do the evaluation.
  * \param p Is the player to test.
  * \param wgrid Is the location of the wall.
- * \param sunlit Is true if the level is lit by the sun.
  * \return Return true if the wall will appear to be lit for the player.
  * Otherwise, return false.
  */
 static bool glow_can_light_wall(struct chunk *c, struct player *p,
-		struct loc wgrid, bool sunlit)
+		struct loc wgrid)
 {
 	struct loc pn = next_grid(wgrid, motion_dir(wgrid, p->grid)), chk;
 
@@ -541,11 +540,10 @@ static bool glow_can_light_wall(struct chunk *c, struct player *p,
 	if (loc_eq(pn, wgrid)) return true;
 
 	/*
-	 * If the grid in the direction of the player is not a wall, is either
-	 * sunlit or in a room, and is glowing, it'll illuminate the wall.
+	 * If the grid in the direction of the player is not a wall and is
+	 * glowing, it'll illuminate the wall.
 	 */
-	if (square_allowslos(c, pn) && (sunlit || square_isroom(c, pn)) &&
-			square_isglow(c, pn)) return true;
+	if (square_allowslos(c, pn) && square_isglow(c, pn)) return true;
 
 	/*
 	 * Try the two neighboring squares adjacent to the one in the direction
@@ -558,14 +556,12 @@ static bool glow_can_light_wall(struct chunk *c, struct player *p,
 			chk.x = pn.x;
 			chk.y = wgrid.y;
 			if (square_allowslos(c, chk) &&
-					(sunlit || square_isroom(c, chk)) &&
 					square_isglow(c, chk) &&
 					source_can_light_wall(c, p, chk, wgrid))
 				return true;
 			chk.x = wgrid.x;
 			chk.y = pn.y;
 			if (square_allowslos(c, chk) &&
-					(sunlit || square_isroom(c, chk)) &&
 					square_isglow(c, chk) &&
 					source_can_light_wall(c, p, chk, wgrid))
 				return true;
@@ -574,14 +570,12 @@ static bool glow_can_light_wall(struct chunk *c, struct player *p,
 			chk.y = wgrid.y - 1;
 			if (square_in_bounds(c, chk) &&
 					square_allowslos(c, chk) &&
-					(sunlit || square_isroom(c, chk)) &&
 					square_isglow(c, chk) &&
 					source_can_light_wall(c, p, chk, wgrid))
 				return true;
 			chk.y = wgrid.y + 1;
 			if (square_in_bounds(c, chk) &&
 					square_allowslos(c, chk) &&
-					(sunlit || square_isroom(c, chk)) &&
 					square_isglow(c, chk) &&
 					source_can_light_wall(c, p, chk, wgrid))
 				return true;
@@ -590,13 +584,11 @@ static bool glow_can_light_wall(struct chunk *c, struct player *p,
 		chk.y = pn.y;
 		chk.x = wgrid.x - 1;
 		if (square_in_bounds(c, chk) && square_allowslos(c, chk) &&
-				(sunlit || square_isroom(c, chk)) &&
 				square_isglow(c, chk) &&
 				source_can_light_wall(c, p, chk, wgrid))
 			return true;
 		chk.x = wgrid.x + 1;
 		if (square_in_bounds(c, chk) && square_allowslos(c, chk) &&
-				(sunlit || square_isroom(c, chk)) &&
 				square_isglow(c, chk) &&
 				source_can_light_wall(c, p, chk, wgrid))
 			return true;
@@ -663,7 +655,6 @@ static void calc_lighting(struct chunk *c, struct player *p)
 	int dir, k, x, y;
 	int light = p->state.cur_light, radius = ABS(light) - 1;
 	int old_light = square_light(c, p->grid);
-	bool sunlit = (c->depth == 0) && is_daytime();
 
 	/* Starting values based on permanent light */
 	for (y = 0; y < c->height; y++) {
@@ -672,7 +663,7 @@ static void calc_lighting(struct chunk *c, struct player *p)
 
 			if (square_isglow(c, grid) &&
 					(square_allowslos(c, grid) ||
-					glow_can_light_wall(c, p, grid, sunlit))) {
+					glow_can_light_wall(c, p, grid))) {
 				c->squares[y][x].light = 1;
 			} else {
 				c->squares[y][x].light = 0;
