@@ -669,12 +669,6 @@ static int32_t borg_power_equipment(void)
     if (borg.trait[BI_CRSUNKNO])
         value -= 9999999L;
 
-    /*** Penalize bad magic ***/
-
-    /*  Hack -- most edged weapons hurt magic for priests */
-    if (player_has(player, PF_BLESS_WEAPON) && !borg.trait[BI_WBLESSED])
-        value -= 75000L;
-
 #if 0 /* I wonder if this causes the borg to change his gear so radically at   \
          depth 99 */
     /* HUGE MEGA MONDO HACK! prepare for the big fight */
@@ -1162,10 +1156,15 @@ static int32_t borg_power_inventory(void)
         k = 0;
         for (; k < 15 && k < borg.trait[BI_FOOD]; k++)
             value += 700L;
-    }
+    } 
+
     /* Prefer to buy HiCalorie foods over LowCalorie */
-    if (borg.trait[BI_FOOD_HI] <= 5)
-        value += borg.trait[BI_FOOD_HI] * 50;
+    k = 0;
+    for (; k < 7 && k < borg.trait[BI_FOOD_HI]; k++)
+        value += 52L;
+    k = 0;
+    for (; k < 15 && k < borg.trait[BI_FOOD_LO]; k++)
+        value -= 2L;
 
     /* Reward Cure Poison and Cuts*/
     if ((borg.trait[BI_ISCUT] || borg.trait[BI_ISPOISONED])

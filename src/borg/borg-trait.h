@@ -200,7 +200,6 @@ enum {
     BI_WID,
     BI_WDD,
     BI_WDS,
-    BI_WBLESSED,
     BI_BID,
     BI_BTOHIT,
     BI_BTODAM,

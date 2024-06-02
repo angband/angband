@@ -788,16 +788,178 @@ bool borg_think_home_sell_useful(bool save_best)
     return (false);
 }
 
+/* 
+ * scan inventory and equipment to see if we have 
+ * more than one of this 
+ */
+static bool borg_has_mutiple(borg_item *in_item)
+{
+    int i;
+    if (in_item->iqty > 1)
+        return true;
+
+    /* Some types of items we only want to count as a dupe in a stack */
+    /* for example two unIDd swords may look the same (both rapiers) */
+    /* but have different powers */
+    if (!in_item->ident) {
+        switch (in_item->tval) {
+        case TV_BOOTS:
+        case TV_GLOVES:
+        case TV_HELM:
+        case TV_CROWN:
+        case TV_SHIELD:
+        case TV_SOFT_ARMOR:
+        case TV_HARD_ARMOR:
+        case TV_SHOT:
+        case TV_BOLT:
+        case TV_ARROW:
+        case TV_BOW:
+        case TV_DIGGING:
+        case TV_HAFTED:
+        case TV_POLEARM:
+        case TV_SWORD:
+           return false;
+        }
+    }
+
+    /* check the pack */
+    for (i = 0; i < z_info->pack_size; i++) {
+        borg_item *item = &borg_items[i];
+        if (item == in_item)
+            continue;
+        if (item->tval == in_item->tval 
+            && item->sval == in_item->sval
+            && item->iqty != 0)
+            return true;
+    }
+
+    /* check equipment */
+    for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
+        borg_item *item = &borg_items[i];
+        if (item->tval == in_item->tval
+            && item->sval == in_item->sval
+            && item->iqty != 0)
+            return true;
+    }
+    return false;
+}
+
+static bool borg_store_buys(borg_item *item, int who)
+{
+    switch (who + 1) {
+        /* General Store */
+    case 1:
+        /* Analyze the type */
+        switch (item->tval) {
+        case TV_FOOD:
+        case TV_MUSHROOM:
+        case TV_FLASK:
+            return true;
+        }
+        return false;
+
+    /* Armory */
+    case 2:
+
+        /* Analyze the type */
+        switch (item->tval) {
+        case TV_BOOTS:
+        case TV_GLOVES:
+        case TV_HELM:
+        case TV_CROWN:
+        case TV_SHIELD:
+        case TV_SOFT_ARMOR:
+        case TV_HARD_ARMOR:
+        case TV_DRAG_ARMOR:
+            return true;
+        }
+        return false;
+
+    /* Weapon Shop */
+    case 3:
+
+        /* Analyze the type */
+        switch (item->tval) {
+        case TV_SHOT:
+        case TV_BOLT:
+        case TV_ARROW:
+        case TV_BOW:
+        case TV_DIGGING:
+        case TV_HAFTED:
+        case TV_POLEARM:
+        case TV_SWORD:
+            return true;
+        }
+        return false;
+
+    /* Bookstore */
+    case 4:
+
+        /* Analyze the type */
+        switch (item->tval) {
+        case TV_PRAYER_BOOK:
+        case TV_MAGIC_BOOK:
+        case TV_NATURE_BOOK:
+        case TV_SHADOW_BOOK:
+        case TV_OTHER_BOOK:
+            return true;
+        }
+        return false;
+
+    /* book store --Alchemist */
+    case 5:
+
+        /* Analyze the type */
+        switch (item->tval) {
+        case TV_SCROLL:
+        case TV_POTION:
+            return true;
+        }
+        return false;
+
+    /* Magic Shop */
+    case 6:
+
+        /* Analyze the type */
+        switch (item->tval) {
+        case TV_AMULET:
+        case TV_RING:
+        case TV_SCROLL:
+        case TV_POTION:
+        case TV_STAFF:
+        case TV_WAND:
+        case TV_ROD:
+        case TV_MAGIC_BOOK:
+            return true;
+        }
+        return false;
+
+    /* Black Market */
+    case 7:
+
+        /* Analyze the type */
+        switch (item->tval) {
+        case TV_LIGHT:
+        case TV_CLOAK:
+        case TV_FOOD:
+            return true;
+        }
+        return false;
+    }
+    return false;
+}
+
 /*
- * Determine if an item can be sold in the given store
- *
- * XXX XXX XXX Consider use of "icky" test on items
+ * Determine if an item should be sold
  */
 static bool borg_good_sell(borg_item *item, int who)
 {
     int i;
+    /* do I have more than one, even if not stacked */
+    /* only used for non-IDd items */
+    bool multiple = false;
 
-    /* Never sell worthless items */
+    /* Never attempt to sell worthless items, shops won't buy them */
     if (item->value <= 0) {
         /* except unidentified potions and scrolls.  Since these can't be IDd,
          * best to sell them */
@@ -806,17 +968,25 @@ static bool borg_good_sell(borg_item *item, int who)
             return (false);
     }
 
+    /* make sure we are in the shop that buys this */
+    if (!borg_store_buys(item, who))
+        return false;
+
     /* Never sell valuable non-id'd items */
     /* unless you have a stack, in which case, sell one to ID them */
-    if (borg_item_note_needs_id(item) && item->iqty < 2)
-        return (false);
+    if (borg_item_note_needs_id(item)) {
+        /* note if we have more than one */
+        multiple = borg_has_mutiple(item);
+        if (!multiple)
+            return (false);
+    }
 
     /* Worshipping gold or scumming will allow the sale */
     if (item->value > 0
         && ((borg_cfg[BORG_WORSHIPS_GOLD] || borg.trait[BI_MAXCLEVEL] < 10)
             || ((borg_cfg[BORG_MONEY_SCUM_AMOUNT] < borg.trait[BI_GOLD])
                 && borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0))) {
-        /* Borg is allowed to continue in this routine to sell non-ID items */
+        /* Borg is allowed to continue in this routine to sell */
     } else /* Some items must be ID, or at least 'known' */
     {
         /* Analyze the type */
@@ -826,6 +996,8 @@ static bool borg_good_sell(borg_item *item, int who)
 
             /* Always sell potions and scrolls, it is the only way to ID other
              * than using */
+            if (!item->ident)
+                return true;
 
             /* Spell casters should not sell ResMana to shop unless
              * they have tons in the house
@@ -846,8 +1018,9 @@ static bool borg_good_sell(borg_item *item, int who)
         case TV_LIGHT:
 
             /* Never sell if not "known" */
-            if (!item->ident && borg_item_worth_id(item)
-                && (borg.trait[BI_MAXDEPTH] > 35) && item->iqty == 1)
+            /* unless we have more than one or are deep */
+            if (borg_item_worth_id(item)
+                && ((borg.trait[BI_MAXDEPTH] > 35) || !multiple))
                 return (false);
 
             break;
@@ -868,7 +1041,7 @@ static bool borg_good_sell(borg_item *item, int who)
         case TV_DRAG_ARMOR:
 
             /* Only sell "known" items (unless "icky") */
-            if (!item->ident && borg_item_worth_id(item) && item->iqty == 1)
+            if (!item->ident && borg_item_worth_id(item) && !multiple)
                 return (false);
 
             break;
@@ -881,8 +1054,9 @@ static bool borg_good_sell(borg_item *item, int who)
         /* For now check all artifacts */
         return (false);
     }
+
     /* Do not sell stuff that is not fully id'd and should be  */
-    if (!item->ident && item->ego_idx && item->iqty == 1) {
+    if (!item->ident && item->ego_idx && item->iqty < 2) {
         if (borg_ego_has_random_power(
                 &e_info[borg_items[INVEN_OUTER].ego_idx])) {
             return (false);
@@ -902,111 +1076,7 @@ static bool borg_good_sell(borg_item *item, int who)
         }
     }
 
-    /* Switch on the store */
-    switch (who + 1) {
-        /* General Store */
-    case 1:
-        /* Analyze the type */
-        switch (item->tval) {
-        case TV_FOOD:
-        case TV_MUSHROOM:
-        case TV_FLASK:
-            return (true);
-        }
-
-        /* Won't buy anything */
-        break;
-
-    /* Armory */
-    case 2:
-
-        /* Analyze the type */
-        switch (item->tval) {
-        case TV_BOOTS:
-        case TV_GLOVES:
-        case TV_HELM:
-        case TV_CROWN:
-        case TV_SHIELD:
-        case TV_SOFT_ARMOR:
-        case TV_HARD_ARMOR:
-        case TV_DRAG_ARMOR:
-            return (true);
-        }
-        break;
-
-    /* Weapon Shop */
-    case 3:
-
-        /* Analyze the type */
-        switch (item->tval) {
-        case TV_SHOT:
-        case TV_BOLT:
-        case TV_ARROW:
-        case TV_BOW:
-        case TV_DIGGING:
-        case TV_HAFTED:
-        case TV_POLEARM:
-        case TV_SWORD:
-            return (true);
-        }
-        break;
-
-    /* Bookstore */
-    case 4:
-
-        /* Analyze the type */
-        switch (item->tval) {
-        case TV_PRAYER_BOOK:
-        case TV_MAGIC_BOOK:
-        case TV_NATURE_BOOK:
-        case TV_SHADOW_BOOK:
-        case TV_OTHER_BOOK:
-            return (true);
-        }
-        break;
-
-    /* book store --Alchemist */
-    case 5:
-
-        /* Analyze the type */
-        switch (item->tval) {
-        case TV_SCROLL:
-        case TV_POTION:
-            return (true);
-        }
-        break;
-
-    /* Magic Shop */
-    case 6:
-
-        /* Analyze the type */
-        switch (item->tval) {
-        case TV_AMULET:
-        case TV_RING:
-        case TV_SCROLL:
-        case TV_POTION:
-        case TV_STAFF:
-        case TV_WAND:
-        case TV_ROD:
-        case TV_MAGIC_BOOK:
-            return (true);
-        }
-        break;
-    /* Black Market --they buy most things.*/
-    case 7:
-
-        /* Analyze the type */
-        switch (item->tval) {
-        case TV_LIGHT:
-        case TV_CLOAK:
-        case TV_FOOD:
-            return (true);
-        }
-        break;
-    }
-
-    /* Assume not */
-    return (false);
+    return (true);
 }
 
 /*
@@ -1058,10 +1128,17 @@ bool borg_think_shop_sell_useless(void)
                 && item->sval == sv_rod_mapping && item->iqty <= 2)
                 continue;
 
-            /* Avoid selling staff of dest*/
-            if (item->tval == TV_STAFF && item->sval == sv_staff_destruction
-                && borg.trait[BI_ASTFDEST] < 2)
-                continue;
+            /* Avoid selling some staffs */
+            if (item->tval == TV_STAFF) {
+                /* destruction */
+                if (item->sval == sv_staff_destruction
+                    && borg.trait[BI_ASTFDEST] < 2)
+                    continue;
+                /* teleportation */
+                if (item->sval == sv_staff_teleportation
+                    && num_tele_staves < kb_info[TV_STAFF].max_stack)
+                    continue;
+            }
 
             /* Do not sell our attack wands if they still have charges */
             if (item->tval == TV_WAND && borg.trait[BI_CLEVEL] < 35

@@ -194,12 +194,6 @@ void borg_notice_weapon_swap(void)
         if (borg.trait[BI_MAXDEPTH] < 50 && item->tval != TV_DIGGING)
             continue;
 
-        /* priest weapon penalty for non-blessed edged weapons */
-        if (player_has(player, PF_BLESS_WEAPON)
-            && (item->tval == TV_SWORD || item->tval == TV_POLEARM)
-            && !of_has(item->flags, OF_BLESSED))
-            continue;
-
         /* Clear all the swap weapon flags as I look at each one. */
         weapon_swap_digger       = 0;
         weapon_swap_slay_animal  = 0;

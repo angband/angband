@@ -588,8 +588,8 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
                 /*  most edged weapons hurt magic for priests */
                 if (player_has(player, PF_BLESS_WEAPON)) {
                     /* Penalize non-blessed edged weapons */
-                    if ((item->tval == TV_SWORD || item->tval == TV_POLEARM)
-                        && !of_has(item->flags, OF_BLESSED)) {
+                    if (!(item->tval == TV_HAFTED 
+                        || of_has(item->flags, OF_BLESSED))) {
                         num_edged_weapon += item->iqty;
                     }
                 }
