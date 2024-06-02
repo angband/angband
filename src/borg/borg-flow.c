@@ -381,15 +381,21 @@ void borg_flow_spread(int depth, bool optimize, bool avoid, bool tunneling,
                 && !twitchy)
                 continue;
 
-            /* Avoid Monsters if Desperate, lunal */
-            if ((ag->kill)
-                && (borg_desperate || borg.lunal_mode || borg.munchkin_mode))
-                continue;
+            /* flowing into monsters */
+            if ((ag->kill)) {
+                /* Avoid if Desperate, lunal */
+                if (borg_desperate || borg.lunal_mode || borg.munchkin_mode)
+                    continue;
 
-            /* Avoid Monsters if low level, unless twitchy */
-            if ((ag->kill) && !twitchy && borg.trait[BI_FOOD] >= 2
-                && borg.trait[BI_MAXCLEVEL] < 5)
-                continue;
+                /* Avoid if afraid */
+                if (borg.trait[BI_ISAFRAID])
+                    continue;
+
+                /* Avoid if low level, unless twitchy */
+                if (!twitchy && borg.trait[BI_FOOD] >= 2
+                    && borg.trait[BI_MAXCLEVEL] < 5)
+                    continue;
+            }
 
             /* Avoid shop entry points if I am not heading to that shop */
             if (borg.goal.shop >= 0 && feat_is_shop(ag->feat)
