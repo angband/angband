@@ -30,28 +30,7 @@
 #include "borg-trait.h"
 
 /*
- * Get the ID information
- *
- * This function pulls the information from the screen if it is not passed
- * a *real* item.  It is only passed in *real* items if the borg is allowed
- * to 'cheat' for inventory.
- * This function returns true if space needs to be pressed
- */
-bool borg_object_fully_id_aux(borg_item *item, struct object *real_item)
-{
-    bitflag f[OF_SIZE];
-    bitflag i = OF_SIZE;
-
-    /* the data directly from the real item    */
-    object_flags(real_item, f);
-    for (i = 0; i < 12 && i < OF_SIZE; i++)
-        item->flags[i] = f[i];
-
-    return (false);
-}
-
-/*
- * Look for an item that needs to be analysed because it has been IDd
+ * Look for an item that needs to be analyzed because it has been IDd
  *
  * This will go through inventory and look for items that were just ID'd
  * and examine them for their bonuses.

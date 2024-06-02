@@ -599,8 +599,6 @@ Power
 	condition(value(trait, air swing)): reward(-10000);
 	condition(value(trait, unknown curse)): reward(-9999999);
 
-#	condition((value(class, priest) or value(class, paladin)) and !value(trait, wep blessed)): reward(-75000);
-
 # something with multiple useful bonuses
 	reward(value(trait, multi bonus) * 3000);
 
@@ -742,7 +740,8 @@ Power
 	value(trait, food): range(8, 10): condition(value(trait, str) >= 15): reward(200);
 	value(trait, food): range(1, 15): condition(value(trait, regen) and value(trait, CLEVEL) <= 15): reward(700);
 # Prefer to buy HiCalorie foods over LowCalorie
-	condition(value(trait, food high) <= 5): reward(50 * value(trait, food high));
+	value(trait, food high): range(1, 7): reward(52);
+	value(trait, food low): range(1, 15): reward(-2);
 
 # Cure Poison and Cuts
 	condition(value(trait, amt potion ccw) and (value(trait, is cut) or value(trait, is poisoned))): reward(100000);

@@ -886,7 +886,6 @@ const char *prefix_pref[] = {
     "wep id", /* weapon identified */
     "wep damage dice", /* weapon damage dice */
     "wep damage sides", /* weapon to damage dice sides */
-    "wep blessed",
     "bow id", /* weapon identified */
     "bow to hit", /* bow to hit */
     "bow to damage", /* bow to damage */
@@ -2013,14 +2012,12 @@ static void borg_notice_equipment(void)
 
     /* priest weapon penalty for non-blessed edged weapons */
     if (player_has(player, PF_BLESS_WEAPON)
-        && ((item->tval == TV_SWORD || item->tval == TV_POLEARM)
-            && !of_has(item->flags, OF_BLESSED))) {
+        && (item->tval == TV_HAFTED || 
+            of_has(item->flags, OF_BLESSED))) {
         /* Reduce the real bonuses */
-        borg.trait[BI_TOHIT] -= 2;
-        borg.trait[BI_TODAM] -= 2;
+        borg.trait[BI_TOHIT] += 2;
+        borg.trait[BI_TODAM] += 2;
     }
-    else 
-        borg.trait[BI_WBLESSED] = true;
 
     /*** Count needed enchantment ***/
 
@@ -2786,8 +2783,7 @@ static void borg_notice_inventory(void)
 
     /* Correct the high and low calorie foods */
     borg.trait[BI_FOOD] += borg.trait[BI_FOOD_HI];
-    if (borg.trait[BI_FOOD_HI] <= 3)
-        borg.trait[BI_FOOD] += borg.trait[BI_FOOD_LO];
+    borg.trait[BI_FOOD] += borg.trait[BI_FOOD_LO];
 
     /* If weak, do not count food spells */
     if (borg.trait[BI_ISWEAK] && (borg.trait[BI_FOOD] >= 1000))

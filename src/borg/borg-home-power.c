@@ -337,8 +337,8 @@ static int32_t borg_power_home_aux1(void)
 
     value += home_damage;
 
-    /* if edged and priest, dump it   */
-    value -= num_edged_weapon * 3000L;
+    /* if edged and priest, small penalty   */
+    value -= num_edged_weapon * 50L;
 
     /* if gloves and mage or ranger and not FA/Dex, dump it. */
     value -= num_bad_gloves * 3000L;
@@ -428,13 +428,11 @@ static int32_t borg_power_home_aux2(void)
         value += 100L;
 
     /* Collect escape  (staff of teleport) */
-    if (borg.trait[BI_MAXCLEVEL] < 40) {
-        for (k = 0; k < 85 && k < num_escape; k++)
-            value += 2000L - k * 10L;
-    }
+    for (k = 0; k < 85 && k < num_escape; k++)
+        value += 2000L - k * 10L;
 
-    /* Collect a maximal number of staves in the home */
-    for (k = 0; k < kb_info[TV_STAFF].max_stack && k < num_tele_staves; k++)
+    /* Collect only one stack worth of teleport staffs at home */
+    for (k = kb_info[TV_STAFF].max_stack; k < num_tele_staves; k++)
         value -= 50000L;
 
     /* Collect teleport */
