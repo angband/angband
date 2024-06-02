@@ -1020,7 +1020,7 @@ static bool borg_good_sell(borg_item *item, int who)
             /* Never sell if not "known" */
             /* unless we have more than one or are deep */
             if (borg_item_worth_id(item)
-                && ((borg.trait[BI_MAXDEPTH] > 35) || multiple))
+                && ((borg.trait[BI_MAXDEPTH] > 35) || !multiple))
                 return (false);
 
             break;
