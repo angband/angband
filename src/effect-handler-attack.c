@@ -1210,7 +1210,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			if (loc_eq(grid, player->grid)) continue;
 
 			/* Delete the monster (if any) */
-			delete_monster(grid);
+			delete_monster(cave, grid);
 
 			/* Don't remove stairs */
 			if (square_isstairs(cave, grid)) continue;
@@ -1538,7 +1538,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 						 * Delete (not kill) "dead"
 						 * monsters.
 						 */
-						delete_monster(grid);
+						delete_monster(cave, grid);
 					} else {
 						if (display_dam) {
 							add_monster_message_show_damage(
@@ -1883,11 +1883,11 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 			/* Do nothing */
 			;
 		} else if (cave_monster(cave, 1)->race) {
-			monster_index_move(old_idx, cave_monster_max(cave));
-			monster_index_move(1, old_idx);
-			monster_index_move(cave_monster_max(cave), 1);
+			monster_index_move(cave, old_idx, cave_monster_max(cave));
+			monster_index_move(cave, 1, old_idx);
+			monster_index_move(cave, cave_monster_max(cave), 1);
 		} else {
-			monster_index_move(old_idx, 1);
+			monster_index_move(cave, old_idx, 1);
 		}
 		target_set_monster(cave_monster(cave, 1));
 		player->upkeep->health_who = cave_monster(cave, 1);

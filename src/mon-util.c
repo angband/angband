@@ -1128,7 +1128,7 @@ static void player_kill_monster(struct monster *mon, struct player *p,
 	}
 
 	/* Delete the monster */
-	delete_monster_idx(mon->midx);
+	delete_monster_idx(cave, mon->midx);
 }
 
 /**
@@ -1219,7 +1219,7 @@ bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
 		monster_death(t_mon, player, false);
 
 		/* Delete the monster */
-		delete_monster_idx(t_mon->midx);
+		delete_monster_idx(cave, t_mon->midx);
 		return true;
 	} else if (!monster_is_camouflaged(t_mon)) {
 		/* Give detailed messages if visible */

@@ -1068,7 +1068,7 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 		monster_death(mon, player, false);
 
 		/* Delete the monster */
-		delete_monster_idx(m_idx);
+		delete_monster_idx(cave, m_idx);
 
 		mon_died = true;
 	} else if (!monster_is_camouflaged(mon)) {
@@ -1214,7 +1214,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 			if (context->seen) add_monster_message(mon, hurt_msg, false);
 
 			/* Delete the old monster, and return a new one */
-			delete_monster_idx(m_idx);
+			delete_monster_idx(cave, m_idx);
 			place_new_monster(cave, grid, new, false, false, info,
 							  ORIGIN_DROP_POLY);
 			context->mon = square_monster(cave, grid);

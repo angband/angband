@@ -467,7 +467,7 @@ void do_cmd_wiz_banish(struct command *cmd)
 		if (mon->cdis > d) continue;
 
 		/* Delete the monster */
-		delete_monster_idx(i);
+		delete_monster_idx(cave, i);
 	}
 
 	/* Update monster list window */

@@ -1358,7 +1358,7 @@ static bool monster_turn_try_push(struct monster *mon, const char *m_name,
 
 		/* Monster ate another monster */
 		if (kill_ok)
-			delete_monster(new);
+			delete_monster(cave, new);
 
 		monster_swap(mon->grid, new);
 		return true;

@@ -346,7 +346,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 
 	/* Now delete the monster if necessary */
 	if (delete) {
-		delete_monster(mon->grid);
+		delete_monster(c, mon->grid);
 	}
 
 	return true;

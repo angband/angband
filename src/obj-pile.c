@@ -1226,7 +1226,7 @@ void push_object(struct loc grid)
 					 * Give up.  Destroy both the mimic
 					 * and the object.
 					 */
-					delete_monster_idx(obj->mimicking_m_idx);
+					delete_monster_idx(cave, obj->mimicking_m_idx);
 					if (obj->known) {
 						object_delete(player->cave, NULL, &obj->known);
 					}

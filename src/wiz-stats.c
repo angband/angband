@@ -1185,7 +1185,7 @@ static bool stats_monster(struct monster *mon, int i)
 	monster_death_stats(i);
 
 	/* remove the monster */
-	delete_monster_idx(i);
+	delete_monster_idx(cave, i);
 
 	/* success */
 	return true;

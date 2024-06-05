@@ -21,9 +21,9 @@
 
 #include "monster.h"
 
-void delete_monster_idx(int m_idx);
-void delete_monster(struct loc grid);
-void monster_index_move(int i1, int i2);
+void delete_monster_idx(struct chunk *c, int m_idx);
+void delete_monster(struct chunk *c, struct loc grid);
+void monster_index_move(struct chunk *c, int i1, int i2);
 void compact_monsters(struct chunk *c, int num_to_compact);
 void wipe_mon_list(struct chunk *c, struct player *p);
 int16_t mon_pop(struct chunk *c);
