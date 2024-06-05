@@ -2590,7 +2590,9 @@ void borg_update(void)
             && observe_kill_move(
                 wank->y, wank->x, 0, wank->t_a, wank->t_c, false)) {
             /* Hack -- excise the entry */
-            borg_wanks[i] = borg_wanks[--borg_wank_num];
+            wank->is_kill = false;
+            if (!wank->is_take && !wank->is_kill)
+                borg_wanks[i] = borg_wanks[--borg_wank_num];
         }
     }
     /* Pass 2 -- stationary objects */
@@ -2601,7 +2603,9 @@ void borg_update(void)
         if (wank->is_take
             && observe_take_move(wank->y, wank->x, 0, wank->t_a, wank->t_c)) {
             /* Hack -- excise the entry */
-            borg_wanks[i] = borg_wanks[--borg_wank_num];
+            wank->is_take = false;
+            if (!wank->is_take && !wank->is_kill)
+                borg_wanks[i] = borg_wanks[--borg_wank_num];
         }
     }
     /* Pass 3a -- moving monsters (distance 1) */
@@ -2613,7 +2617,9 @@ void borg_update(void)
             && observe_kill_move(
                 wank->y, wank->x, 1, wank->t_a, wank->t_c, false)) {
             /* Hack -- excise the entry */
-            borg_wanks[i] = borg_wanks[--borg_wank_num];
+            wank->is_kill = false;
+            if (!wank->is_take && !wank->is_kill)
+                borg_wanks[i] = borg_wanks[--borg_wank_num];
         }
     }
     /* Pass 3b -- moving monsters (distance 2) */
@@ -2625,7 +2631,9 @@ void borg_update(void)
             && observe_kill_move(
                 wank->y, wank->x, 2, wank->t_a, wank->t_c, false)) {
             /* Hack -- excise the entry */
-            borg_wanks[i] = borg_wanks[--borg_wank_num];
+            wank->is_kill = false;
+            if (!wank->is_take && !wank->is_kill)
+                borg_wanks[i] = borg_wanks[--borg_wank_num];
         }
     }
     /* Pass 3c -- moving monsters (distance 3) */
@@ -2637,7 +2645,9 @@ void borg_update(void)
             && observe_kill_move(
                 wank->y, wank->x, 3, wank->t_a, wank->t_c, false)) {
             /* Hack -- excise the entry */
-            borg_wanks[i] = borg_wanks[--borg_wank_num];
+            wank->is_kill = false;
+            if (!wank->is_take && !wank->is_kill)
+                borg_wanks[i] = borg_wanks[--borg_wank_num];
         }
     }
     /* Pass 3d -- moving monsters (distance 7, allow changes) */
@@ -2649,7 +2659,9 @@ void borg_update(void)
             && observe_kill_move(
                 wank->y, wank->x, 7, wank->t_a, wank->t_c, true)) {
             /* Hack -- excise the entry */
-            borg_wanks[i] = borg_wanks[--borg_wank_num];
+            wank->is_kill = false;
+            if (!wank->is_take && !wank->is_kill)
+                borg_wanks[i] = borg_wanks[--borg_wank_num];
         }
     }
     /* Pass 4 -- new objects */
@@ -2659,8 +2671,10 @@ void borg_update(void)
         /* Track new objects */
         if (wank->is_take
             && observe_take_diff(wank->y, wank->x, wank->t_a, wank->t_c)) {
-            /* Hack -- excise the entry */
-            borg_wanks[i] = borg_wanks[--borg_wank_num];
+            /* Hack -- excise the entry (unless it is also a monster) */
+            wank->is_take = false;
+            if (!wank->is_take && !wank->is_kill)
+                borg_wanks[i] = borg_wanks[--borg_wank_num];
         }
     }
     /* Pass 5 -- new monsters */
@@ -2671,7 +2685,9 @@ void borg_update(void)
         if (wank->is_kill
             && observe_kill_diff(wank->y, wank->x, wank->t_a, wank->t_c)) {
             /* Hack -- excise the entry */
-            borg_wanks[i] = borg_wanks[--borg_wank_num];
+            wank->is_kill = false;
+            if (!wank->is_take && !wank->is_kill)
+                borg_wanks[i] = borg_wanks[--borg_wank_num];
         }
     }
 
