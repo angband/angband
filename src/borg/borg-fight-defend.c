@@ -2221,15 +2221,22 @@ static int borg_defend_aux_earthquake(int p1)
     borg_kill *kill;
 
     /* Cast the spell */
-    if (!borg_simulate
-        && (borg_spell(TREMOR) || borg_spell(QUAKE) || borg_spell(GRONDS_BLOW)
-            || borg_activate_item(act_earthquakes))) {
+    if (!borg_simulate) {
         /* Must make a new Sea too */
         borg_needs_new_sea = true;
-        return (p2);
+
+        /* for now aim Tremor around the borg */
+        if (borg_spell(TREMOR)) {
+            borg_keypress('*');
+            borg_keypress('5');
+        } else
+            /* other spells don't need aim */
+            if (borg_spell(QUAKE) || borg_spell(GRONDS_BLOW)
+                || borg_activate_item(act_earthquakes))
+                return (p2);
     }
 
-    /* Cant when screwed */
+    /* Can't when screwed */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
         || borg.trait[BI_ISFORGET])
         return (0);

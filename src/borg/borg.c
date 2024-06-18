@@ -352,13 +352,20 @@ static struct keypress borg_inkey_hack(int flush_first)
      * borg to work around the flush This is used only with emergency use of
      * spells like Magic Missile Attempt to catch "Direction (5 old target"
      */
-    if (borg_prompt && !inkey_flag && borg_confirm_target && (y == 0)
+    if (borg_prompt && !inkey_flag && (y == 0) && !borg_inkey(false)
         && (x >= 4) && streq(buf, "Dire")) {
-        /* reset the flag */
-        borg_confirm_target = false;
-        /* Return queued target */
-        key.code = borg_get_queued_direction();
-        return key;
+        if (borg_confirm_target) {
+            /* reset the flag */
+            borg_confirm_target = false;
+            /* Return queued target */
+            key.code = borg_get_queued_direction();
+            return key;
+        } else {
+            borg_oops("unexpected request for direction");
+            /* Hack -- Escape */
+            key.code = ESCAPE;
+            return key;
+        }
     }
 
     /* Wearing two rings.  Place this on the left hand */
