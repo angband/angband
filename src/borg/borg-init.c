@@ -50,7 +50,8 @@ bool game_closed; /* Has the game been closed since the borg was
 bool borg_init_failure = false;
 
 /*
- * Borg settings information, ScreenSaver or continual play mode;
+ * Borg settings information.
+ * NOTE: Must match enum in borg.h
  */
 struct borg_setting borg_settings[] = {
     { "borg_verbose", 'b', false },
@@ -85,6 +86,7 @@ struct borg_setting borg_settings[] = {
     { "borg_enchant_limit", 'i', 12 },
     { "borg_dump_level", 'i', 1 }, 
     { "borg_save_death", 'i', 1 },
+    { "borg_stop_on_bell", 'b', false },
     { 0, 0, 0 }};
 
 

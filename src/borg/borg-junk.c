@@ -251,6 +251,11 @@ bool borg_crush_junk(void)
     if (!borg_safe_crush())
         return (false);
 
+    /* not while recalling since this is a two step process */
+    /* and if the recall kicks in in the middle it confuses things */
+    if (borg.goal.recalling)
+        return false;
+
     /* No crush if even slightly dangerous */
     if (borg_danger(borg.c.y, borg.c.x, 1, true, false)
         > borg.trait[BI_CURHP] / 10)
