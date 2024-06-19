@@ -29,6 +29,7 @@
 #include "borg-cave-view.h"
 #include "borg-cave.h"
 #include "borg-flow-kill.h"
+#include "borg-flow-misc.h"
 #include "borg-flow-stairs.h"
 #include "borg-io.h"
 #include "borg-item-val.h"
@@ -519,9 +520,10 @@ bool borg_flow_take(bool viewable, int nearness)
         /* Clear the flow codes */
         borg_flow_clear();
 
+
         /* Check the distance to stair for this proposed grid and leash*/
-        if (nearness > 5 && borg_flow_cost_stair(y, x, b_stair) > leash
-            && borg.trait[BI_CLEVEL] < 20)
+        if (nearness > 5 && borg.trait[BI_CLEVEL] < 20
+            && borg_flow_cost_stair(y, x, b_stair) > leash)
             continue;
 
         /* Careful -- Remember it */
@@ -628,12 +630,8 @@ bool borg_flow_take_scum(bool viewable, int nearness)
         if (viewable && !(ag->info & BORG_VIEW))
             continue;
 
-        /* Clear the flow codes */
-        borg_flow_clear();
-
-        /* Check the distance to stair for this proposed grid with leash */
-        if (borg_flow_cost_stair(y, x, b_stair) > borg.trait[BI_CLEVEL] * 3 + 9
-            && borg.trait[BI_CLEVEL] < 20)
+        /* don't go too far from the stairs */
+        if (borg_flow_far_from_stairs(x, y, b_stair))
             continue;
 
         /* Careful -- Remember it */
@@ -825,12 +823,8 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
         if (viewable && !(ag->info & BORG_VIEW))
             continue;
 
-        /* Clear the flow codes */
-        borg_flow_clear();
-
-        /* Check the distance to stair for this proposed grid */
-        if (borg_flow_cost_stair(y, x, b_stair) > borg.trait[BI_CLEVEL] * 3 + 9
-            && borg.trait[BI_CLEVEL] < 20)
+        /* don't go too far from the stairs */
+        if (borg_flow_far_from_stairs(x, y, b_stair))
             continue;
 
         /* Careful -- Remember it */
