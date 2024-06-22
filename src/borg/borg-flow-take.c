@@ -251,6 +251,9 @@ static int borg_new_take(struct object_kind *kind, int y, int x)
         && (o_ptr->to_a < 0 || o_ptr->to_d < 0 || o_ptr->to_h < 0))
         take->value = -10;
 
+    if (o_ptr->note && prefix(quark_str(o_ptr->note), "borg ignore"))
+        take->value = -10;
+
     /* Note */
     borg_note(format("# Creating an object '%s' at (%d,%d)", (take->kind->name),
         take->x, take->y));

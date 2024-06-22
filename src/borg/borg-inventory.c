@@ -157,8 +157,8 @@ static void borg_cheat_quiver(void)
                 /* Analyze the item (no price) */
                 borg_item_analyze(&borg_items[i], obj, buf, false);
 
-                /* Uninscribe items with ! inscriptions */
-                if (strstr(borg_items[i].desc, "!"))
+                /* Uninscribe items with ! or borg inscriptions */
+                if (strstr(borg_items[i].desc, "!") || strstr(borg_items[i].desc, "borg"))
                     borg_deinscribe(i);
             }
         }
@@ -198,7 +198,7 @@ void borg_cheat_equip(void)
                 borg_item_analyze(&borg_items[i], obj, buf, false);
 
                 /* Uninscribe items with ! inscriptions */
-                if (strstr(borg_items[i].desc, "!"))
+                if (strstr(borg_items[i].desc, "!") || strstr(borg_items[i].desc, "borg"))
                     borg_deinscribe(i);
             }
         }
@@ -241,9 +241,8 @@ void borg_cheat_inven(void)
         borg_do_crush_junk = true;
 
         /* Uninscribe items with ! inscriptions */
-        if (strstr(borg_items[i].desc, "!")) {
+        if (strstr(borg_items[i].desc, "!") || strstr(borg_items[i].desc, "borg"))
             borg_deinscribe(i);
-        }
     }
 }
 

@@ -453,6 +453,12 @@ bool borg_crush_junk(void)
         /* Message */
         borg_note(format("# Destroying %s.", item->desc));
 
+        /* inscribe "!borg ignore" */
+        borg_keypress('{');
+        borg_keypress(all_letters_nohjkl[i]);
+        borg_keypresses("borg ignore");
+        borg_keypress(KC_ENTER);
+
         /* drop it then ignore it */
         borg_keypress('d');
         borg_keypress(all_letters_nohjkl[i]);
@@ -461,12 +467,13 @@ bool borg_crush_junk(void)
             borg_keypress('1');
             borg_keypress(KC_ENTER);
         }
-
+#if 0
         /* ignore it now */
         borg_keypress('k');
         borg_keypress('-');
         borg_keypress('a');
         borg_keypress('a');
+#endif
 
         /* Success */
         return (true);
@@ -1059,6 +1066,22 @@ bool borg_crush_slow(void)
         /* Message */
         borg_note(format("# Destroying %s.", item->desc));
 
+        /* inscribe "!borg ignore" */
+        borg_keypress('{');
+        if (b_i < INVEN_WIELD) {
+            borg_keypress(all_letters_nohjkl[b_i]);
+        } else if (b_i < QUIVER_START) {
+            borg_keypress('/');
+
+            borg_keypress(all_letters_nohjkl[b_i - INVEN_WIELD]);
+        } else {
+            /* Quiver Slot */
+            borg_keypress('|');
+            borg_keypress('0' + (b_i - QUIVER_START));
+        }
+        borg_keypresses("borg ignore");
+        borg_keypress(KC_ENTER);
+
         /* Drop one item */
         borg_keypress('d');
         if (b_i < INVEN_WIELD) {
@@ -1076,6 +1099,7 @@ bool borg_crush_slow(void)
             borg_keypress('1');
             borg_keypress(KC_ENTER);
         }
+#if 0
         /* Destroy that item */
         borg_keypress('k');
         /* Now on the floor */
@@ -1084,8 +1108,9 @@ bool borg_crush_slow(void)
         borg_keypress('a');
         /* This item only */
         borg_keypress('a');
+#endif 
+        return (true);
     }
-
     /* Nothing to destroy */
     return (false);
 }
