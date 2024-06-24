@@ -59,7 +59,7 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
         return (true);
 
     /* Efficiency -- Ignore "boring" grids */
-    if (ag->feat < FEAT_SECRET)
+    if (ag->feat < FEAT_SECRET && ag->feat != FEAT_CLOSED)
         return (false);
 
     /* Explore "known treasure" */

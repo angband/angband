@@ -494,13 +494,14 @@ bool borg_crush_junk(void)
  *
  * This function does not have to be very efficient.
  */
-bool borg_crush_hole(void)
+bool borg_crush_hole(bool desperate)
 {
     int     i, b_i = -1;
     int32_t p, b_p = 0L;
     int32_t w, b_w = 0L;
 
     int32_t value;
+    int32_t value_boost;
 
     bool fix = false;
 
@@ -524,6 +525,8 @@ bool borg_crush_hole(void)
     /* Scan the inventory */
     for (i = 0; i < z_info->pack_size; i++) {
         borg_item *item = &borg_items[i];
+
+        value_boost = 0L;
 
         /* Skip empty items */
         if (!item->iqty)
@@ -549,62 +552,79 @@ bool borg_crush_hole(void)
 
         /* Do not crush Boots, they could be SPEED */
         if (item->tval == TV_BOOTS && !item->ident)
-            continue;
+            if (desperate)
+                value_boost = 10000;
+            else
+                continue;
 
         /* Don't crush weapons if we are wielding a digger */
         if (item->tval >= TV_DIGGING && item->tval <= TV_SWORD
             && borg_items[INVEN_WIELD].tval == TV_DIGGING)
-            continue;
+            if (desperate)
+                value_boost = 10000L;
+            else
+                continue;
 
         /* Hack -- skip "artifacts" */
         if (item->art_idx && !item->ident)
             continue;
+
+        /* skip things that need to be ID'd */
         if (borg_item_note_needs_id(item))
-            continue;
+            if (desperate)
+                value_boost = 5000L;
+            else
+                continue;
 
         /* never crush cool stuff that we might be needing later */
-        if ((item->tval == TV_POTION && item->sval == sv_potion_restore_mana)
-            && (borg.trait[BI_MAXSP] >= 1))
-            continue;
-        if (item->tval == TV_POTION && item->sval == sv_potion_healing)
-            continue;
-        if (item->tval == TV_POTION && item->sval == sv_potion_star_healing)
-            continue;
-        if (item->tval == TV_POTION && item->sval == sv_potion_life)
-            continue;
-        if (item->tval == TV_POTION && item->sval == sv_potion_speed)
-            continue;
-        if (item->tval == TV_SCROLL
-            && item->sval == sv_scroll_protection_from_evil)
-            continue;
-        if (item->tval == TV_SCROLL
-            && item->sval == sv_scroll_rune_of_protection)
-            continue;
-        if (item->tval == TV_SCROLL && item->sval == sv_scroll_teleport_level
-            && borg.trait[BI_ATELEPORTLVL] < 1000)
-            continue;
-        if (item->tval == TV_ROD
-            && (item->sval == sv_rod_healing
-                || (item->sval == sv_rod_mapping
-                    && borg.trait[BI_CLASS] == CLASS_WARRIOR))
-            && item->iqty <= 5)
-            continue;
-        if (item->tval == TV_WAND 
-            && item->sval == sv_wand_teleport_away
-            && borg.trait[BI_CLASS] == CLASS_WARRIOR
-            && borg.trait[BI_ATPORTOTHER] <= 8)
-            continue;
-        if (item->tval == TV_ROD
-            && (item->sval == sv_rod_light && borg.trait[BI_CURLITE] <= 0))
-            continue;
+        if (!desperate) {
+            if ((item->tval == TV_POTION && item->sval == sv_potion_restore_mana)
+                && (borg.trait[BI_MAXSP] >= 1))
+                continue;
+            if (item->tval == TV_POTION && item->sval == sv_potion_healing)
+                continue;
+            if (item->tval == TV_POTION && item->sval == sv_potion_star_healing)
+                continue;
+            if (item->tval == TV_POTION && item->sval == sv_potion_life)
+                continue;
+            if (item->tval == TV_POTION && item->sval == sv_potion_speed)
+                continue;
+            if (item->tval == TV_SCROLL
+                && item->sval == sv_scroll_protection_from_evil)
+                continue;
+            if (item->tval == TV_SCROLL
+                && item->sval == sv_scroll_rune_of_protection)
+                continue;
+            if (item->tval == TV_SCROLL && item->sval == sv_scroll_teleport_level
+                && borg.trait[BI_ATELEPORTLVL] < 1000)
+                continue;
+            if (item->tval == TV_ROD
+                && (item->sval == sv_rod_healing
+                    || (item->sval == sv_rod_mapping
+                        && borg.trait[BI_CLASS] == CLASS_WARRIOR))
+                && item->iqty <= 5)
+                continue;
+            if (item->tval == TV_WAND
+                && item->sval == sv_wand_teleport_away
+                && borg.trait[BI_CLASS] == CLASS_WARRIOR
+                && borg.trait[BI_ATPORTOTHER] <= 8)
+                continue;
+            if (item->tval == TV_ROD
+                && (item->sval == sv_rod_light && borg.trait[BI_CURLITE] <= 0))
+                continue;
+        } else
+            value_boost = 7000;
 
         /* a boost for things with random powers */
         if (item->ego_idx && borg_ego_has_random_power(&e_info[item->ego_idx])
             && !item->ident)
-            continue;
+            if (desperate)
+                value_boost = 10000L;
+            else
+                continue;
 
         /* save the items value */
-        value = item->value;
+        value = item->value + value_boost;
 
         /* save the items weight */
         w = item->weight * item->iqty;
@@ -888,8 +908,12 @@ bool borg_crush_hole(void)
         return (true);
     }
 
-    /* Paranoia */
-    return (false);
+    /* if we got to here, we need to make room but have nothing we can crush */
+    /* try again but allow more things to be crushed */
+    if (!desperate)
+        return borg_crush_hole(true);
+
+    return false;
 }
 
 /*
