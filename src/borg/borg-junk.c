@@ -207,32 +207,6 @@ static bool borg_consume(int i)
     return (false);
 }
 
-/* HACK is it safe to crush an item here... must be on an empty floor square */
-static bool borg_safe_crush(void)
-{
-    if (borg_grids[borg.c.y][borg.c.x].feat != FEAT_FLOOR)
-        return (false);
-
-    /* hack check for invisible traps */
-    if (square_trap(cave, borg.c))
-        return (false);
-
-    /* **HACK** don't drop on top of a previously ignored item */
-    /* this is because if you drop something then ignore it then drop another */
-    /* on top of it, the second item combines with the first and just disappears
-     */
-    struct object *obj = square_object(cave, borg.c);
-    while (obj) {
-        if (obj->known->notice & OBJ_NOTICE_IGNORE)
-            return (false);
-        if (obj->kind->ignore)
-            return (false);
-        obj = obj->next;
-    }
-
-    return (true);
-}
-
 /*
  * Destroy "junk" items
  */
@@ -245,10 +219,6 @@ bool borg_crush_junk(void)
 
     /* Hack -- no need */
     if (!borg_do_crush_junk)
-        return (false);
-
-    /* is it safe to crush junk here */
-    if (!borg_safe_crush())
         return (false);
 
     /* not while recalling since this is a two step process */
@@ -453,7 +423,8 @@ bool borg_crush_junk(void)
         /* Message */
         borg_note(format("# Destroying %s.", item->desc));
 
-        /* inscribe "!borg ignore" */
+        /* inscribe "!borg ignore". The borg crushes all items */
+        /* on the floor that are inscribed this way */
         borg_keypress('{');
         borg_keypress(all_letters_nohjkl[i]);
         borg_keypresses("borg ignore");
@@ -467,13 +438,6 @@ bool borg_crush_junk(void)
             borg_keypress('1');
             borg_keypress(KC_ENTER);
         }
-#if 0
-        /* ignore it now */
-        borg_keypress('k');
-        borg_keypress('-');
-        borg_keypress('a');
-        borg_keypress('a');
-#endif
 
         /* Success */
         return (true);
@@ -527,10 +491,6 @@ bool borg_crush_hole(void)
             && (borg.trait[BI_CURHP] != borg.trait[BI_MAXHP]
                 || borg_danger(borg.c.y, borg.c.x, 1, true, false)
                        > (borg.trait[BI_CURHP] * 2) / 3)))
-        return (false);
-
-    /* must be a good place to crush stuff */
-    if (!borg_safe_crush())
         return (false);
 
     /* Scan the inventory */
@@ -940,10 +900,6 @@ bool borg_crush_slow(void)
     if (borg.munchkin_mode)
         return (false);
 
-    /* must be a good place to crush stuff */
-    if (!borg_safe_crush())
-        return (false);
-
     /* Calculate "greed" factor */
     greed = (borg.trait[BI_GOLD] / 100L) + 100L;
 
@@ -1066,7 +1022,8 @@ bool borg_crush_slow(void)
         /* Message */
         borg_note(format("# Destroying %s.", item->desc));
 
-        /* inscribe "!borg ignore" */
+        /* inscribe "!borg ignore". The borg crushes all items */
+        /* on the floor that are inscribed this way */
         borg_keypress('{');
         if (b_i < INVEN_WIELD) {
             borg_keypress(all_letters_nohjkl[b_i]);
@@ -1099,16 +1056,7 @@ bool borg_crush_slow(void)
             borg_keypress('1');
             borg_keypress(KC_ENTER);
         }
-#if 0
-        /* Destroy that item */
-        borg_keypress('k');
-        /* Now on the floor */
-        borg_keypress('-');
-        /* Assume first */
-        borg_keypress('a');
-        /* This item only */
-        borg_keypress('a');
-#endif 
+
         return (true);
     }
     /* Nothing to destroy */

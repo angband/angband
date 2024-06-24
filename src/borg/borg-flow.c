@@ -771,7 +771,7 @@ static bool borg_play_step(int y2, int x2)
 
         if (strstr(take->kind->name, "chest")
             && !strstr(take->kind->name, "Ruined")) {
-            struct object *o_ptr = square_object(cave, loc(x2, y2));
+            struct object *o_ptr = borg_get_top_object(cave, loc(x2, y2));
 
             /* this should only happen when something picks up the chest */
             /* outside the borgs view.  */
