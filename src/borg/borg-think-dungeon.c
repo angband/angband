@@ -1210,6 +1210,19 @@ bool borg_think_dungeon(void)
         return (true);
     }
 
+    /* if standing on something valueless, destroy it */
+    if (borg_grids[borg.c.y][borg.c.x].take) {
+        borg_take * take = &borg_takes[borg_grids[borg.c.y][borg.c.x].take];
+        if (take->value == -10) {
+            /* ignore it now */
+            borg_keypress('k');
+            borg_keypress('-');
+            borg_keypress('a');
+            borg_keypress('a');
+            return true;
+        }
+    }
+
     /* Hack -- prevent clock wrapping Step 2*/
     if (borg_t >= 30000) {
         /* Panic */

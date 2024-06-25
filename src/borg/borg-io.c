@@ -151,7 +151,7 @@ static void borg_note_internal(bool warning, const char *what)
 
     /* Memorize it */
     if (warning) {
-        msg(what);
+        msg("%s", what);
     } else {
         message_add(what, MSG_GENERIC);
     }
@@ -289,6 +289,12 @@ static int16_t    borg_key_head;
 static int16_t    borg_key_tail;
 
 /*
+ * A history of keypresses to be sent
+ */
+static keycode_t *borg_key_history;
+static int16_t    borg_key_history_head;
+
+/*
  * since the code now only asks for a direction if
  * the instruction is ambiguous and it is hard for
  * the borg to know if it is asking for something
@@ -306,15 +312,6 @@ errr borg_keypress(keycode_t k)
     if (!k) {
         borg_note(" & Key * *BAD KEY * *");
         return (-1);
-    }
-
-    /* Hack -- note the keypress */
-    if (borg_cfg[BORG_VERBOSE]) {
-        if (k >= 32 && k <= 126) {
-            borg_note(format("& Key <%c> (0x%02X)", k, k));
-        } else {
-            borg_note(format("& Key <0x%02X>", k));
-        }
     }
 
     /* Store the char, advance the queue */
@@ -335,6 +332,34 @@ errr borg_keypress(keycode_t k)
     /* Success */
     return (0);
 }
+
+/* add a keypress to the history of what has been passed back to the game */
+void save_keypress_history(keycode_t k)
+{
+    /* Note the keypress */
+    if (borg_cfg[BORG_VERBOSE]) {
+        if (k >= 32 && k <= 126) {
+            borg_note(format("& Key <%c> (0x%02X)", k, k));
+        } else {
+            if (k == KC_ENTER)
+                borg_note(format("& Key <Enter> (0x%02X)", k));
+            else if (k == ESCAPE)
+                borg_note(format("& Key <Esc> (0x%02X)", k));
+            else
+                borg_note(format("& Key <0x%02X>", k));
+        }
+    }
+
+    /* Store the char, advance the queue */
+    borg_key_history[borg_key_history_head++] = k;
+
+    /* on full array, keep the last 100 */
+    if (borg_key_history_head == KEY_SIZE) {
+        memcpy(borg_key_history, &borg_key_history[KEY_SIZE - 101], sizeof(keycode_t) * 100);
+        borg_key_history_head = 100;
+    }
+}
+
 
 /*
  * Add a keypresses to the "queue" (fake event)
@@ -425,15 +450,59 @@ char *borg_massage_special_chars(char *name)
     return memory;
 }
 
+/* print the recent keypresses to the message history */
+void borg_dump_recent_keys(void)
+{
+    int end = borg_key_history_head;
+    int start = borg_key_history_head < 50 ? 0 : borg_key_history_head - 50;
+    for (; start < end; start++) {
+        keycode_t k = borg_key_history[start];
+        if (k >= 32 && k <= 126) {
+            borg_note(format("& Key history <%c> (0x%02X)", k, k));
+        } else {
+            if (k == KC_ENTER)
+                borg_note(format("& Key history <Enter> (0x%02X)", k));
+            else if (k == ESCAPE)
+                borg_note(format("& Key history <Esc> (0x%02X)", k));
+            else
+                borg_note(format("& Key history <0x%02X>", k));
+        }
+    }
+}
+
+/*
+ * The bell should never sound when the borg is running.  If it does,
+ * log ... something.
+ */
+void borg_bell(game_event_type unused, game_event_data *data, void *user)
+{
+    borg_note("** BELL SOUNDED Dumping keypress history ***");
+
+    borg_dump_recent_keys();
+
+    if (borg_cfg[BORG_STOP_ON_BELL])
+        borg_oops("** BELL SOUNDED***");
+}
+
+
 void borg_init_io(void)
 {
     /* Allocate the "keypress queue" */
     borg_key_queue = mem_zalloc(KEY_SIZE * sizeof(keycode_t));
+
+    /* When the bell goes off, log an error */
+    event_add_handler(EVENT_BELL, borg_bell, NULL);
+
+    /* Allocate the keypress history */
+    borg_key_history = mem_zalloc(KEY_SIZE * sizeof(keycode_t));
 }
 
 void borg_free_io(void)
 {
     mem_free(borg_key_queue);
     borg_key_queue = NULL;
+
+    mem_free(borg_key_history);
+    borg_key_history = NULL;
 }
 #endif

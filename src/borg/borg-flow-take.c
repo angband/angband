@@ -46,6 +46,17 @@ int16_t    borg_takes_cnt;
 int16_t    borg_takes_nxt;
 borg_take *borg_takes;
 
+struct object * borg_get_top_object(struct chunk *c, struct loc grid)
+{
+    /* Cheat the Actual item */
+    struct object *o_ptr;
+    o_ptr = square_object(cave, grid);
+    while (o_ptr && (o_ptr->known->notice & OBJ_NOTICE_IGNORE || o_ptr->kind->ignore))
+        o_ptr = o_ptr->next;
+
+    return o_ptr;
+}
+
 /*
  * Attempt to guess what kind of object is at the given location.
  *
@@ -59,8 +70,7 @@ static struct object_kind *borg_guess_kind(uint8_t a, wchar_t c, int y, int x)
      */
 
     /* Cheat the Actual item */
-    struct object *o_ptr;
-    o_ptr = square_object(cave, loc(x, y));
+    struct object *o_ptr = borg_get_top_object(cave, loc(x, y));
     if (!o_ptr)
         return NULL;
     return (o_ptr->kind);
@@ -181,7 +191,7 @@ static int borg_new_take(struct object_kind *kind, int y, int x)
 
     borg_grid *ag        = &borg_grids[y][x];
 
-    struct object *o_ptr = square_object(cave, loc(x, y));
+    struct object *o_ptr = borg_get_top_object(cave, loc(x, y));
 
     /* Look for a "dead" object */
     for (i = 1; (n < 0) && (i < borg_takes_nxt); i++) {
@@ -249,6 +259,9 @@ static int borg_new_take(struct object_kind *kind, int y, int x)
      */
     if (object_fully_known(o_ptr)
         && (o_ptr->to_a < 0 || o_ptr->to_d < 0 || o_ptr->to_h < 0))
+        take->value = -10;
+
+    if (o_ptr->note && prefix(quark_str(o_ptr->note), "borg ignore"))
         take->value = -10;
 
     /* Note */
