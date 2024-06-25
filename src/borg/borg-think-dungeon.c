@@ -1572,7 +1572,7 @@ bool borg_think_dungeon(void)
             return (true);
 
         /* If full of items, we wont be able to buy stuff, crush stuff */
-        if (borg_items[PACK_SLOTS - 1].iqty && borg_crush_hole())
+        if (borg_items[PACK_SLOTS - 1].iqty && borg_crush_hole(false))
             return (true);
 
         if (borg_choose_shop()) {
@@ -1869,7 +1869,7 @@ bool borg_think_dungeon(void)
         return (true);
 
     /* Destroy items to make space */
-    if (borg_crush_hole())
+    if (borg_crush_hole(false))
         return (true);
 
     /* Destroy items if we are slow */

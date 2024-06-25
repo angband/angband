@@ -28,6 +28,7 @@
 #include "borg-cave-view.h"
 #include "borg-danger.h"
 #include "borg-flow-kill.h"
+#include "borg-flow-misc.h"
 #include "borg-flow-stairs.h"
 #include "borg-flow.h"
 #include "borg-projection.h"
@@ -58,7 +59,7 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
         return (true);
 
     /* Efficiency -- Ignore "boring" grids */
-    if (ag->feat < FEAT_SECRET)
+    if (ag->feat < FEAT_SECRET && ag->feat != FEAT_CLOSED)
         return (false);
 
     /* Explore "known treasure" */
@@ -464,7 +465,6 @@ static void borg_flow_border(int y1, int x1, int y2, int x2, bool stop)
 static bool borg_flow_dark_1(int b_stair)
 {
     int i;
-    int cost;
     int x, y;
 
     /* Hack -- not in town */
@@ -483,16 +483,8 @@ static bool borg_flow_dark_1(int b_stair)
         if (!borg_flow_dark_interesting(y, x, b_stair))
             continue;
 
-        /* Clear the flow codes */
-        borg_flow_clear();
-
-        /* obtain the number of steps from this take to the stairs */
-        cost = borg_flow_cost_stair(y, x, b_stair);
-
-        /* Check the distance to stair for this proposed grid if dangerous */
-        if (borg.trait[BI_CDEPTH] >= borg.trait[BI_CLEVEL] - 5
-            && cost > borg.trait[BI_CLEVEL] * 3 + 9
-            && borg.trait[BI_CLEVEL] < 20)
+        /* don't go too far from the stairs */
+        if (borg_flow_far_from_stairs(x, y, b_stair))
             continue;
 
         /* Careful -- Remember it */
@@ -548,7 +540,6 @@ static bool borg_flow_dark_1(int b_stair)
 static bool borg_flow_dark_2(int b_stair)
 {
     int i, r;
-    int cost;
     int x, y;
 
     borg_grid *ag;
@@ -589,18 +580,8 @@ static bool borg_flow_dark_2(int b_stair)
         if (!(ag->info & BORG_VIEW))
             continue;
 
-        /* if it makes me wander, skip it */
-
-        /* Clear the flow codes */
-        borg_flow_clear();
-
-        /* obtain the number of steps from this take to the stairs */
-        cost = borg_flow_cost_stair(y, x, b_stair);
-
-        /* Check the distance to stair for this proposed grid */
-        if (borg.trait[BI_CDEPTH] >= borg.trait[BI_CLEVEL] - 5
-            && cost > borg.trait[BI_CLEVEL] * 3 + 9
-            && borg.trait[BI_CLEVEL] < 20)
+        /* don't go too far from the stairs */
+        if (borg_flow_far_from_stairs(x, y, b_stair))
             continue;
 
         /* Careful -- Remember it */
@@ -656,7 +637,6 @@ static bool borg_flow_dark_2(int b_stair)
 static bool borg_flow_dark_3(int b_stair)
 {
     int i;
-    int cost;
     int x, y;
 
     int x1, y1, x2, y2;
@@ -696,16 +676,8 @@ static bool borg_flow_dark_3(int b_stair)
             if (!borg_flow_dark_reachable(y, x))
                 continue;
 
-            /* Clear the flow codes */
-            borg_flow_clear();
-
-            /* obtain the number of steps from this take to the stairs */
-            cost = borg_flow_cost_stair(y, x, b_stair);
-
-            /* Check the distance to stair for this proposed grid */
-            if (borg.trait[BI_CDEPTH] >= borg.trait[BI_CLEVEL] - 5
-                && cost > borg.trait[BI_CLEVEL] * 3 + 9
-                && borg.trait[BI_CLEVEL] < 20)
+            /* don't go too far from the stairs */
+            if (borg_flow_far_from_stairs(x, y, b_stair))
                 continue;
 
             /* Careful -- Remember it */
@@ -767,7 +739,6 @@ static bool borg_flow_dark_3(int b_stair)
 static bool borg_flow_dark_4(int b_stair)
 {
     int i, x, y;
-    int cost;
     int x1, y1, x2, y2;
     int leash = 250;
 
@@ -814,15 +785,8 @@ static bool borg_flow_dark_4(int b_stair)
             if (!borg_flow_dark_reachable(y, x))
                 continue;
 
-            /* Clear the flow codes */
-            borg_flow_clear();
-
-            /* obtain the number of steps from this take to the stairs */
-            cost = borg_flow_cost_stair(y, x, b_stair);
-
-            /* Check the distance to stair for this proposed grid */
-            if (cost > borg.trait[BI_CLEVEL] * 3 + 9
-                && borg.trait[BI_CLEVEL] < 20)
+            /* don't go too far from the stairs */
+            if (borg_flow_far_from_stairs_dist(x, y, b_stair, leash))
                 continue;
 
             /* Careful -- Remember it */
@@ -891,7 +855,6 @@ static bool borg_flow_dark_4(int b_stair)
 static bool borg_flow_dark_5(int b_stair)
 {
     int i, x, y;
-    int cost;
     int leash = 250;
 
     /* Hack -- not in town */
@@ -916,15 +879,8 @@ static bool borg_flow_dark_5(int b_stair)
             if (!borg_flow_dark_reachable(y, x))
                 continue;
 
-            /* Clear the flow codes */
-            borg_flow_clear();
-
-            /* obtain the number of steps from this take to the stairs */
-            cost = borg_flow_cost_stair(y, x, b_stair);
-
-            /* Check the distance to stair for this proposed grid */
-            if (cost > borg.trait[BI_CLEVEL] * 3 + 9
-                && borg.trait[BI_CLEVEL] < 20)
+            /* don't go too far from the stairs */
+            if (borg_flow_far_from_stairs_dist(x, y, b_stair, leash))
                 continue;
 
             /* Careful -- Remember it */
