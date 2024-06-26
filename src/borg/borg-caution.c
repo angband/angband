@@ -1143,7 +1143,7 @@ bool borg_caution(void)
             borg.stair_more = true;
 
         /* don't go down if we can go up and are hungry */
-        if (!track_less.num
+        if (track_less.num
             && (borg.trait[BI_CURLITE] == 0 || borg.trait[BI_ISHUNGRY]
                 || borg.trait[BI_ISWEAK] || borg.trait[BI_FOOD] < 2))
             borg.stair_more = false;

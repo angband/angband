@@ -482,6 +482,10 @@ bool borg_crush_hole(bool desperate)
     if (!borg_items[PACK_SLOTS - 1].iqty)
         return (false);
 
+    /* only on the floor */
+    if (borg_grids[borg.c.y][borg.c.x].feat != FEAT_FLOOR)
+        return (false);
+
     /* No crush if even slightly dangerous */
     if (borg.trait[BI_CDEPTH]
         && (borg_danger(borg.c.y, borg.c.x, 1, true, false)
