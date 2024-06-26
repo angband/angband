@@ -524,30 +524,33 @@ bool borg_crush_hole(bool desperate)
             continue;
 
         /* Do not crush Boots, they could be SPEED */
-        if (item->tval == TV_BOOTS && !item->ident)
+        if (item->tval == TV_BOOTS && !item->ident) {
             if (desperate)
                 value_boost = 10000L;
             else
                 continue;
+        }
 
         /* Don't crush weapons if we are wielding a digger */
         if (item->tval >= TV_DIGGING && item->tval <= TV_SWORD
-            && borg_items[INVEN_WIELD].tval == TV_DIGGING)
+            && borg_items[INVEN_WIELD].tval == TV_DIGGING) {
             if (desperate)
                 value_boost = 10000L;
             else
                 continue;
+        }
 
         /* skip "artifacts" */
         if (item->art_idx && !item->ident)
             continue;
 
         /* things with unknown runes */
-        if (borg_item_note_needs_id(item))
+        if (borg_item_note_needs_id(item)) {
             if (desperate)
                 value_boost = 5000L;
             else
                 continue;
+        }
 
         /* never crush cool stuff that we might be needing later */
         if (!desperate) {
@@ -590,11 +593,12 @@ bool borg_crush_hole(bool desperate)
 
         /* a boost for things with random powers */
         if (item->ego_idx && borg_ego_has_random_power(&e_info[item->ego_idx])
-            && !item->ident)
+            && !item->ident) {
             if (desperate)
                 value_boost = 10000L;
             else
                 continue;
+        }
 
         /* save the items value */
         value = item->value + value_boost;

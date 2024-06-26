@@ -477,7 +477,7 @@ void borg_dump_recent_keys(void)
  * The bell should never sound when the borg is running.  If it does,
  * log ... something.
  */
-void borg_bell(game_event_type unused, game_event_data *data, void *user)
+static void borg_bell(game_event_type unused, game_event_data *data, void *user)
 {
     borg_note("** BELL SOUNDED Dumping keypress history ***");
 
