@@ -382,12 +382,14 @@ bool borg_flow_vein(bool viewable, int nearness)
         borg_flow_clear();
 
         /* obtain the number of steps from this take to the stairs */
-        cost = borg_flow_cost_stair(y, x, b_stair);
+        if (nearness > 5 && borg.trait[BI_CLEVEL] < 20) {
+            cost = borg_flow_cost_stair(y, x, b_stair);
 
-        /* Check the distance to stair for this proposed grid, unless i am
-         * looking for very close items (leash) */
-        if (nearness > 5 && cost > leash && borg.trait[BI_CLEVEL] < 20)
-            continue;
+            /* Check the distance to stair for this proposed grid, unless i am
+             * looking for very close items (leash) */
+            if (cost > leash)
+                continue;
+        }
 
         /* Careful -- Remember it */
         borg_temp_x[borg_temp_n] = x;
@@ -970,7 +972,7 @@ bool borg_twitchy(void)
     /* Pick a random direction */
     count = 20;
     while (true) {
-        dir = randint0(9);
+        dir = randint0(10);
         if (dir == 5 || dir == 0)
             continue;
 
@@ -1332,6 +1334,30 @@ bool borg_check_rest(int y, int x)
             return false;
     }
     return true;
+}
+
+/* check if this spot is too far from the stairs */
+bool borg_flow_far_from_stairs(int x, int y, int b_stair)
+{
+    return borg_flow_far_from_stairs_dist(
+        x, y, b_stair, borg.trait[BI_CLEVEL] * 3 + 9);
+}
+
+/* check if this spot is too far from the stairs */
+bool borg_flow_far_from_stairs_dist(int x, int y, int b_stair, int distance)
+{
+    if (borg.trait[BI_CDEPTH] >= borg.trait[BI_CLEVEL] - 5
+        && borg.trait[BI_CLEVEL] < 20) {
+
+        /* obtain the number of steps from this take to the stairs */
+        int cost = borg_flow_cost_stair(y, x, b_stair);
+
+        /* Check the distance to stair for this proposed grid */
+        if (cost > distance)
+            return true;
+    }
+
+    return false;
 }
 
 void borg_init_flow_misc(void)

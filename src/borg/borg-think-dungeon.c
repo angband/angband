@@ -1227,6 +1227,19 @@ bool borg_think_dungeon(void)
         return (true);
     }
 
+    /* if standing on something valueless, destroy it */
+    if (borg_grids[borg.c.y][borg.c.x].take) {
+        borg_take *take = &borg_takes[borg_grids[borg.c.y][borg.c.x].take];
+        if (take->value == -10) {
+            /* ignore it now */
+            borg_keypress('k');
+            borg_keypress('-');
+            borg_keypress('a');
+            borg_keypress('a');
+            return true;
+        }
+    }
+
     /* Allow respawning borgs to update their variables */
     if (borg_respawning > 1) {
         borg_note(
@@ -1559,7 +1572,7 @@ bool borg_think_dungeon(void)
             return (true);
 
         /* If full of items, we wont be able to buy stuff, crush stuff */
-        if (borg_items[PACK_SLOTS - 1].iqty && borg_crush_hole())
+        if (borg_items[PACK_SLOTS - 1].iqty && borg_crush_hole(false))
             return (true);
 
         if (borg_choose_shop()) {
@@ -1856,7 +1869,7 @@ bool borg_think_dungeon(void)
         return (true);
 
     /* Destroy items to make space */
-    if (borg_crush_hole())
+    if (borg_crush_hole(false))
         return (true);
 
     /* Destroy items if we are slow */

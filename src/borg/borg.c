@@ -209,7 +209,7 @@ int key_mode;
  * the game has asked for the next keypress, but the various "keypress"
  * routines should be able to handle this.
  */
-static struct keypress borg_inkey_hack(int flush_first)
+static struct keypress internal_borg_inkey(int flush_first)
 {
     keycode_t       borg_ch;
     struct keypress key = { EVT_KBRD, 0, 0 };
@@ -335,6 +335,17 @@ static struct keypress borg_inkey_hack(int flush_first)
         return key;
     }
 
+    /* Wearing two rings.  Place this on the left hand */
+    if (borg_prompt && !inkey_flag && (y == 0) && (x >= 12)
+        && (0 == borg_what_text(0, y, 12, &t_a, buf))
+        && (streq(buf, "(Equip: c-d,"))) {
+        /* Left hand */
+        key.code = 'c';
+        return key;
+    }
+
+    /*
+     * with 292, there is a flush(0, 0, 0) introduced as it asks for
     /* with 292, there is a flush(0, 0, 0) introduced as it asks for
      * confirmation. This flush is messing up the borg.  This will allow the
      * borg to work around the flush Attempt to catch "Attempt it anyway? [y/n]"
@@ -353,7 +364,7 @@ static struct keypress borg_inkey_hack(int flush_first)
      * spells like Magic Missile Attempt to catch "Direction (5 old target"
      */
     if (borg_prompt && !inkey_flag && (y == 0) && !borg_inkey(false)
-        && (x >= 4) && streq(buf, "Dire")) {
+        && (x >= 10) && strncmp(buf, "Direction", 9) == 0) {
         if (borg_confirm_target) {
             /* reset the flag */
             borg_confirm_target = false;
@@ -361,20 +372,12 @@ static struct keypress borg_inkey_hack(int flush_first)
             key.code = borg_get_queued_direction();
             return key;
         } else {
+            borg_dump_recent_keys();
             borg_oops("unexpected request for direction");
             /* Hack -- Escape */
             key.code = ESCAPE;
             return key;
         }
-    }
-
-    /* Wearing two rings.  Place this on the left hand */
-    if (borg_prompt && !inkey_flag && (y == 0) && (x >= 12)
-        && (0 == borg_what_text(0, y, 12, &t_a, buf))
-        && (streq(buf, "(Equip: c-d,"))) {
-        /* Left hand */
-        key.code = 'c';
-        return key;
     }
 
     /* Stepping on a stack when the inventory is full gives a message */
@@ -545,6 +548,9 @@ static struct keypress borg_inkey_hack(int flush_first)
         return key;
     }
 
+    /* done with buffered and repeated commands, the confirm should be done*/
+    borg_confirm_target = false;
+
     /* Save the system random info */
     borg_rand_quick = Rand_quick;
     borg_rand_value = Rand_value;
@@ -586,6 +592,20 @@ static struct keypress borg_inkey_hack(int flush_first)
     /* Hack -- Escape */
     key.code = ESCAPE;
     return key;
+}
+
+/* 
+ * wrapper around keypress capture to allow all keys to be 
+ * added to history.
+ */
+static struct keypress borg_inkey_hack(int flush_first)
+{
+    struct keypress k = internal_borg_inkey(flush_first);
+
+    if (k.type == EVT_KBRD)
+        save_keypress_history(k.code);
+
+    return k;
 }
 
 /*

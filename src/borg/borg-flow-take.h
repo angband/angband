@@ -52,6 +52,11 @@ extern int16_t    borg_takes_nxt;
 extern borg_take *borg_takes;
 
 /*
+ * Helper to get the top non-ignored object
+ */
+extern struct object *borg_get_top_object(struct chunk *c, struct loc grid);
+
+/*
  * Delete an old "object" record
  */
 extern void borg_delete_take(int i);

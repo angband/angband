@@ -1142,14 +1142,16 @@ bool borg_caution(void)
         if ((char *)NULL == borg_prepared(borg.trait[BI_CDEPTH] + 1))
             borg.stair_more = true;
 
+        /* don't go down if we can go up and are hungry */
         if (!track_less.num
             && (borg.trait[BI_CURLITE] == 0 || borg.trait[BI_ISHUNGRY]
                 || borg.trait[BI_ISWEAK] || borg.trait[BI_FOOD] < 2))
             borg.stair_more = false;
 
-        /* If I need to sell crap, then don't go down */
-        if (borg.trait[BI_CDEPTH] && borg.trait[BI_CLEVEL] < 25
-            && borg.trait[BI_GOLD] < 25000 && borg_count_sell() >= 13)
+        /* If I need to sell crap, then don't go down if I can go up */
+        if (track_less.num && borg.trait[BI_CDEPTH]
+            && borg.trait[BI_CLEVEL] < 25 && borg.trait[BI_GOLD] < 25000
+            && borg_count_sell() >= 13)
             borg.stair_more = false;
 
         /* Its ok to go one level deep if evading scary guy */

@@ -1019,10 +1019,8 @@ static bool borg_good_sell(borg_item *item, int who)
 
             /* Never sell if not "known" */
             /* unless we have more than one or are deep */
-            if (borg_item_worth_id(item)
-                && ((borg.trait[BI_MAXDEPTH] > 35) || !multiple))
-                return (false);
-
+        if (borg_item_worth_id(item) && (borg.trait[BI_MAXDEPTH] < 35)
+            && !multiple)
             break;
 
         case TV_BOW:
@@ -1040,8 +1038,8 @@ static bool borg_good_sell(borg_item *item, int who)
         case TV_HARD_ARMOR:
         case TV_DRAG_ARMOR:
 
-            /* Only sell "known" items (unless "icky") */
-            if (!item->ident && borg_item_worth_id(item) && !multiple)
+            /* Only sell "known" items (unless we have more than one) */
+            if (borg_item_worth_id(item) && !multiple)
                 return (false);
 
             break;

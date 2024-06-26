@@ -175,6 +175,12 @@ borg_stop_clevel = 51
 borg_no_deeper = 127
 borg_stop_king = TRUE
 
+# If stop on bell is set, the borg will stop when the game plays the bell, 
+# which generally only happens on an error.  This is to help debug issues. The
+# message log will contain a list of up to 50 of the latest keypresses.
+
+borg_stop_on_bell = false
+
 # Chest Tolerance
 
 # The borg is able to search, disarm, and open chests.  There is a inherant

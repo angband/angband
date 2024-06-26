@@ -207,32 +207,6 @@ static bool borg_consume(int i)
     return (false);
 }
 
-/* HACK is it safe to crush an item here... must be on an empty floor square */
-static bool borg_safe_crush(void)
-{
-    if (borg_grids[borg.c.y][borg.c.x].feat != FEAT_FLOOR)
-        return (false);
-
-    /* hack check for invisible traps */
-    if (square_trap(cave, borg.c))
-        return (false);
-
-    /* **HACK** don't drop on top of a previously ignored item */
-    /* this is because if you drop something then ignore it then drop another */
-    /* on top of it, the second item combines with the first and just disappears
-     */
-    struct object *obj = square_object(cave, borg.c);
-    while (obj) {
-        if (obj->known->notice & OBJ_NOTICE_IGNORE)
-            return (false);
-        if (obj->kind->ignore)
-            return (false);
-        obj = obj->next;
-    }
-
-    return (true);
-}
-
 /*
  * Destroy "junk" items
  */
@@ -245,10 +219,6 @@ bool borg_crush_junk(void)
 
     /* Hack -- no need */
     if (!borg_do_crush_junk)
-        return (false);
-
-    /* is it safe to crush junk here */
-    if (!borg_safe_crush())
         return (false);
 
     /* No crush if even slightly dangerous */
@@ -448,6 +418,13 @@ bool borg_crush_junk(void)
         /* Message */
         borg_note(format("# Destroying %s.", item->desc));
 
+        /* inscribe "!borg ignore". The borg crushes all items */
+        /* on the floor that are inscribed this way */
+        borg_keypress('{');
+        borg_keypress(all_letters_nohjkl[i]);
+        borg_keypresses("borg ignore");
+        borg_keypress(KC_ENTER);
+
         /* drop it then ignore it */
         borg_keypress('d');
         borg_keypress(all_letters_nohjkl[i]);
@@ -457,11 +434,7 @@ bool borg_crush_junk(void)
             borg_keypress(KC_ENTER);
         }
 
-        /* ignore it now */
-        borg_keypress('k');
-        borg_keypress('-');
-        borg_keypress('a');
-        borg_keypress('a');
+        /* it will be crushed when we crush low value floor items */
 
         /* Success */
         return (true);
@@ -494,13 +467,14 @@ bool borg_crush_junk(void)
  *
  * This function does not have to be very efficient.
  */
-bool borg_crush_hole(void)
+bool borg_crush_hole(bool desperate)
 {
     int     i, b_i = -1;
     int32_t p, b_p = 0L;
     int32_t w, b_w = 0L;
 
     int32_t value;
+    int32_t value_boost;
 
     bool fix = false;
 
@@ -517,10 +491,6 @@ bool borg_crush_hole(void)
                        > (borg.trait[BI_CURHP] * 2) / 3)))
         return (false);
 
-    /* must be a good place to crush stuff */
-    if (!borg_safe_crush())
-        return (false);
-
     /* Scan the inventory */
     for (i = 0; i < z_info->pack_size; i++) {
         borg_item *item = &borg_items[i];
@@ -528,6 +498,8 @@ bool borg_crush_hole(void)
         /* Skip empty items */
         if (!item->iqty)
             continue;
+
+        value_boost = 0L;
 
         /* Hack -- skip "artifacts" */
         if (item->art_idx)
@@ -549,62 +521,79 @@ bool borg_crush_hole(void)
 
         /* Do not crush Boots, they could be SPEED */
         if (item->tval == TV_BOOTS && !item->ident)
-            continue;
+            if (desperate)
+                value_boost = 10000L;
+            else
+                continue;
 
         /* Don't crush weapons if we are wielding a digger */
         if (item->tval >= TV_DIGGING && item->tval <= TV_SWORD
             && borg_items[INVEN_WIELD].tval == TV_DIGGING)
-            continue;
+            if (desperate)
+                value_boost = 10000L;
+            else
+                continue;
 
-        /* Hack -- skip "artifacts" */
+        /* skip "artifacts" */
         if (item->art_idx && !item->ident)
             continue;
+
+        /* things with unknown runes */
         if (borg_item_note_needs_id(item))
-            continue;
+            if (desperate)
+                value_boost = 5000L;
+            else
+                continue;
 
         /* never crush cool stuff that we might be needing later */
-        if ((item->tval == TV_POTION && item->sval == sv_potion_restore_mana)
-            && (borg.trait[BI_MAXSP] >= 1))
-            continue;
-        if (item->tval == TV_POTION && item->sval == sv_potion_healing)
-            continue;
-        if (item->tval == TV_POTION && item->sval == sv_potion_star_healing)
-            continue;
-        if (item->tval == TV_POTION && item->sval == sv_potion_life)
-            continue;
-        if (item->tval == TV_POTION && item->sval == sv_potion_speed)
-            continue;
-        if (item->tval == TV_SCROLL
-            && item->sval == sv_scroll_protection_from_evil)
-            continue;
-        if (item->tval == TV_SCROLL
-            && item->sval == sv_scroll_rune_of_protection)
-            continue;
-        if (item->tval == TV_SCROLL && item->sval == sv_scroll_teleport_level
-            && borg.trait[BI_ATELEPORTLVL] < 1000)
-            continue;
-        if (item->tval == TV_ROD
-            && (item->sval == sv_rod_healing
-                || (item->sval == sv_rod_mapping
-                    && borg.trait[BI_CLASS] == CLASS_WARRIOR))
-            && item->iqty <= 5)
-            continue;
-        if (item->tval == TV_WAND 
-            && item->sval == sv_wand_teleport_away
-            && borg.trait[BI_CLASS] == CLASS_WARRIOR
-            && borg.trait[BI_ATPORTOTHER] <= 8)
-            continue;
-        if (item->tval == TV_ROD
-            && (item->sval == sv_rod_light && borg.trait[BI_CURLITE] <= 0))
-            continue;
+        if (!desperate) {
+            if ((item->tval == TV_POTION && item->sval == sv_potion_restore_mana)
+                && (borg.trait[BI_MAXSP] >= 1))
+                continue;
+            if (item->tval == TV_POTION && item->sval == sv_potion_healing)
+                continue;
+            if (item->tval == TV_POTION && item->sval == sv_potion_star_healing)
+                continue;
+            if (item->tval == TV_POTION && item->sval == sv_potion_life)
+                continue;
+            if (item->tval == TV_POTION && item->sval == sv_potion_speed)
+                continue;
+            if (item->tval == TV_SCROLL
+                && item->sval == sv_scroll_protection_from_evil)
+                continue;
+            if (item->tval == TV_SCROLL
+                && item->sval == sv_scroll_rune_of_protection)
+                continue;
+            if (item->tval == TV_SCROLL && item->sval == sv_scroll_teleport_level
+                && borg.trait[BI_ATELEPORTLVL] < 1000)
+                continue;
+            if (item->tval == TV_ROD
+                && (item->sval == sv_rod_healing
+                    || (item->sval == sv_rod_mapping
+                        && borg.trait[BI_CLASS] == CLASS_WARRIOR))
+                && item->iqty <= 5)
+                continue;
+            if (item->tval == TV_WAND
+                && item->sval == sv_wand_teleport_away
+                && borg.trait[BI_CLASS] == CLASS_WARRIOR
+                && borg.trait[BI_ATPORTOTHER] <= 8)
+                continue;
+            if (item->tval == TV_ROD
+                && (item->sval == sv_rod_light && borg.trait[BI_CURLITE] <= 0))
+                continue;
+        } else
+            value_boost = 7000;
 
         /* a boost for things with random powers */
         if (item->ego_idx && borg_ego_has_random_power(&e_info[item->ego_idx])
             && !item->ident)
-            continue;
+            if (desperate)
+                value_boost = 10000L;
+            else
+                continue;
 
         /* save the items value */
-        value = item->value;
+        value = item->value + value_boost;
 
         /* save the items weight */
         w = item->weight * item->iqty;
@@ -888,8 +877,12 @@ bool borg_crush_hole(void)
         return (true);
     }
 
-    /* Paranoia */
-    return (false);
+    /* if we got to here, we need to make room but have nothing we can crush */
+    /* try again but allow more things to be crushed */
+    if (!desperate)
+        return borg_crush_hole(true);
+
+    return false; 
 }
 
 /*
@@ -926,10 +919,6 @@ bool borg_crush_slow(void)
 
     /* Not if in munchkin mode */
     if (borg.munchkin_mode)
-        return (false);
-
-    /* must be a good place to crush stuff */
-    if (!borg_safe_crush())
         return (false);
 
     /* Calculate "greed" factor */
@@ -1054,6 +1043,23 @@ bool borg_crush_slow(void)
         /* Message */
         borg_note(format("# Destroying %s.", item->desc));
 
+        /* inscribe "borg ignore". The borg crushes all items */
+        /* on the floor that are inscribed this way */
+        borg_keypress('{');
+        if (b_i < INVEN_WIELD) {
+            borg_keypress(all_letters_nohjkl[b_i]);
+        } else if (b_i < QUIVER_START) {
+            borg_keypress('/');
+
+            borg_keypress(all_letters_nohjkl[b_i - INVEN_WIELD]);
+        } else {
+            /* Quiver Slot */
+            borg_keypress('|');
+            borg_keypress('0' + (b_i - QUIVER_START));
+        }
+        borg_keypresses("borg ignore");
+        borg_keypress(KC_ENTER);
+
         /* Drop one item */
         borg_keypress('d');
         if (b_i < INVEN_WIELD) {
@@ -1071,14 +1077,7 @@ bool borg_crush_slow(void)
             borg_keypress('1');
             borg_keypress(KC_ENTER);
         }
-        /* Destroy that item */
-        borg_keypress('k');
-        /* Now on the floor */
-        borg_keypress('-');
-        /* Assume first */
-        borg_keypress('a');
-        /* This item only */
-        borg_keypress('a');
+        return true;
     }
 
     /* Nothing to destroy */

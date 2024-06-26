@@ -98,6 +98,12 @@ extern int borg_extract_dir(int y1, int x1, int y2, int x2);
  */
 extern int borg_goto_dir(int y1, int x1, int y2, int x2);
 
+/*
+ * Make sure the given square isn't "too far" from the stairs.
+ */
+extern bool borg_flow_far_from_stairs(int x, int y, int b_stair);
+extern bool borg_flow_far_from_stairs_dist(int x, int y, int b_stair, int distance);
+
 extern void borg_init_flow_misc(void);
 extern void borg_free_flow_misc(void);
 

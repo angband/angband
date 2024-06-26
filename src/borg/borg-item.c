@@ -54,7 +54,6 @@ const char *borg_get_note(const borg_item *item)
  */
 void borg_deinscribe(int i)
 {
-
     /* Ok to inscribe Slime Molds */
     if (borg_items[i].tval == TV_FOOD
         && borg_items[i].sval == sv_food_slime_mold)
@@ -71,12 +70,28 @@ void borg_deinscribe(int i)
 
     /* Choose from equipment */
     else {
-        /* Go to equipment (if necessary) */
-        if (borg_items[0].iqty)
-            borg_keypress('/');
+        if (i < INVEN_FEET) {
+            for (int j = 0; j < INVEN_WIELD; j++) {
+                /* Go to equipment (if necessary) */
+                if (borg_items[j].iqty && borg_items[j].note[0] == '{') {
+                    borg_keypress('/');
+                    break;
+                }
+            }
+            /* Choose the item */
+            borg_keypress(all_letters_nohjkl[i - INVEN_WIELD]);
 
-        /* Choose the item */
-        borg_keypress(all_letters_nohjkl[i - INVEN_WIELD]);
+        } else {
+            for (int j = 0; j <= INVEN_FEET; j++) {
+                /* Go to quiver (if necessary) */
+                if (borg_items[j].iqty && borg_items[j].note[0] == '{') {
+                    borg_keypress('|');
+                    break;
+                }
+            }
+            /* Choose the item */
+            borg_keypress('0' + (i - QUIVER_START));
+        }
     }
 
     /* May ask for a confirmation */

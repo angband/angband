@@ -33,7 +33,7 @@ extern bool borg_crush_junk(void);
 /*
  * Destroy something to make a free inventory slot.
  */
-extern bool borg_crush_hole(void);
+extern bool borg_crush_hole(bool desperate);
 
 /*
  * Destroy "junk" when slow (in the dungeon).
