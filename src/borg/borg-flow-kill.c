@@ -2620,11 +2620,11 @@ bool borg_flow_kill_direct(bool viewable, bool twitchy)
         borg_flow_spread(150, true, false, true, -1, false);
 
         /* Attempt to Commit the flow */
-        if (!borg_flow_commit("center direct", GOAL_KILL))
+        if (!borg_flow_commit("center direct", GOAL_DIGGING))
             return (false);
 
         /* Take one step */
-        if (!borg_flow_old(GOAL_KILL))
+        if (!borg_flow_old(GOAL_DIGGING))
             return (false);
 
         return (true);
@@ -2645,11 +2645,11 @@ bool borg_flow_kill_direct(bool viewable, bool twitchy)
         borg_flow_spread(15, true, false, true, -1, false);
 
         /* Attempt to Commit the flow */
-        if (!borg_flow_commit("kill direct", GOAL_KILL))
+        if (!borg_flow_commit("kill direct", GOAL_DIGGING))
             return (false);
 
         /* Take one step */
-        if (!borg_flow_old(GOAL_KILL))
+        if (!borg_flow_old(GOAL_DIGGING))
             return (false);
 
         return (true);
