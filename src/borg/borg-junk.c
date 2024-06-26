@@ -484,6 +484,10 @@ bool borg_crush_hole(bool desperate)
     /* Do not destroy items unless we need the space */
     if (!borg_items[PACK_SLOTS - 1].iqty)
         return (false);
+    
+    /* only on the floor */
+    if (borg_grids[borg.c.y][borg.c.x].feat != FEAT_FLOOR)
+        return (false);
 
     /* No crush if even slightly dangerous */
     if (borg.trait[BI_CDEPTH]
@@ -523,30 +527,33 @@ bool borg_crush_hole(bool desperate)
             continue;
 
         /* Do not crush Boots, they could be SPEED */
-        if (item->tval == TV_BOOTS && !item->ident)
+        if (item->tval == TV_BOOTS && !item->ident) {
             if (desperate)
                 value_boost = 10000;
             else
                 continue;
+        }
 
         /* Don't crush weapons if we are wielding a digger */
         if (item->tval >= TV_DIGGING && item->tval <= TV_SWORD
-            && borg_items[INVEN_WIELD].tval == TV_DIGGING)
+            && borg_items[INVEN_WIELD].tval == TV_DIGGING) {
             if (desperate)
                 value_boost = 10000L;
             else
                 continue;
+        }
 
         /* Hack -- skip "artifacts" */
         if (item->art_idx && !item->ident)
             continue;
 
-        /* skip things that need to be ID'd */
-        if (borg_item_note_needs_id(item))
+        /* things with unknown runes */
+        if (borg_item_note_needs_id(item)) {
             if (desperate)
                 value_boost = 5000L;
             else
                 continue;
+        }
 
         /* never crush cool stuff that we might be needing later */
         if (!desperate) {
@@ -589,11 +596,12 @@ bool borg_crush_hole(bool desperate)
 
         /* a boost for things with random powers */
         if (item->ego_idx && borg_ego_has_random_power(&e_info[item->ego_idx])
-            && !item->ident)
+            && !item->ident) {
             if (desperate)
                 value_boost = 10000L;
             else
                 continue;
+        }
 
         /* save the items value */
         value = item->value + value_boost;
@@ -1046,7 +1054,7 @@ bool borg_crush_slow(void)
         /* Message */
         borg_note(format("# Destroying %s.", item->desc));
 
-        /* inscribe "!borg ignore". The borg crushes all items */
+        /* inscribe "borg ignore". The borg crushes all items */
         /* on the floor that are inscribed this way */
         borg_keypress('{');
         if (b_i < INVEN_WIELD) {

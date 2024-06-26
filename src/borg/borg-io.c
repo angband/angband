@@ -333,7 +333,9 @@ errr borg_keypress(keycode_t k)
     return (0);
 }
 
-/* add a keypress to the history of what has been passed back to the game */
+/*
+ * Add a keypress to the history of what has been passed back to the game
+ */
 void save_keypress_history(keycode_t k)
 {
     /* Note the keypress */
@@ -450,7 +452,9 @@ char *borg_massage_special_chars(char *name)
     return memory;
 }
 
-/* print the recent keypresses to the message history */
+/*
+ * print the recent keypresses to the message history
+ */
 void borg_dump_recent_keys(void)
 {
     int end = borg_key_history_head;
@@ -474,7 +478,7 @@ void borg_dump_recent_keys(void)
  * The bell should never sound when the borg is running.  If it does,
  * log ... something.
  */
-void borg_bell(game_event_type unused, game_event_data *data, void *user)
+static void borg_bell(game_event_type unused, game_event_data *data, void *user)
 {
     borg_note("** BELL SOUNDED Dumping keypress history ***");
 
@@ -490,19 +494,21 @@ void borg_init_io(void)
     /* Allocate the "keypress queue" */
     borg_key_queue = mem_zalloc(KEY_SIZE * sizeof(keycode_t));
 
-    /* When the bell goes off, log an error */
-    event_add_handler(EVENT_BELL, borg_bell, NULL);
-
     /* Allocate the keypress history */
     borg_key_history = mem_zalloc(KEY_SIZE * sizeof(keycode_t));
+
+    /* When the bell goes off, log an error */
+    event_add_handler(EVENT_BELL, borg_bell, NULL);
 }
 
 void borg_free_io(void)
 {
-    mem_free(borg_key_queue);
-    borg_key_queue = NULL;
-
+    event_remove_handler(EVENT_BELL, borg_bell, NULL);
+ 
     mem_free(borg_key_history);
     borg_key_history = NULL;
+
+    mem_free(borg_key_queue);
+    borg_key_queue = NULL;
 }
 #endif
