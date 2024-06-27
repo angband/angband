@@ -363,7 +363,8 @@ static struct keypress internal_borg_inkey(int flush_first)
      * spells like Magic Missile Attempt to catch "Direction (5 old target"
      */
     if (borg_prompt && !inkey_flag && (y == 0) && !borg_inkey(false)
-        && (x >= 10) && strncmp(buf, "Direction", 9) == 0) {
+        && (x >= 10) && (0 == borg_what_text(0, y, 12, &t_a, buf) 
+        && strncmp(buf, "Direction", 9) == 0)) {
         if (borg_confirm_target) {
             /* reset the flag */
             borg_confirm_target = false;
@@ -371,7 +372,9 @@ static struct keypress internal_borg_inkey(int flush_first)
             key.code = borg_get_queued_direction();
             return key;
         } else {
-            borg_dump_recent_keys();
+            borg_note("** UNEXPECTED REQUEST FOR DIRECTION Dumping keypress history ***");
+            borg_note(format("** line starting <%s> ***", buf));
+            borg_dump_recent_keys(20);
             borg_oops("unexpected request for direction");
             /* Hack -- Escape */
             key.code = ESCAPE;
@@ -457,6 +460,8 @@ static struct keypress internal_borg_inkey(int flush_first)
             borg_parse(buf);
         }
         /* Clear the message */
+        if (borg_cfg[BORG_VERBOSE])
+            borg_note("clearing -more-");
         key.code = ' ';
         return key;
     }
@@ -465,7 +470,7 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* about cheating death comes up.  */
     if (!character_dungeon) {
         /* do nothing */
-        key.code = ' ';
+        key.code = KC_ENTER;
 
         /* there is an odd case I can't track down where the borg */
         /* tries to respawn but gets caught in a loop. */
@@ -598,8 +603,7 @@ static struct keypress borg_inkey_hack(int flush_first)
 {
     struct keypress k = internal_borg_inkey(flush_first);
 
-    if (k.type == EVT_KBRD)
-        save_keypress_history(k.code);
+    save_keypress_history(&k);
 
     return k;
 }
