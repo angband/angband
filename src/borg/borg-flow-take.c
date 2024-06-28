@@ -52,8 +52,14 @@ struct object * borg_get_top_object(struct chunk *c, struct loc grid)
     /* Cheat the Actual item */
     struct object *o_ptr;
     o_ptr = square_object(cave, grid);
-    while (o_ptr && (o_ptr->known->notice & OBJ_NOTICE_IGNORE || o_ptr->kind->ignore))
-        o_ptr = o_ptr->next;
+    while (o_ptr) {
+        if ((o_ptr->known && o_ptr->known->notice & OBJ_NOTICE_IGNORE))
+            o_ptr = o_ptr->next;
+        else if (o_ptr->kind->ignore)
+            o_ptr = o_ptr->next;
+        else
+            break;
+    }
 
     return o_ptr;
 }
