@@ -331,6 +331,11 @@ static struct keypress internal_borg_inkey(int flush_first)
             do_cmd_wiz_cure_all(0);
 #endif /* BABLOS */
 
+        /* for some reason the message line sometimes contains spaces */
+        /* right after the borg respawns */
+        borg_keypress(' ');
+        borg_keypress(' ');
+
         key.code = 'n';
         return key;
     }
