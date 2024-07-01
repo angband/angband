@@ -56,6 +56,7 @@
 #include "borg-trait-swap.h"
 #include "borg-trait.h"
 #include "borg-update.h"
+#include "borg-util.h"
 
 bool borg_cheat_death;
 
@@ -177,6 +178,7 @@ uint16_t borg_step = 0;
  */
 int key_mode;
 
+
 /*
  * This function lets the Borg "steal" control from the user.
  *
@@ -221,7 +223,8 @@ static struct keypress internal_borg_inkey(int flush_first)
 
     uint8_t t_a;
 
-    char buf[1024];
+    char buffer[1024];
+    char *buf = buffer;
 
     bool borg_prompt; /* ajg  For now we can just use this locally.
                           in the 283 borg he uses this to optimize knowing if
@@ -280,16 +283,30 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* Assume no prompt/message is available */
     borg_prompt = false;
 
+    /* due to changes in the way messages are handled sometimes the code */
+    /* seems to be getting blanks before the message or blanks then -more- */
+    /* trying to see if I can code around this. */
+
+    /* get everything on the message line */
+    buf = buffer;
+    borg_what_text(0, 0, ((Term->wid - 1) / (tile_width)), &t_a, buffer);
+    if (borg_cfg[BORG_VERBOSE])
+        borg_note(format("got message '%s'", buf));
+    /* Trim whitespace */
+    buf = borg_trim(buf);
+
     /* Mega-Hack -- check for possible prompts/messages */
     /* If the first four characters on the message line all */
     /* have the same attribute (or are all spaces), and they */
     /* are not all spaces (ascii value 0x20)... */
-    if ((0 == borg_what_text(0, 0, 4, &t_a, buf)) && (t_a != COLOUR_DARK)
+//    if ((0 == borg_what_text(0, 0, 4, &t_a, buf)) && (t_a != COLOUR_DARK)
+    if ((t_a != COLOUR_DARK)
         && (buf[0] != ' ' || buf[1] != ' ' || buf[2] != ' ' || buf[3] != ' ')) {
         /* Assume a prompt/message is available */
         borg_prompt = true;
     }
-    if (borg_prompt && streq(buf, "Type")) {
+
+    if (borg_prompt && prefix(buf, "Type")) {
         borg_prompt = false;
     }
 
@@ -298,7 +315,8 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* And the game does not want a command... */
     /* And the cursor is on the top line... */
     /* And the text acquired above is "Die?" */
-    if (borg_prompt && !inkey_flag && (y == 0) && (x >= 4) && streq(buf, "Die?")
+    if (borg_prompt && !inkey_flag && (y == 0) && (x >= 4)
+        && prefix(buf, "Die?")
         && borg_cheat_death) {
         /* Flush messages */
         borg_parse(NULL);
@@ -345,19 +363,21 @@ static struct keypress internal_borg_inkey(int flush_first)
      * borg to work around the flush Attempt to catch "Attempt it anyway? [y/n]"
      */
     if (borg_prompt && !inkey_flag && (y == 0) && (x >= 4)
-        && streq(buf, "Atte")) {
+        && prefix(buf, "Atte")) {
         /* Return the confirmation */
-        borg_note("# Confirming use of Spell/Prayer.");
+        if (borg_cfg[BORG_VERBOSE])
+            borg_note("# Confirming use of Spell/Prayer when low on mana.");
         key.code = 'y';
         return key;
     }
 
     /* Wearing two rings.  Place this on the left hand */
     if (borg_prompt && !inkey_flag && (y == 0) && (x >= 12)
-        && (0 == borg_what_text(0, y, 12, &t_a, buf))
-        && (streq(buf, "(Equip: c-d,"))) {
+        && (prefix(buf, "(Equip: c-d,"))) {
         /* Left hand */
         key.code = 'c';
+        if (borg_cfg[BORG_VERBOSE])
+            borg_note("# Putting ring on the left hand.");
         return key;
     }
 
@@ -368,9 +388,10 @@ static struct keypress internal_borg_inkey(int flush_first)
      * spells like Magic Missile Attempt to catch "Direction (5 old target"
      */
     if (borg_prompt && !inkey_flag && (y == 0) && !borg_inkey(false)
-        && (x >= 10) && (0 == borg_what_text(0, y, 12, &t_a, buf) 
-        && strncmp(buf, "Direction", 9) == 0)) {
+        && (x >= 10) && strncmp(buf, "Direction", 9) == 0) {
         if (borg_confirm_target) {
+            if (borg_cfg[BORG_VERBOSE])
+                borg_note("# Expected request for Direction.");
             /* reset the flag */
             borg_confirm_target = false;
             /* Return queued target */
@@ -391,8 +412,9 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* and the keypress when given this message is requeued so the borg */
     /* thinks it is a user keypress when it isn't */
     if (borg_prompt && !inkey_flag && (y == 0) && (x >= 12)
-        && (0 == borg_what_text(0, y, 16, &t_a, buf))
-        && (streq(buf, "You have no room"))) {
+        && (prefix(buf, "You have no room"))) {
+        if (borg_cfg[BORG_VERBOSE])
+            borg_note("# 'You have no room' is a no-op");
         /* key code 0 seems to be a no-op and ignored as a user keypress */
         key.code = 0;
         return key;
@@ -404,8 +426,9 @@ static struct keypress internal_borg_inkey(int flush_first)
      */
     /* when the item is used post ID, an effect will be selected */
     if (borg_prompt && !inkey_flag && !borg_inkey(false) && (y == 1)
-        && (0 == borg_what_text(0, 0, 13, &t_a, buf))
-        && streq(buf, "Which effect?")) {
+        && prefix(buf, "Which effect?")) {
+        if (borg_cfg[BORG_VERBOSE])
+            borg_note("# Use of unknown object with multiple effects");
         /* the first selection (a) is random */
         key.code = 'a';
         return key;
@@ -414,8 +437,9 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* prompt for stepping in lava.  This should be avoided but */
     /* if the borg is stuck, give him a pass */
     if (borg_prompt && !inkey_flag && (y == 0) && (x >= 12)
-        && (0 == borg_what_text(0, y, 13, &t_a, buf))
-        && (streq(buf, "The lava will") || streq(buf, "Lava blocks y"))) {
+        && (prefix(buf, "The lava will") || prefix(buf, "Lava blocks y"))) {
+        if (borg_cfg[BORG_VERBOSE])
+            borg_note("# ignoring Lava warning");
         /* yes step in */
         key.code = 'y';
         return key;
@@ -456,11 +480,16 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* And the cursor is on the top line... */
     /* And there is text before the cursor... */
     /* And that text is "-more-" */
+    buf = buffer;
     if (borg_prompt && !inkey_flag && (y == 0) && (x >= 7)
-        && (0 == borg_what_text(x - 7, y, 7, &t_a, buf))
-        && (streq(buf, " -more-"))) {
+        && (0 == borg_what_text(x - 7, y, 7, &t_a, buffer))
+        && (suffix(buf, " -more-"))) {
+
+        if (borg_cfg[BORG_VERBOSE])
+            borg_note("# message with -more-");
+
         /* Get the message */
-        if (0 == borg_what_text(0, 0, x - 7, &t_a, buf)) {
+        if (0 == borg_what_text(0, 0, x - 7, &t_a, buffer)) {
             /* Parse it */
             borg_parse(buf);
         }
@@ -474,6 +503,8 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* in the odd case where a we get here before the message */
     /* about cheating death comes up.  */
     if (!character_dungeon) {
+        if (borg_cfg[BORG_VERBOSE])
+            borg_note("# Mid reincarnation, no map yet");
         /* do nothing */
         key.code = KC_ENTER;
 
@@ -490,10 +521,13 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* If there is text on the first line... */
     /* And the game wants a command */
     if (borg_prompt && inkey_flag) {
+        if (borg_cfg[BORG_VERBOSE])
+            borg_note("# parse normal message");
         /* Get the message(s) */
+        buf = buffer;
         if (0
             == borg_what_text(
-                0, 0, ((Term->wid - 1) / (tile_width)), &t_a, buf)) {
+                0, 0, ((Term->wid - 1) / (tile_width)), &t_a, buffer)) {
             int k = strlen(buf);
 
             /* Strip trailing spaces */

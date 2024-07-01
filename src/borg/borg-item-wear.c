@@ -945,6 +945,7 @@ bool borg_wear_stuff(void)
             /* Evaluate local danger */
             d = borg_danger(borg.c.y, borg.c.x, 1, true, false);
 
+#if 0
             if (borg_cfg[BORG_VERBOSE]) {
                 /* dump list and power...  for debugging */
                 borg_note(format("Trying  Item %s (best power %ld)",
@@ -952,6 +953,7 @@ bool borg_wear_stuff(void)
                 borg_note(format("Against Item %s (borg_power %ld)",
                     safe_items[slot].desc, (long int)b_p));
             }
+#endif
 
             /* Restore the old item */
             memcpy(&borg_items[slot], &safe_items[slot], sizeof(borg_item));

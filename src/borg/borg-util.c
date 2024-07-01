@@ -142,4 +142,29 @@ void borg_sort_swap_hook(void *u, void *v, int a, int b)
     what[b] = whattmp;
 }
 
+/*
+ * get rid of whitespace
+ *    NOTE: this modifies the initial string
+ */
+char *borg_trim(char *line)
+{
+    // Trim leading space
+    while (isspace((unsigned char)*line))
+        line++;
+
+    if (*line == 0) // All spaces?
+        return line;
+
+    // Trim trailing space
+    char *end = line + strlen(line) - 1;
+    while (end > line && isspace((unsigned char)*end))
+        end--;
+
+    // Write new null terminator character
+    end[1] = '\0';
+
+    return line;
+}
+
+
 #endif
