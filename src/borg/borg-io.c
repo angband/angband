@@ -291,7 +291,7 @@ static int16_t    borg_key_tail;
 /*
  * A history of keypresses to be sent
  */
-static keycode_t *borg_key_history;
+static struct keypress  *borg_key_history;
 static int16_t    borg_key_history_head;
 
 /*
@@ -336,28 +336,35 @@ errr borg_keypress(keycode_t k)
 /*
  * Add a keypress to the history of what has been passed back to the game
  */
-void save_keypress_history(keycode_t k)
+void save_keypress_history(struct keypress *kp)
 {
     /* Note the keypress */
     if (borg_cfg[BORG_VERBOSE]) {
-        if (k >= 32 && k <= 126) {
-            borg_note(format("& Key <%c> (0x%02X)", k, k));
+        if (kp->type == EVT_KBRD) {
+            keycode_t k = kp->code;
+            if (k >= 32 && k <= 126) {
+                borg_note(format("& Key <%c> (0x%02X)", k, k));
+            } else {
+                if (k == KC_ENTER)
+                    borg_note(format("& Key <Enter> (0x%02X)", k));
+                else if (k == ESCAPE)
+                    borg_note(format("& Key <Esc> (0x%02X)", k));
+                else
+                    borg_note(format("& Key <0x%02X>", k));
+            }
         } else {
-            if (k == KC_ENTER)
-                borg_note(format("& Key <Enter> (0x%02X)", k));
-            else if (k == ESCAPE)
-                borg_note(format("& Key <Esc> (0x%02X)", k));
-            else
-                borg_note(format("& Key <0x%02X>", k));
+            borg_note(format("& non-Keyboard <0x%02X>", kp->type));
         }
+
     }
 
     /* Store the char, advance the queue */
-    borg_key_history[borg_key_history_head++] = k;
+    borg_key_history[borg_key_history_head].code = kp->code;
+    borg_key_history[borg_key_history_head++].type = kp->type;
 
     /* on full array, keep the last 100 */
     if (borg_key_history_head == KEY_SIZE) {
-        memcpy(borg_key_history, &borg_key_history[KEY_SIZE - 101], sizeof(keycode_t) * 100);
+        memcpy(borg_key_history, &borg_key_history[KEY_SIZE - 101], sizeof(struct keypress) * 100);
         borg_key_history_head = 100;
     }
 }
@@ -455,21 +462,27 @@ char *borg_massage_special_chars(char *name)
 /*
  * print the recent keypresses to the message history
  */
-void borg_dump_recent_keys(void)
+void borg_dump_recent_keys(int num)
 {
     int end = borg_key_history_head;
-    int start = borg_key_history_head < 50 ? 0 : borg_key_history_head - 50;
+    int start = borg_key_history_head < num ? 0 : borg_key_history_head - num;
     for (; start < end; start++) {
-        keycode_t k = borg_key_history[start];
-        if (k >= 32 && k <= 126) {
-            borg_note(format("& Key history <%c> (0x%02X)", k, k));
-        } else {
-            if (k == KC_ENTER)
-                borg_note(format("& Key history <Enter> (0x%02X)", k));
-            else if (k == ESCAPE)
-                borg_note(format("& Key history <Esc> (0x%02X)", k));
-            else
-                borg_note(format("& Key history <0x%02X>", k));
+        struct keypress *kp = &borg_key_history[start];
+        if (kp->type == EVT_KBRD) {
+            keycode_t k = kp->code;
+            if (k >= 32 && k <= 126) {
+                borg_note(format("& Key history <%c> (0x%02X)", k, k));
+            } else {
+                if (k == KC_ENTER)
+                    borg_note(format("& Key history <Enter> (0x%02X)", k));
+                else if (k == ESCAPE)
+                    borg_note(format("& Key history <Esc> (0x%02X)", k));
+                else
+                    borg_note(format("& Key history <0x%02X>", k));
+            }
+        }
+        else {
+            borg_note(format("& non-Keyboard <0x%02X>", kp->type));
         }
     }
 }
@@ -482,7 +495,7 @@ static void borg_bell(game_event_type unused, game_event_data *data, void *user)
 {
     borg_note("** BELL SOUNDED Dumping keypress history ***");
 
-    borg_dump_recent_keys();
+    borg_dump_recent_keys(20);
 
     if (borg_cfg[BORG_STOP_ON_BELL])
         borg_oops("** BELL SOUNDED***");
@@ -495,7 +508,7 @@ void borg_init_io(void)
     borg_key_queue = mem_zalloc(KEY_SIZE * sizeof(keycode_t));
 
     /* Allocate the keypress history */
-    borg_key_history = mem_zalloc(KEY_SIZE * sizeof(keycode_t));
+    borg_key_history = mem_zalloc(KEY_SIZE * sizeof(struct keypress));
 
     /* When the bell goes off, log an error */
     event_add_handler(EVENT_BELL, borg_bell, NULL);

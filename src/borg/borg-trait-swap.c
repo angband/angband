@@ -1114,7 +1114,7 @@ void borg_notice_armour_swap(void)
             b_i               = i;
             b_v               = v;
             armour_swap_value = v;
-            armour_swap       = i - 1;
+            armour_swap       = i + 1;
         }
     }
 

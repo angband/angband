@@ -1214,14 +1214,9 @@ bool borg_think_shop_buy(void)
         borg_keypress(purchase_target);
         borg_keypress('p');
 
-        /* Mega-Hack -- Accept the price */
+        /* Mega-Hack -- Accept the purchase */
         borg_keypress(KC_ENTER);
         borg_keypress(KC_ENTER);
-        borg_keypress(' ');
-        borg_keypress(' ');
-        borg_keypress(ESCAPE);
-        borg_keypress(ESCAPE);
-        borg_keypress(ESCAPE);
 
         /* if the borg is scumming and bought it.,
          * reset the scum amount.

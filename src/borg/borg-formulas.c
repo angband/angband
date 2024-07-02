@@ -33,6 +33,7 @@
 #include "borg-item-val.h"
 #include "borg-magic.h"
 #include "borg-trait.h"
+#include "borg-util.h"
 #include "borg.h"
 
 struct math_section {
@@ -114,30 +115,6 @@ static int borg_get_class(const char *class_name)
             return c->cidx;
     }
     return -1;
-}
-
-/*
- * get rid of whitespace
- *    NOTE: this modifies the initial string
- */
-static char *borg_trim(char *line)
-{
-    // Trim leading space
-    while (isspace((unsigned char)*line))
-        line++;
-
-    if (*line == 0) // All spaces?
-        return line;
-
-    // Trim trailing space
-    char *end = line + strlen(line) - 1;
-    while (end > line && isspace((unsigned char)*end))
-        end--;
-
-    // Write new null terminator character
-    end[1] = '\0';
-
-    return line;
 }
 
 /*

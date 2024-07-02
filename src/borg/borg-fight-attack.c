@@ -3899,14 +3899,13 @@ int borg_calculate_attack_effectiveness(int attack_type)
 
     /* Spell -- Ice Storm */
     case BF_SPELL_COLD_STORM:
-        rad = 3;
         dam = (3 * ((borg.trait[BI_CLEVEL] * 3) + 1)) / 2;
-        return (borg_attack_aux_spell_bolt(
-            ICE_STORM, rad, dam, BORG_ATTACK_ICE, z_info->max_range, false));
+        return (borg_attack_aux_spell_dispel(
+            ICE_STORM, dam, BORG_ATTACK_ICE));
 
     /* Spell -- Meteor Swarm */
     case BF_SPELL_METEOR_SWARM:
-        rad = 3;
+        rad = 1;
         dam = (30 + borg.trait[BI_CLEVEL] / 2) + (borg.trait[BI_CLEVEL] / 20)
               + 2;
         return (borg_attack_aux_spell_bolt(
