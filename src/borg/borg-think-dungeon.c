@@ -1121,6 +1121,32 @@ static bool borg_think_dungeon_brave(void)
     return (false);
 }
 
+/* 
+ * Check if there is an object that needs to be trashed under the borg 
+ * and destroy it 
+ */
+static bool borg_destroy_floor(void)
+{
+    if (!borg_grids[borg.c.y][borg.c.x].take)
+        return false;
+
+    /* double check that there is an object here.  This is simulating doing */
+    /* "look" so it is okay */
+    if (!borg_get_top_object(cave, borg.c))
+        return false;
+
+    borg_take *take = &borg_takes[borg_grids[borg.c.y][borg.c.x].take];
+    if (take->value != -10) 
+        return false;
+
+    /* ignore it now */
+    borg_keypress('k');
+    borg_keypress('-');
+    borg_keypress('a');
+    borg_keypress('a');
+    return true;
+}
+
 /*
  * Perform an action in the dungeon
  *
@@ -1211,18 +1237,9 @@ bool borg_think_dungeon(void)
     }
 
     /* if standing on something valueless, destroy it */
-    if (borg_grids[borg.c.y][borg.c.x].take) {
-        borg_take * take = &borg_takes[borg_grids[borg.c.y][borg.c.x].take];
-        if (take->value == -10) {
-            /* ignore it now */
-            borg_keypress('k');
-            borg_keypress('-');
-            borg_keypress('a');
-            borg_keypress('a');
-            return true;
-        }
-    }
-
+    if (borg_destroy_floor())
+        return true;
+ 
     /* Hack -- prevent clock wrapping Step 2*/
     if (borg_t >= 30000) {
         /* Panic */
