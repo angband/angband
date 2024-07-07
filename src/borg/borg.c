@@ -299,7 +299,6 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* If the first four characters on the message line all */
     /* have the same attribute (or are all spaces), and they */
     /* are not all spaces (ascii value 0x20)... */
-//    if ((0 == borg_what_text(0, 0, 4, &t_a, buf)) && (t_a != COLOUR_DARK)
     if ((t_a != COLOUR_DARK)
         && (buf[0] != ' ' || buf[1] != ' ' || buf[2] != ' ' || buf[3] != ' ')) {
         /* Assume a prompt/message is available */
