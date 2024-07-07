@@ -34,5 +34,12 @@ extern void borg_sort_swap_hook(void *u, void *v, int a, int b);
 extern bool (*borg_sort_comp)(void *u, void *v, int a, int b);
 extern void (*borg_sort_swap)(void *u, void *v, int a, int b);
 
+/*
+ * get rid of leading and trailing whitespace
+ *    NOTE: this modifies the initial string
+ */
+extern char *borg_trim(char *line);
+
+
 #endif
 #endif

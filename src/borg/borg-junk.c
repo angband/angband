@@ -423,7 +423,7 @@ bool borg_crush_junk(void)
         /* Message */
         borg_note(format("# Destroying %s.", item->desc));
 
-        /* inscribe "!borg ignore". The borg crushes all items */
+        /* inscribe "borg ignore". The borg crushes all items */
         /* on the floor that are inscribed this way */
         borg_keypress('{');
         borg_keypress(all_letters_nohjkl[i]);
@@ -878,11 +878,20 @@ bool borg_crush_hole(bool desperate)
         borg_note(format("# Destroying %s.", item->desc));
 
         /* Destroy that item */
-        borg_keypress('k');
+        /* inscribe "borg ignore". The borg crushes all items */
+        /* on the floor that are inscribed this way */
+        borg_keypress('{');
         borg_keypress(all_letters_nohjkl[b_i]);
+        borg_keypresses("borg ignore");
+        borg_keypress(KC_ENTER);
 
-        /* This item only */
-        borg_keypress('a');
+        /* drop it then ignore it */
+        borg_keypress('d');
+        borg_keypress(all_letters_nohjkl[b_i]);
+        if (item->iqty > 1) {
+            borg_keypress('*');
+            borg_keypress(KC_ENTER);
+        }
 
         /* Success */
         return (true);
@@ -1169,12 +1178,21 @@ bool borg_dump_quiver(void)
         /* Log */
         borg_note(format("# Dumping %s.  Bad ammo in quiver.", item->desc));
 
-        /* Drop it */
-        borg_keypress('k');
+        /* inscribe it */
+        borg_keypress('{');
         borg_keypress('|');
         borg_keypress(b_i - QUIVER_START + '0');
-        borg_keypress('a');
-        item->iqty = 0;
+        borg_keypresses("borg ignore");
+        borg_keypress(KC_ENTER);
+
+        /* Drop it */
+        borg_keypress('d');
+        borg_keypress('|');
+        borg_keypress(b_i - QUIVER_START + '0');
+        if (item->iqty > 1) {
+            borg_keypress('*');
+            borg_keypress(KC_ENTER);
+        }
 
         /* Did something */
         borg.time_this_panel++;

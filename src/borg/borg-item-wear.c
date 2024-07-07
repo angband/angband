@@ -386,7 +386,6 @@ bool borg_swap_rings(void)
         if (borg_items[INVEN_RIGHT].iqty) {
             borg_keypress('t');
             borg_keypress(all_letters_nohjkl[INVEN_RIGHT - INVEN_WIELD]);
-            borg_keypress(' ');
         }
 
         /* make sure one is on the left */
@@ -394,7 +393,6 @@ bool borg_swap_rings(void)
             borg_note("# Taking off more valuable left ring.");
             borg_keypress('t');
             borg_keypress(all_letters_nohjkl[INVEN_LEFT - INVEN_WIELD]);
-            borg_keypress(' ');
         }
 
         /* Success */
@@ -947,6 +945,7 @@ bool borg_wear_stuff(void)
             /* Evaluate local danger */
             d = borg_danger(borg.c.y, borg.c.x, 1, true, false);
 
+#if 0
             if (borg_cfg[BORG_VERBOSE]) {
                 /* dump list and power...  for debugging */
                 borg_note(format("Trying  Item %s (best power %ld)",
@@ -954,6 +953,7 @@ bool borg_wear_stuff(void)
                 borg_note(format("Against Item %s (borg_power %ld)",
                     safe_items[slot].desc, (long int)b_p));
             }
+#endif
 
             /* Restore the old item */
             memcpy(&borg_items[slot], &safe_items[slot], sizeof(borg_item));
@@ -1489,8 +1489,6 @@ bool borg_wear_recharge(void)
         borg_keypress(ESCAPE);
         borg_keypress('w');
         borg_keypress(all_letters_nohjkl[b_i]);
-        borg_keypress(' ');
-        borg_keypress(' ');
 
         /* rest for a while */
         borg_keypress('R');
