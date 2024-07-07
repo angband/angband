@@ -26,6 +26,7 @@
 
 #include "borg-cave.h"
 #include "borg-danger.h"
+#include "borg-flow-take.h"
 #include "borg-inventory.h"
 #include "borg-io.h"
 #include "borg-item-analyze.h"
@@ -35,6 +36,37 @@
 #include "borg-power.h"
 #include "borg-trait.h"
 #include "borg.h"
+
+/*
+ * Check if there is an object that needs to be trashed under the borg
+ * and destroy it
+ */
+bool borg_destroy_floor(void)
+{
+    if (!borg_grids[borg.c.y][borg.c.x].take)
+        return false;
+
+    /* double check that there is an object here.  This is simulating doing */
+    /* "look" so it is okay */
+    if (!borg_get_top_object(cave, borg.c))
+        return false;
+
+    borg_take *take = &borg_takes[borg_grids[borg.c.y][borg.c.x].take];
+    if (take->value != -10)
+        return false;
+
+    if (take->kind && take->kind->base)
+        borg_note(format("# Destroying floor item %s%s", take->kind->base->name, take->kind->name));
+    else
+        borg_note("# Destroying floor item.");
+
+    /* ignore it now */
+    borg_keypress('k');
+    borg_keypress('-');
+    borg_keypress('a');
+    borg_keypress('a');
+    return true;
+}
 
 /*
  * Attempt to consume an item as a method of destroying it.
@@ -208,9 +240,9 @@ static bool borg_consume(int i)
 }
 
 /*
- * Destroy "junk" items
+ * Drop "junk" items, marking them for destruction
  */
-bool borg_crush_junk(void)
+bool borg_drop_junk(void)
 {
     int     i;
     bool    fix = false;
@@ -419,9 +451,7 @@ bool borg_crush_junk(void)
             continue;
 
         /* Message */
-        borg_note(format("# Junking junk (valued at %d)", value));
-        /* Message */
-        borg_note(format("# Destroying %s.", item->desc));
+        borg_note(format("# Dropping junk %s (valued at %d)", item->desc, value));
 
         /* inscribe "borg ignore". The borg crushes all items */
         /* on the floor that are inscribed this way */
@@ -455,22 +485,27 @@ bool borg_crush_junk(void)
 }
 
 /*
- * Destroy something to make a free inventory slot.
+ * Drop something to make a free inventory slot.
  *
  * This function evaluates the possible worlds that result from
- * the destruction of each inventory slot, and attempts to destroy
+ * the getting rid of each inventory slot, and attempts to drop from
  * that slot which causes the best possible resulting world.
  *
- * We attempt to avoid destroying unknown items by "rewarding" the
+ * We attempt to avoid dropping unknown items by "rewarding" the
  * presence of unknown items by a massively heuristic value.
  *
- * If the Borg cannot find something to destroy, which should only
+ * The borg makes two attempts to find something to drop.  The first
+ * time important things are never dropped.  The second time, things 
+ * that are somewhat important, like things not identified yet, can be 
+ * considered.
+ * 
+ * If the Borg cannot find something to drop, which should only
  * happen if he fills up with artifacts, then he will probably act
  * rather twitchy for a while.
  *
  * This function does not have to be very efficient.
  */
-bool borg_crush_hole(bool desperate)
+bool borg_drop_hole(bool desperate)
 {
     int     i, b_i = -1;
     int32_t p, b_p = 0L;
@@ -875,9 +910,9 @@ bool borg_crush_hole(bool desperate)
             return (true);
 
         /* Message */
-        borg_note(format("# Destroying %s.", item->desc));
+        borg_note(format("# Dropping %s.", item->desc));
 
-        /* Destroy that item */
+        /* Drop that item */
         /* inscribe "borg ignore". The borg crushes all items */
         /* on the floor that are inscribed this way */
         borg_keypress('{');
@@ -885,7 +920,7 @@ bool borg_crush_hole(bool desperate)
         borg_keypresses("borg ignore");
         borg_keypress(KC_ENTER);
 
-        /* drop it then ignore it */
+        /* drop it */
         borg_keypress('d');
         borg_keypress(all_letters_nohjkl[b_i]);
         if (item->iqty > 1) {
@@ -900,20 +935,20 @@ bool borg_crush_hole(bool desperate)
     /* if we got to here, we need to make room but have nothing we can crush */
     /* try again but allow more things to be crushed */
     if (!desperate)
-        return borg_crush_hole(true);
+        return borg_drop_hole(true);
 
     return false;
 }
 
 /*
- * Destroy "junk" when slow (in the dungeon).
+ * Drop "junk" when slow (in the dungeon).
  *
  * We penalize the loss of both power and monetary value, and reward
  * the loss of weight that may be slowing us down.  The weight loss
  * is worth one gold per tenth of a pound.  This causes things like
  * lanterns and chests and spikes to be considered "annoying".
  */
-bool borg_crush_slow(void)
+bool borg_drop_slow(void)
 {
     int     i, b_i = -1;
     int32_t p, b_p = 0L;
@@ -1061,7 +1096,7 @@ bool borg_crush_slow(void)
             return (true);
 
         /* Message */
-        borg_note(format("# Destroying %s.", item->desc));
+        borg_note(format("# Dropping %s.", item->desc));
 
         /* inscribe "borg ignore". The borg crushes all items */
         /* on the floor that are inscribed this way */
@@ -1210,8 +1245,8 @@ bool borg_dump_quiver(void)
  *
  * Basically, we evaluate the world both with the current set of
  * equipment, and in the alternate world in which various items
- * are removed, and we take
- * one step towards the world in which we have the most "power".
+ * are removed, and we take one step towards the world in which 
+ * we have the most "power".
  */
 bool borg_remove_stuff(void)
 {

@@ -211,7 +211,7 @@ static bool borg_think_dungeon_lunal(void)
         return (true);
 
     /* Crush junk if convenient */
-    if (safe_place && borg_crush_junk())
+    if (safe_place && borg_drop_junk())
         return (true);
 
     /** Track down some interesting gear **/
@@ -554,7 +554,7 @@ static bool borg_think_dungeon_munchkin(void)
         return (true);
 
     /* Crush junk if convenient */
-    if (safe_place && borg_crush_junk())
+    if (safe_place && borg_drop_junk())
         return (true);
 
     /* Learn learn and test useful spells */
@@ -1121,32 +1121,6 @@ static bool borg_think_dungeon_brave(void)
     return (false);
 }
 
-/* 
- * Check if there is an object that needs to be trashed under the borg 
- * and destroy it 
- */
-static bool borg_destroy_floor(void)
-{
-    if (!borg_grids[borg.c.y][borg.c.x].take)
-        return false;
-
-    /* double check that there is an object here.  This is simulating doing */
-    /* "look" so it is okay */
-    if (!borg_get_top_object(cave, borg.c))
-        return false;
-
-    borg_take *take = &borg_takes[borg_grids[borg.c.y][borg.c.x].take];
-    if (take->value != -10) 
-        return false;
-
-    /* ignore it now */
-    borg_keypress('k');
-    borg_keypress('-');
-    borg_keypress('a');
-    borg_keypress('a');
-    return true;
-}
-
 /*
  * Perform an action in the dungeon
  *
@@ -1589,7 +1563,7 @@ bool borg_think_dungeon(void)
             return (true);
 
         /* If full of items, we wont be able to buy stuff, crush stuff */
-        if (borg_items[PACK_SLOTS - 1].iqty && borg_crush_hole(false))
+        if (borg_items[PACK_SLOTS - 1].iqty && borg_drop_hole(false))
             return (true);
 
         if (borg_choose_shop()) {
@@ -1882,15 +1856,15 @@ bool borg_think_dungeon(void)
         return (true);
 
     /* Destroy junk */
-    if (borg_crush_junk())
+    if (borg_drop_junk())
         return (true);
 
     /* Destroy items to make space */
-    if (borg_crush_hole(false))
+    if (borg_drop_hole(false))
         return (true);
 
     /* Destroy items if we are slow */
-    if (borg_crush_slow())
+    if (borg_drop_slow())
         return (true);
 
     /*** Flow towards objects ***/
