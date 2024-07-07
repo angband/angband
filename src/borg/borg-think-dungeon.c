@@ -1855,15 +1855,15 @@ bool borg_think_dungeon(void)
     if (borg_recharging())
         return (true);
 
-    /* Destroy junk */
+    /* Drop junk */
     if (borg_drop_junk())
         return (true);
 
-    /* Destroy items to make space */
+    /* Drop items to make space */
     if (borg_drop_hole(false))
         return (true);
 
-    /* Destroy items if we are slow */
+    /* Drop items if we are slow */
     if (borg_drop_slow())
         return (true);
 
