@@ -290,8 +290,10 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* get everything on the message line */
     buf = buffer;
     borg_what_text(0, 0, ((Term->wid - 1) / (tile_width)), &t_a, buffer);
+#if 0
     if (borg_cfg[BORG_VERBOSE])
         borg_note(format("got message '%s'", buf));
+#endif
     /* Trim whitespace */
     buf = borg_trim(buf);
 
@@ -481,23 +483,27 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* And there is text before the cursor... */
     /* And that text is "-more-" */
     buf = buffer;
-    if (borg_prompt && !inkey_flag && (y == 0) && (x >= 7)
-        && (0 == borg_what_text(x - 7, y, 7, &t_a, buffer))
-        && (suffix(buf, " -more-"))) {
+    if (borg_prompt && !inkey_flag && (y == 0) && (x >= 7)) {
+        int width = ((Term->wid - 1) / (tile_width));
+        int msg_len = strlen(buf);
+        int nchars = ((width - msg_len) > 6) ? 6 : (width - msg_len);
+        if (0 == borg_what_text(x - nchars, y, nchars, &t_a, buffer)) {
+            if (0 == strncmp(buffer, "-more-", nchars)) {
+                if (borg_cfg[BORG_VERBOSE])
+                    borg_note("# message with -more-");
 
-        if (borg_cfg[BORG_VERBOSE])
-            borg_note("# message with -more-");
-
-        /* Get the message */
-        if (0 == borg_what_text(0, 0, x - 7, &t_a, buffer)) {
-            /* Parse it */
-            borg_parse(buf);
+                /* Get the message */
+                if (0 == borg_what_text(0, 0, x - 7, &t_a, buffer)) {
+                    /* Parse it */
+                    borg_parse(buf);
+                }
+                /* Clear the message */
+                if (borg_cfg[BORG_VERBOSE])
+                    borg_note("clearing -more-");
+                key.code = ' ';
+                return key;
+            }
         }
-        /* Clear the message */
-        if (borg_cfg[BORG_VERBOSE])
-            borg_note("clearing -more-");
-        key.code = ' ';
-        return key;
     }
 
     /* in the odd case where a we get here before the message */
