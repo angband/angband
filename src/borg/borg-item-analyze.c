@@ -261,6 +261,61 @@ static int32_t borg_object_value_known(borg_item *item)
 }
 
 /*
+ * Guess the value of un-id'd items
+ */
+static int32_t borg_object_value_guess(borg_item *item)
+{
+    int32_t value;
+
+    /* Guess at value */
+    switch (item->tval) {
+    case TV_FOOD:
+        value = 5L;
+        break;
+    case TV_POTION:
+        value = 20L;
+        break;
+    case TV_SCROLL:
+        value = 20L;
+        break;
+    case TV_STAFF:
+        value = 70L;
+        break;
+    case TV_WAND:
+        value = 50L;
+        break;
+    case TV_ROD:
+        value = 90L;
+        break;
+    case TV_RING:
+    case TV_AMULET:
+        value = 45L;
+
+        /* Hack -- negative bonuses are bad */
+        if (item->to_a < 0)
+            value = 0;
+        if (item->to_h < 0)
+            value = 0L;
+        if (item->to_d < 0)
+            value = 0L;
+        break;
+    default:
+        value = 20L;
+
+        /* Hack -- negative bonuses are bad */
+        if (item->to_a < 0)
+            value = 0;
+        if (item->to_h < 0)
+            value = 0L;
+        if (item->to_d < 0)
+            value = 0L;
+        break;
+    }
+
+    return value;
+}
+
+/*
  * Convert from the object slays structure to a basic multiplier per race
  */
 static void borg_set_slays(borg_item *item, const struct object *o)
@@ -536,34 +591,7 @@ void borg_item_analyze(
     } else if (item->aware) {
         item->value = o->kind->cost;
     } else {
-        /* Guess at value */
-        switch (item->tval) {
-        case TV_FOOD:
-            item->value = 5L;
-            break;
-        case TV_POTION:
-            item->value = 20L;
-            break;
-        case TV_SCROLL:
-            item->value = 20L;
-            break;
-        case TV_STAFF:
-            item->value = 70L;
-            break;
-        case TV_WAND:
-            item->value = 50L;
-            break;
-        case TV_ROD:
-            item->value = 90L;
-            break;
-        case TV_RING:
-        case TV_AMULET:
-            item->value = 45L;
-            break;
-        default:
-            item->value = 20L;
-            break;
-        }
+        item->value = borg_object_value_guess(item);
     }
 
     /* If it's not The One Ring, then it's worthless if cursed */
