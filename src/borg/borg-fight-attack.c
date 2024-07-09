@@ -3575,7 +3575,9 @@ static int borg_attack_aux_vampire_strike(void)
                 y2 = borg_temp_y[i] + o_y;
 
                 ag = &borg_grids[y2][x2];
-                if (!ag->kill && ag->feat == FEAT_FLOOR
+                if (!ag->kill && ag->feat == FEAT_FLOOR 
+                    && !ag->web
+                    && !ag->glyph
                     && (y2 != borg.c.y || x2 != borg.c.x))
                     found = true;
             }

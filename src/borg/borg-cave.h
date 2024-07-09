@@ -74,6 +74,7 @@ struct borg_grid {
     uint16_t info; /* Grid flags */
     bool     trap;
     bool     glyph;
+    bool     web;
     uint8_t  store;
 
     uint8_t  take; /* Object index */

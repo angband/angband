@@ -508,6 +508,11 @@ static void borg_update_map(void)
                 }
             }
 
+            if (ag->feat == FEAT_FLOOR && square_iswebbed(cave, l)) {
+                ag->web = true;
+            } else
+                ag->web = false;          
+
             /* Now do non-feature stuff */
             if ((g.first_kind || g.m_idx) && !borg.trait[BI_ISIMAGE]) {
                 /* Monsters/Objects */

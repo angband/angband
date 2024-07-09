@@ -348,6 +348,10 @@ bool borg_caution_phase(int emergency, int turns)
             if (ag->kill)
                 continue;
 
+            /* Skip webs */
+            if (ag->web)
+                continue;
+
             /* Stop looking */
             break;
         }
@@ -446,6 +450,10 @@ bool borg_caution_teleport(int emergency, int turns)
 
             /* Skip monsters */
             if (ag->kill)
+                continue;
+
+            /* Skip webs */
+            if (ag->web)
                 continue;
 
             /* Stop looking */
