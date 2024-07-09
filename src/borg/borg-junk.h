@@ -26,19 +26,24 @@
 #ifdef ALLOW_BORG
 
 /*
+ * Destroy a junky floor item
+ */
+extern bool borg_destroy_floor(void);
+
+/*
  * Destroy "junk" items
  */
-extern bool borg_crush_junk(void);
+extern bool borg_drop_junk(void);
 
 /*
  * Destroy something to make a free inventory slot.
  */
-extern bool borg_crush_hole(bool desperate);
+extern bool borg_drop_hole(bool desperate);
 
 /*
  * Destroy "junk" when slow (in the dungeon).
  */
-extern bool borg_crush_slow(void);
+extern bool borg_drop_slow(void);
 
 /*
  * Examine the quiver and dump any worthless items
