@@ -396,6 +396,56 @@ static void msg_flush(int x)
 	Term_erase(0, 0, 255);
 }
 
+/**
+ * Like msg_flush() but split what has already been pushed to the Term's
+ * buffer to make room for the "-more-" prompt.
+ *
+ * \param w is the number of columns in the terminal
+ * \param x points to the integer storing the column where the next
+ * message will start.
+ */
+static void msg_flush_split_existing(int w, int *x)
+{
+	/* Default place to split what's there */
+	int split = MIN(*x, w - 8);
+	wchar_t *svc = NULL;
+	int *sva = NULL;
+	int i;
+
+	/* Find the rightmost split point. */
+	for (i = w / 2; i < MIN(*x, w - 8); ++i) {
+		int a;
+		wchar_t c;
+
+		Term_what(i, 0, &a, &c);
+		if (c == L' ') {
+			split = i;
+		}
+	}
+
+	/* Remember what's on and after the split point. */
+	*x -= split;
+	if (*x > 0) {
+		svc = mem_alloc(*x * sizeof(*svc));
+		sva = mem_alloc(*x * sizeof(*sva));
+		for (i = 0; i < *x; ++i) {
+			Term_what(i + split, 0, &sva[i], &svc[i]);
+		}
+	}
+
+	Term_erase(split + 1, 0, w);
+	msg_flush(split + 1);
+
+	/* Put back what was remembered. */
+	if (*x > 0) {
+		for (i = 0; i < *x; ++i) {
+			Term_putch(i, 0, sva[i], svc[i]);
+		}
+		mem_free(sva);
+		mem_free(svc);
+	}
+}
+
 static int message_column = 0;
 
 
@@ -465,13 +515,15 @@ void display_message(game_event_type unused, game_event_data *data, void *user)
 	/* Hack -- flush when requested or needed */
 	if (message_column && (!msg || ((message_column + n) > (w - 8)))) {
 		/* Flush */
-		msg_flush(message_column);
+		if (message_column <= w - 8) {
+			msg_flush(message_column);
+			message_column = 0;
+		} else {
+			msg_flush_split_existing(w, &message_column);
+		}
 
 		/* Forget it */
 		msg_flag = false;
-
-		/* Reset */
-		message_column = 0;
 	}
 
 	/* No message */
@@ -490,17 +542,19 @@ void display_message(game_event_type unused, game_event_data *data, void *user)
 	color = message_type_color(type);
 
 	/* Split message */
-	while (n > w - 1) {
+	while (message_column + n > w - 1) {
 		char oops;
 
 		int check, split;
 
 		/* Default split */
-		split = w - 8;
+		split = MAX(w - 8 - message_column, 0);
 
 		/* Find the rightmost split point */
-		for (check = (w / 2); check < w - 8; check++)
+		for (check = MAX(w / 2 - message_column, 0);
+				check < w - 8; check++) {
 			if (t[check] == ' ') split = check;
+		}
 
 		/* Save the split character */
 		oops = t[split];
@@ -509,7 +563,7 @@ void display_message(game_event_type unused, game_event_data *data, void *user)
 		t[split] = '\0';
 
 		/* Display part of the message */
-		Term_putstr(0, 0, split, color, t);
+		Term_putstr(message_column, 0, split, color, t);
 
 		/* Flush it */
 		msg_flush(split + 1);
@@ -521,7 +575,7 @@ void display_message(game_event_type unused, game_event_data *data, void *user)
 		t[--split] = ' ';
 
 		/* Prepare to recurse on the rest of "buf" */
-		t += split; n -= split;
+		t += split; n -= split; message_column = 0;
 	}
 
 	/* Display the tail of the message */
@@ -557,8 +611,17 @@ void message_flush(game_event_type unused, game_event_data *data, void *user)
 	/* Flush when needed */
 	if (message_column) {
 		/* Print pending messages */
-		if (Term)
-			msg_flush(message_column);
+		if (Term) {
+			int w, h;
+
+			(void)Term_get_size(&w, &h);
+			while (message_column > w - 8) {
+				msg_flush_split_existing(w, &message_column);
+			}
+			if (message_column) {
+				msg_flush(message_column);
+			}
+		}
 
 		/* Forget it */
 		msg_flag = false;
