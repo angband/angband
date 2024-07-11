@@ -179,6 +179,11 @@ extern void borg_near_monster_type(int dist);
  */
 extern bool borg_shoot_scoot_safe(int emergency, int turns, int b_p);
 
+/*
+ *  Create a kill at the given location
+ */
+extern int  borg_create_kill(char *who, struct loc c);
+
 extern void borg_init_flow_kill(void);
 extern void borg_free_flow_kill(void);
 

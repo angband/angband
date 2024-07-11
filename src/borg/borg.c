@@ -290,8 +290,10 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* get everything on the message line */
     buf = buffer;
     borg_what_text(0, 0, ((Term->wid - 1) / (tile_width)), &t_a, buffer);
+#if 0
     if (borg_cfg[BORG_VERBOSE])
         borg_note(format("got message '%s'", buf));
+#endif
     /* Trim whitespace */
     buf = borg_trim(buf);
 

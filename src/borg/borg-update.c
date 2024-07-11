@@ -1522,9 +1522,14 @@ void borg_update(void)
         kill->seen = false;
         kill->used = false;
 
-        /* Skip recently seen monsters except if hallucinating */
-        if (borg_t - kill->when < 2000 && !borg.trait[BI_ISIMAGE])
-            continue;
+        /* Skip recently seen monsters */
+        if (borg_t - kill->when < 2000) {
+            /* don't skip if hallucinating unless also afraid */
+            /* we don't delete kills in this special case so we don't */
+            /* get trapped by monsters we are afraid to attack */
+            if (!(borg.trait[BI_ISIMAGE] && borg.trait[BI_ISAFRAID]))
+                continue;
+        }
 
         /* Note */
         borg_note(format("# Expiring a monster '%s' (%d) at (%d,%d)",
@@ -1634,6 +1639,16 @@ void borg_update(void)
             /* Attempt to find the monster */
             if ((k = borg_locate_kill(what, borg.goal.g, 0)) > 0) {
                 borg_msg_use[i] = 2;
+            }
+        }
+
+        /* Handle "You too afraid of xxx." */
+        else if (prefix(msg, "AFRAID:")) {
+            /* Attempt to find the monster */
+            if (borg_grids[borg.goal.g.y][borg.goal.g.x].kill > 0) {
+                borg_msg_use[i] = 2;
+            } else {
+                borg_create_kill(what, borg.goal.g);
             }
         }
 

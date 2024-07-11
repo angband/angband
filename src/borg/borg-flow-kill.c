@@ -3074,6 +3074,15 @@ bool borg_shoot_scoot_safe(int emergency, int turns, int b_p)
     return (true);
 }
 
+/*
+ *  Create a kill at the given location
+ */
+int borg_create_kill(char *who, struct loc c)
+{
+    return borg_new_kill(borg_guess_race_name(who), c.y, c.x);
+}
+
+
 static void borg_init_monster_names(void)
 {
     int      i, size;
