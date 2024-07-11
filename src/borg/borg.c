@@ -480,15 +480,15 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* And there is text before the cursor... */
     /* And that text is "-more-" */
     buf = buffer;
-    if (borg_prompt && !inkey_flag && (y == 0) && (x >= 7)
-        && (0 == borg_what_text(x - 7, y, 7, &t_a, buffer))
-        && (suffix(buf, " -more-"))) {
+    if (borg_prompt && !inkey_flag && (y == 0) && (x >= 6)
+        && (0 == borg_what_text(x - 6, y, 6, &t_a, buffer))
+        && (suffix(buf, "-more-"))) {
 
         if (borg_cfg[BORG_VERBOSE])
             borg_note("# message with -more-");
 
         /* Get the message */
-        if (0 == borg_what_text(0, 0, x - 7, &t_a, buffer)) {
+        if (0 == borg_what_text(0, 0, x - 6, &t_a, buffer)) {
             /* Parse it */
             borg_parse(buf);
         }
