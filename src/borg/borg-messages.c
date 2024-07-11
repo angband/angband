@@ -280,73 +280,15 @@ static void borg_parse_aux(char *msg, int len)
         return;
     }
 
-#if false
-
-    /* need to check stat */
-    if (prefix(msg, "You feel very") || prefix(msg, "You feel less")
-        || prefix(msg, "Wow!  You feel very")) {
-        /* need to check str */
-        if (prefix(msg, "You feel very weak")) {
-            my_need_stat_check[STAT_STR] = true;
-        }
-        if (prefix(msg, "You feel less weak")) {
-            my_need_stat_check[STAT_STR] = true;
-        }
-        if (prefix(msg, "Wow!  You feel very strong")) {
-            my_need_stat_check[STAT_STR] = true;
-        }
-
-        /* need to check int */
-        if (prefix(msg, "You feel very stupid")) {
-            my_need_stat_check[STAT_INT] = true;
-        }
-        if (prefix(msg, "You feel less stupid")) {
-            my_need_stat_check[STAT_INT] = true;
-        }
-        if (prefix(msg, "Wow!  You feel very smart")) {
-            my_need_stat_check[STAT_INT] = true;
-        }
-
-        /* need to check wis */
-        if (prefix(msg, "You feel very naive")) {
-            my_need_stat_check[STAT_WIS] = true;
-        }
-        if (prefix(msg, "You feel less naive")) {
-            my_need_stat_check[STAT_WIS] = true;
-        }
-        if (prefix(msg, "Wow!  You feel very wise")) {
-            my_need_stat_check[STAT_WIS] = true;
-        }
-
-        /* need to check dex */
-        if (prefix(msg, "You feel very clumsy")) {
-            my_need_stat_check[STAT_DEX] = true;
-        }
-        if (prefix(msg, "You feel less clumsy")) {
-            my_need_stat_check[STAT_DEX] = true;
-        }
-        if (prefix(msg, "Wow!  You feel very dextrous")) {
-            my_need_stat_check[STAT_DEX] = true;
-        }
-
-        /* need to check con */
-        if (prefix(msg, "You feel very sickly")) {
-            my_need_stat_check[STAT_CON] = true;
-        }
-        if (prefix(msg, "You feel less sickly")) {
-            my_need_stat_check[STAT_CON] = true;
-        }
-        if (prefix(msg, "Wow!  You feel very healthy")) {
-            my_need_stat_check[STAT_CON] = true;
-        }
+    if (prefix(msg, "You are too afraid to attack ")) {
+        tmp = strlen("You are too afraid to attack ");
+        strnfmt(who, 1 + len - (tmp + 1), "%s", msg + tmp);
+        strnfmt(buf, 256, "AFRAID:%s", who);
+        borg_react(msg, buf);
+        return;
     }
 
-    /* time attacks, just do all stats. */
-    if (prefix(msg, "You're not as")) {
-        for (i = 0; i < STAT_MAX; i++)
-            my_need_stat_check[i] = true;
-    }
-#endif
+
     /* Nexus attacks, need to check everything! */
     if (prefix(msg, "Your body starts to scramble...")) {
         for (i = 0; i < STAT_MAX; i++) {
