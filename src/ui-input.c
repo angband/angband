@@ -433,7 +433,7 @@ static void msg_flush_split_existing(int w, int *x)
 		}
 	}
 
-	Term_erase(split + 1, 0, w);
+	Term_erase(split, 0, w);
 	msg_flush(split + 1);
 
 	/* Put back what was remembered. */
