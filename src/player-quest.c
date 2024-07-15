@@ -244,7 +244,7 @@ bool quest_check(struct player *p, const struct monster *m)
 		p->upkeep->redraw |= (PR_TITLE);
 		msg("*** CONGRATULATIONS ***");
 		msg("You have won the game!");
-		msg("You may retire (commit suicide) when you are ready.");
+		msg("You may retire (key is shift-q) when you are ready.");
 	}
 
 	return true;
