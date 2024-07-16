@@ -2892,11 +2892,15 @@ void borg_notice(bool notice_swap)
     /* set if we are preparing for fighting morgoth or sauron */
     borg.trait[BI_PREP_BIG_FIGHT] = false;
     if (borg.trait[BI_MAXDEPTH] >= 99) {
+
+        /* Examine the home */
+        borg_notice_home(NULL, false);
+
         /* pot of healing + *healing* */
         int total_big_heal = borg.has[kv_potion_healing];
         total_big_heal += borg.trait[BI_AEZHEAL];
         /* plus the same at home */
-        total_big_heal = num_heal_true;
+        total_big_heal += num_heal_true;
         total_big_heal += num_ezheal_true;
         /* want bunches of heal and speed to feel prepped for the fight */
         if (total_big_heal < 30 || (num_speed + borg.trait[BI_ASPEED]) < 15)
