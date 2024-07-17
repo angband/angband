@@ -552,7 +552,7 @@ void display_message(game_event_type unused, game_event_data *data, void *user)
 
 		/* Find the rightmost split point */
 		for (check = MAX(w / 2 - message_column, 0);
-				check < w - 8; check++) {
+				check < w - 8 - message_column; check++) {
 			if (t[check] == ' ') split = check;
 		}
 
@@ -566,7 +566,7 @@ void display_message(game_event_type unused, game_event_data *data, void *user)
 		Term_putstr(message_column, 0, split, color, t);
 
 		/* Flush it */
-		msg_flush(split + 1);
+		msg_flush(message_column + split + 1);
 
 		/* Restore the split character */
 		t[split] = oops;
