@@ -130,10 +130,10 @@ static bool borg_follow_take_aux(int i, int y, int x)
 
     /* Not on-screen */
     if (!(ag->info & BORG_OKAY))
-        return (false);
+        return false;
 
     /* Assume viewable */
-    return (true);
+    return true;
 }
 
 /*
@@ -283,7 +283,7 @@ static int borg_new_take(struct object_kind *kind, int y, int x)
     ag->feat = FEAT_FLOOR;
 
     /* Result */
-    return (n);
+    return n;
 }
 
 /*
@@ -301,11 +301,11 @@ bool observe_take_diff(int y, int x, uint8_t a, wchar_t c)
 
     /* Oops */
     if (!kind)
-        return (false);
+        return false;
 
     /* no new takes if hallucinations */
     if (borg.trait[BI_ISIMAGE])
-        return (false);
+        return false;
 
     /* Make a new object */
     i = borg_new_take(kind, y, x);
@@ -317,7 +317,7 @@ bool observe_take_diff(int y, int x, uint8_t a, wchar_t c)
     take->when = borg_t;
 
     /* Okay */
-    return (true);
+    return true;
 }
 
 /*
@@ -405,11 +405,11 @@ bool observe_take_move(int y, int x, int d, uint8_t a, wchar_t c)
         borg_grids[take->y][take->x].feat = FEAT_FLOOR;
 
         /* Done */
-        return (true);
+        return true;
     }
 
     /* Oops */
-    return (false);
+    return false;
 }
 
 /*
@@ -435,23 +435,23 @@ bool borg_flow_take(bool viewable, int nearness)
 
     /* Efficiency -- Nothing to take */
     if (!borg_takes_cnt)
-        return (false);
+        return false;
 
     /* Require one empty slot */
     if (borg_items[PACK_SLOTS - 1].iqty)
-        return (false);
+        return false;
 
     /* If ScaryGuy, no chasing down items */
     if (scaryguy_on_level)
-        return (false);
+        return false;
 
     /* If out of fuel, don't mess around */
     if (!borg.trait[BI_CURLITE])
-        return (false);
+        return false;
 
     /* Not if sitting in a sea of runes */
     if (borg_morgoth_position)
-        return (false);
+        return false;
 
     /* increase leash */
     if (borg.trait[BI_CLEVEL] >= 20)
@@ -553,7 +553,7 @@ bool borg_flow_take(bool viewable, int nearness)
 
     /* Nothing to take */
     if (!borg_temp_n)
-        return (false);
+        return false;
 
     /* Clear the flow codes */
     borg_flow_clear();
@@ -572,14 +572,14 @@ bool borg_flow_take(bool viewable, int nearness)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit("item", GOAL_TAKE))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(GOAL_TAKE))
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -598,11 +598,11 @@ bool borg_flow_take_scum(bool viewable, int nearness)
 
     /* Efficiency -- Nothing to take */
     if (!borg_takes_cnt)
-        return (false);
+        return false;
 
     /* Require one empty slot */
     if (borg_items[PACK_SLOTS - 1].iqty)
-        return (false);
+        return false;
 
     /* Nothing yet */
     borg_temp_n = 0;
@@ -661,7 +661,7 @@ bool borg_flow_take_scum(bool viewable, int nearness)
 
     /* Nothing to take */
     if (!borg_temp_n)
-        return (false);
+        return false;
 
     /* Clear the flow codes */
     borg_flow_clear();
@@ -680,14 +680,14 @@ bool borg_flow_take_scum(bool viewable, int nearness)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit("Scum item", GOAL_TAKE))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(GOAL_TAKE))
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -706,7 +706,7 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
 
     /* Efficiency -- Nothing to take */
     if (!borg_takes_cnt)
-        return (false);
+        return false;
 
     /* Check for an existing "up stairs" */
     for (i = 0; i < track_less.num; i++) {
@@ -854,7 +854,7 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
 
     /* Nothing to take */
     if (!borg_temp_n)
-        return (false);
+        return false;
 
     /* Clear the flow codes */
     borg_flow_clear();
@@ -873,18 +873,18 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit("munchkin item", GOAL_TAKE))
-        return (false);
+        return false;
 
     /* Check for monsters before walking over to the item */
     if (borg_check_light())
-        return (true);
+        return true;
 
     /* Take one step */
     if (!borg_flow_old(GOAL_TAKE))
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 void borg_init_flow_take(void)

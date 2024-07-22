@@ -67,9 +67,6 @@ int bought_item_nxt = 0;
  */
 static bool borg_good_buy(borg_item *item, int who, int ware)
 {
-    int  p;
-    bool dungeon_book = false;
-
     /* Check the object */
     switch (item->tval) {
     case TV_SHOT:
@@ -77,9 +74,9 @@ static bool borg_good_buy(borg_item *item, int who, int ware)
     case TV_BOLT:
         if (borg.trait[BI_CLEVEL] < 35) {
             if (item->to_h)
-                return (false);
+                return false;
             if (item->to_d)
-                return (false);
+                return false;
         }
         break;
 
@@ -87,21 +84,11 @@ static bool borg_good_buy(borg_item *item, int who, int ware)
     case TV_MAGIC_BOOK:
     case TV_NATURE_BOOK:
     case TV_SHADOW_BOOK:
-    case TV_OTHER_BOOK: {
-        int i;
+    case TV_OTHER_BOOK: 
         /* not our book */
         if (!obj_kind_can_browse(&k_info[item->kind]))
-            return (false);
-
-        /* keep track of if this is a book from the dungeon */
-        for (i = 0; i < player->class->magic.num_books; i++) {
-            struct class_book book = player->class->magic.books[i];
-            if (item->tval == book.tval && item->sval == book.sval
-                && book.dungeon) {
-                dungeon_book = true;
-            }
-        }
-    } break;
+            return false;
+        break;
     }
 
     /* Don't buy from the BM until we are rich */
@@ -109,7 +96,7 @@ static bool borg_good_buy(borg_item *item, int who, int ware)
         /* buying Remove Curse scroll is acceptable */
         if (item->tval == TV_SCROLL && item->sval == sv_scroll_remove_curse
             && borg.trait[BI_FIRST_CURSED])
-            return (true);
+            return true;
 
         /* Buying certain special items are acceptable */
         if ((item->tval == TV_POTION
@@ -146,7 +133,7 @@ static bool borg_good_buy(borg_item *item, int who, int ware)
                         && (!borg.trait[BI_ALITE]))))
             || (obj_kind_can_browse(&k_info[item->kind])
                 && borg.amt_book[borg_get_book_num(item->sval)] == 0
-                && dungeon_book)
+                && borg_is_dungeon_book(item->tval, item->sval))
             || (item->tval == TV_SCROLL
                 && (item->sval == sv_scroll_teleport_level
                     || item->sval == sv_scroll_teleport))) {
@@ -169,25 +156,25 @@ static bool borg_good_buy(borg_item *item, int who, int ware)
             }
 
             /* Ok to buy this */
-            return (true);
+            return true;
         }
 
         if ((borg.trait[BI_CLEVEL] < 15) && (borg.trait[BI_GOLD] < 20000))
-            return (false);
+            return false;
         if ((borg.trait[BI_CLEVEL] < 35) && (borg.trait[BI_GOLD] < 15000))
-            return (false);
+            return false;
         if (borg.trait[BI_GOLD] < 10000)
-            return (false);
+            return false;
     }
 
     /* do not buy the item if I just sold it. */
-    for (p = 0; p < sold_item_num; p++) {
+    for (int p = 0; p < sold_item_num; p++) {
 
         if (sold_item_tval[p] == item->tval && sold_item_sval[p] == item->sval
             && sold_item_store[p] == who) {
             if (borg_cfg[BORG_VERBOSE])
                 borg_note(format("# Choosing not to buy back %s", item->desc));
-            return (false);
+            return false;
         }
     }
 
@@ -201,12 +188,12 @@ static bool borg_good_buy(borg_item *item, int who, int ware)
 
             /* skip non diggers */
             if (item2->tval == TV_DIGGING)
-                return (false);
+                return false;
 #if 0
             /* perhaps let him buy a digger with a better
              * pval than his current digger
              */
-            { if (item->pval <= item2->pval) return (false); }
+            { if (item->pval <= item2->pval) return false; }
 #endif
         }
     }
@@ -215,18 +202,18 @@ static bool borg_good_buy(borg_item *item, int who, int ware)
     if (borg.trait[BI_MAXCLEVEL] < 5) {
         /* next book, cant read it */
         if (obj_kind_can_browse(&k_info[item->kind]) && item->sval >= 1)
-            return (false);
+            return false;
     }
 
     /* Not direct spell casters and the extra books */
     /* classes that are direct spell casters get more than 3 books */
-    if ((player->class->magic.num_books < 4) && borg.trait[BI_MAXCLEVEL] <= 8) {
+    if (!borg_primarily_caster() && borg.trait[BI_MAXCLEVEL] <= 8) {
         if (obj_kind_can_browse(&k_info[item->kind]) && item->sval >= 1)
-            return (false);
+            return false;
     }
 
     /* Okay */
-    return (true);
+    return true;
 }
 
 /*
@@ -252,7 +239,7 @@ bool borg_think_shop_buy_useful(void)
 
     /* Already have a target 9-4-05*/
     if (borg.goal.ware != -1)
-        return (false);
+        return false;
 
     /* Extract the "power" */
     b_p = borg.power;
@@ -438,11 +425,11 @@ bool borg_think_shop_buy_useful(void)
         borg.goal.ware = b_n;
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Nope */
-    return (false);
+    return false;
 }
 
 /*
@@ -710,11 +697,11 @@ bool borg_think_home_buy_useful(void)
         borg.goal.ware = b_n;
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Nope */
-    return (false);
+    return false;
 }
 
 /*
@@ -733,11 +720,11 @@ bool borg_think_shop_grab_interesting(void)
 
     /* Don't do this if Sauron is dead */
     if (borg.trait[BI_SAURON_DEAD])
-        return (false);
+        return false;
 
     /* not until later-- use that money for better equipment */
     if (borg.trait[BI_CLEVEL] < 15)
-        return (false);
+        return false;
 
     /* get what an empty home would have for power */
     borg_notice_home(NULL, true);
@@ -747,9 +734,9 @@ bool borg_think_shop_grab_interesting(void)
 
     /* Require two empty slots */
     if (hole == -1)
-        return (false);
+        return false;
     if (hole + 1 >= PACK_SLOTS)
-        return (false);
+        return false;
 
     /* Examine the home */
     borg_notice_home(NULL, false);
@@ -842,11 +829,11 @@ bool borg_think_shop_grab_interesting(void)
         borg.goal.ware = b_n;
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Nope */
-    return (false);
+    return false;
 }
 
 /*
@@ -862,9 +849,9 @@ bool borg_think_home_grab_useless(void)
 
     /* Require two empty slots */
     if (hole == -1)
-        return (false);
+        return false;
     if (hole + 1 >= PACK_SLOTS)
-        return (false);
+        return false;
 
     /* Examine the home */
     borg_notice_home(NULL, false);
@@ -934,11 +921,11 @@ bool borg_think_home_grab_useless(void)
         borg.goal.ware = b_n;
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Assume not */
-    return (false);
+    return false;
 }
 
 /*
@@ -971,7 +958,7 @@ bool borg_think_home_buy_swap_weapon(void)
         hole = weapon_swap - 1;
     }
     if (hole == -1)
-        return (false);
+        return false;
 
     /* Extract the "power" */
     b_p = weapon_swap_value;
@@ -1053,7 +1040,7 @@ bool borg_think_home_buy_swap_weapon(void)
         armour_swap_value = old_armour_swap_value;
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Restore the values */
@@ -1063,7 +1050,7 @@ bool borg_think_home_buy_swap_weapon(void)
     armour_swap_value = old_armour_swap_value;
 
     /* Nope */
-    return (false);
+    return false;
 }
 
 /*
@@ -1095,7 +1082,7 @@ bool borg_think_home_buy_swap_armour(void)
     }
 
     if (hole == -1)
-        return (false);
+        return false;
 
     /* Extract the "power" */
     b_p = armour_swap_value;
@@ -1169,7 +1156,7 @@ bool borg_think_home_buy_swap_armour(void)
         armour_swap_value = old_armour_swap_value;
 
         /* Success */
-        return (true);
+        return true;
     }
     /* Restore the values */
     weapon_swap       = old_weapon_swap;
@@ -1178,7 +1165,7 @@ bool borg_think_home_buy_swap_armour(void)
     armour_swap_value = old_armour_swap_value;
 
     /* Nope */
-    return (false);
+    return false;
 }
 
 /*
@@ -1204,7 +1191,7 @@ bool borg_think_shop_buy(void)
             /* Increment our clock to avoid loops */
             borg.time_this_panel++;
 
-            return (false);
+            return false;
         }
 
         /* Log */
@@ -1254,11 +1241,11 @@ bool borg_think_shop_buy(void)
         borg.in_shop = false;
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Nothing to buy */
-    return (false);
+    return false;
 }
 
 #endif

@@ -592,7 +592,7 @@ bool borg_flow_commit(const char *who, int why)
 
     /* Verify the total "cost" */
     if (cost >= 250)
-        return (false);
+        return false;
 
     /* Message */
     if (who)
@@ -605,7 +605,7 @@ bool borg_flow_commit(const char *who, int why)
     borg.goal.type = why;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -678,7 +678,7 @@ static bool borg_play_step(int y2, int x2)
             for (i = 0; i < track_door.num; i++) {
                 /* Stop if we already new about this door */
                 if ((track_door.x[i] == x) && (track_door.y[i] == y))
-                    return (true);
+                    return true;
             }
 
             /* Track the newly closed door */
@@ -689,7 +689,7 @@ static bool borg_play_step(int y2, int x2)
                 track_door.x[i] = x;
                 track_door.y[i] = y;
             }
-            return (true);
+            return true;
         }
     }
 
@@ -707,7 +707,7 @@ static bool borg_play_step(int y2, int x2)
             borg_keypress('<');
 
             /* Success */
-            return (true);
+            return true;
         }
     }
 
@@ -716,7 +716,7 @@ static bool borg_play_step(int y2, int x2)
 
     /* We have arrived */
     if (dir == 5)
-        return (false);
+        return false;
 
     /* Obtain the destination */
     x = borg.c.x + ddx[dir];
@@ -735,12 +735,12 @@ static bool borg_play_step(int y2, int x2)
 
         /* can't attack someone if afraid! */
         if (borg.trait[BI_ISAFRAID] || borg.trait[BI_CRSFEAR])
-            return (false);
+            return false;
 
         /* Hack -- ignore Maggot until later.  */
         if ((rf_has(r_info[kill->r_idx].flags, RF_UNIQUE))
             && borg.trait[BI_CDEPTH] == 0 && borg.trait[BI_CLEVEL] < 5)
-            return (false);
+            return false;
 
         /* Message */
         borg_note(format("# Walking into a '%s' at (%d,%d)",
@@ -754,7 +754,7 @@ static bool borg_play_step(int y2, int x2)
             borg_keypress('+');
         }
         borg_keypress(I2D(dir));
-        return (true);
+        return true;
     }
 
     /* Objects -- Take */
@@ -790,7 +790,7 @@ static bool borg_play_step(int y2, int x2)
                 /* Open it */
                 borg_keypress('D');
                 borg_queue_direction(I2D(dir));
-                return (true);
+                return true;
             }
 
             /* No trap, or unknown trap that passed above checks - Open it */
@@ -801,7 +801,7 @@ static bool borg_play_step(int y2, int x2)
                 /* Open it */
                 borg_keypress('o');
                 borg_queue_direction(I2D(dir));
-                return (true);
+                return true;
             }
 
             /* Empty chest */
@@ -855,7 +855,7 @@ static bool borg_play_step(int y2, int x2)
                     }
 
                     /* Return */
-                    return (true);
+                    return true;
                 }
             }
         }
@@ -871,7 +871,7 @@ static bool borg_play_step(int y2, int x2)
         /* Walk onto it */
         borg_keypress(I2D(dir));
 
-        return (true);
+        return true;
     }
 
     /* Glyph of Warding */
@@ -881,7 +881,7 @@ static bool borg_play_step(int y2, int x2)
 
         /* Walk onto it */
         borg_keypress(I2D(dir));
-        return (true);
+        return true;
     }
 
     /* Traps -- disarm -- */
@@ -902,7 +902,7 @@ static bool borg_play_step(int y2, int x2)
                 /* since this just disables the trap and doesn't remove it, */
                 /* don't rest next to it */
                 borg.no_rest_prep = 3000;
-                return (true);
+                return true;
             }
         }
 
@@ -913,14 +913,14 @@ static bool borg_play_step(int y2, int x2)
 
         /* We are not sure if the trap will get 'untrapped'. pretend it will*/
         ag->trap = 0;
-        return (true);
+        return true;
     }
 
     /* Closed Doors -- Open */
     if (ag->feat == FEAT_CLOSED) {
         /* Paranoia XXX XXX XXX */
         if (!randint0(100))
-            return (false);
+            return false;
 
         /* Not a good idea to open locked doors if a monster
          * is next to the borg beating on him
@@ -940,7 +940,7 @@ static bool borg_play_step(int y2, int x2)
              */
             if (ag2->kill && borg.trait[BI_CLEVEL] < 15
                 && !borg.trait[BI_ISAFRAID])
-                return (false);
+                return false;
         }
 
         /* Use other techniques from time to time */
@@ -949,7 +949,7 @@ static bool borg_play_step(int y2, int x2)
             if (borg_spell(DISABLE_TRAPS_DESTROY_DOORS)
                 || borg_activate_item(act_destroy_doors)) {
                 borg_note("# Disable Traps, Destroy Doors");
-                return (true);
+                return true;
             }
 
             /* Mega-Hack -- allow "stone to mud" */
@@ -966,7 +966,7 @@ static bool borg_play_step(int y2, int x2)
                 if (track_closed.num) {
                     track_closed.num = 0;
                 }
-                return (true);
+                return true;
             }
         }
 
@@ -988,7 +988,7 @@ static bool borg_play_step(int y2, int x2)
             track_closed.num = 0;
         }
 
-        return (true);
+        return true;
     }
 
     /* Rubble, Treasure, Seams, Walls -- Tunnel or Melt */
@@ -1042,7 +1042,7 @@ static bool borg_play_step(int y2, int x2)
 
         /* Enter the shop */
         borg_keypress(I2D(dir));
-        return (true);
+        return true;
     }
 
     /* Walk in that direction */
@@ -1072,7 +1072,7 @@ static bool borg_play_step(int y2, int x2)
         ch_evt.type = EVT_KBRD;
 
     /* Did something */
-    return (true);
+    return true;
 }
 
 /*
@@ -1165,7 +1165,7 @@ bool borg_flow_old(int why)
 
             /* Attempt motion */
             if (borg_play_step(y, x))
-                return (true);
+                return true;
         }
 
         /* Mark a timestamp to wait on a anti-summon spot for a few turns */
@@ -1178,7 +1178,7 @@ bool borg_flow_old(int why)
     }
 
     /* Nothing to do */
-    return (false);
+    return false;
 }
 
 /*

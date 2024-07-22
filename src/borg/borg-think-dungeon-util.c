@@ -70,7 +70,7 @@ bool borg_money_scum(void)
 
     /* Just a quick check to make sure we are supposed to do this */
     if (borg_cfg[BORG_MONEY_SCUM_AMOUNT] == 0)
-        return (false);
+        return false;
 
     /* Take note */
     borg_note(format("# Waiting for towns people to breed.  I need %d...",
@@ -139,7 +139,7 @@ bool borg_money_scum(void)
     borg_began           = 1;
 
     /* Done */
-    return (true);
+    return true;
 }
 
 /* Attempt a series of maneuvers to stay alive when you run out of light */
@@ -151,7 +151,7 @@ bool borg_think_dungeon_light(void)
 
     /* Consume needed things */
     if (borg.trait[BI_ISHUNGRY] && borg_use_things())
-        return (true);
+        return true;
 
     if (!borg.trait[BI_LIGHT]
         && (borg.trait[BI_CURLITE] <= 0 || borg_items[INVEN_LIGHT].timeout <= 3)
@@ -164,27 +164,27 @@ bool borg_think_dungeon_light(void)
             borg_keypress('R');
             borg_keypress('9');
             borg_keypress(KC_ENTER);
-            return (true);
+            return true;
         }
 
         /* wear stuff and see if it glows */
         if (borg_wear_stuff())
-            return (true);
+            return true;
 
         /* attempt to refuel/swap */
         need = borg_maintain_light();
         if (need == BORG_MET_NEED)
-            return (true);
+            return true;
         if (need == BORG_NO_NEED)
-            return (false);
+            return false;
 
         /* Can I recall out with a rod */
         if (!borg.goal.recalling && borg_zap_rod(sv_rod_recall))
-            return (true);
+            return true;
 
         /* Can I recall out with a spell */
         if (!borg.goal.recalling && borg_recall())
-            return (true);
+            return true;
 
         /* Log */
         borg_note("# Testing for stairs .");
@@ -236,7 +236,7 @@ bool borg_think_dungeon_light(void)
                 borg_keypress('R');
                 borg_keypress('*');
                 borg_keypress(KC_ENTER);
-                return (true);
+                return true;
             }
         }
 
@@ -287,12 +287,12 @@ bool borg_think_dungeon_light(void)
                         borg_react("SELF:lite", "SELF:lite");
                         borg.when_call_light = borg_t;
 
-                        return (true);
+                        return true;
                     }
 
                     /* Attempt to use Light Beam requiring a direction. */
                     if (borg_light_beam(false))
-                        return (true);
+                        return true;
                 }
             }
         }
@@ -303,16 +303,16 @@ bool borg_think_dungeon_light(void)
             /* Log */
             borg_note("# Taking up Stairs stairs (low Light).");
             borg_keypress('<');
-            return (true);
+            return true;
         }
 
         /* Try to flow to a lite */
         if (borg.trait[BI_RECALL] && borg_flow_light(GOAL_FLEE)) {
-            return (true);
+            return true;
         }
     }
     /* Nothing to do */
-    return (false);
+    return false;
 }
 
 /*
@@ -337,12 +337,12 @@ bool borg_think_stair_scum(bool from_town)
     if (borg.trait[BI_CDEPTH] == 0 || borg.trait[BI_ISWEAK]) {
         borg_note("# Leaving Scumming Mode. (Town or Weak)");
         borg.lunal_mode = false;
-        return (false);
+        return false;
     }
 
     /* No scumming if inventory is full.  Require one empty slot */
     if (borg_items[PACK_SLOTS - 1].iqty)
-        return (false);
+        return false;
 
     /* if borg is just starting on this level, he may not
      * know that a stair is under him.  Cheat to see if one is
@@ -401,11 +401,11 @@ bool borg_think_stair_scum(bool from_town)
      * safe?)*/
     /* Continue flowing towards objects */
     if (borg_flow_old(GOAL_TAKE))
-        return (true);
+        return true;
 
     /* Find a (viewable) object */
     if (borg_flow_take_scum(true, 6))
-        return (true);
+        return true;
 
     /*leave level right away. */
     borg_note("# Fleeing level. Scumming Mode");
@@ -443,18 +443,18 @@ bool borg_think_stair_scum(bool from_town)
 
             /* Continue leaving the level */
             if (borg_flow_old(GOAL_FLEE))
-                return (true);
+                return true;
 
             /* Flow to DownStair */
             if (borg_flow_stair_more(GOAL_FLEE, false, false))
-                return (true);
+                return true;
 
             /* if standing on a stair */
             if (ag->feat == FEAT_MORE) {
                 /* Take the DownStair */
                 borg_keypress('>');
 
-                return (true);
+                return true;
             }
         }
     }
@@ -493,20 +493,20 @@ bool borg_think_stair_scum(bool from_town)
 
             /* Continue leaving the level */
             if (borg_flow_old(GOAL_FLEE))
-                return (true);
+                return true;
 
             /* Flow to UpStair */
             if (borg_flow_stair_less(GOAL_FLEE, false)) {
                 borg_note("# Looking for stairs. Scumming Mode.");
 
                 /* Success */
-                return (true);
+                return true;
             }
 
             if (tmp_ag->feat == FEAT_LESS) {
                 /* Take the Up Stair */
                 borg_keypress('<');
-                return (true);
+                return true;
             }
         }
     }
@@ -518,18 +518,18 @@ bool borg_think_stair_scum(bool from_town)
     if (borg.trait[BI_CDEPTH] >= 2) {
         /* Continue fleeing to stair */
         if (borg_flow_old(GOAL_FLEE))
-            return (true);
+            return true;
 
         /* Note */
         borg_note("# Scumming Mode.  Any Stair. ");
 
         /* Try to find some stairs */
         if (borg_flow_stair_both(GOAL_FLEE, true))
-            return (true);
+            return true;
     }
 
     /* return to normal borg_think_dungeon */
-    return (false);
+    return false;
 }
 
 /*
@@ -569,7 +569,7 @@ bool borg_leave_level(bool bored)
 
     /* Hack -- waiting for "recall" other than depth 1 */
     if (borg.goal.recalling && borg.trait[BI_CDEPTH] != 1)
-        return (false);
+        return false;
 
     /* Not bored if I have seen Morgoth recently */
     if (borg.trait[BI_CDEPTH] == 100 && morgoth_on_level
@@ -602,7 +602,7 @@ bool borg_leave_level(bool bored)
 
         /* Wait until bored */
         if (!bored)
-            return (false);
+            return false;
 
         /* Case for those who cannot Teleport Level */
         if (borg.trait[BI_MAXDEPTH] == 100 && !borg_cfg[BORG_PLAYS_RISKY]) {
@@ -618,10 +618,10 @@ bool borg_leave_level(bool bored)
 
                 /* Attempt to use those stairs */
                 if (borg_flow_stair_more(GOAL_BORE, false, false))
-                    return (true);
+                    return true;
 
                 /* Oops */
-                return (false);
+                return false;
             }
         }
 
@@ -636,7 +636,7 @@ bool borg_leave_level(bool bored)
             borg_note("# Recalling into dungeon.");
 
             /* Give it a shot */
-            return (true);
+            return true;
         } else {
             /* note why we didn't recall. */
             if (borg.trait[BI_MAXDEPTH]
@@ -665,10 +665,10 @@ bool borg_leave_level(bool bored)
 
         /* Attempt to use those stairs */
         if (borg_flow_stair_more(GOAL_BORE, false, false))
-            return (true);
+            return true;
 
         /* Oops */
-        return (false);
+        return false;
     }
 
     /** In the Dungeon **/
@@ -878,7 +878,7 @@ bool borg_leave_level(bool bored)
         if (borg.goal.rising && ((borg_time_town + (borg_t - borg_began)) > 200)
             && (borg.trait[BI_CDEPTH] >= 5) && borg_recall()) {
             borg_note("# Recalling to town (goal rising)");
-            return (true);
+            return true;
         }
 
         /* Hack -- Recall if needing to Restock */
@@ -889,14 +889,14 @@ bool borg_leave_level(bool bored)
         /* Attempt to use stairs */
         if (borg_flow_stair_less(GOAL_BORE, false)) {
             borg_note("# Looking for stairs. I'm bored.");
-            return (true);
+            return true;
         }
 
         /* Cannot find any stairs */
         if (borg.goal.rising && bored && (borg_t - borg_began) >= 1000) {
             if (borg_recall()) {
                 borg_note("# Recalling to town (no stairs)");
-                return (true);
+                return true;
             }
         }
 
@@ -912,11 +912,11 @@ bool borg_leave_level(bool bored)
 
         /* Attempt to use those stairs */
         if (borg_flow_stair_more(GOAL_BORE, false, false))
-            return (true);
+            return true;
     }
 
     /* Failure */
-    return (false);
+    return false;
 }
 
 /*
@@ -942,12 +942,12 @@ bool borg_excavate_vault(int range)
 
     /* no need if no vault on level */
     if (!vault_on_level)
-        return (false);
+        return false;
 
     /* only if you can cast the spell */
     if (!borg_spell_okay_fail(TURN_STONE_TO_MUD, 30)
         && !borg_spell_okay_fail(SHATTER_STONE, 30))
-        return (false);
+        return false;
 
     /* Danger/bad idea checks */
 
@@ -1002,7 +1002,7 @@ bool borg_excavate_vault(int range)
 
     /* None to excavate */
     if (!borg_temp_n)
-        return (false);
+        return false;
 
     /* Review the useful grids */
     for (i = 0; i < borg_temp_n; i++) {
@@ -1042,15 +1042,15 @@ bool borg_excavate_vault(int range)
             /* Forget number of mineral veins to force rebuild of vein list */
             track_vein.num = 0;
 
-            return (true);
+            return true;
         }
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* No grid to excavate */
-    return (false);
+    return false;
 }
 
 #endif

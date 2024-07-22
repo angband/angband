@@ -100,7 +100,7 @@ static bool borg_consume(int i)
             || item->sval == sv_potion_inc_exp) {
             /* Try quaffing the potion */
             if (borg_quaff_potion(item->sval))
-                return (true);
+                return true;
             break;
         }
 
@@ -108,77 +108,77 @@ static bool borg_consume(int i)
         if (item->sval == sv_potion_inc_str2) {
             /* Maxed out no need. Don't lose another stat */
             if (borg.trait[BI_CSTR] >= 118)
-                return (false);
+                return false;
 
             /* This class does not want to risk losing a different stat */
             if (borg.trait[BI_CLASS] == CLASS_MAGE
                 || borg.trait[BI_CLASS] == CLASS_DRUID
                 || borg.trait[BI_CLASS] == CLASS_NECROMANCER)
-                return (false);
+                return false;
 
             /* Otherwise, it should be ok */
             if (borg_quaff_potion(item->sval))
-                return (true);
+                return true;
         }
 
         if (item->sval == sv_potion_inc_int2) {
             /* Maxed out no need. Don't lose another stat */
             if (borg.trait[BI_CINT] >= 118)
-                return (false);
+                return false;
 
             /* This class does not want to risk losing a different stat */
             if (borg.trait[BI_CLASS] != CLASS_MAGE
                 && borg.trait[BI_CLASS] != CLASS_NECROMANCER)
-                return (false);
+                return false;
 
             /* Otherwise, it should be ok */
             if (borg_quaff_potion(item->sval))
-                return (true);
+                return true;
             break;
         }
 
         if (item->sval == sv_potion_inc_wis2) {
             /* Maxed out no need. Don't lose another stat */
             if (borg.trait[BI_CWIS] >= 118)
-                return (false);
+                return false;
 
             /* This class does not want to risk losing a different stat */
             if (borg.trait[BI_CLASS] != CLASS_PRIEST
                 && borg.trait[BI_CLASS] != CLASS_DRUID)
-                return (false);
+                return false;
 
             /* Otherwise, it should be ok */
             if (borg_quaff_potion(item->sval))
-                return (true);
+                return true;
             break;
         }
 
         if (item->sval == sv_potion_inc_dex2) {
             /* Maxed out no need. Don't lose another stat */
             if (borg.trait[BI_CDEX] >= 118)
-                return (false);
+                return false;
 
             /* This class does not want to risk losing a different stat */
             if (borg.trait[BI_CLASS] == CLASS_MAGE
                 || borg.trait[BI_CLASS] == CLASS_PRIEST
                 || borg.trait[BI_CLASS] == CLASS_DRUID
                 || borg.trait[BI_CLASS] == CLASS_NECROMANCER)
-                return (false);
+                return false;
 
             /* Otherwise, it should be ok */
             if (borg_quaff_potion(item->sval))
-                return (true);
+                return true;
             break;
         }
 
         if (item->sval == sv_potion_inc_con2) {
             /* Maxed out no need. Don't lose another stat */
             if (borg.trait[BI_CCON] >= 118)
-                return (false);
+                return false;
 
             /* Otherwise, it should be ok */
             if (borg_quaff_potion(item->sval))
-                return (true);
+                return true;
             break;
         }
 
@@ -197,7 +197,7 @@ static bool borg_consume(int i)
             || item->sval == sv_scroll_holy_prayer) {
             /* Try reading the scroll */
             if (borg_read_scroll(item->sval))
-                return (true);
+                return true;
         }
 
         break;
@@ -210,7 +210,7 @@ static bool borg_consume(int i)
 
             /* Try eating the food (unless Bloated) */
             if (!borg.trait[BI_ISFULL] && borg_eat(item->tval, item->sval))
-                return (true);
+                return true;
 
         break;
 
@@ -230,13 +230,13 @@ static bool borg_consume(int i)
 
             /* Try eating the food (unless Bloated) */
             if (!borg.trait[BI_ISFULL] && borg_eat(item->tval, item->sval))
-                return (true);
+                return true;
 
         break;
     }
 
     /* Nope */
-    return (false);
+    return false;
 }
 
 /*
@@ -251,7 +251,7 @@ bool borg_drop_junk(void)
 
     /* Hack -- no need */
     if (!borg_do_crush_junk)
-        return (false);
+        return false;
 
     /* not while recalling since this is a two step process */
     /* and if the recall kicks in in the middle it confuses things */
@@ -261,7 +261,7 @@ bool borg_drop_junk(void)
     /* No crush if even slightly dangerous */
     if (borg_danger(borg.c.y, borg.c.x, 1, true, false)
         > borg.trait[BI_CURHP] / 10)
-        return (false);
+        return false;
 
     /* Destroy actual "junk" items */
     for (i = 0; i < z_info->pack_size; i++) {
@@ -470,7 +470,7 @@ bool borg_drop_junk(void)
         }
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* re-examine the inventory */
@@ -481,7 +481,7 @@ bool borg_drop_junk(void)
     borg_do_crush_junk = false;
 
     /* Nothing to destroy */
-    return (false);
+    return false;
 }
 
 /*
@@ -518,11 +518,11 @@ bool borg_drop_hole(bool desperate)
 
     /* Do not destroy items unless we need the space */
     if (!borg_items[PACK_SLOTS - 1].iqty)
-        return (false);
+        return false;
     
     /* only on the floor */
     if (borg_grids[borg.c.y][borg.c.x].feat != FEAT_FLOOR)
-        return (false);
+        return false;
 
     /* No crush if even slightly dangerous */
     if (borg.trait[BI_CDEPTH]
@@ -531,7 +531,7 @@ bool borg_drop_hole(bool desperate)
             && (borg.trait[BI_CURHP] != borg.trait[BI_MAXHP]
                 || borg_danger(borg.c.y, borg.c.x, 1, true, false)
                        > (borg.trait[BI_CURHP] * 2) / 3)))
-        return (false);
+        return false;
 
     /* Scan the inventory */
     for (i = 0; i < z_info->pack_size; i++) {
@@ -907,7 +907,7 @@ bool borg_drop_hole(bool desperate)
 
         /* Try to consume the junk */
         if (borg_consume(b_i))
-            return (true);
+            return true;
 
         /* Message */
         borg_note(format("# Dropping %s.", item->desc));
@@ -929,7 +929,7 @@ bool borg_drop_hole(bool desperate)
         }
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* if we got to here, we need to make room but have nothing we can crush */
@@ -962,19 +962,19 @@ bool borg_drop_slow(void)
     /* No crush if even slightly dangerous */
     if (borg_danger(borg.c.y, borg.c.x, 1, true, false)
         > borg.trait[BI_CURHP] / 20)
-        return (false);
+        return false;
 
     /* Hack -- never in town */
     if (borg.trait[BI_CDEPTH] == 0)
-        return (false);
+        return false;
 
     /* Do not crush items unless we are slow */
     if (borg.trait[BI_SPEED] >= 110)
-        return (false);
+        return false;
 
     /* Not if in munchkin mode */
     if (borg.munchkin_mode)
-        return (false);
+        return false;
 
     /* Calculate "greed" factor */
     greed = (borg.trait[BI_GOLD] / 100L) + 100L;
@@ -1093,7 +1093,7 @@ bool borg_drop_slow(void)
 
         /* Attempt to consume it */
         if (borg_consume(b_i))
-            return (true);
+            return true;
 
         /* Message */
         borg_note(format("# Dropping %s.", item->desc));
@@ -1133,10 +1133,10 @@ bool borg_drop_slow(void)
             borg_keypress(KC_ENTER);
         }
 
-        return (true);
+        return true;
     }
     /* Nothing to destroy */
-    return (false);
+    return false;
 }
 
 /*
@@ -1155,18 +1155,18 @@ bool borg_dump_quiver(void)
 
     /* hack to prevent the swap till you drop loop */
     if (borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK])
-        return (false);
+        return false;
 
     /* Forbid if been sitting on level forever */
     /*    Just come back and work through the loop later */
     if (borg_t - borg_began > 2000)
-        return (false);
+        return false;
     if (borg.time_this_panel > 150)
-        return (false);
+        return false;
 
     /* don't crush stuff unless we are on a floor */
     if (borg_grids[borg.c.y][borg.c.x].feat != FEAT_FLOOR)
-        return (false);
+        return false;
 
     /* How many should I carry */
     if (borg.trait[BI_CLASS] == CLASS_RANGER
@@ -1231,11 +1231,11 @@ bool borg_dump_quiver(void)
 
         /* Did something */
         borg.time_this_panel++;
-        return (true);
+        return true;
     }
 
     /* Nope */
-    return (false);
+    return false;
 }
 
 /*
@@ -1262,18 +1262,18 @@ bool borg_remove_stuff(void)
 
     /* if there was no hole, done */
     if (hole == -1)
-        return (false);
+        return false;
 
     /*  hack to prevent the swap till you drop loop */
     if (borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK])
-        return (false);
+        return false;
 
     /* Forbid if been sitting on level forever */
     /*    Just come back and work through the loop later */
     if (borg_t - borg_began > 2000)
-        return (false);
+        return false;
     if (borg.time_this_panel > 150)
-        return (false);
+        return false;
 
     /* Start with good power */
     b_p = borg.power;
@@ -1360,11 +1360,11 @@ bool borg_remove_stuff(void)
 
         /* Did something */
         borg.time_this_panel++;
-        return (true);
+        return true;
     }
 
     /* Nope */
-    return (false);
+    return false;
 }
 
 #endif

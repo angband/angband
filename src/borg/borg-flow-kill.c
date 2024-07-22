@@ -469,14 +469,14 @@ static bool borg_follow_kill_aux(int i, int y, int x)
 
     /* Too far away */
     if (d > z_info->max_sight)
-        return (false);
+        return false;
 
     /* Access the grid */
     ag = &borg_grids[y][x];
 
     /* Not on-screen */
     if (!(ag->info & BORG_OKAY))
-        return (false);
+        return false;
 
     /* Line of sight */
     if (ag->info & BORG_VIEW) {
@@ -484,18 +484,18 @@ static bool borg_follow_kill_aux(int i, int y, int x)
         if (ag->info & (BORG_LIGHT | BORG_GLOW)) {
             /* We can see invisible */
             if (borg.trait[BI_SINV] || borg.see_inv)
-                return (true);
+                return true;
 
             /* Monster is not invisible */
             if (!(rf_has(r_ptr->flags, RF_INVISIBLE)))
-                return (true);
+                return true;
         }
 
         /* Use "infravision" */
         if (d <= borg.trait[BI_INFRA]) {
             /* Infravision works on "warm" creatures */
             if (!(rf_has(r_info->flags, RF_COLD_BLOOD)))
-                return (true);
+                return true;
         }
     }
 
@@ -503,16 +503,16 @@ static bool borg_follow_kill_aux(int i, int y, int x)
     if (borg.trait[BI_ESP]) {
         /* Telepathy fails on "strange" monsters */
         if (rf_has(r_info->flags, RF_EMPTY_MIND))
-            return (false);
+            return false;
         if (rf_has(r_info->flags, RF_WEIRD_MIND))
-            return (false);
+            return false;
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Nope */
-    return (false);
+    return false;
 }
 
 /*
@@ -849,7 +849,7 @@ static int borg_new_kill(unsigned int r_idx, int y, int x)
     }
 
     /* Return the monster */
-    return (n);
+    return n;
 }
 
 /*
@@ -924,11 +924,11 @@ bool observe_kill_diff(int y, int x, uint8_t a, wchar_t c)
 
     /* Oops */
     if (!r_idx)
-        return (false);
+        return false;
 
     /* no new monsters if hallucinations */
     if (borg.trait[BI_ISIMAGE])
-        return (false);
+        return false;
 
     /* Create a new monster */
     i = borg_new_kill(r_idx, y, x);
@@ -944,7 +944,7 @@ bool observe_kill_diff(int y, int x, uint8_t a, wchar_t c)
         borg_t_morgoth = borg_t;
 
     /* Done */
-    return (true);
+    return true;
 }
 
 /*
@@ -1099,11 +1099,11 @@ bool observe_kill_move(int y, int x, int d, uint8_t a, wchar_t c, bool flag)
         kill->seen = true;
 
         /* Done */
-        return (true);
+        return true;
     }
 
     /* Oops */
-    return (false);
+    return false;
 }
 
 /*
@@ -1304,7 +1304,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
         }
 
         /* Ignore */
-        return (0);
+        return 0;
     }
 
     /* Handle offsreen monsters */
@@ -1316,7 +1316,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
         borg.need_shift_panel = true;
 
         /* Ignore */
-        return (0);
+        return 0;
     }
 
     /* Guess the monster race */
@@ -1423,7 +1423,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
             kill->known = true;
 
         /* Return the index */
-        return (b_i);
+        return b_i;
     }
 
     /*** Hack -- Find a similar monster ***/
@@ -1505,7 +1505,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
         borg.goal.type = 0;
 
         /* Index */
-        return (b_i);
+        return b_i;
     }
 
     /*** Hack -- Find an existing monster ***/
@@ -1610,7 +1610,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
             kill->known = true;
 
         /* Index */
-        return (b_i);
+        return b_i;
     }
 
     /*** Oops ***/
@@ -1663,26 +1663,26 @@ bool borg_flow_kill(bool viewable, int nearness)
 
     /* Efficiency -- Nothing to kill */
     if (!borg_kills_cnt)
-        return (false);
+        return false;
 
     /* Don't chase down town monsters when you are just starting out */
     if (borg.trait[BI_CDEPTH] == 0 && borg.trait[BI_CLEVEL] < 20)
-        return (false);
+        return false;
 
     /* YOU ARE NOT A WARRIOR!! DON'T ACT LIKE ONE!! */
     if ((borg.trait[BI_CLASS] == CLASS_MAGE
             || borg.trait[BI_CLASS] == CLASS_NECROMANCER)
         && borg.trait[BI_CLEVEL] < (borg.trait[BI_CDEPTH] ? 35 : 25))
-        return (false);
+        return false;
 
     /* Not if Weak from hunger or no food */
     if (borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK]
         || borg.trait[BI_FOOD] == 0)
-        return (false);
+        return false;
 
     /* Not if sitting in a sea of runes */
     if (borg_morgoth_position)
-        return (false);
+        return false;
 
     /* Nothing found */
     borg_temp_n = 0;
@@ -1886,7 +1886,7 @@ bool borg_flow_kill(bool viewable, int nearness)
 
     /* Nothing to kill */
     if (!borg_temp_n)
-        return (false);
+        return false;
 
     /* Clear the flow codes */
     borg_flow_clear();
@@ -1905,14 +1905,14 @@ bool borg_flow_kill(bool viewable, int nearness)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit("kill", GOAL_KILL))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(GOAL_KILL))
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -1956,21 +1956,21 @@ bool borg_flow_kill_aim(bool viewable)
 
     /* Efficiency -- Nothing to kill */
     if (!borg_kills_cnt)
-        return (false);
+        return false;
 
     /* Sometimes we loop on this if we back  up to a point where */
     /* the monster is out of site */
     if (borg.time_this_panel > 500)
-        return (false);
+        return false;
 
     /* Not if Weak from hunger or no food */
     if (borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK]
         || borg.trait[BI_FOOD] == 0)
-        return (false);
+        return false;
 
     /* If you can shoot from where you are, don't bother reaiming */
     if (borg_has_distance_attack())
-        return (false);
+        return false;
 
     /* Consider each adjacent spot */
     for (o_x = -2; o_x <= 2; o_x++) {
@@ -2015,13 +2015,13 @@ bool borg_flow_kill_aim(bool viewable)
 
                 /* Attempt to Commit the flow */
                 if (!borg_flow_commit("targetable position", GOAL_KILL))
-                    return (false);
+                    return false;
 
                 /* Take one step */
                 if (!borg_flow_old(GOAL_KILL))
-                    return (false);
+                    return false;
 
-                return (true);
+                return true;
             }
         }
     }
@@ -2151,55 +2151,55 @@ bool borg_flow_kill_corridor(bool viewable)
 
     /* Efficiency -- Nothing to kill */
     if (!borg_kills_cnt)
-        return (false);
+        return false;
 
     /* Only do this to summoners when they are close*/
     if (borg_kills_summoner == -1)
-        return (false);
+        return false;
 
     /* Hungry,starving */
     if (borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK])
-        return (false);
+        return false;
 
     /* Sometimes we loop on this */
     if (borg.time_this_panel > 500)
-        return (false);
+        return false;
 
     /* Do not dig when confused */
     if (borg.trait[BI_ISCONFUSED])
-        return (false);
+        return false;
 
     /* Not when darkened */
     if (borg.trait[BI_CURLITE] == 0)
-        return (false);
+        return false;
 
     /* Not if sitting in a sea of runes */
     if (borg_morgoth_position)
-        return (false);
+        return false;
     if (borg_as_position)
-        return (false);
+        return false;
 
     /* get the summoning monster */
     kill = &borg_kills[borg_kills_summoner];
 
     /* Summoner must be mobile */
     if (rf_has(r_info[kill->r_idx].flags, RF_NEVER_MOVE))
-        return (false);
+        return false;
     /* Summoner must be able to pass through walls */
     if (rf_has(r_info[kill->r_idx].flags, RF_PASS_WALL))
-        return (false);
+        return false;
     if (rf_has(r_info[kill->r_idx].flags, RF_KILL_WALL))
-        return (false);
+        return false;
 
     /* Summoner has to be awake (so he will chase me */
     if (!kill->awake)
-        return (false);
+        return false;
 
     /* Must have Stone to Mud spell */
     if (!borg_spell_okay(TURN_STONE_TO_MUD) && !borg_spell_okay(SHATTER_STONE)
         && !borg_equips_ring(sv_ring_digging)
         && !borg_equips_item(act_stone_to_mud, true))
-        return (false);
+        return false;
 
     /* Summoner needs to be able to follow me.
      * So I either need to be able to
@@ -2221,14 +2221,14 @@ bool borg_flow_kill_corridor(bool viewable)
             borg_flow_enqueue_grid(kill->pos.y, kill->pos.x);
             borg_flow_spread(10, true, false, false, -1, false);
             if (!borg_flow_commit("Monster Path", GOAL_KILL))
-                return (false);
+                return false;
         } else {
             borg_flow_clear();
             borg_digging = true;
             borg_flow_enqueue_grid(kill->pos.y, kill->pos.x);
             borg_flow_spread(10, true, true, false, -1, false);
             if (!borg_flow_commit("Monster Path", GOAL_KILL))
-                return (false);
+                return false;
         }
     }
 
@@ -2472,13 +2472,13 @@ bool borg_flow_kill_corridor(bool viewable)
         /* Attempt to Commit the flow */
         if (!borg_flow_commit(
                 "anti-summon corridor north type 1", GOAL_DIGGING))
-            return (false);
+            return false;
 
         /* Take one step */
         if (!borg_flow_old(GOAL_DIGGING))
-            return (false);
+            return false;
 
-        return (true);
+        return true;
     }
     if (b_s == true) {
         /* Clear the flow codes */
@@ -2495,13 +2495,13 @@ bool borg_flow_kill_corridor(bool viewable)
         /* Attempt to Commit the flow */
         if (!borg_flow_commit(
                 "anti-summon corridor south type 1", GOAL_DIGGING))
-            return (false);
+            return false;
 
         /* Take one step */
         if (!borg_flow_old(GOAL_DIGGING))
-            return (false);
+            return false;
 
-        return (true);
+        return true;
     }
     if (b_e == true) {
         /* Clear the flow codes */
@@ -2518,13 +2518,13 @@ bool borg_flow_kill_corridor(bool viewable)
 
         /* Attempt to Commit the flow */
         if (!borg_flow_commit("anti-summon corridor east type 1", GOAL_DIGGING))
-            return (false);
+            return false;
 
         /* Take one step */
         if (!borg_flow_old(GOAL_DIGGING))
-            return (false);
+            return false;
 
-        return (true);
+        return true;
     }
     if (b_w == true) {
         /* Clear the flow codes */
@@ -2540,13 +2540,13 @@ bool borg_flow_kill_corridor(bool viewable)
 
         /* Attempt to Commit the flow */
         if (!borg_flow_commit("anti-summon corridor west type 1", GOAL_DIGGING))
-            return (false);
+            return false;
 
         /* Take one step */
         if (!borg_flow_old(GOAL_DIGGING))
-            return (false);
+            return false;
 
-        return (true);
+        return true;
     }
 
     return false;
@@ -2564,25 +2564,25 @@ bool borg_flow_kill_direct(bool viewable, bool twitchy)
 
     /* Assume we need to dig granite */
     if (!borg_can_dig(false, FEAT_GRANITE))
-        return (false);
+        return false;
 
     /* Not if Weak from hunger or no food */
     if (!twitchy
         && (borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK]
             || borg.trait[BI_FOOD] == 0))
-        return (false);
+        return false;
 
     /* Only when sitting for too long or twitchy */
     if (!twitchy && borg_t - borg_began < 3000 && borg.times_twitch < 5)
-        return (false);
+        return false;
 
     /* Do not dig when confused */
     if (borg.trait[BI_ISCONFUSED])
-        return (false);
+        return false;
 
     /* Not when darkened */
     if (borg.trait[BI_CURLITE] == 0)
-        return (false);
+        return false;
 
     /* Efficiency -- Nothing to kill */
     if (borg_kills_cnt) {
@@ -2621,13 +2621,13 @@ bool borg_flow_kill_direct(bool viewable, bool twitchy)
 
         /* Attempt to Commit the flow */
         if (!borg_flow_commit("center direct", GOAL_DIGGING))
-            return (false);
+            return false;
 
         /* Take one step */
         if (!borg_flow_old(GOAL_DIGGING))
-            return (false);
+            return false;
 
-        return (true);
+        return true;
     }
 
     if (b_i) /* don't want it near permawall */
@@ -2646,13 +2646,13 @@ bool borg_flow_kill_direct(bool viewable, bool twitchy)
 
         /* Attempt to Commit the flow */
         if (!borg_flow_commit("kill direct", GOAL_DIGGING))
-            return (false);
+            return false;
 
         /* Take one step */
         if (!borg_flow_old(GOAL_DIGGING))
-            return (false);
+            return false;
 
-        return (true);
+        return true;
     }
 
     return false;
@@ -2886,41 +2886,41 @@ bool borg_shoot_scoot_safe(int emergency, int turns, int b_p)
 
     /* no need if high level in town */
     if (borg.trait[BI_CLEVEL] >= 8 && borg.trait[BI_CDEPTH] == 0)
-        return (false);
+        return false;
 
     /* must have the ability */
     if (!borg.trait[BI_APHASE])
-        return (false);
+        return false;
 
     /* Not if No Light */
     if (!borg.trait[BI_CURLITE])
-        return (false);
+        return false;
 
     /* Cheat the floor grid */
     /* Not if in a vault since it throws us out of the vault */
     if (square_isvault(cave, borg.c))
-        return (false);
+        return false;
 
     /*** Need Missiles or cheap spells ***/
 
     /* classes that are mainly spellcaster */
-    if (player->class->magic.num_books > 3) {
+    if (borg_primarily_caster()) {
         /* Low mana */
         if (borg.trait[BI_CLEVEL] >= 45 && borg.trait[BI_CURSP] < 15)
-            return (false);
+            return false;
 
         /* Low mana, low level, generally OK */
         if (borg.trait[BI_CLEVEL] < 45 && borg.trait[BI_CURSP] < 5)
-            return (false);
+            return false;
     } else /* Other classes need some missiles */
     {
         if (borg.trait[BI_AMISSILES] < 5 || borg.trait[BI_CLEVEL] >= 45)
-            return (false);
+            return false;
     }
 
     /* Not if I am in a safe spot for killing special monsters */
     if (borg_morgoth_position || borg_as_position)
-        return (false);
+        return false;
 
     /* scan the adjacent grids for an awake monster */
     for (i = 0; i < 8; i++) {
@@ -2981,7 +2981,7 @@ bool borg_shoot_scoot_safe(int emergency, int turns, int b_p)
 
     /* if No Adjacent_monster no need for it */
     if (adjacent_monster == false)
-        return (false);
+        return false;
 
     /* Simulate 100 attempts */
     for (n = k = 0; k < 100; k++) {
@@ -3066,12 +3066,12 @@ bool borg_shoot_scoot_safe(int emergency, int turns, int b_p)
     /* in an emergency try with extra danger allowed */
     if (n > emergency) {
         borg_note(format("# No Shoot'N'Scoot. scary squares: %d/100", n));
-        return (false);
+        return false;
     } else
         borg_note(format("# Safe to Shoot'N'Scoot. scary squares: %d/100", n));
 
     /* Okay */
-    return (true);
+    return true;
 }
 
 /*

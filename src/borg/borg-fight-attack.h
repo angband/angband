@@ -314,6 +314,7 @@ enum {
 };
 
 extern int successful_target;
+extern int target_closest;
 
 /*
  * Maintain a set of special grids used for Teleport Other

@@ -139,6 +139,8 @@ static char borg_index_to_label(int i)
  * and his equipment, inventory and home (Player)
  * and his swap armor, weapon (Borg)
  * From Dennis Van Es,  With an addition of last messages from me (APW)
+ * NOTE: this uses internal game data.  This is okay since we are just dumping 
+ * the information rather than using it.
  */
 void borg_write_map(bool ask)
 {
@@ -472,7 +474,7 @@ void borg_write_map(bool ask)
     file_putf(borg_map_file, "\n\n");
 
     /* Dump the spells */
-    if (player->class->magic.total_spells) {
+    if (borg_can_cast()) {
         file_putf(borg_map_file, "\n\n   [ Spells ] \n\n");
         file_putf(
             borg_map_file, "Name                           Legal Times cast\n");

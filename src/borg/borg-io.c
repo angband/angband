@@ -126,10 +126,10 @@ errr borg_what_text(int x, int y, int n, uint8_t *a, char *s)
     wcstombs(s, screen_str, ABS(n) + 1);
     /* Too short */
     if ((n > 0) && (i != n))
-        return (1);
+        return 1;
 
     /* Success */
-    return (0);
+    return 0;
 }
 
 /*
@@ -330,7 +330,7 @@ errr borg_keypress(keycode_t k)
         borg_key_tail = 0;
 
     /* Success */
-    return (0);
+    return 0;
 }
 
 /*
@@ -382,7 +382,7 @@ errr borg_keypresses(const char *str)
         borg_keypress(*s);
 
     /* Success */
-    return (0);
+    return 0;
 }
 
 /*
@@ -394,14 +394,14 @@ keycode_t borg_inkey(bool take)
 
     /* Nothing ready */
     if (borg_key_head == borg_key_tail)
-        return (0);
+        return 0;
 
     /* Extract the keypress */
     i = borg_key_queue[borg_key_tail];
 
     /* Do not advance */
     if (!take)
-        return (i);
+        return i;
 
     /* Advance the queue */
     borg_key_tail++;
@@ -411,7 +411,7 @@ keycode_t borg_inkey(bool take)
         borg_key_tail = 0;
 
     /* Return the key */
-    return (i);
+    return i;
 }
 
 /*

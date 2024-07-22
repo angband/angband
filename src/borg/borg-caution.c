@@ -145,13 +145,13 @@ static bool borg_heal(int danger)
         if ((pct_down >= 80) && danger - heal_heal < borg.trait[BI_CURHP]
             && borg_quaff_potion(sv_potion_healing)) {
             borg_note("# Fixing Confusion. Level 1");
-            return (true);
+            return true;
         }
         if ((pct_down >= 85) && danger >= borg.trait[BI_CURHP] * 2
             && (borg_quaff_potion(sv_potion_star_healing)
                 || borg_quaff_potion(sv_potion_life))) {
             borg_note("# Fixing Confusion. Level 1.a");
-            return (true);
+            return true;
         }
         if (danger < borg.trait[BI_CURHP] + csw_heal
             && (borg_eat(TV_MUSHROOM, sv_mush_cure_mind)
@@ -162,7 +162,7 @@ static bool borg_heal(int danger)
                 || borg_activate_item(act_cure_confusion)
                 || borg_use_staff_fail(sv_staff_curing))) {
             borg_note("# Fixing Confusion. Level 2");
-            return (true);
+            return true;
         }
 
         /* If my ability to use a teleport staff is really
@@ -176,7 +176,7 @@ static bool borg_heal(int danger)
                 && (borg_quaff_crit(true)
                     || borg_quaff_potion(sv_potion_healing))) {
                 borg_note("# Fixing Confusion. Level 3");
-                return (true);
+                return true;
             }
             /* However, if I am in really big trouble and there is no way
              * I am going to be able to
@@ -184,7 +184,7 @@ static bool borg_heal(int danger)
              */
             else if (danger > avoidance * 2) {
                 borg_note("# Too scary to fix Confusion. Level 4");
-                return (false);
+                return false;
             }
 
         } else {
@@ -195,7 +195,7 @@ static bool borg_heal(int danger)
                     || borg_quaff_potion(sv_potion_cure_serious)
                     || borg_quaff_potion(sv_potion_healing))) {
                 borg_note("# Fixing Confusion. Level 5");
-                return (true);
+                return true;
             }
         }
     }
@@ -207,10 +207,10 @@ static bool borg_heal(int danger)
         if (danger > avoidance * 25 / 10) {
             /* Check for a charged teleport staff */
             if (borg_equips_staff_fail(sv_staff_teleportation))
-                return (0);
+                return 0;
         }
         if ((hp_down >= 300) && borg_quaff_potion(sv_potion_healing)) {
-            return (true);
+            return true;
         }
         /* Warriors with ESP won't need it so quickly */
         if (!(borg.trait[BI_CLASS] == CLASS_WARRIOR
@@ -224,7 +224,7 @@ static bool borg_heal(int danger)
                 || borg_use_staff_fail(sv_staff_curing)
                 || borg_quaff_potion(sv_potion_healing)) {
                 borg_note("# Fixing Blindness.");
-                return (true);
+                return true;
             }
         }
     }
@@ -235,7 +235,7 @@ static bool borg_heal(int danger)
             || (danger > borg.trait[BI_CURHP] * 5 && hp_down > 100))
         && borg_quaff_potion(sv_potion_star_healing)) {
         borg_note("# Fixing Confusion/Blind.");
-        return (true);
+        return true;
     }
 
     /* Healing and fighting Morgoth. */
@@ -264,7 +264,7 @@ static bool borg_heal(int danger)
                 || borg_quaff_potion(sv_potion_life)
                 || borg_zap_rod(sv_rod_healing))) {
             borg_note("# Healing in Questor Combat.");
-            return (true);
+            return true;
         }
     }
 
@@ -275,7 +275,7 @@ static bool borg_heal(int danger)
         if (borg_use_staff_fail(sv_staff_the_magi)
             || borg_activate_item(act_staff_magi)) {
             borg_note("# Use Magi Staff");
-            return (true);
+            return true;
         }
     }
     /* blowing potions is harder */
@@ -292,7 +292,7 @@ static bool borg_heal(int danger)
                 || borg_activate_item(act_restore_mana)
                 || borg_activate_item(act_staff_magi)) {
                 borg_note("# Restored My Mana");
-                return (true);
+                return true;
             }
         }
     }
@@ -303,7 +303,7 @@ static bool borg_heal(int danger)
 
     /* Don't bother healing if not in danger */
     if (danger == 0 && !borg.trait[BI_ISPOISONED] && !borg.trait[BI_ISCUT])
-        return (false);
+        return false;
 
     /* Restoring while fighting Morgoth */
     if (stats_needing_fix >= 5 && borg_fighting_unique >= 10
@@ -311,13 +311,13 @@ static bool borg_heal(int danger)
         && (borg_eat(TV_MUSHROOM, sv_mush_restoring)
             || borg_activate_item(act_restore_all))) {
         borg_note("# Trying to fix stats in combat.");
-        return (true);
+        return true;
     }
 
     /* No further Healing considerations if fighting Questors */
     if (borg_fighting_unique >= 10) {
         /* No further healing considerations right now */
-        return (false);
+        return false;
     }
 
     /* Hack -- heal when wounded a percent of the time */
@@ -358,7 +358,7 @@ static bool borg_heal(int danger)
             || borg_quaff_potion(sv_potion_cure_light)
             || borg_activate_item(act_cure_light))) {
         borg_note("# Healing Level 1.");
-        return (true);
+        return true;
     }
     /* Cure Serious Wounds (4d10) */
     if (pct_down >= 40 && (pct_down <= 50 || borg.trait[BI_CLEVEL] < 20)
@@ -367,7 +367,7 @@ static bool borg_heal(int danger)
         (borg_quaff_potion(sv_potion_cure_serious)
             || borg_activate_item(act_cure_serious))) {
         borg_note("# Healing Level 2.");
-        return (true);
+        return true;
     }
 
     /* Cure Critical Wounds (6d10) */
@@ -376,7 +376,7 @@ static bool borg_heal(int danger)
         && (ccw_heal > danger / 3) && /* No rope-a-doping */
         (borg_activate_item(act_cure_critical) || borg_quaff_crit(false))) {
         borg_note("# Healing Level 3.");
-        return (true);
+        return true;
     }
 
     /* If in danger try  one more Cure Critical if it will help */
@@ -384,7 +384,7 @@ static bool borg_heal(int danger)
         && borg.trait[BI_CURHP] < 50 && danger < ccw_heal
         && borg_quaff_crit(true)) {
         borg_note("# Healing Level 5.");
-        return (true);
+        return true;
     }
 
     /* if deep, and low on HP, but in a zero danger spot, drink some CCW to add
@@ -392,7 +392,7 @@ static bool borg_heal(int danger)
     if (borg.trait[BI_CDEPTH] >= 80 && danger < 50 && pct_down >= 20
         && borg_quaff_potion(sv_potion_cure_critical)) {
         borg_note("# Healing Level 5B.");
-        return (true);
+        return true;
     }
 
     /* Heal step one (200hp) */
@@ -408,7 +408,7 @@ static bool borg_heal(int danger)
             || borg_use_staff_fail(sv_staff_healing)
             || borg_spell_fail(HEALING, allow_fail))) {
         borg_note("# Healing Level 6.");
-        return (true);
+        return true;
     }
 
     /* Generally continue to heal.  But if we are preparing for the end
@@ -419,7 +419,7 @@ static bool borg_heal(int danger)
     if (borg.trait[BI_MAXDEPTH] >= 98 && !borg.trait[BI_KING]
         && !borg_fighting_unique && borg.trait[BI_CLASS] != CLASS_PRIEST) {
         /* Bail out to save the heal pots for Morgoth*/
-        return (false);
+        return false;
     }
 
     /* Heal step two (300hp) */
@@ -435,7 +435,7 @@ static bool borg_heal(int danger)
             || borg_zap_rod(sv_rod_healing)
             || borg_quaff_potion(sv_potion_healing))) {
         borg_note("# Healing Level 7.");
-        return (true);
+        return true;
     }
 
     /* Healing step three (300hp).  */
@@ -455,7 +455,7 @@ static bool borg_heal(int danger)
             || borg_activate_item(act_heal1) || borg_activate_item(act_heal2)
             || borg_activate_item(act_heal3))) {
         borg_note("# Healing Level 8.");
-        return (true);
+        return true;
     }
 
     /* Healing.  First use of EZ_Heals
@@ -480,7 +480,7 @@ static bool borg_heal(int danger)
                     || borg_quaff_potion(sv_potion_healing)
                     || borg_quaff_potion(sv_potion_life))))) {
         borg_note("# Healing Level 9.");
-        return (true);
+        return true;
     }
 
     /* Healing final check.  Note that *heal* and Life potions are not
@@ -494,14 +494,14 @@ static bool borg_heal(int danger)
             || borg_quaff_potion(sv_potion_star_healing)
             || borg_quaff_potion(sv_potion_life))) {
         borg_note("# Healing Level 10.");
-        return (true);
+        return true;
     }
 
     /*** Cures ***/
 
     /* Dont do these in the middle of a fight, teleport out then try it */
     if (danger > avoidance * 2 / 10)
-        return (false);
+        return false;
 
     /* Hack -- cure poison when poisoned
      * This was moved from borg_caution.
@@ -527,7 +527,7 @@ static bool borg_heal(int danger)
             || borg_spell_fail(HOLY_WORD, 60)
             || borg_use_staff_fail(sv_staff_healing)) {
             borg_note("# Curing.");
-            return (true);
+            return true;
         }
 
         /* attempt to fix mana then poison on next round */
@@ -535,7 +535,7 @@ static bool borg_heal(int danger)
             && (borg_quaff_potion(sv_potion_restore_mana)
                 || borg_activate_item(act_restore_mana))) {
             borg_note("# Curing next round.");
-            return (true);
+            return true;
         }
     }
 
@@ -556,19 +556,19 @@ static bool borg_heal(int danger)
             /* Flee! */
             borg_note("# Emergency Cure Poison! Gasp!!!....");
 
-            return (true);
+            return true;
         }
         borg.trait[BI_CURSP] = sv_mana;
 
         /* Quaff healing pots to buy some time- in this emergency.  */
         if (borg_quaff_potion(sv_potion_cure_light)
             || borg_quaff_potion(sv_potion_cure_serious))
-            return (true);
+            return true;
 
         /* Try to Restore Mana */
         if (borg_quaff_potion(sv_potion_restore_mana)
             || borg_activate_item(act_restore_mana))
-            return (true);
+            return true;
 
         /* Emergency check on healing.  Borg_heal has already been checked but
          * but we did not use our ez_heal potions.  All other attempts to save
@@ -579,20 +579,20 @@ static bool borg_heal(int danger)
                 || borg_quaff_potion(sv_potion_life)
                 || borg_quaff_potion(sv_potion_healing))) {
             borg_note("# Healing. Curing section.");
-            return (true);
+            return true;
         }
 
         /* Quaff unknown potions in this emergency.  We might get luck */
         if (borg_quaff_unknown())
-            return (true);
+            return true;
 
         /* Eat unknown mushroom in this emergency.  We might get luck */
         if (borg_eat_unknown())
-            return (true);
+            return true;
 
         /* Use unknown Staff in this emergency.  We might get luck */
         if (borg_use_unknown())
-            return (true);
+            return true;
     }
 
     /* Hack -- cure wounds when bleeding, also critical check */
@@ -604,7 +604,7 @@ static bool borg_heal(int danger)
             || borg_quaff_crit(borg.trait[BI_CURHP] < 10)
             || borg_spell(MINOR_HEALING)
             || borg_quaff_potion(sv_potion_cure_critical)) {
-            return (true);
+            return true;
         }
     }
     /* bleeding and about to die CRITICAL CHECK*/
@@ -618,12 +618,12 @@ static bool borg_heal(int danger)
         /* Quaff healing pots to buy some time- in this emergency.  */
         if (borg_quaff_potion(sv_potion_cure_light)
             || borg_quaff_potion(sv_potion_cure_serious))
-            return (true);
+            return true;
 
         /* Try to Restore Mana */
         if (borg_quaff_potion(sv_potion_restore_mana)
             || borg_activate_item(act_restore_mana))
-            return (true);
+            return true;
 
         /* Emergency check on healing.  Borg_heal has already been checked but
          * but we did not use our ez_heal potions.  All other attempts to save
@@ -634,7 +634,7 @@ static bool borg_heal(int danger)
                 || borg_quaff_potion(sv_potion_star_healing)
                 || borg_quaff_potion(sv_potion_life))) {
             borg_note("# Healing.  Bleeding.");
-            return (true);
+            return true;
         }
 
         /* Cast a spell, go into negative mana */
@@ -645,25 +645,25 @@ static bool borg_heal(int danger)
             /* Flee! */
             borg_note("# Emergency Wound Patch! Gasp!!!....");
 
-            return (true);
+            return true;
         }
         borg.trait[BI_CURSP] = sv_mana;
 
         /* Quaff unknown potions in this emergency.  We might get luck */
         if (borg_quaff_unknown())
-            return (true);
+            return true;
 
         /* Eat unknown mushroom in this emergency.  We might get luck */
         if (borg_eat_unknown())
-            return (true);
+            return true;
 
         /* Use unknown Staff in this emergency.  We might get luck */
         if (borg_use_unknown())
-            return (true);
+            return true;
     }
 
     /* nothing to do */
-    return (false);
+    return false;
 }
 
 /*
@@ -835,7 +835,7 @@ bool borg_caution(void)
                 || borg_read_scroll(sv_scroll_teleport_level)
                 || borg_activate_item(act_tele_level)) {
                 borg_note("# Rising one dlevel (Not ready for Morgoth)");
-                return (true);
+                return true;
             }
 
             /* Start leaving */
@@ -1042,14 +1042,14 @@ bool borg_caution(void)
         /* I'm not in a store */
         borg.in_shop = false;
 
-        return (true);
+        return true;
     }
 
     /* If I am waiting for recall in town */
     if (borg.goal.recalling && borg.goal.recalling <= (borg_game_ratio * 2)
         && !borg.trait[BI_CDEPTH]) {
         if (borg_prep_leave_level_spells())
-            return (true);
+            return true;
     }
 
     /*** Danger ***/
@@ -1176,7 +1176,7 @@ bool borg_caution(void)
             borg_keypress('<');
 
             /* Success */
-            return (true);
+            return true;
         }
     }
 
@@ -1190,14 +1190,14 @@ bool borg_caution(void)
             /* Do these if not lunal mode */
             if (!borg.goal.fleeing_lunal && !borg.goal.fleeing_munchkin) {
                 if (borg_prep_leave_level_spells())
-                    return (true);
+                    return true;
             }
 
             /* Take the stairs */
             borg_keypress('>');
 
             /* Success */
-            return (true);
+            return true;
         }
     }
 
@@ -1229,13 +1229,13 @@ bool borg_caution(void)
         if (borg_eat_food_any() || borg_spell(REMOVE_HUNGER)
             || borg_spell(HERBAL_CURING)) {
             /* Success */
-            return (true);
+            return true;
         }
 
         /* Try to restore mana then cast the spell next round */
         if (borg_quaff_potion(sv_potion_restore_mana)
             || borg_activate_item(act_restore_mana))
-            return (true);
+            return true;
 
         /* Flee for food */
         if (borg.trait[BI_CDEPTH]) {
@@ -1342,7 +1342,7 @@ bool borg_caution(void)
                 borg_note("# Desperate for Stairs (one)");
 
                 borg_desperate = false;
-                return (true);
+                return true;
             }
             borg_desperate = false;
         }
@@ -1355,7 +1355,7 @@ bool borg_caution(void)
                 borg_note("# Desperate for Stairs (two)");
 
                 borg_desperate = false;
-                return (true);
+                return true;
             }
             borg_desperate = false;
         }
@@ -1394,7 +1394,7 @@ bool borg_caution(void)
                     borg_note("# Desperate for Stairs (three)");
 
                     borg_desperate = false;
-                    return (true);
+                    return true;
                 }
                 borg_desperate = false;
             }
@@ -1408,7 +1408,7 @@ bool borg_caution(void)
                 borg_note("# Desperate for Stairs (four)");
 
                 borg_desperate = false;
-                return (true);
+                return true;
             }
             borg_desperate = false;
         }
@@ -1640,7 +1640,7 @@ bool borg_caution(void)
             borg.goal.type = 0;
 
             /* Success */
-            return (true);
+            return true;
         }
     }
 
@@ -1655,7 +1655,7 @@ bool borg_caution(void)
         borg.goal.type = 0;
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /*** Back away ***/
@@ -1839,7 +1839,7 @@ bool borg_caution(void)
             borg.goal.type = 0;
 
             /* Success */
-            return (true);
+            return true;
         }
     }
 
@@ -1852,7 +1852,7 @@ bool borg_caution(void)
                 || borg_quaff_potion(sv_potion_star_healing)
                 || borg_quaff_potion(sv_potion_life))) {
             borg_note("# Healing.  Confusion.");
-            return (true);
+            return true;
         }
         if (borg_eat(TV_MUSHROOM, sv_mush_cure_mind)
             || borg_quaff_potion(sv_potion_cure_serious)
@@ -1860,7 +1860,7 @@ bool borg_caution(void)
             || borg_activate_item(act_cure_confusion)
             || borg_use_staff_fail(sv_staff_healing)) {
             borg_note("# Healing.  Confusion.");
-            return (true);
+            return true;
         }
     }
 
@@ -1881,7 +1881,7 @@ bool borg_caution(void)
             || borg_activate_item(act_rage_bless_resist)
             || borg_activate_item(act_rem_fear_pois)
             || borg_spell_fail(HOLY_WORD, 25)) {
-            return (true);
+            return true;
         }
     }
 
@@ -1958,7 +1958,7 @@ bool borg_caution(void)
             || borg_quaff_potion(sv_potion_healing)
             || borg_quaff_potion(sv_potion_life))) {
         borg_note("# Using reserve EZ_Heal.");
-        return (true);
+        return true;
     }
 
     /* Hack -- use "recall" to flee if possible */
@@ -1969,7 +1969,7 @@ bool borg_caution(void)
         borg_note("# Fleeing the level (recall)");
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* If I am waiting for recall,and in danger, buy time with
@@ -1982,7 +1982,7 @@ bool borg_caution(void)
             && (borg_quaff_potion(sv_potion_restore_mana)
                 || borg_activate_item(act_restore_mana))) {
             borg_note("# Buying time waiting for Recall.(1)");
-            return (true);
+            return true;
         }
 
         if (borg_caution_phase(50, 1)
@@ -1991,7 +1991,7 @@ bool borg_caution(void)
                 || borg_spell_fail(PORTAL, 30)
                 || borg_activate_item(act_tele_phase))) {
             borg_note("# Buying time waiting for Recall.(2)");
-            return (true);
+            return true;
         }
 
         if ((borg.trait[BI_MAXHP] - borg.trait[BI_CURHP] < 100)
@@ -1999,7 +1999,7 @@ bool borg_caution(void)
                 || borg_quaff_potion(sv_potion_cure_serious)
                 || borg_quaff_potion(sv_potion_cure_light))) {
             borg_note("# Buying time waiting for Recall.(3)");
-            return (true);
+            return true;
         }
 
         if ((borg.trait[BI_MAXHP] - borg.trait[BI_CURHP] > 150)
@@ -2010,7 +2010,7 @@ bool borg_caution(void)
                 || borg_quaff_potion(sv_potion_cure_serious)
                 || borg_quaff_potion(sv_potion_cure_light))) {
             borg_note("# Buying time waiting for Recall.(4)");
-            return (true);
+            return true;
         }
     }
 
@@ -2021,11 +2021,11 @@ bool borg_caution(void)
         && !borg.trait[BI_MAXSP]) {
         if (borg_use_unknown() || borg_read_unknown() || borg_quaff_unknown()
             || borg_eat_unknown())
-            return (true);
+            return true;
     }
 
     /* Nothing */
-    return (false);
+    return false;
 }
 
 #endif

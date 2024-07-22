@@ -283,7 +283,7 @@ static void create_random_name(int race, char *name, size_t name_len)
  *
  * Having an item makes the player "aware" of its purpose.
  */
-static void player_outfit_borg(struct player *p)
+static void borg_outfit_player(struct player *p)
 {
     int                      i;
     const struct start_item *si;
@@ -425,7 +425,6 @@ void reincarnate_borg(void)
     cave                  = NULL;
 
     /* Cheat death */
-    player->is_dead          = false;
     borg.trait[BI_MAXDEPTH]  = 0;
     borg.trait[BI_MAXCLEVEL] = 1;
 
@@ -435,14 +434,6 @@ void reincarnate_borg(void)
 
     /* flush the commands */
     borg_flush();
-
-    /* remove the spell counters */
-    for (i = 0; i < player->class->magic.total_spells; i++) {
-        /* get the magics */
-        borg_magic *as = &borg_magics[i];
-        /* reset the counter */
-        as->times = 0;
-    }
 
     /*** Wipe the player ***/
     player_init(player);
@@ -531,7 +522,7 @@ void reincarnate_borg(void)
     player_spells_init(player);
 
     /* outfit the player */
-    player_outfit_borg(player);
+    borg_outfit_player(player);
 
     /* generate town */
     player->upkeep->generate_level = true;

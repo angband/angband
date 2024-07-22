@@ -103,12 +103,12 @@ bool borg_recall(void)
             borg_keypress(ESCAPE);
 
             /* Success */
-            return (true);
+            return true;
         }
     }
 
     /* Nothing */
-    return (false);
+    return false;
 }
 
 /*
@@ -221,7 +221,7 @@ bool borg_surrounded(void)
 
     /* Am I in hallway? If so don't worry about it */
     if (safe_grids == 1 && adjacent_monsters == 1)
-        return (false);
+        return false;
 
     /* I am likely to get surrounded */
     if (monsters > safe_grids) {
@@ -235,14 +235,14 @@ bool borg_surrounded(void)
          */
         if (borg.goal.ignoring) {
             /* borg_note("# Ignoring the fact that I am surrounded.");
-             * return (false);
+             * return false;
              */
         } else
-            return (true);
+            return true;
     }
 
     /* Probably will not be surrounded */
-    return (false);
+    return false;
 }
 
 /*
@@ -312,7 +312,7 @@ bool borg_caution_phase(int emergency, int turns)
 
     /* must have the ability */
     if (!borg.trait[BI_APHASE])
-        return (false);
+        return false;
 
     /* Simulate 100 attempts */
     for (n = k = 0; k < 100; k++) {
@@ -383,12 +383,12 @@ bool borg_caution_phase(int emergency, int turns)
     /* in an emergency try with extra danger allowed */
     if (n > emergency) {
         borg_note(format("# No Phase. scary squares: %d", n));
-        return (false);
+        return false;
     } else
         borg_note(format("# Safe to Phase. scary squares: %d", n));
 
     /* Okay */
-    return (true);
+    return true;
 }
 
 /*
@@ -410,7 +410,7 @@ bool borg_caution_teleport(int emergency, int turns)
 
     /* must have the ability */
     if (!borg.trait[BI_ATELEPORT] || !borg.trait[BI_AESCAPE])
-        return (false);
+        return false;
 
     /* Simulate 100 attempts */
     for (n = k = 0; k < 100; k++) {
@@ -487,10 +487,10 @@ bool borg_caution_teleport(int emergency, int turns)
     /* in an emergency try with extra danger allowed */
     if (n > emergency) {
         borg_note(format("# No Teleport. scary squares: %d", n));
-        return (false);
+        return false;
     }
     /* Okay */
-    return (true);
+    return true;
 }
 
 /*
@@ -510,10 +510,10 @@ static bool borg_escape_stair(void)
         borg_keypress('<');
 
         /* Success */
-        return (true);
+        return true;
     }
 
-    return (false);
+    return false;
 }
 
 /*
@@ -541,7 +541,7 @@ bool borg_shadow_shift(int allow_fail)
 {
     /* disallow if hp too low */
     if (borg.trait[BI_CURHP] < 12)
-        return (false);
+        return false;
     return borg_spell_fail(SHADOW_SHIFT, allow_fail);
 }
 
@@ -559,7 +559,7 @@ bool borg_dimension_door(int allow_fail)
 
     /* Require ability (right now) */
     if (!borg_spell_okay_fail(DIMENSION_DOOR, allow_fail))
-        return (0);
+        return 0;
 
     /* if we are attacking, calculate gains, but if this is just a teleport */
     /* the current danger is the starting point */
@@ -637,7 +637,7 @@ bool borg_escape(int b_q)
     if (!borg.trait[BI_CDEPTH]
         && (borg.trait[BI_ISPOISONED] || borg.trait[BI_ISWEAK]
             || borg.trait[BI_ISCUT]))
-        return (false);
+        return false;
 
     /* Borgs who are in a sea of runes or trying to build one
      * and mostly healthy stay put
@@ -646,7 +646,7 @@ bool borg_escape(int b_q)
         && borg.trait[BI_CURHP] >= (borg.trait[BI_MAXHP] * 5 / 10)) {
         /* In a sea of runes */
         if (borg_morgoth_position)
-            return (false);
+            return false;
 
         /* Scan neighbors */
         for (j = 0; j < 8; j++) {
@@ -662,7 +662,7 @@ bool borg_escape(int b_q)
         }
         /* Touching at least 3 glyphs */
         if (glyphs >= 3)
-            return (false);
+            return false;
     }
 
     /* Hack -- If the borg is weak (no food, starving) on depth 1 and he has no
@@ -673,7 +673,7 @@ bool borg_escape(int b_q)
         if (borg_read_scroll(sv_scroll_teleport_level)
             || borg_activate_item(act_tele_level)) {
             borg_note("# Attempting to leave via teleport level");
-            return (true);
+            return true;
         }
     }
 
@@ -738,7 +738,7 @@ bool borg_escape(int b_q)
             /* Reset timer if borg was in a anti-summon corridor */
             if (borg_t - borg_t_antisummon < 50)
                 borg_t_antisummon = 0;
-            return (true);
+            return true;
         }
 
         borg.trait[BI_CURSP] = borg.trait[BI_MAXSP];
@@ -757,7 +757,7 @@ bool borg_escape(int b_q)
             /* Reset timer if borg was in a anti-summon corridor */
             if (borg_t - borg_t_antisummon < 50)
                 borg_t_antisummon = 0;
-            return (true);
+            return true;
         }
 
         /* emergency phase activation no concern for safety of landing zone. */
@@ -772,7 +772,7 @@ bool borg_escape(int b_q)
             /* Reset timer if borg was in a anti-summon corridor */
             if (borg_t - borg_t_antisummon < 50)
                 borg_t_antisummon = 0;
-            return (true);
+            return true;
         }
 
         /* emergency phase spell */
@@ -787,7 +787,7 @@ bool borg_escape(int b_q)
             /* Reset timer if borg was in a anti-summon corridor */
             if (borg_t - borg_t_antisummon < 50)
                 borg_t_antisummon = 0;
-            return (true);
+            return true;
         }
 
         /* Restore the real mana level */
@@ -799,7 +799,7 @@ bool borg_escape(int b_q)
      */
     if (b_q < avoidance * (25 + risky_boost) / 10 && borg_fighting_unique >= 1
         && borg_fighting_unique <= 3 && borg.trait[BI_CDEPTH] >= 97)
-        return (false);
+        return false;
 
     /* 2 - a bit more scary/
      * Attempt to teleport (usually)
@@ -839,7 +839,7 @@ bool borg_escape(int b_q)
             /* Reset timer if borg was in a anti-summon corridor */
             if (borg_t - borg_t_antisummon < 50)
                 borg_t_antisummon = 0;
-            return (true);
+            return true;
         }
         /* Phase door, if useful */
         if (borg_caution_phase(50, 2) && borg_t - borg_t_antisummon > 50
@@ -852,7 +852,7 @@ bool borg_escape(int b_q)
             if (borg_t - borg_t_antisummon < 50)
                 borg_t_antisummon = 0;
             /* Success */
-            return (true);
+            return true;
         }
     }
 
@@ -883,7 +883,7 @@ bool borg_escape(int b_q)
                 borg_t_antisummon = 0;
 
             /* Success */
-            return (true);
+            return true;
         }
 
         /* Teleport via spell */
@@ -904,7 +904,7 @@ bool borg_escape(int b_q)
                 borg_t_antisummon = 0;
 
             /* Success */
-            return (true);
+            return true;
         }
         /* Phase door, if useful */
         if (borg_caution_phase(75, 2) && borg_t - borg_t_antisummon > 50
@@ -922,7 +922,7 @@ bool borg_escape(int b_q)
                 borg_t_antisummon = 0;
 
             /* Success */
-            return (true);
+            return true;
         }
 
         /* Use Tport Level after the above attempts failed. */
@@ -936,7 +936,7 @@ bool borg_escape(int b_q)
                 borg_t_antisummon = 0;
 
             /* Success */
-            return (true);
+            return true;
         }
 
         /* if we got this far we tried to escape but couldn't... */
@@ -991,7 +991,7 @@ bool borg_escape(int b_q)
                 borg_t_antisummon = 0;
 
             /* Success */
-            return (true);
+            return true;
         }
 
         /* Teleport via spell */
@@ -1011,7 +1011,7 @@ bool borg_escape(int b_q)
                 borg_t_antisummon = 0;
 
             /* Success */
-            return (true);
+            return true;
         }
 
         /* if we got this far we tried to escape but couldn't... */
@@ -1050,7 +1050,7 @@ bool borg_escape(int b_q)
                 borg_t_antisummon = 0;
 
             /* Success */
-            return (true);
+            return true;
         }
     }
 
@@ -1073,7 +1073,7 @@ bool borg_escape(int b_q)
                 borg_t_antisummon = 0;
 
             /* Success */
-            return (true);
+            return true;
         }
 
         /* Teleport via spell */
@@ -1093,7 +1093,7 @@ bool borg_escape(int b_q)
                 borg_t_antisummon = 0;
 
             /* Success */
-            return (true);
+            return true;
         }
 
         /* if we got this far we tried to escape but couldn't... */
@@ -1131,7 +1131,7 @@ bool borg_escape(int b_q)
                 borg_t_antisummon = 0;
 
             /* Success */
-            return (true);
+            return true;
         }
     }
 
@@ -1158,7 +1158,7 @@ bool borg_escape(int b_q)
                 borg_t_antisummon = 0;
 
             /* Success */
-            return (true);
+            return true;
         }
 
         /* Teleport via spell */
@@ -1177,7 +1177,7 @@ bool borg_escape(int b_q)
                 borg_t_antisummon = 0;
 
             /* Success */
-            return (true);
+            return true;
         }
     }
 
@@ -1197,11 +1197,11 @@ bool borg_escape(int b_q)
                 borg_t_antisummon = 0;
 
             /* Success */
-            return (true);
+            return true;
         }
     }
 
-    return (false);
+    return false;
 }
 
 #endif

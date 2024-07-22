@@ -51,7 +51,7 @@ int borg_flow_cost_stair(int y, int x, int b_stair)
 
     /* Paranoid */
     if (b_stair == -1)
-        return (0);
+        return 0;
 
     /* Enqueue the player's grid */
     borg_flow_enqueue_grid(track_less.y[b_stair], track_less.x[b_stair]);
@@ -74,19 +74,19 @@ bool borg_flow_stair_both(int why, bool sneak)
 
     /* None to flow to */
     if (!track_less.num && !track_more.num)
-        return (false);
+        return false;
 
     /* don't go down if hungry or low on food, unless fleeing a scary town */
     if (!borg.goal.fleeing && !scaryguy_on_level && !track_less.num
         && (avoidance <= borg.trait[BI_CURHP] * 15 / 10)
         && (borg.trait[BI_ISWEAK] || borg.trait[BI_ISHUNGRY]
             || borg.trait[BI_FOOD] < 2))
-        return (false);
+        return false;
 
     /* Absolutely no diving if no light */
     if (borg.trait[BI_CURLITE] == 0 && borg.trait[BI_CDEPTH] != 0
         && borg.munchkin_mode == false)
-        return (false);
+        return false;
 
     /* Clear the flow codes */
     borg_flow_clear();
@@ -116,14 +116,14 @@ bool borg_flow_stair_both(int why, bool sneak)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit("stairs", why))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(why))
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -135,7 +135,7 @@ bool borg_flow_stair_less(int why, bool sneak)
 
     /* None to flow to */
     if (!track_less.num)
-        return (false);
+        return false;
 
     /* Clear the flow codes */
     borg_flow_clear();
@@ -160,14 +160,14 @@ bool borg_flow_stair_less(int why, bool sneak)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit("up-stairs", why))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(why))
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -179,36 +179,36 @@ bool borg_flow_stair_more(int why, bool sneak, bool brave)
 
     /* None to flow to */
     if (!track_more.num)
-        return (false);
+        return false;
 
     /* if there are no down stairs, don't filter use of up stairs */
     if (track_less.num) {
         /* not unless safe or munchkin/Lunal Mode or brave */
         if (!borg.lunal_mode && !borg.munchkin_mode && !brave
             && (char *)NULL != borg_prepared(borg.trait[BI_CDEPTH] + 1))
-            return (false);
+            return false;
 
         /* dont go down if hungry or low on food, unless fleeing a scary town */
         if (!brave && borg.trait[BI_CDEPTH] && !scaryguy_on_level
             && (borg.trait[BI_ISWEAK] || borg.trait[BI_ISHUNGRY]
                 || borg.trait[BI_FOOD] < 2))
-            return (false);
+            return false;
 
         /* If I need to sell crap, then don't go down */
         if (borg.trait[BI_CDEPTH] && borg.trait[BI_CLEVEL] < 25
             && borg.trait[BI_GOLD] < 25000 && borg_count_sell() >= 13
             && !borg.munchkin_mode)
-            return (false);
+            return false;
 
         /* No diving if no light */
         if (borg.trait[BI_CURLITE] == 0 && borg.munchkin_mode == false)
-            return (false);
+            return false;
     }
 
     /* don't head for the stairs if you are recalling,  */
     /* even if you are fleeing. */
     if (borg.goal.recalling)
-        return (false);
+        return false;
 
     /* Clear the flow codes */
     borg_flow_clear();
@@ -228,14 +228,14 @@ bool borg_flow_stair_more(int why, bool sneak, bool brave)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit("down-stairs", why))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(why))
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -245,17 +245,17 @@ bool borg_prep_leave_level_spells(void)
 {
     /* if we are running away, just run. */
     if (borg.goal.fleeing)
-        return (false);
+        return false;
 
     /* if we are low on mana, don't prep. */
     if (borg.trait[BI_CURSP] < ((borg.trait[BI_MAXSP] * 6) / 10))
-        return (false);
+        return false;
 
     /* Cast haste */
     if (!borg.temp.fast && borg_spell_fail(HASTE_SELF, 15)) {
         borg_note("# Casting speed spell before leaving level.");
         borg.no_rest_prep = 5000;
-        return (true);
+        return true;
     }
 
     /* Cast resistance */
@@ -265,21 +265,21 @@ bool borg_prep_leave_level_spells(void)
         && borg_spell_fail(RESISTANCE, 15)) {
         borg_note("# Casting Resistance spell before leaving level.");
         borg.no_rest_prep = 21000;
-        return (true);
+        return true;
     }
 
     /* Cast fastcast */
     if (!borg.temp.fastcast && borg_spell_fail(MANA_CHANNEL, 15)) {
         borg_note("# Casting Mana Channel spell before leaving level.");
         borg.no_rest_prep = 6000;
-        return (true);
+        return true;
     }
 
     /* Cast Berserk Strength */
     if (!borg.temp.berserk && borg_spell_fail(BERSERK_STRENGTH, 15)) {
         borg_note("# Casting Berserk Strength spell before leaving level.");
         borg.no_rest_prep = 10000;
-        return (true);
+        return true;
     }
 
     /* Cast heroism if above level it gives temp attribute */
@@ -287,14 +287,14 @@ bool borg_prep_leave_level_spells(void)
         && borg.trait[BI_CLEVEL] > borg_heroism_level()) {
         borg_note("# Casting Heroism spell before leaving level.");
         borg.no_rest_prep = 3000;
-        return (true);
+        return true;
     }
 
     /* Cast regen just before returning to dungeon */
     if (!borg.temp.regen && borg_spell_fail(RAPID_REGENERATION, 15)) {
         borg_note("# Casting Regen before leaving level.");
         borg.no_rest_prep = 6000;
-        return (true);
+        return true;
     }
 
     /* Cast Smite Evil just before returning to dungeon */
@@ -302,7 +302,7 @@ bool borg_prep_leave_level_spells(void)
         && borg_spell_fail(SMITE_EVIL, 15)) {
         borg_note("# Casting Smite Evil before leaving level.");
         borg.no_rest_prep = 21000;
-        return (true);
+        return true;
     }
 
     /* Cast Venom just before returning to dungeon */
@@ -310,7 +310,7 @@ bool borg_prep_leave_level_spells(void)
         && borg_spell_fail(VENOM, 15)) {
         borg_note("# Casting Venom before leaving level.");
         borg.no_rest_prep = 18000;
-        return (true);
+        return true;
     }
 
     /* Cast PFE just before returning to dungeon */
@@ -318,7 +318,7 @@ bool borg_prep_leave_level_spells(void)
         && borg_spell_fail(PROTECTION_FROM_EVIL, 15)) {
         borg_note("# Casting PFE before leaving level.");
         borg.no_rest_prep = borg.trait[BI_CLEVEL] * 1000;
-        return (true);
+        return true;
     }
 
     /* Cast bless prep things */
@@ -327,9 +327,9 @@ bool borg_prep_leave_level_spells(void)
                 || borg_spell_fail(DEMON_BANE, 15)))) {
         borg_note("# Casting blessing before leaving level.");
         borg.no_rest_prep = 11000;
-        return (true);
+        return true;
     }
-    return (false);
+    return false;
 }
 
 void borg_init_flow_stairs(void)

@@ -53,9 +53,9 @@ bool borg_check_light_only(void)
 {
     /* Never in town, when blind or when hallucinating */
     if (!borg.trait[BI_CDEPTH])
-        return (false);
+        return false;
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISIMAGE])
-        return (false);
+        return false;
 
     /** Use wizard light sometimes **/
 
@@ -200,7 +200,7 @@ bool borg_check_light(void)
 
     /* Never in town when mature (scary guy)*/
     if (borg.trait[BI_MAXCLEVEL] > 10 && !borg.trait[BI_CDEPTH])
-        return (false);
+        return false;
 
     /* Never when compromised, save your mana */
     if (borg.trait[BI_ISBLIND] 
@@ -209,7 +209,7 @@ bool borg_check_light(void)
         || borg.trait[BI_ISPOISONED]
         || borg.trait[BI_ISCUT] 
         || borg.trait[BI_ISWEAK])
-        return (false);
+        return false;
 
     /* XXX XXX XXX Dark */
 
@@ -345,7 +345,7 @@ bool borg_check_light(void)
             borg.when_detect_evil  = borg_t;
             borg.when_detect_obj   = borg_t;
 
-            return (true);
+            return true;
         }
     }
 
@@ -363,7 +363,7 @@ bool borg_check_light(void)
 
             borg.when_detect_evil = borg_t;
 
-            return (true);
+            return true;
         }
     }
 
@@ -387,7 +387,7 @@ bool borg_check_light(void)
             borg.when_detect_traps = borg_t;
             borg.when_detect_doors = borg_t;
 
-            return (true);
+            return true;
         }
     }
 
@@ -405,7 +405,7 @@ bool borg_check_light(void)
 
             borg.when_detect_traps = borg_t;
 
-            return (true);
+            return true;
         }
     }
 
@@ -424,7 +424,7 @@ bool borg_check_light(void)
 
             borg.when_detect_doors = borg_t;
 
-            return (true);
+            return true;
         }
     }
 
@@ -456,7 +456,7 @@ bool borg_check_light(void)
                     borg_grids[y][x].info &= ~BORG_IGNORE_MAP;
                 }
             }
-            return (true);
+            return true;
         }
     }
 
@@ -472,7 +472,7 @@ bool borg_check_light(void)
 
             borg.when_detect_obj = borg_t;
 
-            return (true);
+            return true;
         }
     }
 
@@ -501,11 +501,11 @@ static bool borg_refuel_lantern(void)
 
     /* Still none */
     if (i < 0)
-        return (false);
+        return false;
 
     /* Cant refuel a torch with oil */
     if (borg_items[INVEN_LIGHT].sval != sv_light_lantern) {
-        return (false);
+        return false;
     }
 
     /* Log the message */
@@ -519,7 +519,7 @@ static bool borg_refuel_lantern(void)
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -603,7 +603,7 @@ bool borg_light_beam(bool simulation)
 
     /* Hack -- weak/dark is very unhappy */
     if (borg.trait[BI_ISWEAK])
-        return (false);
+        return false;
 
     /* Require the ability */
     if (borg_spell_okay_fail(SPEAR_OF_LIGHT, 20)
@@ -749,11 +749,11 @@ bool borg_light_beam(bool simulation)
                 || borg.c.y == 36
                 || borg.c.y == 46 
                 || borg.c.y == 47)))
-        return (false);
+        return false;
 
     /* simulation */
     if (simulation)
-        return (true);
+        return true;
 
     /* cast the light beam */
     if (borg_spell_fail(SPEAR_OF_LIGHT, 20) || borg_zap_rod(sv_rod_light)
@@ -761,11 +761,11 @@ bool borg_light_beam(bool simulation)
         /* apply the direction */
         borg_keypress(I2D(dir));
         borg_note("# Illuminating this hallway");
-        return (true);
+        return true;
     }
 
     /* cant do it */
-    return (false);
+    return false;
 }
 
 #endif

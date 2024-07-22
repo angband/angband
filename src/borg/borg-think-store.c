@@ -87,18 +87,18 @@ bool borg_choose_shop(void)
 {
     /* Must be in town */
     if (borg.trait[BI_CDEPTH])
-        return (false);
+        return false;
 
     /* Forbid if been sitting on level forever */
     /*    Just come back and work through the loop later */
     if (borg_t - borg_began > 2000)
-        return (false);
+        return false;
     if (borg.time_this_panel > 1350)
-        return (false);
+        return false;
 
     /* Already flowing to a store to sell something */
     if (borg.goal.shop != -1 && borg.goal.ware != -1)
-        return (true);
+        return true;
 
     /* If poisoned or bleeding -- flow to temple */
     if (borg.trait[BI_ISCUT] || borg.trait[BI_ISPOISONED])
@@ -133,7 +133,7 @@ bool borg_choose_shop(void)
                 f_info[stores[borg.goal.shop].feat].name));
 
             /* Success */
-            return (true);
+            return true;
         }
 
         /* if temple is out of healing stuff, try the house */
@@ -143,7 +143,7 @@ bool borg_choose_shop(void)
                 borg_shops[borg.goal.shop].ware[borg.goal.ware].desc));
 
             /* Success */
-            return (true);
+            return true;
         }
     }
 
@@ -168,9 +168,9 @@ bool borg_choose_shop(void)
                 f_info[stores[borg.goal.shop].feat].name));
 
             /* Success */
-            return (true);
+            return true;
         } else
-            return (false);
+            return false;
     }
 
     /* Step 1 -- Sell items to the home */
@@ -184,7 +184,7 @@ bool borg_choose_shop(void)
                 borg_shops[borg.goal.shop].ware[borg.goal.ware].desc));
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Step 2 -- Sell items to the shops */
@@ -195,7 +195,7 @@ bool borg_choose_shop(void)
                 f_info[stores[borg.goal.shop].feat].name));
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Step 3 -- Buy items from the shops (for the player) */
@@ -208,7 +208,7 @@ bool borg_choose_shop(void)
             f_info[stores[borg.goal.shop].feat].name));
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Step 4 -- Buy items from the home (for the player) */
@@ -218,7 +218,7 @@ bool borg_choose_shop(void)
             borg_shops[borg.goal.shop].ware[borg.goal.ware].desc));
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* get rid of junk from home first.  That way the home is 'uncluttered' */
@@ -233,12 +233,12 @@ bool borg_choose_shop(void)
             borg_shops[borg.goal.shop].ware[borg.goal.ware].desc));
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Do not Stock Up the home while money scumming */
     if (borg_cfg[BORG_MONEY_SCUM_AMOUNT])
-        return (false);
+        return false;
 
     /* Step 6 -- Buy items from the shops (for the home) */
     if (borg_think_shop_grab_interesting()) {
@@ -248,7 +248,7 @@ bool borg_choose_shop(void)
             f_info[stores[borg.goal.shop].feat].name));
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Step 7A -- Buy weapons from the home (as a backup item) */
@@ -258,7 +258,7 @@ bool borg_choose_shop(void)
             borg_shops[borg.goal.shop].ware[borg.goal.ware].desc));
 
         /* Success */
-        return (true);
+        return true;
     }
     /* Step 7B -- Buy armour from the home (as a backup item) */
     if (borg_cfg[BORG_USES_SWAPS] && borg_think_home_buy_swap_armour()) {
@@ -267,11 +267,11 @@ bool borg_choose_shop(void)
             borg_shops[borg.goal.shop].ware[borg.goal.ware].desc));
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Failure */
-    return (false);
+    return false;
 }
 
 /*
@@ -304,7 +304,7 @@ bool borg_think_store(void)
 
     /* Wear "optimal" equipment */
     if (borg_best_stuff())
-        return (true);
+        return true;
 
     /* If using a digger, Wear "useful" equipment.
      * unless that digger is an artifact, then treat
@@ -312,7 +312,7 @@ bool borg_think_store(void)
      */
     if (borg_items[INVEN_WIELD].tval == TV_DIGGING
         && !borg_items[INVEN_WIELD].art_idx && borg_wear_stuff())
-        return (true);
+        return true;
 
     /* Choose a shop to visit.  Goal_shop indicates he is trying to sell
      * something somewhere. */
@@ -327,11 +327,11 @@ bool borg_think_store(void)
 
         /* Try to sell stuff */
         if (borg_think_shop_sell())
-            return (true);
+            return true;
 
         /* Try to buy stuff */
         if (borg_think_shop_buy())
-            return (true);
+            return true;
     }
 
     /* No shop */
@@ -344,7 +344,7 @@ bool borg_think_store(void)
     borg_keypress(ESCAPE);
 
     /* Done */
-    return (true);
+    return true;
 }
 
 #endif

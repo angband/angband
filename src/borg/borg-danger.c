@@ -84,9 +84,9 @@ static int borg_danger_physical(int i, bool full_damage)
 
     /* Mega-Hack -- unknown monsters */
     if (kill->r_idx == 0)
-        return (1000);
+        return 1000;
     if (kill->r_idx >= z_info->r_max)
-        return (1000);
+        return 1000;
 
     /* Analyze each physical attack */
     for (k = 0; k < z_info->mon_blows_max; k++) {
@@ -537,7 +537,7 @@ static int borg_danger_physical(int i, bool full_damage)
     }
 
     /* Danger */
-    return (n);
+    return n;
 }
 
 /*
@@ -594,13 +594,13 @@ static int borg_danger_spell(
 
     /* Mega-Hack -- unknown monsters */
     if (kill->r_idx == 0)
-        return (1000);
+        return 1000;
     if (kill->r_idx >= z_info->r_max)
-        return (1000);
+        return 1000;
 
     /* Paranoia -- Nothing to cast */
     if (!kill->ranged_attack)
-        return (0);
+        return 0;
 
     /* Extract hit-points */
     hp = kill->power;
@@ -2256,7 +2256,7 @@ static int borg_danger_spell(
     if (!average)
         return (av);
     if (n >= av * 15 / 10 || n > borg.trait[BI_CURHP] * 8 / 10)
-        return (n);
+        return n;
     else
         /* Average Danger */
         return (av);
@@ -2306,7 +2306,7 @@ int borg_danger_one_kill(
 
     /* Paranoia */
     if (!kill->r_idx)
-        return (0);
+        return 0;
 
     /* Skip certain monster indexes.
      * These have been listed mainly in Teleport Other
@@ -2316,7 +2316,7 @@ int borg_danger_one_kill(
         for (ii = 1; ii <= borg_tp_other_n; ii++) {
             /* Is the current danger check same as a saved monster index? */
             if (i == borg_tp_other_index[ii]) {
-                return (0);
+                return 0;
             }
         }
     }
@@ -2334,7 +2334,7 @@ int borg_danger_one_kill(
 
     /* Minimal distance */
     if (d > 20)
-        return (0);
+        return 0;
 
     /* A very speedy borg will miscalculate danger of some monsters */
     if (borg.trait[BI_SPEED] >= 135)

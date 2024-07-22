@@ -235,7 +235,7 @@ static borg_spell_rating borg_spell_ratings_BLACKGUARD[] =
  */
 int borg_spell_stat(void)
 {
-    if (player->class->magic.total_spells) {
+    if (borg_can_cast()) {
         struct class_spell *spell = &(player->class->magic.books[0].spells[0]);
         if (spell != NULL) {
             return spell->realm->stat;
@@ -246,7 +246,25 @@ int borg_spell_stat(void)
 }
 
 /*
- * get the level at which Heroism grants Heroism
+ * Does this player cast spells
+ */
+bool borg_can_cast(void)
+{
+    return player->class->magic.total_spells != 0;
+}
+
+/*
+ * Does this player mostly cast spells
+ * *HACK* rather than hard code classes, assume any class with 
+ * more than three books is primarily casting
+ */
+bool borg_primarily_caster(void)
+{
+    return player->class->magic.num_books > 3;
+}
+
+/*
+ * get the level at which Heroism (spell) grants Heroism (effect)
  */
 int borg_heroism_level(void)
 {
@@ -262,7 +280,7 @@ int borg_heroism_level(void)
  */
 int borg_get_book_num(int sval)
 {
-    if (!player->class->magic.total_spells)
+    if (!borg_can_cast())
         return -1;
 
     for (int book_num = 0; book_num < player->class->magic.num_books;
@@ -271,6 +289,32 @@ int borg_get_book_num(int sval)
             return book_num;
     }
     return -1;
+}
+
+/*
+ * is this a dungeon book (not a basic book)
+ */
+bool borg_is_dungeon_book(int tval, int sval)
+{
+    switch (tval) {
+    case TV_PRAYER_BOOK:
+    case TV_MAGIC_BOOK:
+    case TV_NATURE_BOOK:
+    case TV_SHADOW_BOOK:
+    case TV_OTHER_BOOK:
+        break;
+    default:
+        return false;
+    }
+
+    /* keep track of if this is a book from the dungeon */
+    for (int i = 0; i < player->class->magic.num_books; i++) {
+        struct class_book book = player->class->magic.books[i];
+        if (tval == book.tval && sval == book.sval && book.dungeon)
+            return true;
+    }
+
+    return false;
 }
 
 /*
@@ -336,18 +380,18 @@ bool borg_spell_legal(const enum borg_spells spell)
 
     /* The book must be possessed */
     if (borg.book_idx[as->book] < 0)
-        return (false);
+        return false;
 
     /* The spell must be "known" */
     if (borg_magics[spell_num].status < BORG_MAGIC_TEST)
-        return (false);
+        return false;
 
     /* The spell must be affordable (when rested) */
     if (borg_magics[spell_num].power > borg.trait[BI_MAXSP])
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -380,7 +424,7 @@ bool borg_spell_okay(const enum borg_spells spell)
 
     /* Dark */
     if (no_light(player))
-        return (false);
+        return false;
 
     /* Define reserve_mana for each class */
     switch (borg.trait[BI_CLASS]) {
@@ -413,36 +457,36 @@ bool borg_spell_okay(const enum borg_spells spell)
 
     /* Require ability (when rested) */
     if (!borg_spell_legal(spell))
-        return (false);
+        return false;
 
     /* Hack -- blind/confused/amnesia */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
-        return (false);
+        return false;
 
     /* The spell must be affordable (now) */
     if (as->power > borg.trait[BI_CURSP])
-        return (false);
+        return false;
 
     /* Do not cut into reserve mana (for final teleport) */
     if (borg.trait[BI_CURSP] - as->power < reserve_mana) {
         /* nourishing spells okay */
         if (borg_spell_has_effect(spell_num, EF_NOURISH))
-            return (true);
+            return true;
 
         /* okay to run away */
         if (borg_spell_has_effect(spell_num, EF_TELEPORT))
-            return (true);
+            return true;
 
         /* Magic Missile OK */
         if (MAGIC_MISSILE == spell && borg.trait[BI_CDEPTH] <= 35)
-            return (true);
+            return true;
 
         /* others are rejected */
-        return (false);
+        return false;
     }
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -549,14 +593,14 @@ bool borg_spell(const enum borg_spells spell)
 
     /* Require ability (right now) */
     if (!borg_spell_okay(spell))
-        return (false);
+        return false;
 
     /* Look for the book */
     i = borg.book_idx[as->book];
 
     /* Paranoia */
     if (i < 0)
-        return (false);
+        return false;
 
     /* Debugging Info */
     borg_note(format("# Casting %s (%d,%d).", as->name, i, as->book_offset));
@@ -570,7 +614,7 @@ bool borg_spell(const enum borg_spells spell)
     as->times++;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*

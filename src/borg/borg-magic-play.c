@@ -57,6 +57,7 @@ static bool borg_can_play_spell(borg_magic *as)
     case GLYPH_OF_WARDING:
     case SINGLE_COMBAT:
     case VAMPIRE_STRIKE:
+    case COMMAND:
     return false;
     default:
         break;
@@ -87,17 +88,17 @@ bool borg_play_magic(bool bored)
 
     /* Hack -- must use magic or prayers */
     if (!player->class->magic.total_spells)
-        return (false);
+        return false;
 
     /* Hack -- blind/confused */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
-        return (false);
+        return false;
 
     /* Dark */
     if (!borg.trait[BI_CURLITE])
-        return (false);
+        return false;
     if (borg_grids[borg.c.y][borg.c.x].info == BORG_DARK)
-        return (false);
+        return false;
 
     /* loop through spells backward */
     for (spell_num = player->class->magic.total_spells - 1; spell_num >= 0;
@@ -152,16 +153,16 @@ bool borg_play_magic(bool bored)
         }
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Hack -- only in town */
     if (borg.trait[BI_CDEPTH] && !borg.munchkin_mode)
-        return (false);
+        return false;
 
     /* Hack -- only when bored */
     if (!bored)
-        return (false);
+        return false;
 
     /* Check each spell (backwards) */
     for (spell_num = player->class->magic.total_spells - 1; spell_num >= 0;
@@ -214,12 +215,12 @@ bool borg_play_magic(bool bored)
             }
 
             /* Success */
-            return (true);
+            return true;
         }
     }
 
     /* Nope */
-    return (false);
+    return false;
 }
 
 #endif

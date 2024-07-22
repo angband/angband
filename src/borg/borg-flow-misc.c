@@ -94,25 +94,25 @@ bool borg_happy_grid_bold(int y, int x)
 
     /* Bounds Check */
     if (y >= DUNGEON_HGT - 2 || y <= 2 || x >= DUNGEON_WID - 2 || x <= 2)
-        return (false);
+        return false;
 
     /* Accept stairs */
     if (ag->feat == FEAT_LESS)
-        return (true);
+        return true;
     if (ag->feat == FEAT_MORE)
-        return (true);
+        return true;
     if (ag->glyph)
-        return (true);
+        return true;
     if (ag->feat == FEAT_LAVA && !borg.trait[BI_IFIRE])
-        return (false);
+        return false;
 
     /* Hack -- weak/dark is very unhappy */
     if (borg.trait[BI_ISWEAK] || borg.trait[BI_CURLITE] == 0)
-        return (false);
+        return false;
 
     /* Apply a control effect so that he does not get stuck in a loop */
     if ((borg_t - borg_began) >= 2000)
-        return (false);
+        return false;
 
     /* Case 1a: north-south corridor */
     if (borg_cave_floor_bold(y - 1, x) && borg_cave_floor_bold(y + 1, x)
@@ -122,7 +122,7 @@ bool borg_happy_grid_bold(int y, int x)
         && !borg_cave_floor_bold(y - 1, x - 1)
         && !borg_cave_floor_bold(y - 1, x + 1)) {
         /* Happy */
-        return (true);
+        return true;
     }
 
     /* Case 1b: east-west corridor */
@@ -133,21 +133,21 @@ bool borg_happy_grid_bold(int y, int x)
         && !borg_cave_floor_bold(y - 1, x - 1)
         && !borg_cave_floor_bold(y - 1, x + 1)) {
         /* Happy */
-        return (true);
+        return true;
     }
 
     /* Case 1aa: north-south doorway */
     if (borg_cave_floor_bold(y - 1, x) && borg_cave_floor_bold(y + 1, x)
         && !borg_cave_floor_bold(y, x - 1) && !borg_cave_floor_bold(y, x + 1)) {
         /* Happy */
-        return (true);
+        return true;
     }
 
     /* Case 1ba: east-west doorway */
     if (borg_cave_floor_bold(y, x - 1) && borg_cave_floor_bold(y, x + 1)
         && !borg_cave_floor_bold(y - 1, x) && !borg_cave_floor_bold(y + 1, x)) {
         /* Happy */
-        return (true);
+        return true;
     }
 
     /* Case 2a: north pillar */
@@ -155,7 +155,7 @@ bool borg_happy_grid_bold(int y, int x)
         && borg_cave_floor_bold(y - 1, x + 1)
         && borg_cave_floor_bold(y - 2, x)) {
         /* Happy */
-        return (true);
+        return true;
     }
 
     /* Case 2b: south pillar */
@@ -163,7 +163,7 @@ bool borg_happy_grid_bold(int y, int x)
         && borg_cave_floor_bold(y + 1, x + 1)
         && borg_cave_floor_bold(y + 2, x)) {
         /* Happy */
-        return (true);
+        return true;
     }
 
     /* Case 2c: east pillar */
@@ -171,7 +171,7 @@ bool borg_happy_grid_bold(int y, int x)
         && borg_cave_floor_bold(y + 1, x + 1)
         && borg_cave_floor_bold(y, x + 2)) {
         /* Happy */
-        return (true);
+        return true;
     }
 
     /* Case 2d: west pillar */
@@ -179,7 +179,7 @@ bool borg_happy_grid_bold(int y, int x)
         && borg_cave_floor_bold(y + 1, x - 1)
         && borg_cave_floor_bold(y, x - 2)) {
         /* Happy */
-        return (true);
+        return true;
     }
 
     /* check for grids that have been stepped on before */
@@ -188,13 +188,13 @@ bool borg_happy_grid_bold(int y, int x)
         if ((track_step.y[i] == y) && (track_step.x[i] == x)) {
             /* Recent step is good */
             if (i < 25) {
-                return (true);
+                return true;
             }
         }
     }
 
     /* Not happy */
-    return (false);
+    return false;
 }
 
 /*
@@ -209,40 +209,40 @@ bool borg_flow_recover(bool viewable, int dist)
 
     /* Sometimes we loop on this */
     if (borg.time_this_panel > 500)
-        return (false);
+        return false;
 
     /* No retreating and recovering when low level */
     if (borg.trait[BI_CLEVEL] <= 5)
-        return (false);
+        return false;
 
     /* Mana for spell casters */
-    if (player->class->magic.num_books > 3) {
+    if (borg_primarily_caster()) {
         if (borg.trait[BI_CURHP] > borg.trait[BI_MAXHP] / 3
             && borg.trait[BI_CURSP] > borg.trait[BI_MAXSP] / 4
             && /* Non spell casters? */
             !borg.trait[BI_ISCUT] && !borg.trait[BI_ISSTUN]
             && !borg.trait[BI_ISHEAVYSTUN] && !borg.trait[BI_ISAFRAID])
-            return (false);
+            return false;
     } else /* Non Spell Casters */
     {
         /* do I need to recover some? */
         if (borg.trait[BI_CURHP] > borg.trait[BI_MAXHP] / 3
             && !borg.trait[BI_ISCUT] && !borg.trait[BI_ISSTUN]
             && !borg.trait[BI_ISHEAVYSTUN] && !borg.trait[BI_ISAFRAID])
-            return (false);
+            return false;
     }
 
     /* If Fleeing, then do not rest */
     if (borg.goal.fleeing)
-        return (false);
+        return false;
 
     /* If Scumming, then do not rest */
     if (borg.lunal_mode || borg.munchkin_mode)
-        return (false);
+        return false;
 
     /* No need if hungry */
     if (borg.trait[BI_ISHUNGRY])
-        return (false);
+        return false;
 
     /* Nothing found */
     borg_temp_n = 0;
@@ -291,7 +291,7 @@ bool borg_flow_recover(bool viewable, int dist)
 
     /* Nothing to kill */
     if (!borg_temp_n)
-        return (false);
+        return false;
 
     /* Clear the flow codes */
     borg_flow_clear();
@@ -307,13 +307,13 @@ bool borg_flow_recover(bool viewable, int dist)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit("Recover Grid", GOAL_RECOVER))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(GOAL_RECOVER))
-        return (false);
+        return false;
 
-    return (true);
+    return true;
 }
 
 /*
@@ -330,7 +330,7 @@ bool borg_flow_vein(bool viewable, int nearness)
 
     /* Efficiency -- Nothing to take */
     if (!track_vein.num)
-        return (false);
+        return false;
 
     /* Increase leash */
     if (borg.trait[BI_CLEVEL] >= 20)
@@ -338,11 +338,11 @@ bool borg_flow_vein(bool viewable, int nearness)
 
     /* Not needed if rich */
     if (borg.trait[BI_GOLD] >= 100000)
-        return (false);
+        return false;
 
     /* Require digger, capacity, or skill to dig at least Quartz */
     if (!borg_can_dig(true, FEAT_QUARTZ_K))
-        return (false);
+        return false;
 
     /* Nothing yet */
     borg_temp_n = 0;
@@ -398,7 +398,7 @@ bool borg_flow_vein(bool viewable, int nearness)
 
     /* Nothing to mine */
     if (!borg_temp_n)
-        return (false);
+        return false;
 
     /* Clear the flow codes */
     borg_flow_clear();
@@ -417,14 +417,14 @@ bool borg_flow_vein(bool viewable, int nearness)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit("vein", GOAL_TAKE))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(GOAL_TAKE))
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -453,15 +453,15 @@ bool borg_flow_spastic(bool bored)
 
     /* Hack -- not in town */
     if (!borg.trait[BI_CDEPTH])
-        return (false);
+        return false;
 
     /* Hack -- Not if starving */
     if (borg.trait[BI_ISWEAK])
-        return (false);
+        return false;
 
     /* Hack -- Not if hopeless unless twitchy */
     if (borg_t - borg_began > 3000 && avoidance <= borg.trait[BI_CURHP])
-        return (false);
+        return false;
 
     /* Not bored */
     if (!bored) {
@@ -470,7 +470,7 @@ bool borg_flow_spastic(bool bored)
 
         /* Avoid searching when in danger */
         if (p > avoidance / 4)
-            return (false);
+            return false;
     }
 
     /* Check distance away from stairs, used later */
@@ -518,7 +518,7 @@ bool borg_flow_spastic(bool bored)
         }
 
         /* we searched here */
-        return (false);
+        return false;
     }
 
     /* Reverse flow */
@@ -710,7 +710,7 @@ bool borg_flow_spastic(bool bored)
 
     /* Hack -- Nothing found */
     if (b_v < 0)
-        return (false);
+        return false;
 
     /* Access grid */
     ag = &borg_grids[b_y][b_x];
@@ -727,14 +727,14 @@ bool borg_flow_spastic(bool bored)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit("spastic", GOAL_XTRA))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(GOAL_XTRA))
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -748,7 +748,7 @@ bool borg_flow_shop_entry(int i)
 
     /* Must be in town */
     if (borg.trait[BI_CDEPTH])
-        return (false);
+        return false;
 
     /* Obtain the location */
     x = track_shop_x[i];
@@ -756,7 +756,7 @@ bool borg_flow_shop_entry(int i)
 
     /* Hack -- Must be known */
     if (!x || !y)
-        return (false);
+        return false;
 
     /* Hack -- re-enter a shop if needed */
     if ((x == borg.c.x) && (y == borg.c.y)) {
@@ -767,7 +767,7 @@ bool borg_flow_shop_entry(int i)
         borg_keypress('5');
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Clear the flow codes */
@@ -781,14 +781,14 @@ bool borg_flow_shop_entry(int i)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit(name, GOAL_MISC))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(GOAL_MISC))
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -820,7 +820,7 @@ bool borg_flow_light(int why)
     }
     /* None to flow to */
     if (!borg_glow_n)
-        return (false);
+        return false;
 
     /* Clear the flow codes */
     borg_flow_clear();
@@ -836,14 +836,14 @@ bool borg_flow_light(int why)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit("a lighted area", why))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(why))
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -863,11 +863,11 @@ bool borg_flow_vault(int nearness)
 
     /* no need if no vault on level */
     if (!vault_on_level)
-        return (false);
+        return false;
 
     /* no need if we can't dig at least quartz */
     if (!borg_can_dig(false, FEAT_QUARTZ))
-        return (false);
+        return false;
 
     can_dig_hard = borg_can_dig(false, FEAT_GRANITE);
 
@@ -919,7 +919,7 @@ bool borg_flow_vault(int nearness)
 
     /* None to flow to */
     if (!borg_temp_n)
-        return (false);
+        return false;
 
     /* Examine each ones */
     for (i = 0; i < borg_temp_n; i++) {
@@ -932,14 +932,14 @@ bool borg_flow_vault(int nearness)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit("vault excavation", GOAL_VAULT))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(GOAL_VAULT))
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -964,7 +964,7 @@ bool borg_twitchy(void)
                 || borg_activate_item(act_tele_long)
                 || borg_read_scroll(sv_scroll_phase_door))) {
             /* We did something */
-            return (true);
+            return true;
         }
     }
 
@@ -1037,7 +1037,7 @@ bool borg_twitchy(void)
             borg_keypress('0');
             borg_keypress(KC_ENTER);
             /* We did something */
-            return (true);
+            return true;
         }
     }
 
@@ -1053,7 +1053,7 @@ bool borg_twitchy(void)
     borg_keypress(I2D(dir));
 
     /* We did something */
-    return (true);
+    return true;
 }
 
 /*
@@ -1068,7 +1068,7 @@ int borg_extract_dir(int y1, int x1, int y2, int x2)
 {
     /* No movement required */
     if ((y1 == y2) && (x1 == x2))
-        return (5);
+        return 5;
 
     /* South or North */
     if (x1 == x2)
@@ -1087,7 +1087,7 @@ int borg_extract_dir(int y1, int x1, int y2, int x2)
         return ((x1 < x2) ? 9 : 7);
 
     /* Paranoia */
-    return (5);
+    return 5;
 }
 
 /*
@@ -1119,14 +1119,14 @@ int borg_goto_dir(int y1, int x1, int y2, int x2)
     if (ay > ax) {
         d = (y1 < y2) ? 2 : 8;
         if (borg_cave_floor_bold(y1 + ddy[d], x1 + ddx[d]))
-            return (d);
+            return d;
     }
 
     /* Try east/west (primary) */
     if (ay < ax) {
         d = (x1 < x2) ? 6 : 4;
         if (borg_cave_floor_bold(y1 + ddy[d], x1 + ddx[d]))
-            return (d);
+            return d;
     }
 
     /* Try diagonal */
@@ -1134,20 +1134,20 @@ int borg_goto_dir(int y1, int x1, int y2, int x2)
 
     /* Check for walls */
     if (borg_cave_floor_bold(y1 + ddy[d], x1 + ddx[d]))
-        return (d);
+        return d;
 
     /* Try south/north (secondary) */
     if (ay <= ax) {
         d = (y1 < y2) ? 2 : 8;
         if (borg_cave_floor_bold(y1 + ddy[d], x1 + ddx[d]))
-            return (d);
+            return d;
     }
 
     /* Try east/west (secondary) */
     if (ay >= ax) {
         d = (x1 < x2) ? 6 : 4;
         if (borg_cave_floor_bold(y1 + ddy[d], x1 + ddx[d]))
-            return (d);
+            return d;
     }
 
     /* Circle obstacles */
@@ -1155,12 +1155,12 @@ int borg_goto_dir(int y1, int x1, int y2, int x2)
         /* Circle to the south */
         d = (x1 < x2) ? 3 : 1;
         if (borg_cave_floor_bold(y1 + ddy[d], x1 + ddx[d]))
-            return (d);
+            return d;
 
         /* Circle to the north */
         d = (x1 < x2) ? 9 : 7;
         if (borg_cave_floor_bold(y1 + ddy[d], x1 + ddx[d]))
-            return (d);
+            return d;
     }
 
     /* Circle obstacles */
@@ -1168,12 +1168,12 @@ int borg_goto_dir(int y1, int x1, int y2, int x2)
         /* Circle to the east */
         d = (y1 < y2) ? 3 : 9;
         if (borg_cave_floor_bold(y1 + ddy[d], x1 + ddx[d]))
-            return (d);
+            return d;
 
         /* Circle to the west */
         d = (y1 < y2) ? 1 : 7;
         if (borg_cave_floor_bold(y1 + ddy[d], x1 + ddx[d]))
-            return (d);
+            return d;
     }
 
     /* Oops */
@@ -1199,7 +1199,7 @@ bool borg_check_rest(int y, int x)
     /* an unkown area full of breeders */
     if (borg.when_last_kill_mult > (borg_t - 4)
         && borg.when_last_kill_mult <= borg_t)
-        return (false);
+        return false;
 
     /* No resting if Blessed and good HP and good SP */
     /* don't rest for SP if you do combat regen */
@@ -1208,7 +1208,7 @@ bool borg_check_rest(int y, int x)
         && !borg.munchkin_mode
         && (borg.trait[BI_CURHP] >= borg.trait[BI_MAXHP] * 8 / 10)
         && (borg.trait[BI_CURSP] >= borg.trait[BI_MAXSP] * 7 / 10))
-        return (false);
+        return false;
 
     /* Set this to Zero */
     borg.when_last_kill_mult = 0;
@@ -1235,34 +1235,34 @@ bool borg_check_rest(int y, int x)
     if (borg.no_rest_prep >= 1 && !borg.munchkin_mode
         && borg.trait[BI_CURSP] > borg.trait[BI_MAXSP] / 4
         && borg.trait[BI_CDEPTH] < 85)
-        return (false);
+        return false;
 
     /* Don't rest on lava unless we are immune to fire */
     if (borg_grids[y][x].feat == FEAT_LAVA && !borg.trait[BI_IFIRE])
-        return (false);
+        return false;
 
     /* Dont worry about fears if in a vault */
     if (!borg_in_vault) {
         /* Be concerned about the Regional Fear. */
         if (borg_fear_region[y / 11][x / 11] > borg.trait[BI_CURHP] / 20
             && borg.trait[BI_CDEPTH] != 100)
-            return (false);
+            return false;
 
         /* Be concerned about the Monster Fear. */
         if (borg_fear_monsters[y][x] > borg.trait[BI_CURHP] / 10
             && borg.trait[BI_CDEPTH] != 100)
-            return (false);
+            return false;
 
         /* Be concerned about the Monster Danger. */
         if (borg_danger(y, x, 1, true, false) > borg.trait[BI_CURHP] / 40
             && borg.trait[BI_CDEPTH] >= 85)
-            return (false);
+            return false;
 
         /* Be concerned if low on food */
         if ((borg.trait[BI_CURLITE] == 0 || borg.trait[BI_ISWEAK]
                 || borg.trait[BI_FOOD] < 2)
             && !borg.munchkin_mode)
-            return (false);
+            return false;
     }
 
     /* Examine all the monsters */
@@ -1292,13 +1292,13 @@ bool borg_check_rest(int y, int x)
 
         /* if too close to a Mold or other Never-Mover, don't rest */
         if (d < 2 && !(rf_has(r_ptr->flags, RF_NEVER_MOVE)))
-            return (false);
+            return false;
         if (d == 1)
-            return (false);
+            return false;
 
         /* if too close to a Multiplier, don't rest */
         if (d < 10 && (rf_has(r_ptr->flags, RF_MULTIPLY)))
-            return (false);
+            return false;
 
         /* If monster is asleep, dont worry */
         if (!kill->awake && d > 8 && !borg.munchkin_mode)
@@ -1311,10 +1311,10 @@ bool borg_check_rest(int y, int x)
         if (!borg_in_vault) {
             /* Real scary guys pretty close */
             if (d < 5 && (p > avoidance / 3) && !borg.munchkin_mode)
-                return (false);
+                return false;
 
             /* scary guys far away */
-            /*if (d < 17 && d > 5 && (p > avoidance/3)) return (false); */
+            /*if (d < 17 && d > 5 && (p > avoidance/3)) return false; */
         }
 
         /* should check LOS... monster to me concerned for Ranged Attacks */

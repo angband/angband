@@ -107,11 +107,11 @@ bool borg_sort_comp_hook(void *u, void *v, int a, int b)
 
     /* Strictly less */
     if (cmp < 0)
-        return (true);
+        return true;
 
     /* Strictly more */
     if (cmp > 0)
-        return (false);
+        return false;
 
     /* Enforce "stable" sort */
     return (what[a] <= what[b]);

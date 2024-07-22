@@ -222,18 +222,85 @@ extern borg_magic *borg_magics; /* Spell info */
 /*
  * Spell functions
  */
-extern int         borg_heroism_level(void);
-extern int         borg_spell_stat(void);
-extern bool        borg_spell_legal(const enum borg_spells spell);
-extern bool        borg_spell_okay(const enum borg_spells spell);
-extern int         borg_get_spell_power(const enum borg_spells spell);
-extern int         borg_get_book_num(int sval);
+
+/*
+ * Does this player cast spells
+ */
+extern bool borg_can_cast(void);
+
+/*
+ * Does this player mostly cast spells
+ */
+extern bool borg_primarily_caster(void);
+
+/*
+ * get the level at which Heroism grants Heroism
+ */
+extern int borg_heroism_level(void);
+
+/*
+ * get the stat used for casting spells
+ */
+extern int borg_spell_stat(void);
+
+/*
+ * Determine if borg can cast a given spell (when fully rested)
+ */
+extern bool borg_spell_legal(const enum borg_spells spell);
+
+/*
+ * Determine if borg can cast a given spell (right now)
+ */
+extern bool borg_spell_okay(const enum borg_spells spell);
+
+/*
+ * Find the power (cost in sp) value for a given spell
+ */
+extern int borg_get_spell_power(const enum borg_spells spell);
+
+/*
+ * find the index in the books array given the books sval
+ */
+extern int borg_get_book_num(int sval);
+
+/*
+ * is this a dungeon book (not a basic book)
+ */
+extern bool borg_is_dungeon_book(int tval, int sval);
+
+/*
+ * Find the magic structure given a book/entry
+ */
 extern borg_magic *borg_get_spell_entry(int book, int what);
-extern bool        borg_spell(const enum borg_spells spell);
+
+/*
+ * Attempt to cast a spell
+ */
+extern bool borg_spell(const enum borg_spells spell);
+
+/*
+ * Attempt to cast a spell if not above fail rate
+ */
 extern bool borg_spell_fail(const enum borg_spells spell, int allow_fail);
+
+/*
+ * Check if a spell can be cast now and is below fail rate
+ */
 extern bool borg_spell_okay_fail(const enum borg_spells spell, int allow_fail);
+
+/*
+ * Check if a spell is known and below fail rate
+ */
 extern bool borg_spell_legal_fail(const enum borg_spells spell, int allow_fail);
-extern int  borg_spell_fail_rate(const enum borg_spells spell);
+
+/*
+ * Find the fail rate for a spell
+ */
+extern int borg_spell_fail_rate(const enum borg_spells spell);
+
+/*
+ * Initialize the book information
+ */
 extern void borg_prepare_book_info(void);
 
 /*
