@@ -165,12 +165,12 @@ static bool item_tester_uncursable(const struct object *obj)
 	if (c) {
 		size_t i;
 		for (i = 1; i < z_info->curse_max; i++) {
-			if (c[i].power < 100) {
+			if (c[i].power > 0 && c[i].power < 100) {
 				return true;
 			}
 		}
 	}
-    return false;
+	return false;
 }
 
 /**
