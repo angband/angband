@@ -408,18 +408,20 @@ static void msg_flush_split_existing(int w, int *x)
 {
 	/* Default place to split what's there */
 	int split = MIN(*x, w - 8);
+	int i = split;
 	wchar_t *svc = NULL;
 	int *sva = NULL;
-	int i;
 
 	/* Find the rightmost split point. */
-	for (i = w / 2; i < MIN(*x, w - 8); ++i) {
+	while (i > w / 2) {
 		int a;
 		wchar_t c;
 
+		--i;
 		Term_what(i, 0, &a, &c);
 		if (c == L' ') {
 			split = i;
+			break;
 		}
 	}
 
@@ -543,17 +545,18 @@ void display_message(game_event_type unused, game_event_data *data, void *user)
 
 	/* Split message */
 	while (message_column + n > w - 1) {
+		/* Default split */
+		int split = MAX(w - 8 - message_column, 0);
+		int check = split;
 		char oops;
 
-		int check, split;
-
-		/* Default split */
-		split = MAX(w - 8 - message_column, 0);
-
 		/* Find the rightmost split point */
-		for (check = MAX(w / 2 - message_column, 0);
-				check < w - 8 - message_column; check++) {
-			if (t[check] == ' ') split = check;
+		while (check > MAX(w / 2 - message_column, 0)) {
+			--check;
+			if (t[check] == ' ') {
+				split = check;
+				break;
+			}
 		}
 
 		/* Save the split character */
