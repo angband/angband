@@ -639,7 +639,7 @@ const char *borg_prepared(int depth)
         strnfmt(borg_prepared_buffer, MAX_REASON, "Must kill %s.", r_ptr->name);
         return (borg_prepared_buffer);
 
-    } else if (borg.trait[BI_MAXDEPTH] >= 98 || depth >= 98)
+    } else if (borg.trait[BI_MAXDEPTH] >= 98 && depth >= 98)
     /* check to make sure the borg does not go to level 100 */
     /* unless all the uniques are dead. */
     {

@@ -2224,8 +2224,13 @@ void borg_update(void)
             if (r_ptr->level > borg.trait[BI_MAXDEPTH])
                 continue;
 
-            /* skip certain questor Monsters */
-            if (rf_has(r_ptr->flags, RF_QUESTOR))
+            /* skip certain questor or seasonal Monsters */
+            if (rf_has(r_ptr->flags, RF_QUESTOR)
+                || rf_has(r_ptr->flags, RF_SEASONAL))
+                continue;
+
+            /* skip things that are just a shape of a different entry */
+            if (!r_ptr->rarity)
                 continue;
 
             /* Define some numbers used by Prep code */
