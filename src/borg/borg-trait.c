@@ -1188,7 +1188,7 @@ static void borg_notice_ammo(int slot)
 }
 
 /* don't give credit for perm-cursed non-artifacts */
-bool cursed_nonartifact(borg_item *item)
+static bool cursed_nonartifact(borg_item *item)
 {
     if (!item || item->iqty == 0)
         return false;
