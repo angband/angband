@@ -894,12 +894,6 @@ const char *prefix_pref[] = {
     "blows",
     "EXTRA_BLOWS",
     "shots",
-    "WMAXDAM", /* max damage per round with weapon (normal blow) */
-    /* Assumes you can enchant to +8 if you are level 25+ */
-    "WBASEDAM", /* max damage per round with weapon (normal blow) */
-    /* Assumes you have no enchantment */
-    "BMAXDAM", /* max damage per round with bow (normal hit) */
-    /* Assumes you can enchant to +8 if you are level 25+ */
     "heavy weapon",
     "heavy bow",
     "ammo count", /* count of all ammo */
@@ -1121,7 +1115,7 @@ static void borg_notice_ammo(int slot)
     /* Count missiles that fit your bow */
     borg.trait[BI_AMISSILES] += item->iqty;
 
-    /* track first cursed item */
+    /* track first uncursable item */
     if (item->uncursable) {
         borg.trait[BI_WHERE_CURSED] |= BORG_QUILL;
         if (!borg.trait[BI_FIRST_CURSED])
@@ -1191,6 +1185,21 @@ static void borg_notice_ammo(int slot)
         && item->tval == borg.trait[BI_AMMO_TVAL]) {
         borg.trait[BI_NEED_BRAND_WEAPON] += 10L;
     }
+}
+
+/* don't give credit for perm-cursed non-artifacts */
+static bool cursed_nonartifact(borg_item *item)
+{
+    if (!item || item->iqty == 0)
+        return false;
+
+    if (item->art_idx)
+        return false;
+
+    if (item->uncursable)
+        return false;
+
+    return item->cursed;
 }
 
 /*
@@ -1389,6 +1398,17 @@ static void borg_notice_equipment(void)
         if (!item->iqty)
             continue;
 
+        /* track first uncursable item */
+        if (item->uncursable) {
+            borg.trait[BI_WHERE_CURSED] |= BORG_EQUIP;
+            if (!borg.trait[BI_FIRST_CURSED]) 
+                borg.trait[BI_FIRST_CURSED] = i + 1;
+        }
+        
+        /* skip cursed non-artifacts */
+        if (cursed_nonartifact(item))
+            continue;
+
         /* total up the weight of the items */
         borg.trait[BI_WEIGHT] += item->weight * item->iqty;
 
@@ -1396,13 +1416,7 @@ static void borg_notice_equipment(void)
             borg.trait[BI_ALL_NEED_ID] += 1;
             borg.trait[BI_WORN_NEED_ID] += 1;
         }
-
-        /* track first cursed item */
-        if (!borg.trait[BI_FIRST_CURSED] && item->uncursable) {
-            borg.trait[BI_WHERE_CURSED] |= BORG_EQUIP;
-            borg.trait[BI_FIRST_CURSED] = i + 1;
-        }
-
+ 
         /* Affect stats */
         borg.trait[BI_ASTR] += item->modifiers[OBJ_MOD_STR]
                                * player->obj_k->modifiers[OBJ_MOD_STR];
@@ -1813,7 +1827,7 @@ static void borg_notice_equipment(void)
     item = &borg_items[INVEN_BOW];
 
     /* attacking with bare hands */
-    if (item->iqty == 0) {
+    if (item->iqty == 0 || cursed_nonartifact(item)) {
         item->ds     = 0;
         item->dd     = 0;
         item->to_d   = 0;
@@ -1888,16 +1902,11 @@ static void borg_notice_equipment(void)
     }
     borg.trait[BI_SHOTS] = my_num_fire;
 
-    /* Calculate "average" damage per "normal" shot (times 2) */
-    borg.trait[BI_BMAXDAM] = (borg.trait[BI_AMMO_SIDES] + borg.trait[BI_BTODAM])
-                             * borg.trait[BI_AMMO_POWER];
-    borg.trait[BI_BMAXDAM] *= borg.trait[BI_SHOTS];
-
     /* Examine the "main weapon" */
     item = &borg_items[INVEN_WIELD];
 
     /* attacking with bare hands */
-    if (item->iqty == 0) {
+    if (item->iqty == 0 || cursed_nonartifact(item)) {
         item->ds     = 0;
         item->dd     = 0;
         item->to_d   = 0;
@@ -1929,13 +1938,6 @@ static void borg_notice_equipment(void)
         /* Boost digging skill by weapon weight */
         borg.trait[BI_DIG] += (item->weight / 10);
     }
-
-    /* Calculate "max" damage per "normal" blow  */
-    /* and assume we can enchant up to +8 if borg.trait[BI_CLEVEL] > 25 */
-    borg.trait[BI_WMAXDAM]
-        = (item->dd * item->ds + borg.trait[BI_TODAM] + borg.trait[BI_WTODAM]);
-    /* Calculate base damage, used to calculating slays */
-    borg.trait[BI_WBASEDAM] = (item->dd * item->ds);
 
     /* Hack -- Reward High Level Warriors with Res Fear */
     if (player_has(player, PF_BRAVERY_30)) {
@@ -2033,6 +2035,10 @@ static void borg_notice_equipment(void)
         if (!item->ident)
             continue;
 
+        /* skip cursed non-artifacts */
+        if (cursed_nonartifact(item))
+            continue;
+
         /* Most classes store the enchants until they get
          * a 3x shooter (like a long bow).
          * --Important: Also look in borg7.c for the enchanting.
@@ -2079,6 +2085,10 @@ static void borg_notice_equipment(void)
 
         /* Skip "unknown" items */
         if (!item->ident)
+            continue;
+
+        /* skip cursed non-artifacts */
+        if (cursed_nonartifact(item))
             continue;
 
         /* Note need for enchantment */
@@ -2196,6 +2206,13 @@ static void borg_notice_inventory(void)
         if (borg_item_note_needs_id(item))
             borg.trait[BI_ALL_NEED_ID] += 1;
 
+        /* track first uncursable item */
+        if (item->uncursable) {
+            borg.trait[BI_WHERE_CURSED] |= BORG_INVEN;
+            if (!borg.trait[BI_FIRST_CURSED])
+                borg.trait[BI_FIRST_CURSED] = i + 1;
+        }
+
         /* Hack -- skip un-aware items */
         if (!item->kind)
             continue;
@@ -2204,12 +2221,9 @@ static void borg_notice_inventory(void)
         /* that are not being wielded) */
         borg.has[item->kind] += item->iqty;
 
-        /* track first cursed item */
-        if (item->uncursable) {
-            borg.trait[BI_WHERE_CURSED] |= BORG_INVEN;
-            if (!borg.trait[BI_FIRST_CURSED])
-                borg.trait[BI_FIRST_CURSED] = i + 1;
-        }
+        /* skip cursed non-artifacts */
+        if (cursed_nonartifact(item))
+            continue;
 
         /* Analyze the item */
         switch (item->tval) {
@@ -2959,6 +2973,8 @@ void borg_notice_player(void)
     /* timed spells */
     if (!borg.goal.recalling && player->word_recall)
         borg.goal.recalling = player->word_recall * 1000;
+    if (borg.goal.recalling && !player->word_recall)
+        borg.goal.recalling = 0;
     if (!borg.temp.prot_from_evil && player->timed[TMD_PROTEVIL])
         borg.temp.prot_from_evil = (player->timed[TMD_PROTEVIL] ? true : false);
     if (!borg.temp.fast

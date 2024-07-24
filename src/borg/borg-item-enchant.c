@@ -115,11 +115,11 @@ static bool borg_enchant_to_a(void)
 
     /* Nothing to enchant */
     if (!borg.trait[BI_NEED_ENCHANT_TO_A])
-        return (false);
+        return false;
 
     /* Need "enchantment" ability */
     if ((!borg.trait[BI_AENCH_ARM]) && (!borg.trait[BI_AENCH_SARM]))
-        return (false);
+        return false;
 
     /* Look for armor that needs enchanting */
     for (i = INVEN_BODY; i < INVEN_TOTAL; i++) {
@@ -157,7 +157,7 @@ static bool borg_enchant_to_a(void)
 
     /* Nothing */
     if (b_i < 0)
-        return (false);
+        return false;
 
     /* Enchant it */
     if (borg_read_scroll(sv_scroll_star_enchant_armor)
@@ -166,11 +166,11 @@ static bool borg_enchant_to_a(void)
         borg_pick_armor(b_i);
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Nothing to do */
-    return (false);
+    return false;
 }
 
 /*
@@ -183,11 +183,11 @@ static bool borg_enchant_to_h(void)
 
     /* Nothing to enchant */
     if (!borg.trait[BI_NEED_ENCHANT_TO_H] && !enchant_weapon_swap_to_h)
-        return (false);
+        return false;
 
     /* Need "enchantment" ability */
     if ((!borg.trait[BI_AENCH_TOH]) && (!borg.trait[BI_AENCH_SWEP]))
-        return (false);
+        return false;
 
     /* Look for a weapon that needs enchanting */
     for (i = INVEN_WIELD; i <= INVEN_BOW; i++) {
@@ -321,7 +321,7 @@ static bool borg_enchant_to_h(void)
 
     /* Nothing */
     if (b_i < 0)
-        return (false);
+        return false;
 
     /* Enchant it */
     if (borg_read_scroll(sv_scroll_star_enchant_weapon)
@@ -330,11 +330,11 @@ static bool borg_enchant_to_h(void)
         borg_pick_weapon(b_i);
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Nothing to do */
-    return (false);
+    return false;
 }
 
 /*
@@ -347,11 +347,11 @@ static bool borg_enchant_to_d(void)
 
     /* Nothing to enchant */
     if (!borg.trait[BI_NEED_ENCHANT_TO_D] && !enchant_weapon_swap_to_d)
-        return (false);
+        return false;
 
     /* Need "enchantment" ability */
     if ((!borg.trait[BI_AENCH_TOD]) && (!borg.trait[BI_AENCH_SWEP]))
-        return (false);
+        return false;
 
     /* Look for a weapon that needs enchanting */
     for (i = INVEN_WIELD; i <= INVEN_BOW; i++) {
@@ -491,7 +491,7 @@ static bool borg_enchant_to_d(void)
 
     /* Nothing */
     if (b_i < 0)
-        return (false);
+        return false;
 
     /* Enchant it */
     if (borg_read_scroll(sv_scroll_star_enchant_weapon)
@@ -500,11 +500,11 @@ static bool borg_enchant_to_d(void)
         borg_pick_weapon(b_i);
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Nothing to do */
-    return (false);
+    return false;
 }
 
 /*
@@ -517,11 +517,11 @@ static bool borg_brand_weapon(void)
 
     /* Nothing to brand */
     if (!borg.trait[BI_NEED_BRAND_WEAPON])
-        return (false);
+        return false;
 
     /* Need "brand" ability */
     if (!borg.trait[BI_ABRAND])
-        return (false);
+        return false;
 
     /* look through inventory for ammo */
     for (i = QUIVER_START; i < QUIVER_END; i++) {
@@ -557,7 +557,7 @@ static bool borg_brand_weapon(void)
 
     /* Nothing to Brand */
     if (b_i == -1)
-        return (false);
+        return false;
 
     /* Enchant it */
     if (borg_activate_item(act_firebrand)
@@ -565,11 +565,11 @@ static bool borg_brand_weapon(void)
         borg_pick_weapon(b_i);
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Nothing to do */
-    return (false);
+    return false;
 }
 
 /*
@@ -579,38 +579,38 @@ bool borg_enchanting(void)
 {
     /* Forbid blind/confused */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
-        return (false);
+        return false;
 
     /* Forbid if been sitting on level forever */
     /*    Just come back and finish the job later */
     if ((borg_t - borg_began > 5500 && borg.trait[BI_CDEPTH] >= 1)
         || (borg_t - borg_began > 3501 && borg.trait[BI_CDEPTH] == 0))
-        return (false);
+        return false;
 
     /* Remove Curses */
     if (borg_decurse_armour())
-        return (true);
+        return true;
     if (borg_decurse_weapon())
-        return (true);
+        return true;
     if (borg_decurse_any())
-        return (true);
+        return true;
 
     /* Only in town */
     if (borg.trait[BI_CDEPTH])
-        return (false);
+        return false;
 
     /* Enchant things */
     if (borg_brand_weapon())
-        return (true);
+        return true;
     if (borg_enchant_to_h())
-        return (true);
+        return true;
     if (borg_enchant_to_d())
-        return (true);
+        return true;
     if (borg_enchant_to_a())
-        return (true);
+        return true;
 
     /* Nope */
-    return (false);
+    return false;
 }
 
 #endif

@@ -105,7 +105,7 @@ static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
 
     /* Totally blocked by physical walls */
     if (!f1 && !f2)
-        return (true);
+        return true;
 
     /* Check for visibility */
     v1 = (f1 && (g1_ag->info & BORG_VIEW));
@@ -113,7 +113,7 @@ static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
 
     /* Totally blocked by "unviewable neighbors" */
     if (!v1 && !v2)
-        return (true);
+        return true;
 
     /* Access the grid */
     ag = &borg_grids[y][x];
@@ -131,14 +131,14 @@ static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
 
         borg_cave_view_hack(ag, y, x);
 
-        return (wall);
+        return wall;
     }
 
     /* Hack -- primary "easy" yields "viewed" */
     if (vis1) {
         borg_cave_view_hack(ag, y, x);
 
-        return (wall);
+        return wall;
     }
 
     /* Hack -- "view" plus "view" yields "view" */
@@ -147,25 +147,25 @@ static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
 
         borg_cave_view_hack(ag, y, x);
 
-        return (wall);
+        return wall;
     }
 
     /* Mega-Hack -- the "borg_los()" function works poorly on walls */
     if (wall) {
         borg_cave_view_hack(ag, y, x);
 
-        return (wall);
+        return wall;
     }
 
     /* Hack -- check line of sight */
     if (borg_los(borg.c.y, borg.c.x, y, x)) {
         borg_cave_view_hack(ag, y, x);
 
-        return (wall);
+        return wall;
     }
 
     /* Assume no line of sight. */
-    return (true);
+    return true;
 }
 
 /*

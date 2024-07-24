@@ -859,7 +859,7 @@ int32_t borg_power_dynamic(void)
     int max_wgt = player->class->magic.spell_weight;
 
     /* Hack -- heavy armor hurts magic */
-    if (player->class->magic.total_spells && ((cur_wgt - max_wgt) / 10) > 0) {
+    if (borg_can_cast() && ((cur_wgt - max_wgt) / 10) > 0) {
         /* max sp must be calculated in case it changed with the armor */
         int max_sp = borg.trait[BI_SP_ADJ] / 100 + 1;
         max_sp -= ((cur_wgt - max_wgt) / 10);

@@ -35,9 +35,9 @@ bool borg_cave_floor_bold(int y, int X)
             || (borg_grids[y][X].feat == FEAT_MORE)
             || (borg_grids[y][X].feat == FEAT_BROKEN)
             || (borg_grids[y][X].feat == FEAT_OPEN))
-            return (true);
+            return true;
     }
-    return (false);
+    return false;
 }
 
 /* is this a floor grid */

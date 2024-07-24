@@ -81,14 +81,14 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
 
     /* Require identical object types */
     if (o_ptr->kind != j_ptr->kind)
-        return (0);
+        return 0;
 
     /* Analyze the items */
     switch (o_ptr->tval) {
         /* Chests */
     case TV_CHEST: {
         /* Never okay */
-        return (0);
+        return 0;
     }
 
     /* Food and Potions and Scrolls */
@@ -104,7 +104,7 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
     case TV_WAND: {
         /* Require knowledge */
         if ((!o_ptr->aware) || (!j_ptr->aware))
-            return (0);
+            return 0;
 
         /* Fall through */
     }
@@ -112,10 +112,10 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
     /* Staffs and Wands and Rods */
     case TV_ROD: {
         /* Require permission */
-        /*            if (!testing_stack) return (0);*/
+        /*            if (!testing_stack) return 0;*/
 
         /* Require identical charges */
-        /*            if (o_ptr->pval != j_ptr->pval) return (0); */
+        /*            if (o_ptr->pval != j_ptr->pval) return 0; */
 
         /* Probably okay */
         break;
@@ -137,11 +137,11 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
     case TV_HARD_ARMOR:
     case TV_DRAG_ARMOR: {
         /* Require permission */
-        /*            if (!testing_stack) return (0);*/
+        /*            if (!testing_stack) return 0;*/
 
         /* XXX XXX XXX Require identical "sense" status */
         /* if ((o_ptr->ident & ID_SENSE) != */
-        /*     (j_ptr->ident & ID_SENSE)) return (0); */
+        /*     (j_ptr->ident & ID_SENSE)) return 0; */
 
         /* Fall through */
     }
@@ -152,7 +152,7 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
     case TV_LIGHT:
         /* Require full knowledge of both items */
         if ((!o_ptr->aware) || (!j_ptr->aware))
-            return (0);
+            return 0;
         /* fall through */
         /* Missiles */
     case TV_BOLT:
@@ -160,23 +160,23 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
     case TV_SHOT: {
         /* Require identical "bonuses" */
         if (o_ptr->to_h != j_ptr->to_h)
-            return (false);
+            return false;
         if (o_ptr->to_d != j_ptr->to_d)
-            return (false);
+            return false;
         if (o_ptr->to_a != j_ptr->to_a)
-            return (false);
+            return false;
 
         /* Require identical "pval" code */
         if (o_ptr->pval != j_ptr->pval)
-            return (false);
+            return false;
 
         /* Require identical "artifact" names */
         if (o_ptr->art_idx != j_ptr->art_idx)
-            return (false);
+            return false;
 
         /* Require identical "ego-item" names */
         if (o_ptr->ego_idx != j_ptr->ego_idx)
-            return (false);
+            return false;
 
         /* Hack -- Never stack "powerful" items */
         if (!of_is_empty(o_ptr->flags) || !of_is_empty(j_ptr->flags))
@@ -184,15 +184,15 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
 
         /* Hack -- Never stack recharging items */
         if (o_ptr->timeout || j_ptr->timeout)
-            return (false);
+            return false;
 
         /* Require identical "values" */
         if (o_ptr->ac != j_ptr->ac)
-            return (false);
+            return false;
         if (o_ptr->dd != j_ptr->dd)
-            return (false);
+            return false;
         if (o_ptr->ds != j_ptr->ds)
-            return (false);
+            return false;
 
         /* Probably okay */
         break;
@@ -202,7 +202,7 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
     default: {
         /* Require knowledge */
         if ((!o_ptr->aware) || (!j_ptr->aware))
-            return (0);
+            return 0;
 
         /* Probably okay */
         break;
@@ -211,7 +211,7 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
 
     /* Hack -- Require identical "broken" status */
     if ((o_ptr->ident) != (j_ptr->ident))
-        return (0);
+        return 0;
 
     /* The stuff with 'note' is not right but it is close.  I think it */
     /* has him assuming that he can't stack sometimes when he can.  This */
@@ -219,24 +219,24 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
     /* some exchanges. */
     /* Hack -- require semi-matching "inscriptions" */
     if ((o_ptr->note && !j_ptr->note) || (!o_ptr->note && j_ptr->note))
-        return (0);
+        return 0;
 
     if (o_ptr->note && j_ptr->note) {
         if (o_ptr->note[0] && j_ptr->note[0]
             && (!streq(o_ptr->note, j_ptr->note)))
-            return (0);
+            return 0;
 
         /* Hack -- normally require matching "inscriptions" */
         if ((!streq(o_ptr->note, j_ptr->note)))
-            return (0);
+            return 0;
     }
 
     /* Maximal "stacking" limit */
     if (total >= k_info[o_ptr->kind].base->max_stack)
-        return (0);
+        return 0;
 
     /* They match, so they must be similar */
-    return (true);
+    return true;
 }
 
 /*
@@ -248,15 +248,15 @@ int borg_min_item_quantity(borg_item *item)
 {
     /* Only trade in bunches if sufficient cash */
     if (borg.trait[BI_GOLD] < 250)
-        return (1);
+        return 1;
 
     /* Don't trade expensive items in bunches */
     if (item->value > 5)
-        return (1);
+        return 1;
 
     /* Don't trade non-known items in bunches */
     if (!item->aware)
-        return (1);
+        return 1;
 
     /* Only allow some types */
     switch (item->tval) {
@@ -266,22 +266,22 @@ int borg_min_item_quantity(borg_item *item)
         /* Maximum number of items */
         if (item->iqty < 5)
             return (item->iqty);
-        return (5);
+        return 5;
 
     case TV_FOOD:
         if (item->iqty < 3)
             return (item->iqty);
-        return (3);
+        return 3;
 #if 0
     case TV_POTION:
     case TV_SCROLL:
     if (item->iqty < 2)
         return (item->iqty);
-    return (2);
+    return 2;
 #endif
 
     default:
-        return (1);
+        return 1;
     }
 }
 
@@ -378,7 +378,7 @@ static void borg_think_home_sell_aux2_slow(int n, int start_i)
 
             /* eliminate items that would stack else where in the list. */
             for (k = 0; k < z_info->store_inven_max; k++) {
-                if (borg_object_similar(&safe_home[k], item)) {
+                if (borg_object_similar(&safe_shops[BORG_HOME].ware[k], item)) {
                     found_match = true;
                     break;
                 }
@@ -403,7 +403,7 @@ static void borg_think_home_sell_aux2_slow(int n, int start_i)
         borg_think_home_sell_aux2_slow(n + 1, i + 1);
 
         /* restore stuff */
-        memcpy(item2, &safe_home[n], sizeof(borg_item));
+        memcpy(item2, &safe_shops[BORG_HOME].ware[n], sizeof(borg_item));
 
         /* put item back into pack */
         item->iqty++;
@@ -477,7 +477,7 @@ static void borg_think_home_sell_aux2_fast(int n, int start_i)
 
                 /* eliminate items that would stack else where in the list. */
                 for (k = 0; k < z_info->store_inven_max; k++) {
-                    if (borg_object_similar(&safe_home[k], item)) {
+                    if (borg_object_similar(&safe_shops[BORG_HOME].ware[k], item)) {
                         found_match = true;
                         break;
                     }
@@ -533,7 +533,7 @@ static void borg_think_home_sell_aux2_fast(int n, int start_i)
             }
 
             /* restore stuff */
-            memcpy(item2, &safe_home[n], sizeof(borg_item));
+            memcpy(item2, &safe_shops[BORG_HOME].ware[n], sizeof(borg_item));
 
             /* put item back into pack */
             item->iqty++;
@@ -631,13 +631,13 @@ bool borg_think_home_sell_useful(bool save_best)
     /* and pack is full */
     if (borg_shops[BORG_HOME].ware[icky].iqty
         && borg_items[PACK_SLOTS - 1].iqty)
-        return (false);
+        return false;
 
     /* Copy all the store slots */
     for (i = 0; i < z_info->store_inven_max; i++) {
         /* Save the item */
-        memcpy(
-            &safe_home[i], &borg_shops[BORG_HOME].ware[i], sizeof(borg_item));
+        memcpy(&safe_shops[BORG_HOME].ware[i], &borg_shops[BORG_HOME].ware[i],
+            sizeof(borg_item));
 
         /* clear test arrays (test[i] == i is no change) */
         best_item[i] = test_item[i] = i;
@@ -689,8 +689,8 @@ bool borg_think_home_sell_useful(bool save_best)
 
     /* restore bonuses and such */
     for (i = 0; i < z_info->store_inven_max; i++) {
-        memcpy(
-            &borg_shops[BORG_HOME].ware[i], &safe_home[i], sizeof(borg_item));
+        memcpy(&borg_shops[BORG_HOME].ware[i], &safe_shops[BORG_HOME].ware[i],
+            sizeof(borg_item));
     }
 
     for (i = 0; i < INVEN_TOTAL; i++) {
@@ -728,7 +728,7 @@ bool borg_think_home_sell_useful(bool save_best)
             borg.goal.shop = BORG_HOME;
             borg.goal.item = best_item[i] - z_info->store_inven_max;
 
-            return (true);
+            return true;
         }
     }
 
@@ -754,7 +754,7 @@ bool borg_think_home_sell_useful(bool save_best)
                     if (sold_item_tval[p] == item2->tval
                         && sold_item_sval[p] == item2->sval
                         && sold_item_store[p] == BORG_HOME)
-                        return (false);
+                        return false;
                 }
 
                 borg.goal.shop = BORG_HOME;
@@ -772,12 +772,12 @@ bool borg_think_home_sell_useful(bool save_best)
         if (best_item[i] != i && best_item[i] != 255) {
             /* hack don't sell DVE */
             if (!borg_items[best_item[i] - z_info->store_inven_max].iqty)
-                return (false);
+                return false;
 
             borg.goal.shop = BORG_HOME;
             borg.goal.item = best_item[i] - z_info->store_inven_max;
 
-            return (true);
+            return true;
         }
     }
 
@@ -785,7 +785,7 @@ bool borg_think_home_sell_useful(bool save_best)
     borg_notice_home(NULL, false);
 
     /* Assume not */
-    return (false);
+    return false;
 }
 
 /* 
@@ -965,7 +965,7 @@ static bool borg_good_sell(borg_item *item, int who)
          * best to sell them */
         if (!((item->tval == TV_POTION || item->tval == TV_SCROLL)
                 && !item->ident))
-            return (false);
+            return false;
     }
 
     /* make sure we are in the shop that buys this */
@@ -978,7 +978,7 @@ static bool borg_good_sell(borg_item *item, int who)
         /* note if we have more than one */
         multiple = borg_has_mutiple(item);
         if (!multiple)
-            return (false);
+            return false;
     }
 
     /* Worshipping gold or scumming will allow the sale */
@@ -1005,7 +1005,7 @@ static bool borg_good_sell(borg_item *item, int who)
             if (item->tval == TV_POTION && item->sval == sv_potion_restore_mana
                 && borg.trait[BI_MAXSP] > 100
                 && borg.has[kv_potion_restore_mana] + num_mana > 99)
-                return (false);
+                return false;
 
             break;
 
@@ -1021,7 +1021,7 @@ static bool borg_good_sell(borg_item *item, int who)
             /* unless we have more than one or are deep */
             if (borg_item_worth_id(item) && (borg.trait[BI_MAXDEPTH] < 35)
                 && !multiple)
-                return (false);
+                return false;
 
             break;
 
@@ -1042,7 +1042,7 @@ static bool borg_good_sell(borg_item *item, int who)
 
             /* Only sell "known" items (unless we have more than one) */
             if (borg_item_worth_id(item) && !multiple)
-                return (false);
+                return false;
 
             break;
         }
@@ -1052,14 +1052,14 @@ static bool borg_good_sell(borg_item *item, int who)
     if (OPT(player, birth_randarts) && item->art_idx && !item->ident) {
         /* CHECK THE ARTIFACTS */
         /* For now check all artifacts */
-        return (false);
+        return false;
     }
 
     /* Do not sell stuff that is not fully id'd and should be  */
     if (!item->ident && item->ego_idx && item->iqty < 2) {
         if (borg_ego_has_random_power(
                 &e_info[borg_items[INVEN_OUTER].ego_idx])) {
-            return (false);
+            return false;
         }
     }
 
@@ -1072,11 +1072,11 @@ static bool borg_good_sell(borg_item *item, int who)
 #if 0
             borg_note(format("# Choosing not to sell back %s", item->desc));
 #endif
-            return (false);
+            return false;
         }
     }
 
-    return (true);
+    return true;
 }
 
 /*
@@ -1223,11 +1223,11 @@ bool borg_think_shop_sell_useless(void)
         borg.goal.item = b_i;
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Assume not */
-    return (false);
+    return false;
 }
 
 /*
@@ -1296,11 +1296,11 @@ bool borg_think_shop_sell(void)
         borg.in_shop  = false;
         borg_do_inven = true;
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Nope */
-    return (false);
+    return false;
 }
 
 /*

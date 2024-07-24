@@ -38,7 +38,7 @@ bool borg_decurse_armour(void)
 {
     /* Nothing to decurse */
     if (!borg_cfg[BORG_USES_SWAPS] || !decurse_armour_swap)
-        return (false);
+        return false;
 
     if (-1 == borg_slot(TV_SCROLL, sv_scroll_remove_curse)
         && !borg_equips_staff_fail(sv_staff_remove_curse)
@@ -46,7 +46,7 @@ bool borg_decurse_armour(void)
         && -1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse)
         && !borg_equips_item(act_remove_curse, true)
         && !borg_equips_item(act_remove_curse2, true)) {
-        return (false);
+        return false;
     }
 
     /* remove the curse */
@@ -61,11 +61,11 @@ bool borg_decurse_armour(void)
         borg_keypress(KC_ENTER);
 
         /* Shekockazol! */
-        return (true);
+        return true;
     }
 
     /* Nothing to do */
-    return (false);
+    return false;
 }
 
 /*
@@ -75,7 +75,7 @@ bool borg_decurse_weapon(void)
 {
     /* Nothing to decurse */
     if (!borg_cfg[BORG_USES_SWAPS] || !decurse_weapon_swap)
-        return (false);
+        return false;
 
     /* Ability for curses */
     if (-1 == borg_slot(TV_SCROLL, sv_scroll_remove_curse)
@@ -84,7 +84,7 @@ bool borg_decurse_weapon(void)
         && -1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse)
         && !borg_equips_item(act_remove_curse, true)
         && !borg_equips_item(act_remove_curse2, true)) {
-        return (false);
+        return false;
     }
 
     /* remove the curse */
@@ -98,11 +98,11 @@ bool borg_decurse_weapon(void)
         borg_keypress(KC_ENTER);
 
         /* Shekockazol! */
-        return (true);
+        return true;
     }
 
     /* Nothing to do */
-    return (false);
+    return false;
 }
 
 /*
@@ -117,7 +117,7 @@ bool borg_decurse_any(void)
             && -1 == borg_slot(TV_SCROLL, sv_scroll_star_remove_curse)
             && !borg_equips_item(act_remove_curse, true)
             && !borg_equips_item(act_remove_curse2, true)) {
-            return (false);
+            return false;
         }
 
         /* remove the curse */
@@ -147,12 +147,12 @@ bool borg_decurse_any(void)
             borg_keypress(KC_ENTER);
 
             /* Shekockazol! */
-            return (true);
+            return true;
         }
     }
 
     /* Nothing to do */
-    return (false);
+    return false;
 }
 
 #endif

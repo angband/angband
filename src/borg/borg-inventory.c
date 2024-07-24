@@ -123,7 +123,7 @@ int borg_slot(int tval, int sval)
     }
 
     /* Done */
-    return (n);
+    return n;
 }
 
 /*

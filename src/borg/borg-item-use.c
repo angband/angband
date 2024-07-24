@@ -49,9 +49,9 @@ bool borg_quaff_crit(bool no_check)
     if (no_check) {
         if (borg_quaff_potion(sv_potion_cure_critical)) {
             when_last_quaff = borg_t;
-            return (true);
+            return true;
         }
-        return (false);
+        return false;
     }
 
     /* Avoid drinking CCW twice in a row */
@@ -65,9 +65,9 @@ bool borg_quaff_crit(bool no_check)
 
     if (borg_quaff_potion(sv_potion_cure_critical)) {
         when_last_quaff = borg_t;
-        return (true);
+        return true;
     }
-    return (false);
+    return false;
 }
 
 /*
@@ -82,7 +82,7 @@ bool borg_quaff_potion(int sval)
 
     /* None available */
     if (i < 0)
-        return (false);
+        return false;
 
     /* Log the message */
     borg_note(format("# Quaffing %s.", borg_items[i].desc));
@@ -95,7 +95,7 @@ bool borg_quaff_potion(int sval)
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -127,7 +127,7 @@ bool borg_quaff_unknown(void)
 
     /* None available */
     if (n < 0)
-        return (false);
+        return false;
 
     /* Log the message */
     borg_note(format("# Quaffing unknown potion %s.", borg_items[n].desc));
@@ -140,7 +140,7 @@ bool borg_quaff_unknown(void)
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -152,19 +152,19 @@ bool borg_read_scroll(int sval)
 
     /* Dark */
     if (no_light(player))
-        return (false);
+        return false;
 
     /* Blind or Confused or Amnesia*/
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
         || borg.trait[BI_ISFORGET])
-        return (false);
+        return false;
 
     /* Look for that scroll */
     i = borg_slot(TV_SCROLL, sval);
 
     /* None available */
     if (i < 0)
-        return (false);
+        return false;
 
     /* Log the message */
     borg_note(format("# Reading %s.", borg_items[i].desc));
@@ -179,7 +179,7 @@ bool borg_read_scroll(int sval)
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -211,15 +211,15 @@ bool borg_read_unknown(void)
 
     /* None available */
     if (n < 0)
-        return (false);
+        return false;
 
     /* Dark */
     if (no_light(player))
-        return (false);
+        return false;
 
     /* Blind or Confused */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
-        return (false);
+        return false;
 
     /* Log the message */
     borg_note(format("# Reading unknown scroll %s.", borg_items[n].desc));
@@ -235,7 +235,7 @@ bool borg_read_unknown(void)
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -250,7 +250,7 @@ bool borg_eat(int tval, int sval)
 
     /* None available */
     if (i < 0)
-        return (false);
+        return false;
 
     /* Log the message */
     borg_note(format("# Eating %s.", borg_items[i].desc));
@@ -263,7 +263,7 @@ bool borg_eat(int tval, int sval)
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -296,7 +296,7 @@ bool borg_eat_unknown(void)
 
     /* None available */
     if (n < 0)
-        return (false);
+        return false;
 
     /* Log the message */
     borg_note(format("# Eating unknown mushroom %s.", borg_items[n].desc));
@@ -309,7 +309,7 @@ bool borg_eat_unknown(void)
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -337,7 +337,7 @@ bool borg_eat_food_any(void)
 
         /* Eat something of that type */
         if (borg_eat(item->tval, item->sval))
-            return (true);
+            return true;
     }
 
     /* Scan the inventory for "okay" food */
@@ -364,7 +364,7 @@ bool borg_eat_food_any(void)
 
         /* Eat something of that type */
         if (borg_eat(item->tval, item->sval))
-            return (true);
+            return true;
     }
 
     /*
@@ -372,7 +372,7 @@ bool borg_eat_food_any(void)
      * pure nutrition without additional effects.
      */
     if (borg_quaff_potion(sv_potion_slime_mold))
-        return (true);
+        return true;
     /*
      * Then try those that, besides the nourishment, only have negative
      * effects.  But only try if there's protection against the negative effect.
@@ -383,7 +383,7 @@ bool borg_eat_food_any(void)
         || ((borg.trait[BI_RBLIND]) && (borg_quaff_potion(sv_potion_blindness)))
         || ((borg.trait[BI_RCONF])
             && (borg_quaff_potion(sv_potion_confusion)))) {
-        return (true);
+        return true;
     }
     /* Consume in order, when hurting */
     if ((borg.trait[BI_CURHP] < 4
@@ -392,11 +392,11 @@ bool borg_eat_food_any(void)
             || borg_quaff_potion(sv_potion_cure_serious)
             || borg_quaff_potion(sv_potion_cure_critical)
             || borg_quaff_potion(sv_potion_healing))) {
-        return (true);
+        return true;
     }
 
     /* Nothing */
-    return (false);
+    return false;
 }
 /*
  * Hack -- checks rod (by sval) and
@@ -412,11 +412,11 @@ bool borg_equips_rod(int sval)
 
     /* None available */
     if (i < 0)
-        return (false);
+        return false;
 
     /* No charges */
     if (!borg_items[i].pval)
-        return (false);
+        return false;
 
     /* Extract the item level */
     lev = (borg_items[i].level);
@@ -433,10 +433,10 @@ bool borg_equips_rod(int sval)
 
     /* Roll for usage (at least 1/2 chance of success. */
     if (fail > 500)
-        return (false);
+        return false;
 
     /* Yep we got one */
-    return (true);
+    return true;
 }
 
 /*
@@ -452,11 +452,11 @@ bool borg_zap_rod(int sval)
 
     /* None available */
     if (i < 0)
-        return (false);
+        return false;
 
     /* Hack -- Still charging */
     if (!borg_items[i].pval)
-        return (false);
+        return false;
 
     /* Extract the item level */
     lev = (borg_items[i].level);
@@ -474,7 +474,7 @@ bool borg_zap_rod(int sval)
     /* Roll for usage */
     if (sval != sv_rod_recall) {
         if (fail > 500)
-            return (false);
+            return false;
     }
 
     /* Log the message */
@@ -485,7 +485,7 @@ bool borg_zap_rod(int sval)
     borg_keypress(all_letters_nohjkl[i]);
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -500,11 +500,11 @@ bool borg_use_staff(int sval)
 
     /* None available */
     if (i < 0)
-        return (false);
+        return false;
 
     /* No charges */
     if (!borg_items[i].pval)
-        return (false);
+        return false;
 
     /* Log the message */
     borg_note(format("# Using %s.", borg_items[i].desc));
@@ -514,7 +514,7 @@ bool borg_use_staff(int sval)
     borg_keypress(all_letters_nohjkl[i]);
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -546,7 +546,7 @@ bool borg_use_unknown(void)
 
     /* None available */
     if (n < 0)
-        return (false);
+        return false;
 
     /* Log the message */
     borg_note(format("# Using unknown Staff %s.", borg_items[n].desc));
@@ -559,7 +559,7 @@ bool borg_use_unknown(void)
     borg_keypress(ESCAPE);
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -576,11 +576,11 @@ bool borg_use_staff_fail(int sval)
 
     /* None available */
     if (i < 0)
-        return (false);
+        return false;
 
     /* No charges */
     if (!borg_items[i].pval)
-        return (false);
+        return false;
 
     /* Extract the item level */
     lev = (borg_items[i].level);
@@ -598,7 +598,7 @@ bool borg_use_staff_fail(int sval)
     /* Roll for usage, but if its a Teleport be generous. */
     if (fail > 500) {
         if (sval != sv_staff_teleportation) {
-            return (false);
+            return false;
         }
 
         /* We need to give some "desperation attempt to teleport staff" */
@@ -606,7 +606,7 @@ bool borg_use_staff_fail(int sval)
         {
             /* We really have no chance, return false, attempt the scroll */
             if (fail > 500)
-                return (false);
+                return false;
         }
         /* We might have a slight chance, or we cannot not read */
     }
@@ -619,7 +619,7 @@ bool borg_use_staff_fail(int sval)
     borg_keypress(all_letters_nohjkl[i]);
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -636,11 +636,11 @@ bool borg_equips_staff_fail(int sval)
 
     /* None available */
     if (i < 0)
-        return (false);
+        return false;
 
     /* No charges */
     if (!borg_items[i].pval)
-        return (false);
+        return false;
 
     /* Extract the item level */
     lev = (borg_items[i].level);
@@ -657,28 +657,28 @@ bool borg_equips_staff_fail(int sval)
 
     /* If its a Destruction, we only use it in emergencies, attempt it */
     if (sval == sv_staff_destruction) {
-        return (true);
+        return true;
     }
 
     /* Roll for usage, but if its a Teleport be generous. */
     if (fail > 500) {
         /* No real chance of success on other types of staffs */
         if (sval != sv_staff_teleportation) {
-            return (false);
+            return false;
         }
 
         /* We need to give some "desperation attempt to teleport staff" */
         if (sval == sv_staff_teleportation && !borg.trait[BI_ISCONFUSED]) {
             /* We really have no chance, return false, attempt the scroll */
             if (fail < 650)
-                return (false);
+                return false;
         }
 
         /* We might have a slight chance (or its a Destruction), continue on */
     }
 
     /* Yep we got one */
-    return (true);
+    return true;
 }
 
 /*
@@ -693,11 +693,11 @@ bool borg_aim_wand(int sval)
 
     /* None available */
     if (i < 0)
-        return (false);
+        return false;
 
     /* No charges */
     if (!borg_items[i].pval)
-        return (false);
+        return false;
 
     /* Log the message */
     borg_note(format("# Aiming %s.", borg_items[i].desc));
@@ -707,7 +707,7 @@ bool borg_aim_wand(int sval)
     borg_keypress(all_letters_nohjkl[i]);
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -757,10 +757,10 @@ bool borg_equips_ring(int ring_sval)
             continue;
 
         /* Success */
-        return (true);
+        return true;
     }
 
-    return (false);
+    return false;
 }
 
 /*
@@ -796,10 +796,10 @@ bool borg_activate_ring(int ring_sval)
         borg_keypress(all_letters_nohjkl[i - INVEN_WIELD]);
 
         /* Success */
-        return (true);
+        return true;
     }
 
-    return (false);
+    return false;
 }
 
 /*
@@ -818,17 +818,17 @@ bool borg_equips_dragon(int drag_sval)
 
     /* Skip incorrect armours */
     if (item->tval != TV_DRAG_ARMOR)
-        return (false);
+        return false;
     if (item->sval != drag_sval)
-        return (false);
+        return false;
 
     /* Check charge */
     if (item->timeout)
-        return (false);
+        return false;
 
     /*  Make Sure Mail is IDed */
     if (!item->ident)
-        return (false);
+        return false;
 
     /* check on fail rate
      * The fail check is automatic for dragon armor.  It is an attack
@@ -861,10 +861,10 @@ bool borg_equips_dragon(int drag_sval)
 
     /* Roll for usage, but if its a Teleport be generous. */
     if (fail > 500)
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -878,17 +878,17 @@ bool borg_activate_dragon(int drag_sval)
 
     /* Skip incorrect mails */
     if (item->tval != TV_DRAG_ARMOR)
-        return (false);
+        return false;
     if (item->sval != drag_sval)
-        return (false);
+        return false;
 
     /* Check charge */
     if (item->timeout)
-        return (false);
+        return false;
 
     /*  Make Sure Mail is IDed */
     if (!item->ident)
-        return (false);
+        return false;
 
     /* Log the message */
     borg_note(format("# Activating dragon scale %s.", item->desc));
@@ -898,7 +898,7 @@ bool borg_activate_dragon(int drag_sval)
     borg_keypress(all_letters_nohjkl[INVEN_BODY - INVEN_WIELD]);
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -910,7 +910,7 @@ bool borg_activate_item(int activation)
 
     /* a quick check of the array */
     if (!borg.activation[activation])
-        return (false);
+        return false;
 
     /* Check the equipment */
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
@@ -932,11 +932,11 @@ bool borg_activate_item(int activation)
         borg_keypress(all_letters_nohjkl[i - INVEN_WIELD]);
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* Oops */
-    return (false);
+    return false;
 }
 
 /*
@@ -948,9 +948,9 @@ bool borg_equips_item(int activation, bool check_charge)
 
     /* a quick check of the array */
     if (!borg.activation[activation])
-        return (false);
+        return false;
     else if (!check_charge)
-        return (true);
+        return true;
 
     /* Check the equipment */
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
@@ -965,11 +965,11 @@ bool borg_equips_item(int activation, bool check_charge)
             continue;
 
         /* Success */
-        return (true);
+        return true;
     }
 
     /* I do not have it or it is not charged */
-    return (false);
+    return false;
 }
 
 /* Return the relative chance for failure to activate an item.
@@ -989,15 +989,15 @@ int borg_activate_failure(int tval, int sval)
 
     /* None available */
     if (i < 0)
-        return (100);
+        return 100;
 
     /* No charges */
     if (!borg_items[i].pval)
-        return (100);
+        return 100;
 
     /* no known activation */
     if (!borg_items[i].activ_idx)
-        return (100);
+        return 100;
 
     /* Extract the item level */
     lev = (borg_items[i].level);
@@ -1031,7 +1031,7 @@ bool borg_use_things(void)
             || borg_activate_item(act_restore_st_lev)
             || borg_activate_item(act_restore_life)
             || borg_quaff_potion(sv_potion_restore_life))) {
-        return (true);
+        return true;
     }
 
     /* just drink the stat gains, at this dlevel we wont need cash */
@@ -1040,7 +1040,7 @@ bool borg_use_things(void)
         || borg_quaff_potion(sv_potion_inc_wis)
         || borg_quaff_potion(sv_potion_inc_dex)
         || borg_quaff_potion(sv_potion_inc_con)) {
-        return (true);
+        return true;
     }
 
     /* Quaff potions of "restore" stat if needed */
@@ -1073,7 +1073,7 @@ bool borg_use_things(void)
                 || borg_eat(TV_MUSHROOM, sv_mush_purging)
                 || borg_activate_item(act_shroom_purging)
                 || borg_eat(TV_MUSHROOM, sv_mush_restoring)))) {
-        return (true);
+        return true;
     }
 
     /* Use some items right away */
@@ -1095,7 +1095,7 @@ bool borg_use_things(void)
             } else if (item->sval == sv_potion_inc_all)
                 /* Try quaffing the potion */
                 if (borg_quaff_potion(item->sval))
-                    return (true);
+                    return true;
 
             break;
         }
@@ -1116,7 +1116,7 @@ bool borg_use_things(void)
 
                 /* Try reading the scroll */
                 if (borg_read_scroll(item->sval))
-                    return (true);
+                    return true;
             }
 
             break;
@@ -1139,12 +1139,12 @@ bool borg_use_things(void)
             || borg_eat(TV_FOOD, sv_food_waybread)
             || borg_eat(TV_FOOD, sv_food_draught)
             || borg_activate_item(act_food_waybread)) {
-            return (true);
+            return true;
         }
     }
 
     /* Nothing to do */
-    return (false);
+    return false;
 }
 
 /*
@@ -1159,7 +1159,7 @@ bool borg_recharging(void)
 
     /* Forbid blind/confused */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
-        return (false);
+        return false;
 
     /* XXX XXX XXX Dark */
 
@@ -1229,14 +1229,14 @@ bool borg_recharging(void)
                 borg_deinscribe(i);
 
             /* Success */
-            return (true);
+            return true;
         } else
             /* if we fail once, no need to try again. */
             break;
     }
 
     /* Nope */
-    return (false);
+    return false;
 }
 
 #endif

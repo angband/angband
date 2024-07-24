@@ -327,20 +327,20 @@ static void borg_set_slays(borg_item *item, const struct object *o)
 }
 
 /*
- * Convert from the dynmaic curses to the set the borg knows
+ * Convert from the dynamic curses to the set the borg knows
  */
 static void borg_set_curses(borg_item *item, const struct object *o)
 {
     int   i;
     bool *item_curses = item->curses;
-    item->uncursable  = true;
+
+    item->uncursable  = false;
     for (i = 0; i < z_info->curse_max; i++) {
         struct curse *c = &curses[i];
         if (o->curses[i].power > 0) {
             item->cursed = true;
-
-            if (o->curses[i].power == 100)
-                item->uncursable = false;
+            if (o->curses[i].power < 100)
+                item->uncursable = true;
 
             if (streq(c->name, "vulnerability"))
                 item_curses[BORG_CURSE_VULNERABILITY] = true;
@@ -400,10 +400,6 @@ static void borg_set_curses(borg_item *item, const struct object *o)
                 item_curses[BORG_CURSE_UNKNOWN] = true;
         }
     }
-
-    /* this is to catch any items we removed all the curses from */
-    if (!item->cursed)
-        item->uncursable = false;
 }
 
 /*

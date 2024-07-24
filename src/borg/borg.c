@@ -291,9 +291,10 @@ static struct keypress internal_borg_inkey(int flush_first)
     buf = buffer;
     borg_what_text(0, 0, ((Term->wid - 1) / (tile_width)), &t_a, buffer);
 #if 0
+    /* just used for debugging.  Not so useful in general */
     if (borg_cfg[BORG_VERBOSE])
         borg_note(format("got message '%s'", buf));
-#endif
+#endif 
     /* Trim whitespace */
     buf = borg_trim(buf);
 
@@ -349,11 +350,6 @@ static struct keypress internal_borg_inkey(int flush_first)
         } else
             do_cmd_wiz_cure_all(0);
 #endif /* BABLOS */
-
-        /* for some reason the message line sometimes contains spaces */
-        /* right after the borg respawns */
-        borg_keypress(' ');
-        borg_keypress(' ');
 
         key.code = 'n';
         return key;
@@ -678,6 +674,9 @@ void do_cmd_borg(void)
     }
 
 #endif /* BABLOS */
+
+    /* *HACK* set the player location */
+    borg.c = player->grid;
 
     /* Simple help */
     if (cmd == '?') {
@@ -1392,8 +1391,8 @@ void do_cmd_borg(void)
         player->opts.delay_factor = 200;
 
         /* Determine "path" */
-        n_x = player->grid.x;
-        n_y = player->grid.y;
+        n_x = borg.c.x;
+        n_y = borg.c.y;
         target_get(&l);
         x = l.x;
         y = l.y;
@@ -1408,15 +1407,15 @@ void do_cmd_borg(void)
                 break;
 
             /* Calculate the new location */
-            borg_inc_motion(&n_y, &n_x, player->grid.y, player->grid.x, y, x);
+            borg_inc_motion(&n_y, &n_x, borg.c.y, borg.c.x, y, x);
         }
 
         msg("Borg's Targeting Path");
         event_signal(EVENT_MESSAGE_FLUSH);
 
         /* Determine "path" */
-        n_x = player->grid.x;
-        n_y = player->grid.y;
+        n_x = borg.c.x;
+        n_y = borg.c.y;
         x   = l.x;
         y   = l.y;
 
@@ -1880,7 +1879,7 @@ void do_cmd_borg(void)
         Term_save();
 
         /* Dump the spells */
-        if (player->class->magic.total_spells) {
+        if (borg_can_cast()) {
 
             int i;
 

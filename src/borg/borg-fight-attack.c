@@ -51,6 +51,7 @@
 /*  negative is "shot and missed" */
 /*  negative 12 and lower is "do not shoot" */
 int successful_target = 0;
+int target_closest = 0;
 
 /*
  * Maintain a set of special grids used for Teleport Other
@@ -253,7 +254,7 @@ static int borg_thrust_damage_one(int i)
         dam += (dam * 5);
 
     /* Damage */
-    return (dam);
+    return dam;
 }
 
 /*
@@ -272,7 +273,7 @@ static int borg_attack_aux_thrust(void)
 
     /* Too afraid to attack */
     if (borg.trait[BI_ISAFRAID] || borg.trait[BI_CRSFEAR])
-        return (0);
+        return 0;
 
     /* Examine possible destinations */
     for (i = 0; i < borg_temp_n; i++) {
@@ -330,11 +331,11 @@ static int borg_attack_aux_thrust(void)
 
     /* Nothing to attack */
     if (b_i < 0)
-        return (0);
+        return 0;
 
     /* Simulation */
     if (borg_simulate)
-        return (b_d);
+        return b_d;
 
     /* Save the location */
     borg.goal.g.x = borg_temp_x[b_i];
@@ -357,7 +358,7 @@ static int borg_attack_aux_thrust(void)
     borg_keypress(I2D(dir));
 
     /* Success */
-    return (b_d);
+    return b_d;
 }
 
 /* adapted from player_attack.c make_ranged_shot() */
@@ -1111,7 +1112,7 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
     /* Return Damage as pure danger of the monster */
     if (typ == BORG_ATTACK_AWAY_ALL || typ == BORG_ATTACK_AWAY_EVIL
         || typ == BORG_ATTACK_AWAY_ALL_MORGOTH)
-        return (dam);
+        return dam;
 
     /* Limit damage to twice maximal hitpoints */
     if (dam > kill->power * 2 && !rf_has(r_ptr->flags, RF_UNIQUE))
@@ -1175,7 +1176,7 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
     }
 
     /* Damage */
-    return (dam);
+    return dam;
 }
 
 /*
@@ -1203,11 +1204,11 @@ static int borg_launch_bolt_aux_hack(int i, int dam, int typ, int ammo_location)
 
     /* Skip dead monsters */
     if (!kill->r_idx)
-        return (0);
+        return 0;
 
     /* Require current knowledge */
     if (kill->when < borg_t - 2)
-        return (0);
+        return 0;
 
     /* Acquire location */
     x = kill->pos.x;
@@ -1218,13 +1219,13 @@ static int borg_launch_bolt_aux_hack(int i, int dam, int typ, int ammo_location)
 
     /* Never shoot walls/doors */
     if (!borg_cave_floor_grid(ag))
-        return (0);
+        return 0;
 
     /* dont shoot at ghosts if not on known floor grid */
     if ((rf_has(r_ptr->flags, RF_PASS_WALL))
         && (ag->feat != FEAT_FLOOR && ag->feat != FEAT_OPEN
             && ag->feat != FEAT_BROKEN && !ag->trap))
-        return (0);
+        return 0;
 
     /* dont shoot at ghosts in walls, not perfect */
     if (rf_has(r_ptr->flags, RF_PASS_WALL)) {
@@ -1250,7 +1251,7 @@ static int borg_launch_bolt_aux_hack(int i, int dam, int typ, int ammo_location)
         }
         /* Is the ghost likely in a wall? */
         if (walls >= 2 && unknown >= 1)
-            return (0);
+            return 0;
     }
 
     /* Calculate damage */
@@ -1259,15 +1260,15 @@ static int borg_launch_bolt_aux_hack(int i, int dam, int typ, int ammo_location)
     /* Return Damage, on Teleport Other, true damage is
      * calculated elsewhere */
     if (typ == BORG_ATTACK_AWAY_ALL || typ == BORG_ATTACK_AWAY_ALL_MORGOTH)
-        return (d);
+        return d;
 
     /* Return Damage as pure danger of the monster */
     if (typ == BORG_ATTACK_AWAY_EVIL)
-        return (d);
+        return d;
 
     /* Return 0 if the true damage (w/o the danger bonus) is 0 */
     if (d <= 0)
-        return (d);
+        return d;
 
     /* Calculate danger */
     p2 = borg_danger_one_kill(y, x, 1, i, true, false);
@@ -1280,7 +1281,7 @@ static int borg_launch_bolt_aux_hack(int i, int dam, int typ, int ammo_location)
 
     /* Hack -- ignore sleeping town monsters */
     if (!borg.trait[BI_CDEPTH] && !kill->awake) {
-        return (0);
+        return 0;
     }
 
     /* Hack -- ignore nonthreatening town monsters when low level */
@@ -1300,7 +1301,7 @@ static int borg_launch_bolt_aux_hack(int i, int dam, int typ, int ammo_location)
     d = d + p1;
 
     /* Result */
-    return (d);
+    return d;
 }
 
 
@@ -1450,9 +1451,9 @@ static int borg_launch_bolt_at_location(
         /* dispel spells act like beams (sort of) */
         if (!borg_cave_floor_grid(ag) || ag->feat == FEAT_PASS_RUBBLE) {
             if (rad != -1 && rad != 10)
-                return (0);
+                return 0;
             else
-                return (n);
+                return n;
         }
 
         /* Collect damage (bolts/beams) */
@@ -1466,7 +1467,7 @@ static int borg_launch_bolt_at_location(
 
         /* Stop bolts at monsters  */
         if (!rad && ag->kill)
-            return (n);
+            return n;
 
         /* The missile path can be complicated.  There are several checks
          * which need to be made.  First we assume that we targeting
@@ -1510,9 +1511,9 @@ static int borg_launch_bolt_at_location(
                 /* note if beam, dispel, this is the end of the beam */
                 if (ag->feat == FEAT_NONE) {
                     if (rad != -1 && rad != 10)
-                        return (0);
+                        return 0;
                     else
-                        return (n);
+                        return n;
                 }
             } 
 
@@ -1524,9 +1525,9 @@ static int borg_launch_bolt_at_location(
                 if (successful_target <= -12)
                     successful_target = 0;
                 if (rad != -1 && rad != 10)
-                    return (0);
+                    return 0;
                 else
-                    return (n);
+                    return n;
             }
         } else /* I do have ESP */
         {
@@ -1544,9 +1545,9 @@ static int borg_launch_bolt_at_location(
                 /* note if beam, dispel, this is the end of the beam */
                 if (ag->feat == FEAT_NONE) {
                     if (rad != -1 && rad != 10)
-                        return (0);
+                        return 0;
                     else
-                        return (n);
+                        return n;
                 }
                 /* Stop at unseen walls */
                 /* We just shot and missed, this is our next shot */
@@ -1556,9 +1557,9 @@ static int borg_launch_bolt_at_location(
                     if (successful_target <= -12)
                         successful_target = 0;
                     if (rad != -1 && rad != 10)
-                        return (0);
+                        return 0;
                     else
-                        return (n);
+                        return n;
                 }
             }
 
@@ -1571,20 +1572,20 @@ static int borg_launch_bolt_at_location(
                     successful_target = 0;
 
                 if (rad != -1 && rad != 10)
-                    return (0);
+                    return 0;
                 else
-                    return (n);
+                    return n;
             }
         }
     }
 
     /* Bolt/Beam attack */
     if (rad <= 0)
-        return (n);
+        return n;
 
     /* Excessive distance */
     if (dist >= max)
-        return (0);
+        return 0;
 
     /* Check monsters and objects in blast radius */
     for (ry = y2 - rad; ry < y2 + rad; ry++) {
@@ -1626,7 +1627,7 @@ static int borg_launch_bolt_at_location(
     }
 
     /* Result */
-    return (n);
+    return n;
 }
 
 /*
@@ -1740,14 +1741,14 @@ int borg_launch_bolt(int rad, int dam, int typ, int max, int ammo_location)
         }
     }
     if (b_i == -1)
-        return (b_n);
+        return b_n;
 
     /* Reset Teleport Other variables */
     borg_tp_other_n = 0;
 
     /* Simulation */
     if (borg_simulate)
-        return (b_n);
+        return b_n;
 
     /* Save the location */
     borg.goal.g.x = borg_temp_x[b_i] + b_o_x;
@@ -1757,7 +1758,7 @@ int borg_launch_bolt(int rad, int dam, int typ, int max, int ammo_location)
     (void)borg_target(borg.goal.g);
 
     /* Result */
-    return (b_n);
+    return b_n;
 }
 
 /*
@@ -1940,7 +1941,7 @@ static int borg_launch_arc_at_location(
     }
 
     /* Result */
-    return (n);
+    return n;
 }
 
 /*
@@ -1998,11 +1999,11 @@ static int borg_launch_arc(int degrees, int dam, int typ, int max)
         b_d = d;
     }
     if (b_i == -1)
-        return (b_n);
+        return b_n;
 
     /* Simulation */
     if (borg_simulate)
-        return (b_n);
+        return b_n;
 
     /* Save the location */
     borg.goal.g.x = borg_temp_x[b_i] + b_o_x;
@@ -2012,7 +2013,7 @@ static int borg_launch_arc(int degrees, int dam, int typ, int max)
     (void)borg_target(borg.goal.g);
 
     /* Result */
-    return (b_n);
+    return b_n;
 }
 
 /*
@@ -2035,7 +2036,7 @@ int borg_attack_aux_launch(void)
     /* No firing while blind, confused, or hallucinating */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
         || borg.trait[BI_ISIMAGE])
-        return (0);
+        return 0;
 
     /* Scan the quiver */
     for (k = QUIVER_START; k < QUIVER_END; k++) {
@@ -2087,11 +2088,11 @@ int borg_attack_aux_launch(void)
 
     /* Nothing to use */
     if (b_n < 0)
-        return (0);
+        return 0;
 
     /* Simulation */
     if (borg_simulate)
-        return (b_n);
+        return b_n;
 
     /* Do it */
     borg_note(format("# Firing missile '%s'", borg_items[b_k].desc));
@@ -2109,7 +2110,7 @@ int borg_attack_aux_launch(void)
     successful_target = -2;
 
     /* Value */
-    return (b_n);
+    return b_n;
 }
 
 /* Attempt to rest on the grid to allow the monster to approach me.
@@ -2184,11 +2185,11 @@ static int borg_attack_aux_rest(void)
 
     /* Not a good idea */
     if (resting_is_good == false)
-        return (0);
+        return 0;
 
     /* Return some value for this rest */
     if (borg_simulate)
-        return (1);
+        return 1;
 
     /* Rest */
     borg_keypress(',');
@@ -2197,7 +2198,7 @@ static int borg_attack_aux_rest(void)
             borg.c.y, borg.c.x));
 
     /* All done */
-    return (1);
+    return 1;
 }
 
 /* look for a throwable item */
@@ -2299,12 +2300,12 @@ static int borg_attack_aux_object(void)
 
     /* Nothing to use */
     if (b_k < 0)
-        return (0);
+        return 0;
 
     /* No firing while blind, confused, or hallucinating */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
         || borg.trait[BI_ISIMAGE])
-        return (0);
+        return 0;
 
     /* Choose optimal location */
     b_n = borg_launch_bolt(
@@ -2312,7 +2313,7 @@ static int borg_attack_aux_object(void)
 
     /* Simulation */
     if (borg_simulate)
-        return (b_n);
+        return b_n;
 
     /* Do it */
     borg_note(format("# Throwing painful object '%s'", borg_items[b_k].desc));
@@ -2333,7 +2334,7 @@ static int borg_attack_aux_object(void)
     successful_target = -2;
 
     /* Value */
-    return (b_n);
+    return b_n;
 }
 
 /*
@@ -2350,7 +2351,7 @@ int borg_attack_aux_spell_bolt(
     /* No firing while blind, confused, or hallucinating */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
         || borg.trait[BI_ISIMAGE])
-        return (0);
+        return 0;
 
     /* Paranoia */
     if (borg_simulate
@@ -2358,22 +2359,22 @@ int borg_attack_aux_spell_bolt(
                 && borg.trait[BI_CLASS] != CLASS_NECROMANCER)
             && borg.trait[BI_CLEVEL] <= 2)
         && (randint0(100) < 1))
-        return (0);
+        return 0;
 
     /* Not if money scumming in town */
     if (borg_cfg[BORG_MONEY_SCUM_AMOUNT] && borg.trait[BI_CDEPTH] == 0)
-        return (0);
+        return 0;
 
     /* Not if low on food */
     if (borg.trait[BI_FOOD] == 0
         && (borg.trait[BI_ISWEAK]
             && (borg_spell_legal(REMOVE_HUNGER)
                 || borg_spell_legal(HERBAL_CURING))))
-        return (0);
+        return 0;
 
     /* Require ability (right now) */
     if (!borg_spell_okay_fail(spell, (borg_fighting_unique ? 40 : 25)))
-        return (0);
+        return 0;
 
     /* Choose optimal location */
     if (is_arc)
@@ -2408,7 +2409,7 @@ int borg_attack_aux_spell_bolt(
         && (!borg_spell_legal_fail(TELEPORT_SELF, 15)
             || borg.trait[BI_MAXCLEVEL] <= 30)) {
         if (borg_simulate)
-            return (b_n);
+            return b_n;
     }
 
     /* Penalize mana usage except on MM */
@@ -2457,7 +2458,7 @@ int borg_attack_aux_spell_bolt(
 
     /* Simulation */
     if (borg_simulate)
-        return (b_n);
+        return b_n;
 
     /* Cast the spell */
     (void)borg_spell(spell);
@@ -2469,7 +2470,7 @@ int borg_attack_aux_spell_bolt(
     successful_target = -1;
 
     /* Value */
-    return (b_n);
+    return b_n;
 }
 
 /* This routine is the same as the one above only in an emergency case.
@@ -2489,25 +2490,25 @@ static int borg_attack_aux_spell_bolt_reserve(
 
     /* Only Weak guys should try this */
     if (borg.trait[BI_CLEVEL] >= 15)
-        return (0);
+        return 0;
 
     /* No firing while blind, confused, or hallucinating */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
         || borg.trait[BI_ISIMAGE])
-        return (0);
+        return 0;
 
     /* Not if low on food */
     if (borg.trait[BI_FOOD] == 0
         && (borg.trait[BI_ISWEAK] && borg_spell_legal(REMOVE_HUNGER)))
-        return (0);
+        return 0;
 
     /* Must not have enough mana right now */
     if (borg_spell_okay_fail(spell, 25))
-        return (0);
+        return 0;
 
     /* Must be dangerous */
     if (borg_danger(borg.c.y, borg.c.x, 1, true, false) < avoidance * 2)
-        return (0);
+        return 0;
 
     /* Find the monster */
     for (i = 1; i < borg_kills_nxt; i++) {
@@ -2543,25 +2544,25 @@ static int borg_attack_aux_spell_bolt_reserve(
         /* NOTE: the +4 is because the damage is toned down
                  as an 'average damage' */
         if (kill->power > (dam + 4))
-            return (0);
+            return 0;
 
         /* Do not use it in town */
         if (borg.trait[BI_CDEPTH] == 0)
-            return (0);
+            return 0;
 
         break;
     }
 
     /* Should only be 1 near monster */
     if (near_monsters > 1)
-        return (0);
+        return 0;
 
     /* Require ability (with faked mana) */
     borg.trait[BI_CURSP] = borg.trait[BI_MAXSP];
     if (!borg_spell_okay_fail(spell, 25)) {
         /* Restore Mana */
         borg.trait[BI_CURSP] = sv_mana;
-        return (0);
+        return 0;
     }
 
     /* Choose optimal location */
@@ -2571,7 +2572,7 @@ static int borg_attack_aux_spell_bolt_reserve(
     if (borg_simulate) {
         /* Restore Mana */
         borg.trait[BI_CURSP] = sv_mana;
-        return (b_n);
+        return b_n;
     }
 
     /* Cast the spell with fake mana */
@@ -2594,7 +2595,7 @@ static int borg_attack_aux_spell_bolt_reserve(
     borg.trait[BI_CURSP] = 0;
 
     /* Value */
-    return (b_n);
+    return b_n;
 }
 
 /*
@@ -2609,22 +2610,22 @@ static int borg_attack_aux_spell_dispel(
     /* No firing while blind, confused, or hallucinating */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
         || borg.trait[BI_ISIMAGE])
-        return (0);
+        return 0;
 
     /* Not if low on food */
     if (borg.trait[BI_FOOD] == 0
         && (borg.trait[BI_ISWEAK]
             && (borg_spell_legal(REMOVE_HUNGER)
                 || borg_spell_legal(HERBAL_CURING))))
-        return (0);
+        return 0;
 
     /* Paranoia */
     if (borg_simulate && (randint0(100) < 2))
-        return (0);
+        return 0;
 
     /* Require ability */
     if (!borg_spell_okay_fail(spell, 25))
-        return (0);
+        return 0;
 
     /* Choose optimal location--radius defined as 10 */
     b_n             = borg_launch_bolt(10, dam, typ, z_info->max_range, 0);
@@ -2672,15 +2673,21 @@ static int borg_attack_aux_spell_dispel(
     if ((borg.trait[BI_MAXSP] > 30) && (borg.trait[BI_CURSP] - spell_power) < 6)
         b_n = b_n - (spell_power * 750);
 
+    /* never tap if we previously missed a tap */
+    if (target_closest < 0 && BORG_ATTACK_TAP_UNLIFE == typ && b_n > 0) {
+        target_closest = 0;
+        return 0;
+    }
+
     /* Simulation */
     if (borg_simulate)
-        return (b_n);
+        return b_n;
 
     /* Cast the prayer */
     (void)borg_spell(spell);
 
     /* Value */
-    return (b_n);
+    return b_n;
 }
 
 /*
@@ -2694,15 +2701,15 @@ static int borg_attack_aux_staff_dispel(int sval, int rad, int dam, int typ)
     /* No firing while blind, confused, or hallucinating */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
         || borg.trait[BI_ISIMAGE])
-        return (0);
+        return 0;
 
     /* Paranoia */
     if (borg_simulate && (randint0(100) < 2))
-        return (0);
+        return 0;
 
     /* look for the staff */
     if (!borg_equips_staff_fail(sval))
-        return (0);
+        return 0;
 
     /* Choose optimal location--radius defined as 10 */
     b_n = borg_launch_bolt(10, dam, typ, z_info->max_range, 0);
@@ -2712,13 +2719,13 @@ static int borg_attack_aux_staff_dispel(int sval, int rad, int dam, int typ)
 
     /* Simulation */
     if (borg_simulate)
-        return (b_n);
+        return b_n;
 
     /* Cast the prayer */
     (void)borg_use_staff(sval);
 
     /* Value */
-    return (b_n);
+    return b_n;
 }
 
 /*
@@ -2731,26 +2738,26 @@ static int borg_attack_aux_rod_bolt(int sval, int rad, int dam, int typ)
     /* No firing while blind, confused, or hallucinating */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
         || borg.trait[BI_ISIMAGE])
-        return (0);
+        return 0;
 
     /* Paranoia */
     if (borg_simulate && (randint0(100) < 2))
-        return (0);
+        return 0;
 
     /* Not likely to be successful in the activation */
     if (500 < borg_activate_failure(TV_ROD, sval))
-        return (0);
+        return 0;
 
     /* Look for that rod */
     if (!borg_equips_rod(sval))
-        return (0);
+        return 0;
 
     /* Choose optimal location */
     b_n = borg_launch_bolt(rad, dam, typ, z_info->max_range, 0);
 
     /* Simulation */
     if (borg_simulate)
-        return (b_n);
+        return b_n;
 
     /* Zap the rod */
     (void)borg_zap_rod(sval);
@@ -2762,7 +2769,7 @@ static int borg_attack_aux_rod_bolt(int sval, int rad, int dam, int typ)
     successful_target = -1;
 
     /* Value */
-    return (b_n);
+    return b_n;
 }
 
 /*
@@ -2778,30 +2785,30 @@ static int borg_attack_aux_wand_bolt(
     /* No firing while blind, confused, or hallucinating */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
         || borg.trait[BI_ISIMAGE])
-        return (0);
+        return 0;
 
     /* Dont use wands in town, charges are too spendy */
     if (!borg.trait[BI_CDEPTH])
-        return (0);
+        return 0;
 
     /* Paranoia */
     if (borg_simulate && (randint0(100) < 2))
-        return (0);
+        return 0;
 
     /* Look for that wand */
     i = borg_slot(TV_WAND, sval);
 
     /* None available */
     if (i < 0)
-        return (0);
+        return 0;
 
     /* No charges */
     if (!borg_items[i].pval)
-        return (0);
+        return 0;
 
     /* Not likely to be successful in the activation */
     if (500 < borg_activate_failure(TV_WAND, sval))
-        return (0);
+        return 0;
 
     /* Choose optimal location */
     b_n = borg_launch_bolt(rad, dam, typ, z_info->max_range, 0);
@@ -2833,7 +2840,7 @@ static int borg_attack_aux_wand_bolt(
 
     /* Simulation */
     if (borg_simulate)
-        return (b_n);
+        return b_n;
 
     /* Aim the wand */
     (void)borg_aim_wand(sval);
@@ -2849,7 +2856,7 @@ static int borg_attack_aux_wand_bolt(
         borg_keypress('b' + selection);
 
     /* Value */
-    return (b_n);
+    return b_n;
 }
 
 /*
@@ -2864,11 +2871,11 @@ static int borg_attack_aux_wand_bolt_unknown(int dam, int typ)
     /* No firing while blind, confused, or hallucinating */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
         || borg.trait[BI_ISIMAGE])
-        return (0);
+        return 0;
 
     /* Paranoia */
     if (borg_simulate && (randint0(100) < 5))
-        return (0);
+        return 0;
 
     /* Look for an un-id'd wand */
     for (i = 0; i < z_info->pack_size; i++) {
@@ -2891,14 +2898,14 @@ static int borg_attack_aux_wand_bolt_unknown(int dam, int typ)
 
     /* None available */
     if (b_i < 0)
-        return (0);
+        return 0;
 
     /* Choose optimal location */
     b_n = borg_launch_bolt(0, dam, typ, z_info->max_range, 0);
 
     /* Simulation */
     if (borg_simulate)
-        return (b_n);
+        return b_n;
 
     /* Log the message */
     borg_note(format("# Aiming unknown wand '%s.'", borg_items[b_i].desc));
@@ -2914,7 +2921,7 @@ static int borg_attack_aux_wand_bolt_unknown(int dam, int typ)
     successful_target = -1;
 
     /* Value */
-    return (b_n);
+    return b_n;
 }
 
 /*
@@ -2929,11 +2936,11 @@ static int borg_attack_aux_rod_bolt_unknown(int dam, int typ)
     /* No firing while blind, confused, or hallucinating */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
         || borg.trait[BI_ISIMAGE])
-        return (0);
+        return 0;
 
     /* Paranoia */
     if (borg_simulate && (randint0(100) < 5))
-        return (0);
+        return 0;
 
     /* Look for an un-id'd wand */
     for (i = 0; i < z_info->pack_size; i++) {
@@ -2958,14 +2965,14 @@ static int borg_attack_aux_rod_bolt_unknown(int dam, int typ)
 
     /* None available */
     if (b_i < 0)
-        return (0);
+        return 0;
 
     /* Choose optimal location */
     b_n = borg_launch_bolt(0, dam, typ, z_info->max_range, 0);
 
     /* Simulation */
     if (borg_simulate)
-        return (b_n);
+        return b_n;
 
     /* Log the message */
     borg_note(format("# Aiming unknown rod '%s.'", borg_items[b_i].desc));
@@ -2981,7 +2988,7 @@ static int borg_attack_aux_rod_bolt_unknown(int dam, int typ)
     successful_target = -1;
 
     /* Value */
-    return (b_n);
+    return b_n;
 }
 
 /*
@@ -2995,22 +3002,22 @@ static int borg_attack_aux_activation(
     /* No firing while blind, confused, or hallucinating */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
         || borg.trait[BI_ISIMAGE])
-        return (0);
+        return 0;
 
     /* Paranoia */
     if (borg_simulate && (randint0(100) < 2))
-        return (0);
+        return 0;
 
     /* Look for and item with that activation and to see if it is charged */
     if (!borg_equips_item(activation, true))
-        return (0);
+        return 0;
 
     /* Choose optimal location */
     b_n = borg_launch_bolt(rad, dam, typ, z_info->max_range, 0);
 
     /* Simulation */
     if (borg_simulate)
-        return (b_n);
+        return b_n;
 
     /* Activate the artifact */
     (void)borg_activate_item(activation);
@@ -3028,7 +3035,7 @@ static int borg_attack_aux_activation(
         borg_keypress('b' + selection);
 
     /* Value */
-    return (b_n);
+    return b_n;
 }
 
 /*
@@ -3041,22 +3048,22 @@ static int borg_attack_aux_ring(int ring_name, int rad, int dam, int typ)
     /* No firing while blind, confused, or hallucinating */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
         || borg.trait[BI_ISIMAGE])
-        return (0);
+        return 0;
 
     /* Paranoia */
     if (borg_simulate && (randint0(100) < 2))
-        return (0);
+        return 0;
 
     /* Look for that ring and to see if it is charged */
     if (!borg_equips_ring(ring_name))
-        return (0);
+        return 0;
 
     /* Choose optimal location */
     b_n = borg_launch_bolt(rad, dam, typ, z_info->max_range, 0);
 
     /* Simulation */
     if (borg_simulate)
-        return (b_n);
+        return b_n;
 
     /* Activate the artifact */
     (void)borg_activate_ring(ring_name);
@@ -3068,7 +3075,7 @@ static int borg_attack_aux_ring(int ring_name, int rad, int dam, int typ)
     successful_target = -1;
 
     /* Value */
-    return (b_n);
+    return b_n;
 }
 
 /*
@@ -3082,26 +3089,26 @@ static int borg_attack_aux_dragon(
     /* No firing while blind, confused, or hallucinating */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
         || borg.trait[BI_ISIMAGE])
-        return (0);
+        return 0;
 
     /* Paranoia */
     if (borg_simulate && (randint0(100) < 2))
-        return (0);
+        return 0;
 
     /* Randart dragon armors do not activate for breath */
     if (borg_items[INVEN_BODY].art_idx)
-        return (0);
+        return 0;
 
     /* Look for that scale mail and charged*/
     if (!borg_equips_dragon(sval))
-        return (0);
+        return 0;
 
     /* Choose optimal location */
     b_n = borg_launch_arc(rad, dam, typ, z_info->max_range);
 
     /* Simulation */
     if (borg_simulate)
-        return (b_n);
+        return b_n;
 
     /* Activate the scale mail */
     (void)borg_activate_dragon(sval);
@@ -3117,7 +3124,7 @@ static int borg_attack_aux_dragon(
         borg_keypress('b' + selection);
 
     /* Value */
-    return (b_n);
+    return b_n;
 }
 
 /*
@@ -3138,7 +3145,7 @@ static int borg_attack_aux_whirlwind_attack(void)
     /* Can I do it */
     if (!borg_spell_okay_fail(
             WHIRLWIND_ATTACK, (borg_fighting_unique ? 40 : 25)))
-        return (0);
+        return 0;
 
     /* int original_danger = borg_danger(borg.c.y, borg.c.x, 1, false, false);
      */
@@ -3197,7 +3204,7 @@ static int borg_attack_aux_whirlwind_attack(void)
 
     /* Nothing to attack */
     if (total_d < 0)
-        return (0);
+        return 0;
 
     /* Simulation */
     if (borg_simulate)
@@ -3206,7 +3213,7 @@ static int borg_attack_aux_whirlwind_attack(void)
     /* try the spell */
     if (borg_spell(WHIRLWIND_ATTACK))
         return (total_d);
-    return (0);
+    return 0;
 }
 
 /* trying the Leap into Battle spell */
@@ -3224,11 +3231,11 @@ static int borg_attack_aux_leap_into_battle(void)
     /* Can I do it */
     if (!borg_spell_okay_fail(
             LEAP_INTO_BATTLE, (borg_fighting_unique ? 40 : 25)))
-        return (0);
+        return 0;
 
     /* Too afraid to attack */
     if (borg.trait[BI_ISAFRAID] || borg.trait[BI_CRSFEAR])
-        return (0);
+        return 0;
 
     /* Examine possible destinations */
     for (i = 0; i < borg_temp_n; i++) {
@@ -3291,11 +3298,11 @@ static int borg_attack_aux_leap_into_battle(void)
 
     /* Nothing to attack */
     if (b_i < 0)
-        return (0);
+        return 0;
 
     /* Simulation */
     if (borg_simulate)
-        return (b_d);
+        return b_d;
 
     /* Save the location */
     borg.goal.g.x = borg_temp_x[b_i];
@@ -3323,7 +3330,7 @@ static int borg_attack_aux_leap_into_battle(void)
     successful_target = -1;
 
     /* Success */
-    return (b_d);
+    return b_d;
 }
 
 /* trying the Maim Foe spell */
@@ -3343,11 +3350,11 @@ static int borg_attack_aux_maim_foe(void)
 
     /* Too afraid to attack */
     if (borg.trait[BI_ISAFRAID] || borg.trait[BI_CRSFEAR])
-        return (0);
+        return 0;
 
     /* Can I do it */
     if (!borg_spell_okay_fail(MAIM_FOE, (borg_fighting_unique ? 40 : 25)))
-        return (0);
+        return 0;
 
     blows = borg.trait[BI_CLEVEL] / 15;
 
@@ -3407,11 +3414,11 @@ static int borg_attack_aux_maim_foe(void)
 
     /* Nothing to attack */
     if (b_i < 0)
-        return (0);
+        return 0;
 
     /* Simulation */
     if (borg_simulate)
-        return (b_d);
+        return b_d;
 
     /* Save the location */
     borg.goal.g.x = borg_temp_x[b_i];
@@ -3425,12 +3432,12 @@ static int borg_attack_aux_maim_foe(void)
 
     /* Simulation */
     if (borg_simulate)
-        return (d);
+        return d;
 
     borg_spell(MAIM_FOE);
     borg_keypress(I2D(dir));
 
-    return (d);
+    return d;
 }
 
 /* trying the Curse spell */
@@ -3447,15 +3454,15 @@ static int borg_attack_aux_curse(void)
 
     /* costs 100hp to cast.  Don't kill yourself doing it */
     if (borg.trait[BI_CURHP] < 120)
-        return (0);
+        return 0;
 
     /* Can I do it */
     if (!borg_spell_okay_fail(CURSE, (borg_fighting_unique ? 40 : 25)))
-        return (0);
+        return 0;
 
     /* Too afraid to attack */
     if (borg.trait[BI_ISAFRAID] || borg.trait[BI_CRSFEAR])
-        return (0);
+        return 0;
 
     /* Examine possible kills */
     for (i = 0; i < borg_temp_n; i++) {
@@ -3509,12 +3516,12 @@ static int borg_attack_aux_curse(void)
     }
 
     /* Nothing to attack */
-    if (b_i < 0)
-        return (0);
+    if (b_i <= 0)
+        return 0;
 
     /* Simulation */
     if (borg_simulate)
-        return (b_d);
+        return b_d;
 
     /* Save the location */
     borg.goal.g.x = borg_temp_x[b_i];
@@ -3534,7 +3541,7 @@ static int borg_attack_aux_curse(void)
     successful_target = -1;
 
     /* Success */
-    return (b_d);
+    return b_d;
 }
 
 /* trying the Vampire Strike spell */
@@ -3542,120 +3549,121 @@ static int borg_attack_aux_vampire_strike(void)
 {
     int p;
 
-    int  i /* , b_i */ = -1;
-    int  d, b_d          = -1;
+    int  i, b_i = -1;
+    int  d;
     int  dist, best_dist = z_info->max_range;
-    bool abort_attack = false;
+    int  o_x, o_y, x2, y2;
+    int  x = 0, y = 0;
 
     borg_grid *ag;
     borg_kill *kill;
 
     /* Can I do it */
     if (!borg_spell_okay_fail(VAMPIRE_STRIKE, (borg_fighting_unique ? 40 : 25)))
-        return (0);
+        return 0;
 
     /* Examine possible destinations */
     for (i = 0; i < borg_temp_n; i++) {
-        bool new_low = false;
-        int  x       = borg_temp_x[i];
-        int  y       = borg_temp_y[i];
-        int  o_x, o_y, x2, y2;
-
-        /* Consider each adjacent spot to the monster */
-        /* there must be an empty spot */
-        bool found = false;
-        for (o_x = -1; o_x <= 1 && !found; o_x++) {
-            for (o_y = -1; o_y <= 1 && !found; o_y++) {
-                /* but not the monsters location */
-                if (!o_x && !o_y)
-                    continue;
-
-                /* Acquire location */
-                x2 = borg_temp_x[i] + o_x;
-                y2 = borg_temp_y[i] + o_y;
-
-                ag = &borg_grids[y2][x2];
-                if (!ag->kill && ag->feat == FEAT_FLOOR 
-                    && !ag->web
-                    && !ag->glyph
-                    && (y2 != borg.c.y || x2 != borg.c.x))
-                    found = true;
-            }
-        }
-        /* must have an empty square next to the monster */
-        if (!found)
-            continue;
-
-        /* Check the projectable, assume unknown grids are walls */
-        if (!borg_offset_projectable(borg.c.y, borg.c.x, y, x))
-            continue;
+        x = borg_temp_x[i];
+        y = borg_temp_y[i];
 
         /* closest distance */
         dist = distance(borg.c, loc(x, y));
         if (dist > best_dist)
             continue;
-        if (dist < best_dist) {
-            best_dist    = dist;
-            new_low      = true;
-            abort_attack = false;
-        }
 
-        /* Acquire grid */
-        ag = &borg_grids[y][x];
-
-        /* Calculate "average" damage */
-        d = borg.trait[BI_CLEVEL] * 2;
-
-        /* Obtain the monster */
-        kill                       = &borg_kills[ag->kill];
-
-        struct monster_race *r_ptr = &r_info[kill->r_idx];
-        if (rf_has(r_ptr->flags, RF_NONLIVING)
-            || rf_has(r_ptr->flags, RF_UNDEAD))
-            continue;
-
-        /* Hack -- avoid waking most "hard" sleeping monsters */
-        if (!kill->awake && (d <= kill->power) && !borg.munchkin_mode) {
-            /* Calculate danger */
-            p = borg_danger_one_kill(y, x, 1, ag->kill, true, true);
-
-            if (p > avoidance * 2) {
-                abort_attack = true;
-                continue;
-            }
-        }
-
-        /* Calculate "danger" to player */
-        p = borg_danger_one_kill(borg.c.y, borg.c.x, 2, ag->kill, true, true);
-
-        /* Reduce "bonus" of partial kills when higher level */
-        if (d <= kill->power && borg.trait[BI_MAXCLEVEL] > 15)
-            p = p / 10;
-
-        /* Add the danger-bonus to the damage */
-        d += p;
-
-        /* if this is a new closest, save the damage otherwise, average it in */
-        /* since we will only hit one */
-        if (new_low)
-            b_d = d;
-        else
-            b_d = (d + b_d) / 2;
+        best_dist = dist;
+        b_i = i;
     }
 
+    /* if we didn't find anyone, done */
+    if (b_i == -1)
+        return 0;
+
     /* Nothing to attack, require relatively close */
-    if (best_dist > 20 || abort_attack)
-        return (0);
+    if (dist >= 20)
+        return 0;
+
+    x = borg_temp_x[b_i];
+    y = borg_temp_y[b_i];
+
+    /* Consider each adjacent spot to the monster */
+    /* there must be an empty spot */
+    bool found = false;
+    for (o_x = -1; o_x <= 1 && !found; o_x++) {
+        for (o_y = -1; o_y <= 1 && !found; o_y++) {
+            /* but not the monsters location */
+            if (!o_x && !o_y)
+                continue;
+
+            /* Acquire location */
+            x2 = borg_temp_x[b_i] + o_x;
+            y2 = borg_temp_y[b_i] + o_y;
+
+            ag = &borg_grids[y2][x2];
+            if (!ag->kill && ag->feat == FEAT_FLOOR 
+                && !ag->web
+                && !ag->glyph
+                && (y2 != borg.c.y || x2 != borg.c.x))
+                found = true;
+        }
+    }
+    /* must have an empty square next to the monster */
+    if (!found)
+        return 0;
+
+    /* Check the projectable, assume unknown grids are walls */
+    if (!borg_offset_projectable(borg.c.y, borg.c.x, y, x))
+        return 0;
+
+    /* Acquire grid */
+    ag = &borg_grids[y][x];
+
+    /* Calculate "average" damage */
+    d = borg.trait[BI_CLEVEL] * 2;
+
+    /* Obtain the monster */
+    kill                       = &borg_kills[ag->kill];
+
+    struct monster_race *r_ptr = &r_info[kill->r_idx];
+    if (rf_has(r_ptr->flags, RF_NONLIVING)
+        || rf_has(r_ptr->flags, RF_UNDEAD))
+        return 0;
+
+    /* Hack -- avoid waking most "hard" sleeping monsters */
+    if (!kill->awake && (d <= kill->power) && !borg.munchkin_mode) {
+        /* Calculate danger */
+        p = borg_danger_one_kill(y, x, 1, ag->kill, true, true);
+
+        if (p > avoidance * 2) 
+            return 0;
+    }
+
+    /* Calculate "danger" to player */
+    p = borg_danger_one_kill(borg.c.y, borg.c.x, 2, ag->kill, true, true);
+
+    /* Reduce "bonus" of partial kills when higher level */
+    if (d <= kill->power && borg.trait[BI_MAXCLEVEL] > 15)
+        p = p / 10;
+
+    /* Add the danger-bonus to the damage */
+    d += p;
+
+    /* never vampire strike if we previously missed a vampire strike (or other shot) */
+    if (target_closest < 0 && d > 0) {
+        target_closest = 0;
+        return 0;
+    }
 
     /* Simulation */
     if (borg_simulate)
-        return (b_d);
+        return d;
 
     /* cast the spell */
     borg_spell(VAMPIRE_STRIKE);
 
     /* Success */
-    return (b_d);
+    return d;
 }
 
 /* trying the Crush spell */
@@ -3669,11 +3677,11 @@ static int borg_attack_aux_crush(void)
 
     /* Can I do it */
     if (!borg_spell_okay(CRUSH))
-        return (0);
+        return 0;
 
     /* don't kill yourself or leave less than 10hp */
     if ((borg.trait[BI_CURHP] + 10) < (borg.trait[BI_CLEVEL] * 4))
-        return (0);
+        return 0;
 
     /* Obtain initial danger */
     borg_crush_spell = false;
@@ -3704,13 +3712,13 @@ static int borg_attack_aux_crush(void)
 
     /* Simulation */
     if (borg_simulate)
-        return (d);
+        return d;
 
     /* Cast the spell */
     if (borg_spell(CRUSH))
-        return (d);
+        return d;
     else
-        return (0);
+        return 0;
 }
 
 /*
@@ -3733,7 +3741,7 @@ static int borg_attack_aux_trance(void)
 
     /* Can I do it */
     if (!borg_spell_okay(TRANCE))
-        return (0);
+        return 0;
 
     /* Obtain initial danger */
     borg_sleep_spell_ii = false;
@@ -3760,13 +3768,13 @@ static int borg_attack_aux_trance(void)
 
     /* Simulation */
     if (borg_simulate)
-        return (d);
+        return d;
 
     /* Cast the spell */
     if (borg_spell(TRANCE))
-        return (d);
+        return d;
 
-    return (0);
+    return 0;
 }
 
 static int borg_attack_aux_artifact_holcolleth(void)
@@ -3776,7 +3784,7 @@ static int borg_attack_aux_artifact_holcolleth(void)
     int d  = 0;
 
     if (!borg_equips_item(act_sleepii, true))
-        return (0);
+        return 0;
 
     /* Obtain initial danger */
     borg_sleep_spell_ii = false;
@@ -3794,15 +3802,15 @@ static int borg_attack_aux_artifact_holcolleth(void)
 
     /* Simulation */
     if (borg_simulate)
-        return (d);
+        return d;
 
     /* Cast the spell */
     if (borg_activate_item(act_sleepii)) {
         /* Value */
-        return (d);
+        return d;
     } else {
         borg_note("# Failed to properly activate the artifact");
-        return (0);
+        return 0;
     }
 }
 
@@ -5139,7 +5147,7 @@ int borg_calculate_attack_effectiveness(int attack_type)
     }
 
     /* Oops */
-    return (0);
+    return 0;
 }
 
 /*
@@ -5177,7 +5185,7 @@ bool borg_attack(bool boosted_bravery)
 
     /* Nobody around */
     if (!borg_kills_cnt)
-        return (false);
+        return false;
 
     /* Set the attacking flag so that danger is boosted for monsters */
     /* we want to attack first. */
@@ -5284,7 +5292,7 @@ bool borg_attack(bool boosted_bravery)
     /* No destinations */
     if (!borg_temp_n) {
         borg_attacking = false;
-        return (false);
+        return false;
     }
 
     /* Simulate */
@@ -5315,7 +5323,7 @@ bool borg_attack(bool boosted_bravery)
     /* Nothing good */
     if (b_n <= 0) {
         borg_attacking = false;
-        return (false);
+        return false;
     }
 
     /* Note */
@@ -5330,7 +5338,7 @@ bool borg_attack(bool boosted_bravery)
     borg_attacking = false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 #endif

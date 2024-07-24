@@ -167,7 +167,6 @@ extern borg_item *borg_items;
  */
 
 extern borg_item *safe_items; /* Safety "inventory" */
-extern borg_item *safe_home; /* Safety "home stuff" */
 
 /* get the items inscription (note) */
 extern const char *borg_get_note(const borg_item *item);

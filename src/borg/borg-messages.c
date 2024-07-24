@@ -341,6 +341,19 @@ static void borg_parse_aux(char *msg, int len)
         strnfmt(who, 1 + len - (tmp + 1), "%s", msg + tmp);
         strnfmt(buf, 256, "HIT:%s", who);
         borg_react(msg, buf);
+        target_closest = 1;
+        return;
+    }
+    if (prefix(msg, "You draw power from")) {
+        target_closest = 1;
+        return;
+    }
+    if (prefix(msg, "No Available Target.")) {
+        target_closest = -12;
+        return;
+    }
+    if (prefix(msg, "Not enough room next to ")) {
+        target_closest = -12;
         return;
     }
 

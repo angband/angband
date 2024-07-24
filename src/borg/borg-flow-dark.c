@@ -56,32 +56,32 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
 
     /* Explore unknown grids */
     if (ag->feat == FEAT_NONE)
-        return (true);
+        return true;
 
     /* Efficiency -- Ignore "boring" grids */
     if (ag->feat < FEAT_SECRET && ag->feat != FEAT_CLOSED)
-        return (false);
+        return false;
 
     /* Explore "known treasure" */
     if ((ag->feat == FEAT_MAGMA_K) || (ag->feat == FEAT_QUARTZ_K)) {
         /* Do not dig when confused */
         if (borg.trait[BI_ISCONFUSED])
-            return (false);
+            return false;
 
         /* Do not bother if super rich */
         if (borg.trait[BI_GOLD] >= 100000)
-            return (false);
+            return false;
 
         /* Not when darkened */
         if (borg.trait[BI_CURLITE] == 0)
-            return (false);
+            return false;
 
         /* don't try to dig if we can't */
         if (!borg_can_dig(false, ag->feat))
-            return (false);
+            return false;
 
         /* Okay */
-        return (true);
+        return true;
     }
 
     /* "Vaults" Explore non perma-walls adjacent to a perma wall */
@@ -90,15 +90,15 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
 
         /* Do not attempt when confused */
         if (borg.trait[BI_ISCONFUSED])
-            return (false);
+            return false;
 
         /* hack and cheat.  No vaults  on this level */
         if (!vault_on_level)
-            return (false);
+            return false;
 
         /* make sure we can dig */
         if (!borg_can_dig(false, ag->feat))
-            return (false);
+            return false;
 
         /* Do not attempt on the edge */
         if (x < AUTO_MAX_X - 1 && y < AUTO_MAX_Y - 1 && x > 1 && y > 1) {
@@ -114,7 +114,7 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
                         continue;
 
                     /* at least one perm wall next to this, dig it out */
-                    return (true);
+                    return true;
                 }
             }
         }
@@ -125,7 +125,7 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
 
     /* Explore "rubble" */
     if (ag->feat == FEAT_RUBBLE && !borg.trait[BI_ISWEAK]) {
-        return (true);
+        return true;
     }
 
     /* Explore "closed doors" */
@@ -137,53 +137,53 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
                 /* mark as icky if I closed this one */
                 if ((track_door.x[i] == x) && (track_door.y[i] == y)) {
                     /* not interesting */
-                    return (false);
+                    return false;
                 }
             }
         }
         /* this door should be ok to open */
-        return (true);
+        return true;
     }
 
     /* Explore "visible traps" */
     if (feat_is_trap_holding(ag->feat)) {
         /* Do not disarm when blind */
         if (borg.trait[BI_ISBLIND])
-            return (false);
+            return false;
 
         /* Do not disarm when confused */
         if (borg.trait[BI_ISCONFUSED])
-            return (false);
+            return false;
 
         /* Do not disarm when hallucinating */
         if (borg.trait[BI_ISIMAGE])
-            return (false);
+            return false;
 
         /* Do not flow without lite */
         if (borg.trait[BI_CURLITE] == 0)
-            return (false);
+            return false;
 
         /* Do not disarm trap doors on level 99 */
         if (borg.trait[BI_CDEPTH] == 99 && ag->trap && !ag->glyph)
-            return (false);
+            return false;
 
         /* Do not disarm when you could end up dead */
         if (borg.trait[BI_CURHP] < 60)
-            return (false);
+            return false;
 
         /* Do not disarm when clumsy */
         if (borg.trait[BI_DISP] < 30 && borg.trait[BI_CLEVEL] < 20)
-            return (false);
+            return false;
         if (borg.trait[BI_DISP] < 45 && borg.trait[BI_CLEVEL] < 10)
-            return (false);
+            return false;
         if (borg.trait[BI_DISM] < 30 && borg.trait[BI_CLEVEL] < 20)
-            return (false);
+            return false;
         if (borg.trait[BI_DISM] < 45 && borg.trait[BI_CLEVEL] < 10)
-            return (false);
+            return false;
 
         /* Do not explore if a Scaryguy on the Level */
         if (scaryguy_on_level)
-            return (false);
+            return false;
 
         /* NOTE: the flow code allows a borg to flow through a trap and so he
          * may still try to disarm one on his way to the other interesting grid.
@@ -192,11 +192,11 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
          */
 
         /* Okay */
-        return (true);
+        return true;
     }
 
     /* Ignore other grids */
-    return (false);
+    return false;
 }
 
 /*
@@ -222,11 +222,11 @@ static bool borg_flow_dark_reachable(int y, int x)
 
         /* Accept known floor grids */
         if (borg_cave_floor_grid(ag))
-            return (true);
+            return true;
     }
 
     /* Failure */
-    return (false);
+    return false;
 }
 
 /*
@@ -469,7 +469,7 @@ static bool borg_flow_dark_1(int b_stair)
 
     /* Hack -- not in town */
     if (!borg.trait[BI_CDEPTH])
-        return (false);
+        return false;
 
     /* Reset */
     borg_temp_n = 0;
@@ -495,7 +495,7 @@ static bool borg_flow_dark_1(int b_stair)
 
     /* Nothing */
     if (!borg_temp_n)
-        return (false);
+        return false;
 
     /* Wipe icky codes from grids if needed */
     if (borg.goal.ignoring || scaryguy_on_level)
@@ -515,17 +515,17 @@ static bool borg_flow_dark_1(int b_stair)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit(NULL, GOAL_DARK))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(GOAL_DARK))
-        return (false);
+        return false;
 
     /* Forget goal */
     /* goal = 0; */
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -546,7 +546,7 @@ static bool borg_flow_dark_2(int b_stair)
 
     /* Hack -- not in town */
     if (!borg.trait[BI_CDEPTH])
-        return (false);
+        return false;
 
     /* Maximal radius */
     r = borg.trait[BI_CURLITE] + 1;
@@ -592,7 +592,7 @@ static bool borg_flow_dark_2(int b_stair)
 
     /* Nothing */
     if (!borg_temp_n)
-        return (false);
+        return false;
 
     /* Wipe icky codes from grids if needed */
     if (borg.goal.ignoring || scaryguy_on_level)
@@ -612,17 +612,17 @@ static bool borg_flow_dark_2(int b_stair)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit(NULL, GOAL_DARK))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(GOAL_DARK))
-        return (false);
+        return false;
 
     /* Forget goal */
     /* goal = 0; */
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -643,7 +643,7 @@ static bool borg_flow_dark_3(int b_stair)
 
     /* Hack -- not in town */
     if (!borg.trait[BI_CDEPTH])
-        return (false);
+        return false;
 
     /* Local region */
     y1 = borg.c.y - 4;
@@ -689,7 +689,7 @@ static bool borg_flow_dark_3(int b_stair)
 
     /* Nothing interesting */
     if (!borg_temp_n)
-        return (false);
+        return false;
 
     /* Wipe icky codes from grids if needed */
     if (borg.goal.ignoring || scaryguy_on_level)
@@ -712,14 +712,14 @@ static bool borg_flow_dark_3(int b_stair)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit(NULL, GOAL_DARK))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(GOAL_DARK))
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -744,11 +744,11 @@ static bool borg_flow_dark_4(int b_stair)
 
     /* Hack -- not in town */
     if (!borg.trait[BI_CDEPTH])
-        return (false);
+        return false;
 
     /* Hack -- Not if a vault is on the level */
     if (vault_on_level)
-        return (false);
+        return false;
 
     /* Local region */
     y1 = borg.c.y - 11;
@@ -798,7 +798,7 @@ static bool borg_flow_dark_4(int b_stair)
 
     /* Nothing useful */
     if (!borg_temp_n)
-        return (false);
+        return false;
 
     /* Wipe icky codes from grids if needed */
     if (borg.goal.ignoring || scaryguy_on_level)
@@ -839,14 +839,14 @@ static bool borg_flow_dark_4(int b_stair)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit("dark-4", GOAL_DARK))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(GOAL_DARK))
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -859,7 +859,7 @@ static bool borg_flow_dark_5(int b_stair)
 
     /* Hack -- not in town */
     if (!borg.trait[BI_CDEPTH])
-        return (false);
+        return false;
 
     /* Nothing yet */
     borg_temp_n = 0;
@@ -900,7 +900,7 @@ static bool borg_flow_dark_5(int b_stair)
 
     /* Nothing useful */
     if (!borg_temp_n)
-        return (false);
+        return false;
 
     /* Wipe icky codes from grids if needed */
     if (borg.goal.ignoring || scaryguy_on_level)
@@ -933,14 +933,14 @@ static bool borg_flow_dark_5(int b_stair)
 
     /* Attempt to Commit the flow */
     if (!borg_flow_commit("dark-5", GOAL_DARK))
-        return (false);
+        return false;
 
     /* Take one step */
     if (!borg_flow_old(GOAL_DARK))
-        return (false);
+        return false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -957,11 +957,11 @@ bool borg_flow_dark(bool neer)
 
     /* Not if sitting in a sea of runes and we saw Morgoth recently */
     if (borg_morgoth_position && morgoth_on_level)
-        return (false);
+        return false;
 
     /* Paranoia */
     if (borg_flow_dark_interesting(borg.c.y, borg.c.x, -1)) {
-        return (false);
+        return false;
     }
 
     /* Check distance away from stairs, used later */
@@ -986,29 +986,29 @@ bool borg_flow_dark(bool neer)
     if (neer) {
         /* Method 1 */
         if (borg_flow_dark_1(b_stair))
-            return (true);
+            return true;
 
         /* Method 2 */
         if (borg_flow_dark_2(b_stair))
-            return (true);
+            return true;
 
         /* Method 3 */
         if (borg_flow_dark_3(b_stair))
-            return (true);
+            return true;
     }
     /* Far */
     else {
         /* Method 4 */
         if (borg_flow_dark_4(b_stair))
-            return (true);
+            return true;
 
         /* Method 5 */
         if (borg_flow_dark_5(b_stair))
-            return (true);
+            return true;
     }
 
     /* Fail */
-    return (false);
+    return false;
 }
 
 #endif

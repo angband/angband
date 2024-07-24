@@ -2285,11 +2285,6 @@ void borg_update(void)
                 borg.goal.recalling = 1;
         }
 
-        /* Lets make sure we did not miss read */
-        if (borg.goal.recalling && !player->word_recall) {
-            borg.goal.recalling = 0;
-        }
-
         /* when we need to cast this spell again */
         if (borg.see_inv >= 1) {
             borg.see_inv -= borg_game_ratio;
@@ -2413,8 +2408,8 @@ void borg_update(void)
     borg_update_map();
 
     /* Mark this grid as having been stepped on */
-    track_step.x[track_step.num] = player->grid.x;
-    track_step.y[track_step.num] = player->grid.y;
+    track_step.x[track_step.num] = borg.c.x;
+    track_step.y[track_step.num] = borg.c.y;
     track_step.num++;
 
     /* Hack - Clean the steps every so often */

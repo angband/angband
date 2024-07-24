@@ -93,7 +93,7 @@ static bool borg_save_game(void)
     borg_keypress(ESCAPE);
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /*
@@ -160,7 +160,7 @@ bool borg_think(void)
         borg_cheat_equip();
 
         /* Done */
-        return (false);
+        return false;
     }
 
     /* Cheat */
@@ -172,7 +172,7 @@ bool borg_think(void)
         borg_cheat_inven();
 
         /* Done */
-        return (false);
+        return false;
     }
 
     /* save now */
@@ -209,13 +209,13 @@ bool borg_think(void)
 
             justSaved = true;
         }
-        return (true);
+        return true;
     }
     if (justSaved) {
         memcpy(savefile, svSavefile, sizeof(savefile));
         borg_save_game();
         justSaved = false;
-        return (true);
+        return true;
     }
 
     /* Parse "equip" mode */
@@ -228,7 +228,7 @@ bool borg_think(void)
         borg_keypress(ESCAPE);
 
         /* Done */
-        return (true);
+        return true;
     }
 
     /* Parse "inven" mode */
@@ -241,7 +241,7 @@ bool borg_think(void)
         borg_keypress(ESCAPE);
 
         /* Done */
-        return (true);
+        return true;
     }
 
     /* Parse "inven" mode */
@@ -250,7 +250,7 @@ bool borg_think(void)
         borg_keypress(ESCAPE);
 
         /* Done */
-        return (true);
+        return true;
     }
 
     /*** Find books ***/
@@ -308,7 +308,7 @@ bool borg_think(void)
         borg_do_spell_aux++;
 
         /* Done */
-        return (false);
+        return false;
     }
 
     /* Check for "browse" mode */
@@ -324,7 +324,7 @@ bool borg_think(void)
         borg_keypress(ESCAPE);
 
         /* Done */
-        return (true);
+        return true;
     }
 
     /* If king, maybe retire. */
@@ -408,7 +408,7 @@ bool borg_think(void)
 
         /* Hack -- allow user abort */
         if (borg_cancel)
-            return (true);
+            return true;
 
         /* Do not allow a user key to interrupt the borg while in a store */
         borg.in_shop = true;
@@ -437,7 +437,7 @@ bool borg_think(void)
         borg_keypress(ESCAPE);
 
         /* Done */
-        return (true);
+        return true;
     }
 
     /* Check panel */
@@ -449,7 +449,7 @@ bool borg_think(void)
         borg_keypress('L');
 
         /* Done */
-        return (true);
+        return true;
     }
 
     /*** Analyze the Frame ***/
@@ -511,7 +511,7 @@ bool borg_think(void)
 
     /* Hack -- allow user abort */
     if (borg_cancel)
-        return (true);
+        return true;
 
     /* Do something */
     return (borg_think_dungeon());

@@ -57,18 +57,18 @@ bool borg_munchkin_mage(void)
     /* Must be standing on a stair */
     if (borg_grids[borg.c.y][borg.c.x].feat != FEAT_MORE
         && borg_grids[borg.c.y][borg.c.x].feat != FEAT_LESS)
-        return (false);
+        return false;
 
     /* Not if too dangerous */
     if ((borg_danger(borg.c.y, borg.c.x, 1, true, true) > avoidance * 7 / 10)
         || borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 3)
-        return (false);
+        return false;
     if (borg.trait[BI_ISCONFUSED])
-        return (false);
+        return false;
 
     /* Nobody around */
     if (!borg_kills_cnt)
-        return (false);
+        return false;
 
     /* Set the attacking flag so that danger is boosted for monsters */
     /* we want to attack first. */
@@ -104,11 +104,11 @@ bool borg_munchkin_mage(void)
         /* Check if there is a monster adjacent to me or he's close and fast. */
         if ((kill->speed > borg.trait[BI_SPEED] && distance(borg.c, a) <= 2)
             || distance(borg.c, a) <= 1)
-            return (false);
+            return false;
 
         /* no attacking most scaryguys, try to get off the level */
         if (scaryguy_on_level)
-            return (false);
+            return false;
 
         /* Acquire location */
         c.x = kill->pos.x;
@@ -138,7 +138,7 @@ bool borg_munchkin_mage(void)
     /* No destinations */
     if (!borg_temp_n) {
         borg_attacking = false;
-        return (false);
+        return false;
     }
 
     /* Simulate */
@@ -162,7 +162,7 @@ bool borg_munchkin_mage(void)
     /* Nothing good */
     if (b_n < 0 || b_dam <= 0) {
         borg_attacking = false;
-        return (false);
+        return false;
     }
 
     /* Note */
@@ -177,7 +177,7 @@ bool borg_munchkin_mage(void)
     borg_attacking = false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 /* Munchkin Attack - Melee
@@ -199,23 +199,23 @@ bool borg_munchkin_melee(void)
     /* No Mages for now */
     if ((borg.trait[BI_CLASS] == CLASS_MAGE
             || borg.trait[BI_CLASS] == CLASS_NECROMANCER))
-        return (false);
+        return false;
 
     /* Must be standing on a stair */
     if (borg_grids[borg.c.y][borg.c.x].feat != FEAT_MORE
         && borg_grids[borg.c.y][borg.c.x].feat != FEAT_LESS)
-        return (false);
+        return false;
 
     /* Nobody around */
     if (!borg_kills_cnt)
-        return (false);
+        return false;
 
     /* Not if too dangerous */
     if ((borg_danger(borg.c.y, borg.c.x, 1, true, true) > avoidance * 7 / 10)
         || borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 3)
-        return (false);
+        return false;
     if (borg.trait[BI_ISCONFUSED])
-        return (false);
+        return false;
 
     /* Set the attacking flag so that danger is boosted for monsters */
     /* we want to attack first. */
@@ -246,7 +246,7 @@ bool borg_munchkin_melee(void)
 
         /* no attacking most scaryguys, try to get off the level */
         if (scaryguy_on_level)
-            return (false);
+            return false;
 
         /* Get grid */
         ag = &borg_grids[kill->pos.y][kill->pos.x];
@@ -272,7 +272,7 @@ bool borg_munchkin_melee(void)
     /* No destinations */
     if (!borg_temp_n) {
         borg_attacking = false;
-        return (false);
+        return false;
     }
 
     /* Simulate */
@@ -284,7 +284,7 @@ bool borg_munchkin_melee(void)
     /* Nothing good */
     if (n <= 0) {
         borg_attacking = false;
-        return (false);
+        return false;
     }
 
     /* Note */
@@ -299,7 +299,7 @@ bool borg_munchkin_melee(void)
     borg_attacking = false;
 
     /* Success */
-    return (true);
+    return true;
 }
 
 #endif
