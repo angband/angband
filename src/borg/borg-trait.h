@@ -323,6 +323,14 @@ enum {
     BI_MAX
 };
 
+struct borg_best
+{
+    bool    home;
+    uint8_t tval; /* Item type */
+    uint8_t sval; /* Item sub-type */
+    int16_t pval; /* Item extra-info */
+};
+
 struct goals {
     /* goals */
     int16_t type; /* Flowing (goal type) */
@@ -343,6 +351,9 @@ struct goals {
     int16_t shop; /* Next shop to visit */
     int16_t ware; /* Next item to buy there */
     int16_t item; /* Next item to sell there */
+
+    bool    do_best;
+    struct borg_best *best_item;
 };
 
 struct temp {

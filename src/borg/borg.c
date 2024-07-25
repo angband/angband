@@ -43,6 +43,7 @@
 #include "borg-inventory.h"
 #include "borg-io.h"
 #include "borg-item-id.h"
+#include "borg-item-wear.h"
 #include "borg-log.h"
 #include "borg-magic.h"
 #include "borg-messages-react.h"
@@ -778,6 +779,8 @@ void do_cmd_borg(void)
         /* make sure the important game options are set correctly */
         borg_reinit_options();
 
+        borg_clear_best();
+
         /* Activate */
         borg_active = true;
 
@@ -838,6 +841,8 @@ void do_cmd_borg(void)
     case 'X': {
         /* make sure the important game options are set correctly */
         borg_reinit_options();
+
+        borg_clear_best();
 
         /* Activate */
         borg_active = true;

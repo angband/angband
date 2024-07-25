@@ -63,6 +63,11 @@ extern bool borg_wear_stuff(void);
 extern bool borg_best_stuff(void);
 
 /*
+ * clear the optimal equipment list
+ */
+extern void borg_clear_best(void);
+
+/*
  * Wear stuff so it recharges.
  */
 extern bool borg_wear_recharge(void);

@@ -2124,6 +2124,10 @@ void borg_update(void)
         /* clear stuff feeling - danger feeling is automatic */
         borg_feeling_stuff = 0;
 
+        /* clear our best shopping spree when entering town */
+        if (!borg.trait[BI_CDEPTH])
+            borg_clear_best();
+
         /* Assume not fleeing the level */
         if (!borg.trait[BI_CDEPTH])
             borg.goal.fleeing_to_town = false;
