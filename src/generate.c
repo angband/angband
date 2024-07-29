@@ -1145,21 +1145,22 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 
 		/* Ensure quest monsters */
 		if (dun->quest) {
-			int i2;
-			for (i2 = 1; i2 < z_info->r_max; i2++) {
-				struct monster_race *race = &r_info[i2];
+			for (i = 0; i < z_info->quest_max; i++) {
+				struct quest *q = &player->quests[i];
 				struct monster_group_info info = { 0, 0 };
 				struct loc grid;
 
-				/* The monster must be an unseen quest monster of this depth. */
-				if (race->cur_num > 0) continue;
-				if (!rf_has(race->flags, RF_QUESTOR)) continue;
-				if (race->level != chunk->depth) continue;
-	
-				/* Pick a location and place the monster */
-				find_empty(chunk, &grid);
-				place_new_monster(chunk, grid, race, true, true, info,
-								  ORIGIN_DROP);
+				if (q->level != chunk->depth) continue;
+
+				/* If the quest monster is unique and has already been placed, don't place again */
+				if (rf_has(q->race->flags, RF_UNIQUE) && q->race->cur_num > 0) continue;
+
+				/* Pick a location and place the monster(s) */
+				for (int n = 0; n < q->max_num; n++) {
+					find_empty(chunk, &grid);
+					place_new_monster(chunk, grid, q->race, true, true, info,
+									  ORIGIN_DROP);
+				}
 			}
 		}
 

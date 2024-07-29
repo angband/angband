@@ -219,33 +219,40 @@ static void build_quest_stairs(struct player *p, struct loc grid)
 bool quest_check(struct player *p, const struct monster *m)
 {
 	int i, total = 0;
-
-	/* Don't bother with non-questors */
-	if (!rf_has(m->race->flags, RF_QUESTOR)) return false;
+	bool completed = false;
 
 	/* Mark quests as complete */
 	for (i = 0; i < z_info->quest_max; i++) {
 		/* Note completed quests */
-		if (p->quests[i].level == m->race->level) {
-			p->quests[i].level = 0;
+		if (cave->depth == p->quests[i].level &&
+		    m->race == p->quests[i].race) {
 			p->quests[i].cur_num++;
+
+			if (p->quests[i].cur_num == p->quests[i].max_num) {
+				p->quests[i].level = 0;
+				completed = true;
+			}
 		}
 
 		/* Count incomplete quests */
 		if (p->quests[i].level) total++;
 	}
 
-	/* Build magical stairs */
-	build_quest_stairs(p, m->grid);
+	if (completed) {
+		/* Build magical stairs */
+		build_quest_stairs(p, m->grid);
 
-	/* Nothing left, game over... */
-	if (total == 0) {
-		p->total_winner = true;
-		p->upkeep->redraw |= (PR_TITLE);
-		msg("*** CONGRATULATIONS ***");
-		msg("You have won the game!");
-		msg("You may retire (key is shift-q) when you are ready.");
+		/* Nothing left, game over... */
+		if (total == 0) {
+			p->total_winner = true;
+			p->upkeep->redraw |= (PR_TITLE);
+			msg("*** CONGRATULATIONS ***");
+			msg("You have won the game!");
+			msg("You may retire (key is shift-q) when you are ready.");
+		}
+
+		return true;
+	} else {
+		return false;
 	}
-
-	return true;
 }
