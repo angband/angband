@@ -106,6 +106,7 @@ extern int sv_scroll_star_enchant_armor;
 extern int sv_scroll_protection_from_evil;
 extern int sv_scroll_rune_of_protection;
 extern int sv_scroll_teleport_level;
+extern int sv_scroll_deep_descent;
 extern int sv_scroll_recharging;
 extern int sv_scroll_banishment;
 extern int sv_scroll_mass_banishment;

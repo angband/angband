@@ -423,9 +423,30 @@ static void borg_update_map(void)
             /* lava */
             else if (g.f_idx == FEAT_LAVA) {
             }
-            /* Seams */
-            else if (g.f_idx == FEAT_MAGMA || g.f_idx == FEAT_QUARTZ) {
-                /* Done */
+            /* Seams and rubble */
+            else if (g.f_idx == FEAT_MAGMA || g.f_idx == FEAT_QUARTZ
+                     || g.f_idx == FEAT_RUBBLE) {
+                /* If we are twitching around unable to go anywhere, count */
+                /* regular veins as worth digging out */
+                if (borg.times_twitch > 21) {
+                    /* Check for an existing vein */
+                    for (i = 0; i < track_vein.num; i++) {
+                        /* Stop if we already new about this */
+                        if ((track_vein.x[i] == x) && (track_vein.y[i] == y))
+                            break;
+                    }
+
+                    /* Track the newly discovered vein */
+                    if ((i == track_vein.num) && (i < track_vein.size)) {
+                        track_vein.x[i] = x;
+                        track_vein.y[i] = y;
+                        track_vein.num++;
+
+                        /* do not overflow */
+                        if (track_vein.num > 99)
+                            track_vein.num = 99;
+                    }
+                }
             }
             /* Hidden */
             else if (g.f_idx == FEAT_MAGMA_K || g.f_idx == FEAT_QUARTZ_K) {
@@ -446,10 +467,6 @@ static void borg_update_map(void)
                     if (track_vein.num > 99)
                         track_vein.num = 99;
                 }
-            }
-            /* Rubble */
-            else if (g.f_idx == FEAT_RUBBLE) {
-                /* Done */
             }
             /* Doors */
             else if (g.f_idx == FEAT_CLOSED) {
