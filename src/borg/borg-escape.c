@@ -1220,6 +1220,9 @@ bool borg_escape(int b_q)
             if (borg_t - borg_t_antisummon < 50)
                 borg_t_antisummon = 0;
 
+            /* no longer twitchy */
+            borg.times_twitch = 0;
+
             /* Success */
             return true;
         }
@@ -1240,6 +1243,9 @@ bool borg_escape(int b_q)
             /* Reset timer if borg was in a anti-summon corridor */
             if (borg_t - borg_t_antisummon < 50)
                 borg_t_antisummon = 0;
+
+            /* no longer twitchy */
+            borg.times_twitch = 0;
 
             /* Success */
             return true;
