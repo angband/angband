@@ -346,7 +346,6 @@ static void borg_think_home_sell_aux2(int n, int start_i)
     int32_t    home_power;
     int32_t    borg_empty_home_power;
     int        i, k;
-    bool       skip_it = false;
 
     /* get what an empty home would have for power */
     borg_notice_home(NULL, true);
