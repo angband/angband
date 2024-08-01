@@ -322,6 +322,11 @@ static void borg_parse_aux(char *msg, int len)
         borg.trait[BI_ISIMAGE] = true;
     }
 
+    if (streq(msg, "The draining fails.")) {
+        borg_react(msg, "MISS_BY:something");
+        return;
+    }
+
     /* Hallucination -- Close */
     if (streq(msg, "You can see clearly again.")) {
         borg_note("# Hallucination ended.  Normal control of wanks.");
