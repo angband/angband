@@ -30,8 +30,6 @@
  */
 extern int16_t track_worn_num;
 
-extern int16_t borg_best_fit_item; /* Item to be worn, not sold */
-
 /*
  * Identify items if possible
  */

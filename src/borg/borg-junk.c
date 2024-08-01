@@ -414,11 +414,8 @@ bool borg_drop_junk(void)
             if (borg.trait[BI_CDEPTH] < 127 && value > 5600)
                 continue;
 
-            /* Save the item */
-            memcpy(&safe_items[i], &borg_items[i], sizeof(borg_item));
-
             /* Destroy the item */
-            memset(&borg_items[i], 0, sizeof(borg_item));
+            borg_items[i].iqty = 0;
 
             /* Fix later */
             fix = true;
@@ -644,11 +641,8 @@ bool borg_drop_hole(bool desperate)
         /* save the items weight */
         w = item->weight * item->iqty;
 
-        /* Save the item */
-        memcpy(&safe_items[i], &borg_items[i], sizeof(borg_item));
-
         /* Destroy the item */
-        memset(&borg_items[i], 0, sizeof(borg_item));
+        borg_items[i].iqty = 0;
 
         /* Fix later */
         fix = true;
@@ -1036,9 +1030,6 @@ bool borg_drop_slow(void)
         if (item->tval == TV_ROD && item->sval == sv_rod_healing)
             continue;
 
-        /* Save the item */
-        memcpy(&safe_items[i], &borg_items[i], sizeof(borg_item));
-
         /* Destroy one of the items */
         borg_items[i].iqty--;
 
@@ -1052,7 +1043,7 @@ bool borg_drop_slow(void)
         p = borg_power();
 
         /* Restore the item */
-        memcpy(&borg_items[i], &safe_items[i], sizeof(borg_item));
+        borg_items[i].iqty++;
 
         /* Obtain the base price */
         temp = ((item->value < 30000L) ? item->value : 30000L);
@@ -1298,17 +1289,11 @@ bool borg_remove_stuff(void)
         if (item->one_ring)
             continue;
 
-        /* Save the hole */
-        memcpy(&safe_items[hole], &borg_items[hole], sizeof(borg_item));
-
-        /* Save the item */
-        memcpy(&safe_items[i], &borg_items[i], sizeof(borg_item));
-
         /* Take off the item */
-        memcpy(&borg_items[hole], &safe_items[i], sizeof(borg_item));
+        memcpy(&borg_items[hole], item, sizeof(borg_item));
 
         /* Erase the item from equip */
-        memset(&borg_items[i], 0, sizeof(borg_item));
+        item->iqty = 0;
 
         /* Fix later */
         fix = true;
@@ -1320,10 +1305,10 @@ bool borg_remove_stuff(void)
         p = borg_power();
 
         /* Restore the item */
-        memcpy(&borg_items[i], &safe_items[i], sizeof(borg_item));
+        memcpy(item, &safe_items[i], sizeof(borg_item));
 
         /* Restore the hole */
-        memcpy(&borg_items[hole], &safe_items[hole], sizeof(borg_item));
+        borg_items[hole].iqty = 0;
 
         /* Track the crappy items */
         /* crappy includes things that do not add to power */
@@ -1342,13 +1327,6 @@ bool borg_remove_stuff(void)
     if (b_i >= 0) {
         /* Get the item */
         item = &borg_items[b_i];
-
-        if (borg_cfg[BORG_VERBOSE]) {
-            /* dump list and power...  for debugging */
-            borg_note(format("Equip Item %d %s.", i, safe_items[i].desc));
-            borg_note(format("With Item     (borg_power %ld)", (long int)b_p));
-            borg_note(format("Removed Item  (best power %ld)", (long int)p));
-        }
 
         /* Log */
         borg_note(format("# Removing %s.  Power with: (%ld) Power w/o (%ld)",

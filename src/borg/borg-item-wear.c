@@ -48,9 +48,6 @@ int16_t  track_worn_size;
 uint8_t *track_worn_name1;
 int16_t  track_worn_time;
 
-/* Item to be worn.  Index used to note which item not to sell */
-int16_t borg_best_fit_item = -1; 
-
 /*
  * Identify items if possible
  *
@@ -314,44 +311,34 @@ bool borg_swap_rings(void)
 
     /*** Remove nasty "tight" rings ***/
 
-    /* Save the hole */
-    memcpy(&safe_items[hole], &borg_items[hole], sizeof(borg_item));
+    if (!borg_items[INVEN_LEFT].iqty) {
+        /* Take off the ring */
+        memcpy(&borg_items[hole], &borg_items[INVEN_LEFT], sizeof(borg_item));
 
-    /* Save the ring */
-    memcpy(&safe_items[INVEN_LEFT], &borg_items[INVEN_LEFT], sizeof(borg_item));
+        /* Erase left ring */
+        borg_items[INVEN_LEFT].iqty = 0;
 
-    /* Take off the ring */
-    memcpy(&borg_items[hole], &borg_items[INVEN_LEFT], sizeof(borg_item));
+        /* Examine the inventory */
+        borg_notice(false);
 
-    /* Erase left ring */
-    memset(&borg_items[INVEN_LEFT], 0, sizeof(borg_item));
+        /* Evaluate the inventory */
+        v1 = borg_power();
 
-    /* Examine the inventory */
-    borg_notice(false);
+        /* Restore the ring */
+        borg_items[INVEN_LEFT].iqty = 1;
 
-    /* Evaluate the inventory */
-    v1 = borg_power();
-
-    /* Restore the ring */
-    memcpy(&borg_items[INVEN_LEFT], &safe_items[INVEN_LEFT], sizeof(borg_item));
-
-    /* Restore the hole */
-    memcpy(&borg_items[hole], &safe_items[hole], sizeof(borg_item));
+        /* Restore the hole */
+        borg_items[hole].iqty = 0;
+    } else
+        v1 = borg.power;
 
     /*** Consider taking off the "right" ring ***/
-
-    /* Save the hole */
-    memcpy(&safe_items[hole], &borg_items[hole], sizeof(borg_item));
-
-    /* Save the ring */
-    memcpy(
-        &safe_items[INVEN_RIGHT], &borg_items[INVEN_RIGHT], sizeof(borg_item));
 
     /* Take off the ring */
     memcpy(&borg_items[hole], &borg_items[INVEN_RIGHT], sizeof(borg_item));
 
     /* Erase the ring */
-    memset(&borg_items[INVEN_RIGHT], 0, sizeof(borg_item));
+    borg_items[INVEN_RIGHT].iqty = 0;
 
     /* Examine the inventory */
     borg_notice(false);
@@ -360,11 +347,10 @@ bool borg_swap_rings(void)
     v2 = borg_power();
 
     /* Restore the ring */
-    memcpy(
-        &borg_items[INVEN_RIGHT], &safe_items[INVEN_RIGHT], sizeof(borg_item));
+    borg_items[INVEN_RIGHT].iqty = 1;
 
     /* Restore the hole */
-    memcpy(&borg_items[hole], &safe_items[hole], sizeof(borg_item));
+    borg_items[hole].iqty = 0;
 
     /*** Swap rings if necessary ***/
 
@@ -602,12 +588,6 @@ bool borg_backup_swap(int p)
         if (slot < 0)
             return false;
 
-        /* Save the old item (empty) */
-        memcpy(&safe_items[slot], &borg_items[slot], sizeof(borg_item));
-
-        /* Save the new item */
-        memcpy(&safe_items[i], &borg_items[i], sizeof(borg_item));
-
         /* Wear new item */
         memcpy(&borg_items[slot], &safe_items[i], sizeof(borg_item));
 
@@ -626,7 +606,7 @@ bool borg_backup_swap(int p)
         /* Evaluate the power with the new item worn */
         b_p1 = borg_danger(borg.c.y, borg.c.x, 1, true, false);
 
-        /* Restore the old item (empty) */
+        /* Restore the old item */
         memcpy(&borg_items[slot], &safe_items[slot], sizeof(borg_item));
 
         /* Restore the new item */
@@ -672,12 +652,6 @@ bool borg_backup_swap(int p)
         /* safety check incase slot = -1 */
         if (slot < 0)
             return false;
-
-        /* Save the old item (empty) */
-        memcpy(&safe_items[slot], &borg_items[slot], sizeof(borg_item));
-
-        /* Save the new item */
-        memcpy(&safe_items[i], &borg_items[i], sizeof(borg_item));
 
         /* Wear new item */
         memcpy(&borg_items[slot], &safe_items[i], sizeof(borg_item));
@@ -882,15 +856,6 @@ bool borg_wear_stuff(void)
         if (slot != INVEN_LEFT
             || (!borg_items[INVEN_LEFT].iqty
                 || !borg_items[INVEN_RIGHT].iqty)) {
-            /* Save the old item */
-            memcpy(&safe_items[slot], &borg_items[slot], sizeof(borg_item));
-
-            /* Save the new item */
-            memcpy(&safe_items[i], &borg_items[i], sizeof(borg_item));
-
-            /* Save the hole */
-            memcpy(&safe_items[hole], &borg_items[hole], sizeof(borg_item));
-
             /* Take off old item */
             memcpy(&borg_items[hole], &safe_items[slot], sizeof(borg_item));
 
@@ -932,7 +897,7 @@ bool borg_wear_stuff(void)
             memcpy(&borg_items[i], &safe_items[i], sizeof(borg_item));
 
             /* Restore the hole */
-            memcpy(&borg_items[hole], &safe_items[hole], sizeof(borg_item));
+            borg_items[hole].iqty = 0;
 
             /* Need to be careful not to put the One Ring onto
              * the Left Hand
@@ -963,17 +928,6 @@ bool borg_wear_stuff(void)
                     slot = ii;
 
                     /* Does One Ring need to be handled here? */
-
-                    /* Save the old item */
-                    memcpy(&safe_items[slot], &borg_items[slot],
-                        sizeof(borg_item));
-
-                    /* Save the new item */
-                    memcpy(&safe_items[i], &borg_items[i], sizeof(borg_item));
-
-                    /* Save the hole */
-                    memcpy(&safe_items[hole], &borg_items[hole],
-                        sizeof(borg_item));
 
                     /* Take off old item */
                     memcpy(&borg_items[hole], &safe_items[slot],
@@ -1009,8 +963,7 @@ bool borg_wear_stuff(void)
                     memcpy(&borg_items[i], &safe_items[i], sizeof(borg_item));
 
                     /* Restore the hole */
-                    memcpy(&borg_items[hole], &safe_items[hole],
-                        sizeof(borg_item));
+                    borg_items[hole].iqty = 0;
 
                     /* Need to be careful not to put the One Ring onto
                      * the Left Hand
@@ -1379,12 +1332,6 @@ bool borg_best_stuff(void)
     for (k = 0; k < z_info->equip_slots_max; k++) {
         /* Initialize */
         best[k] = test[k] = 255;
-    }
-
-    /* Hack -- Copy all the slots */
-    for (i = 0; i < INVEN_TOTAL; i++) {
-        /* Save the item */
-        memcpy(&safe_items[i], &borg_items[i], sizeof(borg_item));
     }
 
     /* Evaluate the inventory */
