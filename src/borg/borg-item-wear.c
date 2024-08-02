@@ -319,13 +319,13 @@ bool borg_swap_rings(void)
         borg_items[INVEN_LEFT].iqty = 0;
 
         /* Examine the inventory */
-        borg_notice(false);
+        borg_notice(true);
 
         /* Evaluate the inventory */
         v1 = borg_power();
 
         /* Restore the ring */
-        borg_items[INVEN_LEFT].iqty = 1;
+        memcpy(&borg_items[INVEN_LEFT], &safe_items[INVEN_LEFT], sizeof(borg_item));
 
         /* Restore the hole */
         borg_items[hole].iqty = 0;
@@ -347,7 +347,7 @@ bool borg_swap_rings(void)
     v2 = borg_power();
 
     /* Restore the ring */
-    borg_items[INVEN_RIGHT].iqty = 1;
+    memcpy(&borg_items[INVEN_RIGHT], &safe_items[INVEN_RIGHT], sizeof(borg_item));
 
     /* Restore the hole */
     borg_items[hole].iqty = 0;
@@ -469,7 +469,7 @@ bool borg_wear_rings(void)
         fix = true;
 
         /* Examine the inventory */
-        borg_notice(false);
+        borg_notice(true);
 
         /* Evaluate the inventory */
         p = borg_power();
@@ -872,7 +872,7 @@ bool borg_wear_stuff(void)
             fix = true;
 
             /* Examine the inventory */
-            borg_notice(false);
+            borg_notice(true);
 
             /* Evaluate the inventory */
             p = borg_power();
@@ -947,7 +947,7 @@ bool borg_wear_stuff(void)
                     fix = true;
 
                     /* Examine the inventory */
-                    borg_notice(false);
+                    borg_notice(true);
 
                     /* Evaluate the inventory */
                     p = borg_power();
@@ -1190,7 +1190,7 @@ static void borg_best_stuff_aux(
         int32_t p;
 
         /* Examine */
-        borg_notice(false);
+        borg_notice(true);
 
         /* Evaluate */
         p = borg_power();

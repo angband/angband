@@ -101,6 +101,14 @@ void borg_deinscribe(int i)
 }
 
 /*
+ * helper to give the item weight
+ */
+int16_t borg_item_weight(borg_item * item)
+{
+    return item->iqty * item->weight;
+}
+
+/*
  * allocate the item arrays
  */
 void borg_init_item(void)

@@ -243,7 +243,6 @@ bool borg_think_shop_buy_useful(void)
 
     /* Extract the "power" */
     b_p = borg.power;
-    b_p = borg_power();
 
     /* Check the shops */
     for (k = 0; k < (z_info->store_max - 1); k++) {
@@ -347,7 +346,7 @@ bool borg_think_shop_buy_useful(void)
                 fix = true;
 
                 /* Examine the inventory */
-                borg_notice(false);
+                borg_notice(true);
 
                 /* Evaluate the inventory */
                 p = borg_power();
@@ -372,7 +371,7 @@ bool borg_think_shop_buy_useful(void)
                 fix = true;
 
                 /* Examine the inventory */
-                borg_notice(false);
+                borg_notice(true);
 
                 /* Evaluate the equipment */
                 p = borg_power();
@@ -524,7 +523,7 @@ bool borg_think_home_buy_useful(void)
                     fix = true;
 
                     /* Examine the inventory */
-                    borg_notice(false);
+                    borg_notice(true);
 
                     /* Evaluate the inventory */
                     p_left = borg_power();
@@ -556,7 +555,7 @@ bool borg_think_home_buy_useful(void)
                     fix = true;
 
                     /* Examine the inventory */
-                    borg_notice(false);
+                    borg_notice(true);
 
                     /* Evaluate the inventory */
                     p_right = borg_power();
@@ -594,7 +593,7 @@ bool borg_think_home_buy_useful(void)
                 fix = true;
 
                 /* Examine the inventory */
-                borg_notice(false);
+                borg_notice(true);
 
                 /* Evaluate the inventory */
                 p = borg_power();
@@ -642,7 +641,7 @@ bool borg_think_home_buy_useful(void)
             fix = true;
 
             /* Examine the inventory */
-            borg_notice(false);
+            borg_notice(true);
 
             /* Evaluate the equipment */
             p = borg_power();

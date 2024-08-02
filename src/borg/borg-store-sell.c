@@ -324,7 +324,7 @@ static bool borg_think_home_sell_bad(int i, int32_t borg_empty_home_power)
     borg_items[i].iqty--;
 
     /* Examine borg */
-    borg_notice(false);
+    borg_notice(true);
 
     /* if this reduces the borgs power, it is a bad transaction */
     if (borg_power() < borg.power) {
@@ -361,10 +361,11 @@ static void borg_think_home_sell_aux2(int n, int start_i)
 
     int first_empty;
     for (first_empty = 0; first_empty < z_info->store_inven_max; first_empty++) {
-        if (borg_shops[BORG_HOME].ware[n].iqty == 0)
+        if (borg_shops[BORG_HOME].ware[first_empty].iqty == 0)
             break;
     }
-    first_empty++;
+    if (first_empty < z_info->store_inven_max)
+        first_empty++;
 
     /* try individual substitutions/additions.   */
     for (n = 0; n < first_empty; n++) {
@@ -500,7 +501,7 @@ bool borg_think_home_sell_useful(bool save_best)
     for (i = 0; i < INVEN_TOTAL; i++)
         memcpy(&borg_items[i], &safe_items[i], sizeof(borg_item));
 
-    borg_notice(false);
+    borg_notice(true);
 
     /* Drop stuff that will stack in the home */
     for (i = 0; i < z_info->store_inven_max; i++) {
@@ -970,7 +971,7 @@ bool borg_think_shop_sell_useless(void)
             fix = true;
 
             /* Examine the inventory */
-            borg_notice(false);
+            borg_notice(true);
 
             /* Evaluate the inventory */
             p = borg_power();
