@@ -34,6 +34,8 @@
 
 const char *SHOP_MENU_ITEMS = "acfhjmnoqruvyzABDFGHJKLMNOPQRSTUVWXYZ";
 
+int32_t *b_home_power;
+
 borg_shop *borg_shops; /* Current "shops" */
 borg_shop *safe_shops; /* Safety (save) "shops" */
 

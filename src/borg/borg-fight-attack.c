@@ -370,7 +370,7 @@ static int borg_best_mult(borg_item *obj, struct monster_race *r_ptr)
     /* Brands */
     for (i = 1; i < z_info->brand_max; i++) {
         struct brand *brand = &brands[i];
-        if (obj) {
+        if (obj && obj->iqty) {
             /* Brand is on an object */
             if (!obj->brands[i])
                 continue;
@@ -393,7 +393,7 @@ static int borg_best_mult(borg_item *obj, struct monster_race *r_ptr)
     /* Slays */
     for (i = 1; i < z_info->slay_max; i++) {
         struct slay *slay = &slays[i];
-        if (obj) {
+        if (obj && obj->iqty) {
             /* Slay is on an object */
             if (!obj->slays[i])
                 continue;
@@ -2030,7 +2030,7 @@ int borg_attack_aux_launch(void)
     borg_item *bow = &borg_items[INVEN_BOW];
 
     /* skip if we don't have a bow */
-    if (!bow || bow->iqty == 0)
+    if (bow->iqty == 0)
         return 0;
 
     /* No firing while blind, confused, or hallucinating */
@@ -2879,6 +2879,9 @@ static int borg_attack_aux_wand_bolt_unknown(int dam, int typ)
 
     /* Look for an un-id'd wand */
     for (i = 0; i < z_info->pack_size; i++) {
+        if (!borg_items[i].iqty)
+            continue;
+
         if (borg_items[i].tval != TV_WAND)
             continue;
 
@@ -2944,6 +2947,9 @@ static int borg_attack_aux_rod_bolt_unknown(int dam, int typ)
 
     /* Look for an un-id'd wand */
     for (i = 0; i < z_info->pack_size; i++) {
+        if (!borg_items[i].iqty)
+            continue;
+
         if (borg_items[i].tval != TV_ROD)
             continue;
 

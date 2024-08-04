@@ -25,6 +25,7 @@
 #include "../ui-menu.h"
 
 #include "borg-io.h"
+#include "borg-inventory.h"
 #include "borg-item-wear.h"
 #include "borg-item.h"
 #include "borg-store-buy.h"
@@ -153,6 +154,15 @@ bool borg_choose_shop(void)
 
     /* Assume no important shop */
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
+
+    /* If it is time to try to put on our best stuff, and we have free slots, go
+     * home */
+    if (borg.goal.do_best
+        && !borg_shops[BORG_HOME].ware[z_info->store_inven_max - 1].iqty
+        && borg_first_empty_inventory_slot() != -1) {
+        borg.goal.shop = BORG_HOME;
+        return true;
+    }
 
     /* if the borg is scumming for cash for the human player and not himself,
      * we don't want him messing with the home inventory

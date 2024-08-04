@@ -174,6 +174,9 @@ extern const char *borg_get_note(const borg_item *item);
 /* remove the items inscription (note) */
 extern void borg_deinscribe(int i);
 
+/* helper to give weight of items */
+extern int16_t borg_item_weight(borg_item *item);
+
 /* initialize and free items */
 extern void borg_init_item(void);
 extern void borg_free_item(void);

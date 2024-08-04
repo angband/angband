@@ -1079,23 +1079,23 @@ static int32_t borg_power_equipment(void)
 
     /*** Penalize armor weight ***/
     if (borg.stat_ind[STAT_STR] < 15) {
-        if (borg_items[INVEN_BODY].weight > 200)
-            value -= (borg_items[INVEN_BODY].weight - 200) * 15;
-        if (borg_items[INVEN_HEAD].weight > 30)
+        if (borg_item_weight(&borg_items[INVEN_BODY]) > 200)
+            value -= (borg_item_weight(&borg_items[INVEN_BODY]) - 200) * 15;
+        if (borg_item_weight(&borg_items[INVEN_HEAD]) > 30)
             value -= 250;
-        if (borg_items[INVEN_ARM].weight > 10)
+        if (borg_item_weight(&borg_items[INVEN_ARM]) > 10)
             value -= 250;
-        if (borg_items[INVEN_FEET].weight > 50)
+        if (borg_item_weight(&borg_items[INVEN_FEET]) > 50)
             value -= 250;
     }
 
     /* Compute the total armor weight */
-    cur_wgt += borg_items[INVEN_BODY].weight;
-    cur_wgt += borg_items[INVEN_HEAD].weight;
-    cur_wgt += borg_items[INVEN_ARM].weight;
-    cur_wgt += borg_items[INVEN_OUTER].weight;
-    cur_wgt += borg_items[INVEN_HANDS].weight;
-    cur_wgt += borg_items[INVEN_FEET].weight;
+    cur_wgt += borg_item_weight(&borg_items[INVEN_BODY]);
+    cur_wgt += borg_item_weight(&borg_items[INVEN_HEAD]);
+    cur_wgt += borg_item_weight(&borg_items[INVEN_ARM]);
+    cur_wgt += borg_item_weight(&borg_items[INVEN_OUTER]);
+    cur_wgt += borg_item_weight(&borg_items[INVEN_HANDS]);
+    cur_wgt += borg_item_weight(&borg_items[INVEN_FEET]);
 
     /* Determine the weight allowance */
     max_wgt = player->class->magic.spell_weight;

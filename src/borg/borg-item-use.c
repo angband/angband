@@ -816,6 +816,9 @@ bool borg_equips_dragon(int drag_sval)
     /* Check the equipment */
     borg_item *item = &borg_items[INVEN_BODY];
 
+    if (!item->iqty)
+        return false;
+
     /* Skip incorrect armours */
     if (item->tval != TV_DRAG_ARMOR)
         return false;
@@ -840,7 +843,7 @@ bool borg_equips_dragon(int drag_sval)
      * less than twice the USE_DEVICE variable
      */
     /* Extract the item level */
-    lev = borg_items[INVEN_BODY].level;
+    lev = item->level;
 
     /* Base chance of success */
     skill = borg.trait[BI_DEV];
@@ -875,6 +878,9 @@ bool borg_activate_dragon(int drag_sval)
     /* Check the equipment */
 
     borg_item *item = &borg_items[INVEN_BODY];
+
+    if (!item->iqty)
+        return false;
 
     /* Skip incorrect mails */
     if (item->tval != TV_DRAG_ARMOR)
@@ -916,6 +922,9 @@ bool borg_activate_item(int activation)
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
         borg_item *item = &borg_items[i];
 
+        if (!item->iqty)
+            continue;
+
         /* Skip wrong activation*/
         if (item->activ_idx != activation)
             continue;
@@ -955,6 +964,9 @@ bool borg_equips_item(int activation, bool check_charge)
     /* Check the equipment */
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
         borg_item *item = &borg_items[i];
+
+        if (!item->iqty)
+            continue;
 
         /* Skip wrong activation */
         if (item->activ_idx != activation)

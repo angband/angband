@@ -1024,7 +1024,7 @@ int borg_calc_blows(borg_item *item)
     int div;
     int blow_energy;
 
-    int weight     = item->weight;
+    int weight     = item->weight * item->iqty;
     int min_weight = player->class->min_weight;
 
     /* Enforce a minimum "weight" (tenth pounds) */
@@ -1097,14 +1097,14 @@ int borg_calc_blows(borg_item *item)
  */
 static void borg_notice_ammo(int slot)
 {
-    const borg_item *item = &borg_items[slot];
+    borg_item *item = &borg_items[slot];
 
     /* Skip empty items */
     if (!item->iqty)
         return;
 
     /* total up the weight of the items */
-    borg.trait[BI_WEIGHT] += item->weight * item->iqty;
+    borg.trait[BI_WEIGHT] += borg_item_weight(item);
 
     /* Count all ammo */
     borg.trait[BI_AMMO_COUNT] += item->iqty;
@@ -1410,7 +1410,7 @@ static void borg_notice_equipment(void)
             continue;
 
         /* total up the weight of the items */
-        borg.trait[BI_WEIGHT] += item->weight * item->iqty;
+        borg.trait[BI_WEIGHT] += borg_item_weight(item);
 
         if (borg_item_note_needs_id(item)) {
             borg.trait[BI_ALL_NEED_ID] += 1;
@@ -2108,25 +2108,27 @@ static void borg_notice_equipment(void)
     /* Examine the lite */
     item = &borg_items[INVEN_LIGHT];
 
-    /* Assume normal lite radius */
-    borg.trait[BI_CURLITE] = 0;
+    if (item->iqty) {
+        /* Assume normal lite radius */
+        borg.trait[BI_CURLITE] = 0;
 
-    /* Glowing player has light */
-    if (borg.trait[BI_LIGHT])
-        borg.trait[BI_CURLITE] = borg.trait[BI_LIGHT];
+        /* Glowing player has light */
+        if (borg.trait[BI_LIGHT])
+            borg.trait[BI_CURLITE] = borg.trait[BI_LIGHT];
 
-    /* Lite */
-    if (item->tval == TV_LIGHT) {
-        if (item->timeout || of_has(item->flags, OF_NO_FUEL)) {
-            if (of_has(item->flags, OF_LIGHT_2)) {
-                borg.trait[BI_CURLITE] = borg.trait[BI_CURLITE] + 2;
-            } else if (of_has(item->flags, OF_LIGHT_3)) {
-                borg.trait[BI_CURLITE] = borg.trait[BI_CURLITE] + 3;
+        /* Lite */
+        if (item->tval == TV_LIGHT) {
+            if (item->timeout || of_has(item->flags, OF_NO_FUEL)) {
+                if (of_has(item->flags, OF_LIGHT_2)) {
+                    borg.trait[BI_CURLITE] = borg.trait[BI_CURLITE] + 2;
+                } else if (of_has(item->flags, OF_LIGHT_3)) {
+                    borg.trait[BI_CURLITE] = borg.trait[BI_CURLITE] + 3;
+                }
             }
         }
-    }
 
-    borg.trait[BI_CURLITE] += item->modifiers[OBJ_MOD_LIGHT];
+        borg.trait[BI_CURLITE] += item->modifiers[OBJ_MOD_LIGHT];
+    }
 
     /* Special way to handle See Inv */
     if (borg.see_inv >= 1)
@@ -2200,7 +2202,7 @@ static void borg_notice_inventory(void)
         }
 
         /* total up the weight of the items */
-        borg.trait[BI_WEIGHT] += item->weight * item->iqty;
+        borg.trait[BI_WEIGHT] += borg_item_weight(item);
 
         /* Does the borg need to get an ID for it? */
         if (borg_item_note_needs_id(item))

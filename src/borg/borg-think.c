@@ -175,6 +175,10 @@ bool borg_think(void)
         return false;
     }
 
+    /* save the items.  safe_items, from here on, should never be changed, */
+    /* just copied from */
+    memcpy(safe_items, borg_items, QUIVER_END * sizeof(borg_item));
+
     /* save now */
     if (borg_save && borg_save_game()) {
         /* Log */

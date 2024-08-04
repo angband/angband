@@ -30,8 +30,6 @@
  */
 extern int16_t track_worn_num;
 
-extern int16_t borg_best_fit_item; /* Item to be worn, not sold */
-
 /*
  * Identify items if possible
  */
@@ -61,6 +59,11 @@ extern bool borg_wear_stuff(void);
  * Attempt to instantiate the *best* possible equipment.
  */
 extern bool borg_best_stuff(void);
+
+/*
+ * clear the optimal equipment list
+ */
+extern void borg_clear_best(void);
 
 /*
  * Wear stuff so it recharges.

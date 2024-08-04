@@ -243,7 +243,6 @@ bool borg_think_shop_buy_useful(void)
 
     /* Extract the "power" */
     b_p = borg.power;
-    b_p = borg_power();
 
     /* Check the shops */
     for (k = 0; k < (z_info->store_max - 1); k++) {
@@ -304,9 +303,6 @@ bool borg_think_shop_buy_useful(void)
             memcpy(&safe_shops[k].ware[n], &borg_shops[k].ware[n],
                 sizeof(borg_item));
 
-            /* Save hole */
-            memcpy(&safe_items[hole], &borg_items[hole], sizeof(borg_item));
-
             /* Save the number to trade */
             qty = borg_min_item_quantity(item);
 
@@ -336,9 +332,6 @@ bool borg_think_shop_buy_useful(void)
 
             /* Consider new equipment */
             if (slot >= 0) {
-                /* Save old item */
-                memcpy(&safe_items[slot], &borg_items[slot], sizeof(borg_item));
-
                 /* Move equipment into inventory */
                 memcpy(&borg_items[hole], &safe_items[slot], sizeof(borg_item));
 
@@ -353,13 +346,16 @@ bool borg_think_shop_buy_useful(void)
                 fix = true;
 
                 /* Examine the inventory */
-                borg_notice(false);
+                borg_notice(true);
 
                 /* Evaluate the inventory */
                 p = borg_power();
 
                 /* Restore old item */
                 memcpy(&borg_items[slot], &safe_items[slot], sizeof(borg_item));
+
+                /* restore the hole */
+                borg_items[hole].iqty = 0;
             }
 
             /* Consider new inventory */
@@ -375,14 +371,14 @@ bool borg_think_shop_buy_useful(void)
                 fix = true;
 
                 /* Examine the inventory */
-                borg_notice(false);
+                borg_notice(true);
 
                 /* Evaluate the equipment */
                 p = borg_power();
             }
 
             /* Restore hole */
-            memcpy(&borg_items[hole], &safe_items[hole], sizeof(borg_item));
+            borg_items[hole].iqty = 0;
 
             /* Restore shop item */
             memcpy(&borg_shops[k].ware[n], &safe_shops[k].ware[n],
@@ -487,9 +483,6 @@ bool borg_think_home_buy_useful(void)
         memcpy(&safe_shops[BORG_HOME].ware[n], &borg_shops[BORG_HOME].ware[n],
             sizeof(borg_item));
 
-        /* Save hole */
-        memcpy(&safe_items[hole], &borg_items[hole], sizeof(borg_item));
-
         /* Save the number */
         qty = borg_min_item_quantity(item);
 
@@ -515,10 +508,6 @@ bool borg_think_home_buy_useful(void)
 
                 /* special curse check for left ring */
                 if (!borg_items[INVEN_LEFT].one_ring) {
-                    /* Save old item */
-                    memcpy(&safe_items[slot], &borg_items[slot],
-                        sizeof(borg_item));
-
                     /* Move equipment into inventory */
                     memcpy(&borg_items[hole], &safe_items[slot],
                         sizeof(borg_item));
@@ -528,13 +517,13 @@ bool borg_think_home_buy_useful(void)
                         sizeof(borg_item));
 
                     /* Only a single item */
-                    borg_items[slot].iqty = qty;
+                    borg_items[slot].iqty = 1;
 
                     /* Fix later */
                     fix = true;
 
                     /* Examine the inventory */
-                    borg_notice(false);
+                    borg_notice(true);
 
                     /* Evaluate the inventory */
                     p_left = borg_power();
@@ -551,10 +540,6 @@ bool borg_think_home_buy_useful(void)
                 /** Second Check Right Hand **/
                 /* special curse check for right ring */
                 if (!borg_items[INVEN_RIGHT].one_ring) {
-                    /* Save old item */
-                    memcpy(&safe_items[INVEN_RIGHT], &borg_items[INVEN_RIGHT],
-                        sizeof(borg_item));
-
                     /* Move equipment into inventory */
                     memcpy(&borg_items[hole], &safe_items[INVEN_RIGHT],
                         sizeof(borg_item));
@@ -570,7 +555,7 @@ bool borg_think_home_buy_useful(void)
                     fix = true;
 
                     /* Examine the inventory */
-                    borg_notice(false);
+                    borg_notice(true);
 
                     /* Evaluate the inventory */
                     p_right = borg_power();
@@ -594,9 +579,6 @@ bool borg_think_home_buy_useful(void)
 
             else /* non rings */
             {
-                /* Save old item */
-                memcpy(&safe_items[slot], &borg_items[slot], sizeof(borg_item));
-
                 /* Move equipment into inventory */
                 memcpy(&borg_items[hole], &safe_items[slot], sizeof(borg_item));
 
@@ -611,7 +593,7 @@ bool borg_think_home_buy_useful(void)
                 fix = true;
 
                 /* Examine the inventory */
-                borg_notice(false);
+                borg_notice(true);
 
                 /* Evaluate the inventory */
                 p = borg_power();
@@ -631,7 +613,7 @@ bool borg_think_home_buy_useful(void)
             /* Restore hole if we are trying an item in inventory that didn't
              * work equipped */
             if (slot >= 0)
-                memcpy(&borg_items[hole], &safe_items[hole], sizeof(borg_item));
+                borg_items[hole].iqty = 0;
 
             if (stack != -1)
                 hole = stack;
@@ -641,9 +623,6 @@ bool borg_think_home_buy_useful(void)
                 continue;
             if (stack == -1 && (hole + 1) >= PACK_SLOTS)
                 continue;
-
-            /* Save hole (could be either empty slot or stack */
-            memcpy(&safe_items[hole], &borg_items[hole], sizeof(borg_item));
 
             /* Move new item into inventory */
             memcpy(&borg_items[hole], &safe_shops[BORG_HOME].ware[n],
@@ -662,14 +641,14 @@ bool borg_think_home_buy_useful(void)
             fix = true;
 
             /* Examine the inventory */
-            borg_notice(false);
+            borg_notice(true);
 
             /* Evaluate the equipment */
             p = borg_power();
         }
 
         /* Restore hole */
-        memcpy(&borg_items[hole], &safe_items[hole], sizeof(borg_item));
+        borg_items[hole].iqty = 0;
 
         /* Restore shop item */
         memcpy(&borg_shops[BORG_HOME].ware[n], &safe_shops[BORG_HOME].ware[n],
@@ -717,6 +696,8 @@ bool borg_think_shop_grab_interesting(void)
     int32_t c, b_c      = 0L;
     int32_t borg_empty_home_power;
     int     hole;
+
+    b_home_power = &s;
 
     /* Don't do this if Sauron is dead */
     if (borg.trait[BI_SAURON_DEAD])
@@ -980,9 +961,6 @@ bool borg_think_home_buy_swap_weapon(void)
         memcpy(&safe_shops[BORG_HOME].ware[n], &borg_shops[BORG_HOME].ware[n],
             sizeof(borg_item));
 
-        /* Save hole */
-        memcpy(&safe_items[hole], &borg_items[hole], sizeof(borg_item));
-
         /* Remove one item from shop */
         borg_shops[BORG_HOME].ware[n].iqty--;
 
@@ -1006,7 +984,7 @@ bool borg_think_home_buy_swap_weapon(void)
         }
 
         /* Restore hole */
-        memcpy(&borg_items[hole], &safe_items[hole], sizeof(borg_item));
+        borg_items[hole].iqty = 0;
 
         /* Restore shop item */
         memcpy(&borg_shops[BORG_HOME].ware[n], &safe_shops[BORG_HOME].ware[n],
@@ -1099,9 +1077,6 @@ bool borg_think_home_buy_swap_armour(void)
         memcpy(&safe_shops[BORG_HOME].ware[n], &borg_shops[BORG_HOME].ware[n],
             sizeof(borg_item));
 
-        /* Save hole */
-        memcpy(&safe_items[hole], &borg_items[hole], sizeof(borg_item));
-
         /* Remove one item from shop */
         borg_shops[BORG_HOME].ware[n].iqty--;
 
@@ -1122,7 +1097,7 @@ bool borg_think_home_buy_swap_armour(void)
         p = armour_swap_value;
 
         /* Restore hole */
-        memcpy(&borg_items[hole], &safe_items[hole], sizeof(borg_item));
+        borg_items[hole].iqty = 0;
 
         /* Restore shop item */
         memcpy(&borg_shops[BORG_HOME].ware[n], &safe_shops[BORG_HOME].ware[n],

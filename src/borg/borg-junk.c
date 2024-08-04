@@ -244,9 +244,9 @@ static bool borg_consume(int i)
  */
 bool borg_drop_junk(void)
 {
-    int     i;
+    int     i, b_i;
     bool    fix = false;
-    int32_t p;
+    int32_t p, b_p = borg.power;
     int32_t value;
 
     /* Hack -- no need */
@@ -277,7 +277,7 @@ bool borg_drop_junk(void)
         if (armour_swap && i == armour_swap - 1)
             continue;
 
-            /* Dont crush weapons if we are weilding a digger */
+        /* Dont crush weapons if we are weilding a digger */
 #if 0
         if (item->tval >= TV_DIGGING && item->tval <= TV_SWORD &&
             borg_items[INVEN_WIELD].tval == TV_DIGGING) continue;
@@ -319,10 +319,10 @@ bool borg_drop_junk(void)
 
             /* if the item gives a bonus to a stat, boost its value */
             if ((item->modifiers[OBJ_MOD_STR] > 0
-                    || item->modifiers[OBJ_MOD_INT] > 0
-                    || item->modifiers[OBJ_MOD_WIS] > 0
-                    || item->modifiers[OBJ_MOD_DEX] > 0
-                    || item->modifiers[OBJ_MOD_CON] > 0)
+                || item->modifiers[OBJ_MOD_INT] > 0
+                || item->modifiers[OBJ_MOD_WIS] > 0
+                || item->modifiers[OBJ_MOD_DEX] > 0
+                || item->modifiers[OBJ_MOD_CON] > 0)
                 && value > 0) {
                 value += 2000L;
             }
@@ -330,7 +330,7 @@ bool borg_drop_junk(void)
             /* Keep some stuff */
             if ((item->tval == borg.trait[BI_AMMO_TVAL] && value > 0)
                 || ((item->tval == TV_POTION
-                        && item->sval == sv_potion_restore_mana)
+                    && item->sval == sv_potion_restore_mana)
                     && (borg.trait[BI_MAXSP] >= 1))
                 || (item->tval == TV_POTION && item->sval == sv_potion_healing)
                 || (item->tval == TV_POTION
@@ -377,7 +377,7 @@ bool borg_drop_junk(void)
              */
             if (item->value > 0
                 && ((borg_cfg[BORG_WORSHIPS_GOLD]
-                        || borg.trait[BI_MAXCLEVEL] < 10)
+                    || borg.trait[BI_MAXCLEVEL] < 10)
                     || ((borg_cfg[BORG_MONEY_SCUM_AMOUNT] < borg.trait[BI_GOLD])
                         && borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0))
                 && borg.trait[BI_MAXCLEVEL] <= 20 && !item->cursed)
@@ -414,17 +414,23 @@ bool borg_drop_junk(void)
             if (borg.trait[BI_CDEPTH] < 127 && value > 5600)
                 continue;
 
-            /* Save the item */
-            memcpy(&safe_items[i], &borg_items[i], sizeof(borg_item));
+            /* Hack -- skip good un-id'd "artifacts" */
+            if (borg_item_note_needs_id(item))
+                continue;
+
+            /* hack --  with random artifacts some are good and bad */
+            /*         so check them all */
+            if (OPT(player, birth_randarts) && item->art_idx && !item->ident)
+                continue;
 
             /* Destroy the item */
-            memset(&borg_items[i], 0, sizeof(borg_item));
+            borg_items[i].iqty = 0;
 
             /* Fix later */
             fix = true;
 
             /* Examine the inventory */
-            borg_notice(false);
+            borg_notice(true);
 
             /* Evaluate the inventory */
             p = borg_power();
@@ -433,22 +439,17 @@ bool borg_drop_junk(void)
             memcpy(&borg_items[i], &safe_items[i], sizeof(borg_item));
 
             /* skip things we are using */
-            if (p < borg.power)
-                continue;
+            if (p > b_p) {
+                b_p = p;
+                b_i = i;
+            }
+
         }
+    }
 
-        /* re-examine the inventory */
-        if (fix)
-            borg_notice(true);
-
-        /* Hack -- skip good un-id'd "artifacts" */
-        if (borg_item_note_needs_id(item))
-            continue;
-
-        /* hack --  with random artifacts some are good and bad */
-        /*         so check them all */
-        if (OPT(player, birth_randarts) && item->art_idx && !item->ident)
-            continue;
+    /* if we found something junky, junk it */
+    if ( b_p != borg.power) {
+        borg_item *item = &borg_items[b_i];
 
         /* Message */
         borg_note(format("# Dropping junk %s (valued at %d)", item->desc, value));
@@ -456,13 +457,13 @@ bool borg_drop_junk(void)
         /* inscribe "borg ignore". The borg crushes all items */
         /* on the floor that are inscribed this way */
         borg_keypress('{');
-        borg_keypress(all_letters_nohjkl[i]);
+        borg_keypress(all_letters_nohjkl[b_i]);
         borg_keypresses("borg ignore");
         borg_keypress(KC_ENTER);
 
         /* drop it then ignore it */
         borg_keypress('d');
-        borg_keypress(all_letters_nohjkl[i]);
+        borg_keypress(all_letters_nohjkl[b_i]);
 
         if (item->iqty > 1) {
             borg_keypress('1');
@@ -642,19 +643,16 @@ bool borg_drop_hole(bool desperate)
         value = item->value + value_boost;
 
         /* save the items weight */
-        w = item->weight * item->iqty;
-
-        /* Save the item */
-        memcpy(&safe_items[i], &borg_items[i], sizeof(borg_item));
+        w = borg_item_weight(item);
 
         /* Destroy the item */
-        memset(&borg_items[i], 0, sizeof(borg_item));
+        borg_items[i].iqty = 0;
 
         /* Fix later */
         fix = true;
 
         /* Examine the inventory */
-        borg_notice(false);
+        borg_notice(true);
 
         /* Evaluate the inventory */
         p = borg_power();
@@ -1036,9 +1034,6 @@ bool borg_drop_slow(void)
         if (item->tval == TV_ROD && item->sval == sv_rod_healing)
             continue;
 
-        /* Save the item */
-        memcpy(&safe_items[i], &borg_items[i], sizeof(borg_item));
-
         /* Destroy one of the items */
         borg_items[i].iqty--;
 
@@ -1046,13 +1041,13 @@ bool borg_drop_slow(void)
         fix = true;
 
         /* Examine the inventory */
-        borg_notice(false);
+        borg_notice(true);
 
         /* Evaluate the inventory */
         p = borg_power();
 
         /* Restore the item */
-        memcpy(&borg_items[i], &safe_items[i], sizeof(borg_item));
+        borg_items[i].iqty++;
 
         /* Obtain the base price */
         temp = ((item->value < 30000L) ? item->value : 30000L);
@@ -1298,32 +1293,27 @@ bool borg_remove_stuff(void)
         if (item->one_ring)
             continue;
 
-        /* Save the hole */
-        memcpy(&safe_items[hole], &borg_items[hole], sizeof(borg_item));
-
-        /* Save the item */
-        memcpy(&safe_items[i], &borg_items[i], sizeof(borg_item));
-
         /* Take off the item */
-        memcpy(&borg_items[hole], &safe_items[i], sizeof(borg_item));
+        memcpy(&borg_items[hole], item, sizeof(borg_item));
 
         /* Erase the item from equip */
-        memset(&borg_items[i], 0, sizeof(borg_item));
+        /* note, copy the "hole" onto the item so it doesn't have attributes */
+        memcpy(item, &safe_items[hole], sizeof(borg_item));
 
         /* Fix later */
         fix = true;
 
         /* Examine the inventory */
-        borg_notice(false);
+        borg_notice(true);
 
         /* Evaluate the inventory */
         p = borg_power();
 
         /* Restore the item */
-        memcpy(&borg_items[i], &safe_items[i], sizeof(borg_item));
+        memcpy(item, &safe_items[i], sizeof(borg_item));
 
         /* Restore the hole */
-        memcpy(&borg_items[hole], &safe_items[hole], sizeof(borg_item));
+        borg_items[hole].iqty = 0;
 
         /* Track the crappy items */
         /* crappy includes things that do not add to power */
@@ -1342,13 +1332,6 @@ bool borg_remove_stuff(void)
     if (b_i >= 0) {
         /* Get the item */
         item = &borg_items[b_i];
-
-        if (borg_cfg[BORG_VERBOSE]) {
-            /* dump list and power...  for debugging */
-            borg_note(format("Equip Item %d %s.", i, safe_items[i].desc));
-            borg_note(format("With Item     (borg_power %ld)", (long int)b_p));
-            borg_note(format("Removed Item  (best power %ld)", (long int)p));
-        }
 
         /* Log */
         borg_note(format("# Removing %s.  Power with: (%ld) Power w/o (%ld)",

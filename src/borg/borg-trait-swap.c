@@ -167,6 +167,7 @@ void borg_notice_weapon_swap(void)
     borg_item *item;
 
     weapon_swap = 0;
+    weapon_swap_value = -1;
 
     /*** Process the inventory ***/
     for (i = 0; i < z_info->pack_size; i++) {
@@ -750,6 +751,7 @@ void borg_notice_armour_swap(void)
     borg_item *item;
 
     armour_swap = 0;
+    armour_swap_value = -1;
 
     /* borg option to not use them */
     if (!borg_cfg[BORG_USES_SWAPS])

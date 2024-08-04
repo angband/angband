@@ -310,6 +310,10 @@ static void borg_notice_home_dupe(borg_item *item, bool check_sval, int i)
             /* Check what the borg has on as well.*/
             item2 = &borg_items[((x - z_info->store_inven_max) + INVEN_WIELD)];
 
+        /* skip zero quantity or unknown items */
+        if (!item2->iqty || !item2->kind)
+            continue;
+
         /* if everything matches it is a duplicate item */
         /* Note that we only check sval on certain items.  This */
         /* is because, for example, two pairs of dragon armor */
@@ -362,16 +366,16 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
             item = in_item;
 
         /* Skip empty items */
-        if (!item->iqty && (i < z_info->store_inven_max)) {
-            home_slot_free++;
+        if (!item->iqty) {
+           if (i < z_info->store_inven_max)
+                home_slot_free++;
             continue;
         }
 
+
         /* Hack -- skip un-aware items */
-        if (!item->kind && (i < z_info->store_inven_max)) {
-            home_slot_free++;
+        if (!item->kind)
             continue;
-        }
 
         if (of_has(item->flags, OF_SLOW_DIGEST))
             num_slow_digest += item->iqty;

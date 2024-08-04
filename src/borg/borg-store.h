@@ -44,6 +44,10 @@ struct borg_shop {
     borg_item * ware; /* Store contents */
 };
 
+/* calculated best home power */
+extern int32_t *b_home_power;
+
+
 /*
  * Current "shops"
  */
