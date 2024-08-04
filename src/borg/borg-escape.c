@@ -671,7 +671,8 @@ bool borg_escape(int b_q)
      */
     if (borg.trait[BI_ISWEAK] && borg.trait[BI_CDEPTH] == 1) {
         if (borg_read_scroll(sv_scroll_teleport_level)
-            || borg_activate_item(act_tele_level)) {
+            || borg_activate_item(act_tele_level)
+            || borg_read_scroll(sv_scroll_deep_descent)) {
             borg_note("# Attempting to leave via teleport level");
             return true;
         }
@@ -712,7 +713,8 @@ bool borg_escape(int b_q)
                     || borg_read_scroll(sv_scroll_teleport_level)
                     || borg_use_staff_fail(sv_staff_teleportation)
                     || borg_activate_item(act_tele_long)
-                    || borg_activate_item(act_tele_level) ||
+                    || borg_activate_item(act_tele_level) 
+                    || borg_read_scroll(sv_scroll_deep_descent) ||
 
                     /* revisit spells, increased fail rate */
                     borg_dimension_door(tmp_allow_fail + 9)
@@ -831,6 +833,7 @@ bool borg_escape(int b_q)
                     || borg_spell_fail(TELEPORT_SELF, allow_fail)
                     || borg_spell_fail(PORTAL, allow_fail)
                     || borg_shadow_shift(allow_fail)
+                    || borg_read_scroll(sv_scroll_deep_descent)
                     || borg_use_staff(sv_staff_teleportation)))) {
             /* Flee! */
             borg_note("# Danger Level 2.1");
@@ -927,7 +930,8 @@ bool borg_escape(int b_q)
 
         /* Use Tport Level after the above attempts failed. */
         if (borg_read_scroll(sv_scroll_teleport_level)
-            || borg_activate_item(act_tele_level)) {
+            || borg_activate_item(act_tele_level)
+            || borg_read_scroll(sv_scroll_deep_descent)) {
             /* Flee! */
             borg_note("# Danger Level 3.4");
 
@@ -1195,6 +1199,53 @@ bool borg_escape(int b_q)
             /* Reset timer if borg was in a anti-summon corridor */
             if (borg_t - borg_t_antisummon < 50)
                 borg_t_antisummon = 0;
+
+            /* Success */
+            return true;
+        }
+    }
+
+    /* 8- not too scary but twitching */
+    if (borg.times_twitch > 50) {
+        /* Phase door, if useful */
+        if ((borg_escape_stair() || borg_caution_phase(20, 2))
+            && borg_t - borg_t_antisummon > 50
+            && (borg_spell_fail(PHASE_DOOR, allow_fail)
+                || borg_spell_fail(PORTAL, allow_fail)
+                || borg_activate_item(act_tele_phase)
+                || borg_read_scroll(sv_scroll_phase_door))) {
+            /* Flee! */
+            borg_note("# Danger Level 8");
+            /* Reset timer if borg was in a anti-summon corridor */
+            if (borg_t - borg_t_antisummon < 50)
+                borg_t_antisummon = 0;
+
+            /* no longer twitchy */
+            borg.times_twitch = 0;
+
+            /* Success */
+            return true;
+        }
+
+        /* Teleport via spell */
+        if (borg_allow_teleport()
+            && (borg_dimension_door(allow_fail)
+                || borg_spell_fail(TELEPORT_SELF, allow_fail)
+                || borg_spell_fail(PORTAL, allow_fail)
+                || borg_activate_item(act_tele_long)
+                || borg_read_scroll(sv_scroll_teleport)
+                || borg_use_staff_fail(sv_staff_teleportation)
+                || borg_read_scroll(sv_scroll_teleport_level)
+                || borg_read_scroll(sv_scroll_deep_descent))) {
+            /* Flee! */
+            borg_note("# Danger Level 8");
+
+            /* Reset timer if borg was in a anti-summon corridor */
+            if (borg_t - borg_t_antisummon < 50)
+                borg_t_antisummon = 0;
+
+            /* no longer twitchy */
+            borg.times_twitch = 0;
 
             /* Success */
             return true;

@@ -110,6 +110,7 @@ int sv_scroll_star_enchant_armor;
 int sv_scroll_protection_from_evil;
 int sv_scroll_rune_of_protection;
 int sv_scroll_teleport_level;
+int sv_scroll_deep_descent;
 int sv_scroll_recharging;
 int sv_scroll_banishment;
 int sv_scroll_mass_banishment;
@@ -355,6 +356,7 @@ void borg_init_item_val(void)
     sv_scroll_rune_of_protection
         = borg_lookup_sval_fail(tval, "Rune of Protection");
     sv_scroll_teleport_level  = borg_lookup_sval_fail(tval, "Teleport Level");
+    sv_scroll_deep_descent    = borg_lookup_sval_fail(tval, "Deep Descent");
     sv_scroll_recharging      = borg_lookup_sval_fail(tval, "Recharging");
     sv_scroll_banishment      = borg_lookup_sval_fail(tval, "Banishment");
     sv_scroll_mass_banishment = borg_lookup_sval_fail(tval, "Mass Banishment");
