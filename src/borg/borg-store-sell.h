@@ -42,7 +42,7 @@ extern int borg_min_item_quantity(borg_item *item);
 /*
  * Sell "useful" things to the home (for later)
  */
-extern bool borg_think_home_sell_useful(bool save_best);
+extern bool borg_think_home_sell_useful(int32_t * best);
 
 /*
  * Sell "useless" items to a shop (for cash)

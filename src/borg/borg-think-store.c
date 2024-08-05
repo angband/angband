@@ -86,6 +86,8 @@
  */
 bool borg_choose_shop(void)
 {
+    int32_t best_home_power;
+
     /* Must be in town */
     if (borg.trait[BI_CDEPTH])
         return false;
@@ -184,7 +186,7 @@ bool borg_choose_shop(void)
     }
 
     /* Step 1 -- Sell items to the home */
-    if (borg_think_home_sell_useful(false)) {
+    if (borg_think_home_sell_useful(&best_home_power)) {
         /* Message */
         if (borg.goal.item != -1)
             borg_note(format(
