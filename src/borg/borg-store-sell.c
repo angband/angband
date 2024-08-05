@@ -336,16 +336,17 @@ static bool borg_think_home_sell_bad(int i, int32_t borg_empty_home_power)
     return false;
 }
 
+
 /*
  * this will see what single addition/substitution is best for the home.
  */
-static void borg_think_home_sell_aux2(int n, int start_i)
+static void borg_think_home_sell_best(int32_t * best_home_power)
 {
     borg_item *item;
     borg_item *item2;
     int32_t    home_power;
     int32_t    borg_empty_home_power;
-    int        i, k;
+    int        i, k, n;
 
     /* get what an empty home would have for power */
     borg_notice_home(NULL, true);
@@ -357,7 +358,7 @@ static void borg_think_home_sell_aux2(int n, int start_i)
     borg_notice_home(NULL, false);
 
     /* Evaluate the home  */
-    *b_home_power = borg_power_home();
+    *best_home_power = borg_power_home();
 
     int first_empty;
     for (first_empty = 0; first_empty < z_info->store_inven_max; first_empty++) {
@@ -385,7 +386,8 @@ static void borg_think_home_sell_aux2(int n, int start_i)
 
                 /* eliminate items that would stack else where in the list. */
                 for (k = 0; k < z_info->store_inven_max; k++) {
-                    if (borg_object_similar(&safe_shops[BORG_HOME].ware[k], item)) {
+                    if (borg_object_similar(
+                            &borg_safe_shops[BORG_HOME].ware[k], item)) {
                         found_match = true;
                         break;
                     }
@@ -414,7 +416,7 @@ static void borg_think_home_sell_aux2(int n, int start_i)
             home_power = borg_power_home();
 
             /* Track best */
-            if (home_power > *b_home_power) {
+            if (home_power > *best_home_power) {
                 /* Save the results */
                 for (k = 0; k < z_info->store_inven_max; k++)
                     best_item[k] = test_item[k];
@@ -424,7 +426,7 @@ static void borg_think_home_sell_aux2(int n, int start_i)
                 borg_note(format("Trying Combo (best home power %ld)",
                     *b_home_power));
                 borg_note(format("             (test home power %ld)",
-                    home_power));
+                    best_home_power));
                 for (i = 0; i < z_info->store_inven_max; i++)
                     if (borg_shops[BORG_HOME].ware[i].iqty)
                         borg_note(format("store %d %s (qty-%d).", i,
@@ -437,11 +439,12 @@ static void borg_think_home_sell_aux2(int n, int start_i)
 #endif
 
                 /* Use it */
-                *b_home_power = home_power;
+                *best_home_power = home_power;
             }
 
             /* restore stuff */
-            memcpy(item2, &safe_shops[BORG_HOME].ware[n], sizeof(borg_item));
+            memcpy(
+                item2, &borg_safe_shops[BORG_HOME].ware[n], sizeof(borg_item));
 
             /* put item back into pack */
             item->iqty++;
@@ -455,16 +458,9 @@ static void borg_think_home_sell_aux2(int n, int start_i)
 /*
  * Step 1 -- sell "useful" things to the home (for later)
  */
-bool borg_think_home_sell_useful(bool save_best)
+bool borg_think_home_sell_useful(int32_t *best_home_power)
 {
-    int32_t home_power = -1L;
-
     int p, i = -1;
-
-    /* if the best is being saved (see borg_think_shop_grab_interesting) */
-    /* !FIX THIS NEEDS TO BE COMMENTED BETTER */
-    if (!save_best)
-        b_home_power = &home_power;
 
     /* clear out our initial best/test objects */
     memset(test_item, 0, sizeof(z_info->store_inven_max * sizeof(uint8_t)));
@@ -476,26 +472,20 @@ bool borg_think_home_sell_useful(bool save_best)
         && borg_items[PACK_SLOTS - 1].iqty)
         return false;
 
-    /* Copy all the store slots */
-    for (i = 0; i < z_info->store_inven_max; i++) {
-        /* Save the item */
-        memcpy(&safe_shops[BORG_HOME].ware[i], &borg_shops[BORG_HOME].ware[i],
-            sizeof(borg_item));
-
+    /* clear test arrays (test[i] == i is no change) */
+    for (i = 0; i < z_info->store_inven_max; i++) 
         /* clear test arrays (test[i] == i is no change) */
         best_item[i] = test_item[i] = i;
-    }
 
-
-    *b_home_power = -1;
+    *best_home_power = -1;
 
     /* find best combo for home. */
-    borg_think_home_sell_aux2(0, 0);
+    borg_think_home_sell_best(best_home_power);
 
     /* restore bonuses and such */
     for (i = 0; i < z_info->store_inven_max; i++) {
-        memcpy(&borg_shops[BORG_HOME].ware[i], &safe_shops[BORG_HOME].ware[i],
-            sizeof(borg_item));
+        memcpy(&borg_shops[BORG_HOME].ware[i],
+            &borg_safe_shops[BORG_HOME].ware[i], sizeof(borg_item));
     }
 
     for (i = 0; i < INVEN_TOTAL; i++)
@@ -900,10 +890,6 @@ bool borg_think_shop_sell_useless(void)
         if (borg_shops[k].ware[icky].iqty)
             continue;
 
-        /* Save the store hole */
-        memcpy(&safe_shops[k].ware[icky], &borg_shops[k].ware[icky],
-            sizeof(borg_item));
-
         /* Sell stuff */
         for (i = 0; i < z_info->pack_size; i++) {
             borg_item *item = &borg_items[i];
@@ -980,7 +966,7 @@ bool borg_think_shop_sell_useless(void)
             memcpy(&borg_items[i], &safe_items[i], sizeof(borg_item));
 
             /* Restore the store item */
-            memcpy(&borg_shops[k].ware[icky], &safe_shops[k].ware[icky],
+            memcpy(&borg_shops[k].ware[icky], &borg_safe_shops[k].ware[icky],
                 sizeof(borg_item));
 
             /* Ignore "bad" sales */
