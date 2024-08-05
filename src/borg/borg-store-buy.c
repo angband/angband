@@ -299,10 +299,6 @@ bool borg_think_shop_buy_useful(void)
                 && borg.trait[BI_MAXCLEVEL] > 30)
                 continue;
 
-            /* Save shop item */
-            memcpy(&safe_shops[k].ware[n], &borg_shops[k].ware[n],
-                sizeof(borg_item));
-
             /* Save the number to trade */
             qty = borg_min_item_quantity(item);
 
@@ -336,7 +332,7 @@ bool borg_think_shop_buy_useful(void)
                 memcpy(&borg_items[hole], &safe_items[slot], sizeof(borg_item));
 
                 /* Move new item into equipment */
-                memcpy(&borg_items[slot], &safe_shops[k].ware[n],
+                memcpy(&borg_items[slot], &borg_safe_shops[k].ware[n],
                     sizeof(borg_item));
 
                 /* Only a single item */
@@ -361,7 +357,7 @@ bool borg_think_shop_buy_useful(void)
             /* Consider new inventory */
             else {
                 /* Move new item into inventory */
-                memcpy(&borg_items[hole], &safe_shops[k].ware[n],
+                memcpy(&borg_items[hole], &borg_safe_shops[k].ware[n],
                     sizeof(borg_item));
 
                 /* Only a single item */
@@ -381,7 +377,7 @@ bool borg_think_shop_buy_useful(void)
             borg_items[hole].iqty = 0;
 
             /* Restore shop item */
-            memcpy(&borg_shops[k].ware[n], &safe_shops[k].ware[n],
+            memcpy(&borg_shops[k].ware[n], &borg_safe_shops[k].ware[n],
                 sizeof(borg_item));
 
             /* Obtain the "cost" of the item */
@@ -479,10 +475,6 @@ bool borg_think_home_buy_useful(void)
         /* borg_note(format("# Considering buying (%d)'%s' (pval=%d) from
          * home.", item->iqty,item->desc, item->pval)); */
 
-        /* Save shop item */
-        memcpy(&safe_shops[BORG_HOME].ware[n], &borg_shops[BORG_HOME].ware[n],
-            sizeof(borg_item));
-
         /* Save the number */
         qty = borg_min_item_quantity(item);
 
@@ -513,8 +505,8 @@ bool borg_think_home_buy_useful(void)
                         sizeof(borg_item));
 
                     /* Move new item into equipment */
-                    memcpy(&borg_items[slot], &safe_shops[BORG_HOME].ware[n],
-                        sizeof(borg_item));
+                    memcpy(&borg_items[slot],
+                        &borg_safe_shops[BORG_HOME].ware[n], sizeof(borg_item));
 
                     /* Only a single item */
                     borg_items[slot].iqty = 1;
@@ -546,7 +538,7 @@ bool borg_think_home_buy_useful(void)
 
                     /* Move new item into equipment */
                     memcpy(&borg_items[INVEN_RIGHT],
-                        &safe_shops[BORG_HOME].ware[n], sizeof(borg_item));
+                        &borg_safe_shops[BORG_HOME].ware[n], sizeof(borg_item));
 
                     /* Only a single item */
                     borg_items[INVEN_RIGHT].iqty = qty;
@@ -583,7 +575,7 @@ bool borg_think_home_buy_useful(void)
                 memcpy(&borg_items[hole], &safe_items[slot], sizeof(borg_item));
 
                 /* Move new item into equipment */
-                memcpy(&borg_items[slot], &safe_shops[BORG_HOME].ware[n],
+                memcpy(&borg_items[slot], &borg_safe_shops[BORG_HOME].ware[n],
                     sizeof(borg_item));
 
                 /* Only a single item */
@@ -625,7 +617,7 @@ bool borg_think_home_buy_useful(void)
                 continue;
 
             /* Move new item into inventory */
-            memcpy(&borg_items[hole], &safe_shops[BORG_HOME].ware[n],
+            memcpy(&borg_items[hole], &borg_safe_shops[BORG_HOME].ware[n],
                 sizeof(borg_item));
 
             /* Is this new item merging into an existing stack? */
@@ -651,8 +643,8 @@ bool borg_think_home_buy_useful(void)
         borg_items[hole].iqty = 0;
 
         /* Restore shop item */
-        memcpy(&borg_shops[BORG_HOME].ware[n], &safe_shops[BORG_HOME].ware[n],
-            sizeof(borg_item));
+        memcpy(&borg_shops[BORG_HOME].ware[n],
+            &borg_safe_shops[BORG_HOME].ware[n], sizeof(borg_item));
 
         /* Ignore "silly" purchases */
         if (p <= b_p)
@@ -697,8 +689,6 @@ bool borg_think_shop_grab_interesting(void)
     int32_t borg_empty_home_power;
     int     hole;
 
-    b_home_power = &s;
-
     /* Don't do this if Sauron is dead */
     if (borg.trait[BI_SAURON_DEAD])
         return false;
@@ -725,7 +715,7 @@ bool borg_think_shop_grab_interesting(void)
     /* Evaluate the home */
     b_s = borg_power_home();
 
-    /* Check the shops */
+    /* Check the shops (max -1 to skip home) */
     for (k = 0; k < (z_info->store_max - 1); k++) {
         /* Scan the wares */
         for (n = 0; n < z_info->store_inven_max; n++) {
@@ -762,7 +752,7 @@ bool borg_think_shop_grab_interesting(void)
                 continue;
 
             /* optimize the home inventory */
-            if (!borg_think_home_sell_useful(true))
+            if (!borg_think_home_sell_useful(&s))
                 continue;
 
             /* Obtain the "cost" of the item */
@@ -858,10 +848,6 @@ bool borg_think_home_grab_useless(void)
         if (skip_it == true)
             continue;
 
-        /* Save shop item */
-        memcpy(&safe_shops[BORG_HOME].ware[n], &borg_shops[BORG_HOME].ware[n],
-            sizeof(borg_item));
-
         /* Save the number */
         qty = borg_min_item_quantity(item);
 
@@ -875,7 +861,7 @@ bool borg_think_home_grab_useless(void)
         s = borg_power_home();
 
         /* Restore shop item */
-        memcpy(&borg_shops[BORG_HOME].ware[n], &safe_shops[BORG_HOME].ware[n],
+        memcpy(&borg_shops[BORG_HOME].ware[n], &borg_safe_shops[BORG_HOME].ware[n],
             sizeof(borg_item));
 
         /* Ignore "bad" sales */
@@ -957,17 +943,13 @@ bool borg_think_home_buy_swap_weapon(void)
         if (slot != INVEN_WIELD)
             continue;
 
-        /* Save shop item */
-        memcpy(&safe_shops[BORG_HOME].ware[n], &borg_shops[BORG_HOME].ware[n],
-            sizeof(borg_item));
-
         /* Remove one item from shop */
         borg_shops[BORG_HOME].ware[n].iqty--;
 
         /* Consider new equipment */
         if (slot == INVEN_WIELD) {
             /* Move new item into inventory */
-            memcpy(&borg_items[hole], &safe_shops[BORG_HOME].ware[n],
+            memcpy(&borg_items[hole], &borg_safe_shops[BORG_HOME].ware[n],
                 sizeof(borg_item));
 
             /* Only a single item */
@@ -987,7 +969,7 @@ bool borg_think_home_buy_swap_weapon(void)
         borg_items[hole].iqty = 0;
 
         /* Restore shop item */
-        memcpy(&borg_shops[BORG_HOME].ware[n], &safe_shops[BORG_HOME].ware[n],
+        memcpy(&borg_shops[BORG_HOME].ware[n], &borg_safe_shops[BORG_HOME].ware[n],
             sizeof(borg_item));
 
         /* Ignore "silly" purchases */
@@ -1073,15 +1055,11 @@ bool borg_think_home_buy_swap_armour(void)
         if (!item->iqty)
             continue;
 
-        /* Save shop item */
-        memcpy(&safe_shops[BORG_HOME].ware[n], &borg_shops[BORG_HOME].ware[n],
-            sizeof(borg_item));
-
         /* Remove one item from shop */
         borg_shops[BORG_HOME].ware[n].iqty--;
 
         /* Move new item into inventory */
-        memcpy(&borg_items[hole], &safe_shops[BORG_HOME].ware[n],
+        memcpy(&borg_items[hole], &borg_safe_shops[BORG_HOME].ware[n],
             sizeof(borg_item));
 
         /* Only a single item */
@@ -1100,8 +1078,8 @@ bool borg_think_home_buy_swap_armour(void)
         borg_items[hole].iqty = 0;
 
         /* Restore shop item */
-        memcpy(&borg_shops[BORG_HOME].ware[n], &safe_shops[BORG_HOME].ware[n],
-            sizeof(borg_item));
+        memcpy(&borg_shops[BORG_HOME].ware[n],
+            &borg_safe_shops[BORG_HOME].ware[n], sizeof(borg_item));
 
         /* Ignore "silly" purchases */
         if (p <= b_p)

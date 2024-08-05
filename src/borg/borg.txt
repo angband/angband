@@ -84,18 +84,6 @@ borg_kills_uniques = FALSE
 borg_uses_swaps = TRUE
 
 
-
-# Home Storage
-
-# The borg has two routines to store items in the home.  One is very
-# effective and will make the best possible choice for adding an item to the
-# home.  Unfortunately, this function is very slow.  A much faster routine
-# will do a fine job at storing items in the home but it is not as
-# efficient.
-
-borg_slow_optimizehome = FALSE
-
-
 # Respawn
 
 # if borg_cheat_death is set, the option to cheat death will be set and, when 

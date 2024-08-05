@@ -221,11 +221,10 @@ bool borg_test_stuff(void)
                 /* Select the item */
                 borg_keypress(all_letters_nohjkl[b_i - INVEN_WIELD]);
 
-                /* HACK need to recheck stats if we id something on us. */
-                for (i = 0; i < STAT_MAX; i++) {
-                    //                    my_need_stat_check[i] = true;
+                /* stats are now wrong.  They will be corrected next update */
+                for (i = 0; i < STAT_MAX; i++) 
                     borg.stat_max[i] = 0;
-                }
+
             } else if (b_i >= QUIVER_START) {
                 /* Select quiver */
                 borg_keypress('|');

@@ -68,7 +68,6 @@ struct borg_setting borg_settings[] = {
     { "borg_kills_uniques", 'b', false }, 
     { "borg_uses_swaps", 'b', true },
     { "borg_uses_dynamic_calcs", 'b', false },
-    { "borg_slow_optimizehome", 'b', false },
     { "borg_stop_dlevel", 'i', 128 }, 
     { "borg_stop_clevel", 'i', 51 },
     { "borg_no_deeper", 'i', 127 }, 

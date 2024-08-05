@@ -1476,7 +1476,7 @@ static int borg_defend_aux_smite_evil(int p1)
     if (!borg_spell_okay_fail(SMITE_EVIL, fail_allowed))
         return 0;
 
-    // if the borg is not about to fight something evil.
+    /* if the borg is not about to fight something evil. */
     if (!near_evil())
         return 0;
 

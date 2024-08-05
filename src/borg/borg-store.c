@@ -34,10 +34,8 @@
 
 const char *SHOP_MENU_ITEMS = "acfhjmnoqruvyzABDFGHJKLMNOPQRSTUVWXYZ";
 
-int32_t *b_home_power;
-
 borg_shop *borg_shops; /* Current "shops" */
-borg_shop *safe_shops; /* Safety (save) "shops" */
+borg_shop *borg_safe_shops; /* Safety (save) "shops" */
 
 int borg_food_onsale = -1; /* Are shops selling food? */
 int borg_fuel_onsale = -1; /* Are shops selling fuel? */
@@ -186,6 +184,10 @@ void borg_cheat_store(void)
             /* Hack -- Save the declared cost */
             b_item->cost = borg_price_item(o_ptr, false, 1, store_num);
         }
+
+        /* save a backup copy of the store.  This list should never change*/
+        memcpy(borg_safe_shops[store_num].ware, borg_shops[store_num].ware,
+            z_info->store_inven_max * sizeof(borg_item));
     }
     mem_free(list);
     list = NULL;
@@ -204,11 +206,11 @@ void borg_init_store(void)
     borg_shops = mem_zalloc(z_info->store_max * sizeof(borg_shop));
 
     /* Make the "safe" stores in the town */
-    safe_shops = mem_zalloc(z_info->store_max * sizeof(borg_shop));
+    borg_safe_shops = mem_zalloc(z_info->store_max * sizeof(borg_shop));
 
     for (int i = 0; i < z_info->store_max; i++) {
         borg_shops[i].ware = mem_zalloc(z_info->store_inven_max * sizeof(borg_item));
-        safe_shops[i].ware = mem_zalloc(z_info->store_inven_max * sizeof(borg_item));
+        borg_safe_shops[i].ware = mem_zalloc(z_info->store_inven_max * sizeof(borg_item));
     }
 
     borg_init_store_sell();
@@ -221,12 +223,12 @@ void borg_free_store(void)
     for (int i = 0; i < z_info->store_max; i++) {
         mem_free(borg_shops[i].ware);
         borg_shops[i].ware = NULL;
-        mem_free(safe_shops[i].ware);
-        safe_shops[i].ware = NULL;
+        mem_free(borg_safe_shops[i].ware);
+        borg_safe_shops[i].ware = NULL;
     }
 
-    mem_free(safe_shops);
-    safe_shops = NULL;
+    mem_free(borg_safe_shops);
+    borg_safe_shops = NULL;
     mem_free(borg_shops);
     borg_shops = NULL;
 }
