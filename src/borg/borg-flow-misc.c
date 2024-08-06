@@ -218,7 +218,8 @@ bool borg_flow_recover(bool viewable, int dist)
     /* Mana for spell casters */
     if (borg_primarily_caster()) {
         if (borg.trait[BI_CURHP] > borg.trait[BI_MAXHP] / 3
-            && borg.trait[BI_CURSP] > borg.trait[BI_MAXSP] / 4
+            && ((borg.trait[BI_CURSP] > borg.trait[BI_MAXSP] / 4)
+                || borg.trait[BI_MAXSP] == 0)
             && /* Non spell casters? */
             !borg.trait[BI_ISCUT] && !borg.trait[BI_ISSTUN]
             && !borg.trait[BI_ISHEAVYSTUN] && !borg.trait[BI_ISAFRAID])
