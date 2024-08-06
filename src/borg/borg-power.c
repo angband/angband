@@ -1112,7 +1112,7 @@ static int32_t borg_power_equipment(void)
             value -= (((cur_wgt - max_wgt) / 10) * 800L);
         if (max_sp >= 100 && max_sp <= 199)
             value -= (((cur_wgt - max_wgt) / 10) * 1600L);
-        if (max_sp >= 1 && max_sp <= 99)
+        if (max_sp <= 99)
             value -= (((cur_wgt - max_wgt) / 10) * 3200L);
     }
 

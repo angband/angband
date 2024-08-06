@@ -871,7 +871,7 @@ int32_t borg_power_dynamic(void)
             total -= (((cur_wgt - max_wgt) / 10) * 800L);
         if (max_sp >= 100 && max_sp <= 199)
             total -= (((cur_wgt - max_wgt) / 10) * 1600L);
-        if (max_sp >= 1 && max_sp <= 99)
+        if (max_sp <= 99)
             total -= (((cur_wgt - max_wgt) / 10) * 3200L);
     }
     /* END MAJOR HACK */
