@@ -110,6 +110,23 @@ bool borg_fighting_evil_unique; /* Need to know if evil for Priest Banishment */
 bool borg_fighting_summoner;
 
 /*
+ * Helper to get the name of a kill.  Adds safeguards against 
+ * player ghosts or dead monsters 
+ */
+char *borg_race_name(int r_idx)
+{
+    /* Paranoia */
+    if (!r_idx)
+        return "dead monster";
+
+    /* "player ghosts" */
+    if (r_idx >= z_info->r_max - 1)
+        return "player ghost";
+
+    return r_info[r_idx].name;
+}
+
+/*
  * Hack -- Update a "new" monster
  */
 static void borg_update_kill_new(int i)
@@ -354,7 +371,7 @@ static void borg_update_kill_old(int i)
         borg_race_death[i] = 1;
 
     /* We want to remember Morgy's panel */
-    if (streq(r_ptr->base->name, "Morgoth")) {
+    if (kill->r_idx == borg_morgoth_id) {
         j = ((kill->pos.y - borg_panel_hgt() / 2) / borg_panel_hgt())
             * borg_panel_hgt();
         if (j < 0)
@@ -401,8 +418,7 @@ void borg_delete_kill(int i)
 
     /* Note */
     borg_note(format("# Forgetting a monster '%s' at (%d,%d)",
-        (r_info[kill->r_idx].name), kill->pos.y, kill->pos.x));
-
+        borg_race_name(kill->r_idx), kill->pos.y, kill->pos.x));
     /* Clear goals if I am flowing to this monster.*/
     if (borg.goal.type == GOAL_KILL && borg_flow_y[0] == kill->pos.y
         && borg_flow_x[0] == kill->pos.x)
@@ -439,7 +455,7 @@ void borg_sleep_kill(int i)
 
     /* Note */
     borg_note(format("# Noting sleep on a monster '%s' at (%d,%d)",
-        (r_info[kill->r_idx].name), kill->pos.y, kill->pos.x));
+        borg_race_name(kill->r_idx), kill->pos.y, kill->pos.x));
 
     /* note sleep */
     kill->awake = false;
@@ -560,7 +576,7 @@ void borg_follow_kill(int i)
 
     /* Note */
     borg_note(format("# There was a monster '%s' at (%d,%d)",
-        (r_info[kill->r_idx].name), oy, ox));
+        borg_race_name(kill->r_idx), oy, ox));
 
     /* Prevent silliness */
     if (!borg_cave_floor_bold(oy, ox)) {
@@ -694,7 +710,7 @@ void borg_follow_kill(int i)
 
     /* Note */
     borg_note(format("# Following a monster '%s' to (%d,%d) from (%d,%d)",
-        (r_info[kill->r_idx].name), kill->pos.y, kill->pos.x, oy, ox));
+        borg_race_name(kill->r_idx), kill->pos.y, kill->pos.x, oy, ox));
 
     /* Recalculate danger */
     borg_danger_wipe = true;
@@ -785,7 +801,7 @@ static int borg_new_kill(unsigned int r_idx, int y, int x)
     /* Note (r_info[kill->r_idx].name)*/
     borg_note(format(
         "# Creating a monster '%s' at (%d,%d), HP: %d, Time: %d, Index: %d",
-        (r_info[kill->r_idx].name), kill->pos.y, kill->pos.x, kill->power,
+        borg_race_name(kill->r_idx), kill->pos.y, kill->pos.x, kill->power,
         kill->when, kill->r_idx));
 
     /* Recalculate danger */
@@ -819,7 +835,7 @@ static int borg_new_kill(unsigned int r_idx, int y, int x)
         borg_fear_region[y2][x1] = 0;
         borg_fear_region[y2][x2] = 0;
         borg_note(format("# Removing Regional Fear (%d,%d) because of a LOS %s",
-            y, x, r_info[kill->r_idx].name));
+            y, x, borg_race_name(kill->r_idx)));
     }
 
     /* Wipe goals only if I have some light source */
@@ -1030,7 +1046,7 @@ bool observe_kill_move(int y, int x, int d, uint8_t a, wchar_t c, bool flag)
 
                 /* Note */
                 borg_note(format("# Converting a monster '%s' at (%d,%d)",
-                    (r_info[kill->r_idx].name), kill->pos.y, kill->pos.x));
+                    borg_race_name(kill->r_idx), kill->pos.y, kill->pos.x));
 
                 /* Change the race */
                 kill->r_idx = r_idx;
@@ -1066,7 +1082,7 @@ bool observe_kill_move(int y, int x, int d, uint8_t a, wchar_t c, bool flag)
             /* Note */
             borg_note(
                 format("# Tracking a monster '%s' at (%d,%d) from (%d,%d)",
-                    (r_ptr->name), kill->pos.y, kill->pos.x, oy, ox));
+                    borg_race_name(kill->r_idx), kill->pos.y, kill->pos.x, oy, ox));
 
             /* Recalculate danger */
             borg_danger_wipe = true;
@@ -1326,9 +1342,10 @@ int borg_locate_kill(char *who, struct loc c, int r)
     r_ptr = &r_info[r_idx];
 
     /* Note */
-    if (borg_cfg[BORG_VERBOSE])
+    if (borg_cfg[BORG_VERBOSE]) {
         borg_note(format("# There is a monster '%s' within %d grids of %d,%d",
-            (r_ptr->name), r, c.y, c.x));
+            borg_race_name(r_idx), r, c.y, c.x));
+    }
 
     /* Hack -- count racial appearances */
     if (borg_race_count[r_idx] < SHRT_MAX)
@@ -1483,7 +1500,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
 
         /* Note */
         borg_note(format("# Converting a monster '%s' at (%d,%d)",
-            (r_info[kill->r_idx].name), kill->pos.y, kill->pos.x));
+            borg_race_name(kill->r_idx), kill->pos.y, kill->pos.x));
 
         /* Change the race */
         kill->r_idx = r_idx;
@@ -1603,7 +1620,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
         if (borg_cfg[BORG_VERBOSE])
             borg_note(format(
                 "# Matched a monster '%s' at (%d,%d) for the parsed msg.",
-                (r_info[kill->r_idx].name), kill->pos.y, kill->pos.x));
+                borg_race_name(kill->r_idx), kill->pos.y, kill->pos.x));
 
         /* Known identity */
         if (!r)
@@ -1616,11 +1633,11 @@ int borg_locate_kill(char *who, struct loc c, int r)
     /*** Oops ***/
 
     /* Note */
-    if (borg_cfg[BORG_VERBOSE])
+    if (borg_cfg[BORG_VERBOSE]) {
         borg_note(format("# Unable to locate monster '%s' near (%d,%d), which "
-                         "generated the msg (%s).",
-            (r_ptr->name), c.y, c.x, who));
-
+            "generated the msg (%s).",
+            borg_race_name(r_idx), c.y, c.x, who));
+    }
     /* Oops */
     /* this is the case where we know the name of the monster */
     /* but cannot locate it on the monster list. */
@@ -2687,6 +2704,10 @@ void borg_near_monster_type(int dist)
 
         /* Skip dead monsters */
         if (!kill->r_idx)
+            continue;
+
+        /* "player ghosts" */
+        if (kill->r_idx >= z_info->r_max - 1)
             continue;
 
         /* Count breeders */

@@ -1550,7 +1550,7 @@ void borg_update(void)
 
         /* Note */
         borg_note(format("# Expiring a monster '%s' (%d) at (%d,%d)",
-            (r_info[kill->r_idx].name), kill->r_idx, kill->pos.y, kill->pos.x));
+            borg_race_name(kill->r_idx), kill->r_idx, kill->pos.y, kill->pos.x));
 
         /* Kill the monster */
         borg_delete_kill(i);
@@ -2952,7 +2952,7 @@ void borg_update(void)
         p = (borg_danger(kill->pos.y, kill->pos.x, 1, false, false) / 10);
 
         /* Apply the Fear */
-        borg_fear_grid(r_info[kill->r_idx].name, kill->pos.y, kill->pos.x, p);
+        borg_fear_grid(borg_race_name(kill->r_idx), kill->pos.y, kill->pos.x, p);
     }
 
     /*** Notice missing objects ***/

@@ -35,7 +35,7 @@
 typedef struct borg_kill borg_kill;
 
 struct borg_kill {
-    unsigned int r_idx; /* Race index */
+    uint16_t     r_idx; /* Race index */
 
     bool         known; /* Verified race */
     bool         awake; /* Probably awake */
@@ -112,6 +112,11 @@ extern bool
 
 /* am I fighting a summoner? */
 extern bool borg_fighting_summoner;
+
+/*
+ * Helper to get the name of a race.
+ */
+extern char *borg_race_name(int i);
 
 /*
  * Delete an old "kill" record

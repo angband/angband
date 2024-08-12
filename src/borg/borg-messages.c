@@ -694,6 +694,11 @@ static void borg_parse_aux(char *msg, int len)
 
     /* Word of Recall -- Lift off */
     if (prefix(msg, "You feel yourself yanked ")) {
+        /* Flush our key-buffer */
+        /* this is done in case the borg had been aiming a */
+        /* shot before recall hit */
+        borg_flush();
+
         /* Recall complete */
         borg.goal.recalling = 0;
         return;

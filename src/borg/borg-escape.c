@@ -141,6 +141,10 @@ bool borg_surrounded(void)
         if (!kill->r_idx)
             continue;
 
+        /* "player ghosts" */
+        if (kill->r_idx >= z_info->r_max - 1)
+            continue;
+
         x9 = kill->pos.x;
         y9 = kill->pos.y;
 
