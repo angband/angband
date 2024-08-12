@@ -127,7 +127,7 @@ static void borg_log_spellpath(bool beam)
             break;
         } else if (ag->kill) {
             borg_note(format("# Logging Spell pathway (%d,%d): %s, danger %d",
-                n_y, n_x, (r_info[kill->r_idx].name),
+                n_y, n_x, borg_race_name(kill->r_idx),
                 borg_danger_one_kill(
                     borg.c.y, borg.c.x, 1, ag->kill, true, false)));
         } else if (n_y == borg.c.y && n_x == borg.c.x) {
@@ -1434,6 +1434,10 @@ static bool near_evil(void)
         if (!kill->r_idx)
             continue;
 
+        /* "player ghosts" */
+        if (kill->r_idx >= z_info->r_max - 1)
+            continue;
+
         /* Require current knowledge */
         if (kill->when < borg_t - 2)
             continue;
@@ -1740,6 +1744,10 @@ static int borg_defend_aux_mass_genocide(int p1)
         if (!kill->r_idx)
             continue;
 
+        /* "player ghosts" */
+        if (kill->r_idx >= z_info->r_max - 1)
+            continue;
+
         /* Check the distance */
         if (distance(borg.c, kill->pos) > 20)
             continue;
@@ -1796,6 +1804,15 @@ static int borg_defend_aux_mass_genocide(int p1)
 
                 /* Monster */
                 tmp_kill  = &borg_kills[i];
+
+                /* dead monsters */
+                if (tmp_kill->r_idx == 0)
+                    continue;
+
+                /* "player ghosts" */
+                if (tmp_kill->r_idx >= z_info->r_max - 1)
+                    continue;
+
                 tmp_r_ptr = &r_info[tmp_kill->r_idx];
 
                 /* Cant kill uniques like this */
@@ -1926,6 +1943,10 @@ static int borg_defend_aux_genocide(int p1)
 
         /* Skip dead monsters */
         if (!kill->r_idx)
+            continue;
+
+        /* "player ghosts" */
+        if (kill->r_idx >= z_info->r_max - 1)
             continue;
 
         /* we try not to genocide uniques */
@@ -2517,6 +2538,10 @@ static int borg_defend_aux_banishment(int p1)
         if (!kill->r_idx)
             continue;
 
+        /* "player ghosts" */
+        if (kill->r_idx >= z_info->r_max - 1)
+            continue;
+
         /* Check the LOS */
         if (!borg_projectable(borg.c.y, borg.c.x, kill->pos.y, kill->pos.x))
             continue;
@@ -2525,7 +2550,7 @@ static int borg_defend_aux_banishment(int p1)
         if (!borg_simulate) {
             borg_note(format(
                 "# Banishing Evil: (%d,%d): %s, danger %d. is considered.",
-                kill->pos.y, kill->pos.x, (r_info[kill->r_idx].name),
+                kill->pos.y, kill->pos.x, borg_race_name(kill->r_idx),
                 borg_danger_one_kill(
                     borg.c.y, borg.c.x, 1, ag->kill, true, false)));
         }
@@ -2536,7 +2561,7 @@ static int borg_defend_aux_banishment(int p1)
             if (!borg_simulate) {
                 borg_note(format("# Banishing Evil: (%d,%d): %s, danger %d. "
                                  "Stays (not evil).",
-                    kill->pos.y, kill->pos.x, (r_info[kill->r_idx].name),
+                    kill->pos.y, kill->pos.x, borg_race_name(kill->r_idx),
                     borg_danger_one_kill(
                         borg.c.y, borg.c.x, 1, ag->kill, true, false)));
             }
@@ -2550,7 +2575,7 @@ static int borg_defend_aux_banishment(int p1)
             if (!borg_simulate) {
                 borg_note(format("# Banishing Evil: (%d,%d): %s, danger %d. "
                                  "Unique not considered: Injury %d.",
-                    kill->pos.y, kill->pos.x, (r_info[kill->r_idx].name),
+                    kill->pos.y, kill->pos.x, borg_race_name(kill->r_idx),
                     borg_danger_one_kill(
                         borg.c.y, borg.c.x, 1, ag->kill, true, false),
                     kill->injury));
@@ -2565,7 +2590,7 @@ static int borg_defend_aux_banishment(int p1)
             if (!borg_simulate) {
                 borg_note(format("# Banishing Evil: (%d,%d): %s, danger %d. "
                                  "Stays (in wall).",
-                    kill->pos.y, kill->pos.x, (r_info[kill->r_idx].name),
+                    kill->pos.y, kill->pos.x, borg_race_name(kill->r_idx),
                     borg_danger_one_kill(
                         borg.c.y, borg.c.x, 1, ag->kill, true, true)));
             }
@@ -2576,7 +2601,7 @@ static int borg_defend_aux_banishment(int p1)
         if (!borg_simulate) {
             borg_note(
                 format("# Banishing Evil: (%d,%d): %s, danger %d. Booted.",
-                    kill->pos.y, kill->pos.x, (r_info[kill->r_idx].name),
+                    kill->pos.y, kill->pos.x, borg_race_name(kill->r_idx),
                     borg_danger_one_kill(
                         borg.c.y, borg.c.x, 1, ag->kill, true, true)));
             borg_delete_kill(i);
@@ -3219,6 +3244,10 @@ static int borg_defend_aux_banishment_morgoth(void)
         if (!kill->r_idx)
             continue;
 
+        /* "player ghosts" */
+        if (kill->r_idx >= z_info->r_max - 1)
+            continue;
+
         r_ptr = &r_info[kill->r_idx];
 
         /* Require current knowledge */
@@ -3273,6 +3302,11 @@ static int borg_defend_aux_banishment_morgoth(void)
 
             /* Monster */
             tmp_kill  = &borg_kills[i];
+
+            /* dead monsters or "player ghosts" */
+            if (tmp_kill->r_idx == 0 || tmp_kill->r_idx >= z_info->r_max - 1)
+                continue;
+
             tmp_r_ptr = &r_info[tmp_kill->r_idx];
 
             /* Cant kill uniques like this */

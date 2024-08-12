@@ -675,7 +675,7 @@ bool borg_target(struct loc t)
     /* Report a little bit */
     if (ag->kill) {
         borg_note(format("# Targeting %s who has %d Hit Points (%d,%d).",
-            (r_info[kill->r_idx].name), kill->power, t.y, t.x));
+            borg_race_name(kill->r_idx), kill->power, t.y, t.x));
     } else {
         borg_note(format("# Targetting location (%d,%d)", t.y, t.x));
     }

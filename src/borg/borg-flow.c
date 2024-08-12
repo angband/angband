@@ -738,6 +738,10 @@ static bool borg_play_step(int y2, int x2)
     if (ag->kill) {
         borg_kill *kill = &borg_kills[ag->kill];
 
+        /* dead monsters or "player ghosts" */
+        if (kill->r_idx == 0 || kill->r_idx >= z_info->r_max - 1)
+            return false;
+
         /* can't attack someone if afraid! */
         if (borg.trait[BI_ISAFRAID] || borg.trait[BI_CRSFEAR])
             return false;
@@ -749,7 +753,7 @@ static bool borg_play_step(int y2, int x2)
 
         /* Message */
         borg_note(format("# Walking into a '%s' at (%d,%d)",
-            r_info[kill->r_idx].name, kill->pos.y, kill->pos.x));
+            borg_race_name(kill->r_idx), kill->pos.y, kill->pos.x));
 
         /* Walk into it */
         if (my_no_alter) {

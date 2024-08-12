@@ -82,10 +82,10 @@ static int borg_danger_physical(int i, bool full_damage)
         pfe = 1;
     }
 
-    /* Mega-Hack -- unknown monsters */
+    /* Mega-Hack -- unknown monsters (or "player ghosts" */
     if (kill->r_idx == 0)
         return 1000;
-    if (kill->r_idx >= z_info->r_max)
+    if (kill->r_idx >= z_info->r_max - 1)
         return 1000;
 
     /* Analyze each physical attack */
@@ -592,10 +592,10 @@ static int borg_danger_spell(
         }
     }
 
-    /* Mega-Hack -- unknown monsters */
+    /* Mega-Hack -- unknown monsters (or "player ghosts") */
     if (kill->r_idx == 0)
         return 1000;
-    if (kill->r_idx >= z_info->r_max)
+    if (kill->r_idx >= z_info->r_max - 1)
         return 1000;
 
     /* Paranoia -- Nothing to cast */
@@ -2307,6 +2307,10 @@ int borg_danger_one_kill(
     /* Paranoia */
     if (!kill->r_idx)
         return 0;
+
+    /* "player ghosts" */
+    if (kill->r_idx >= z_info->r_max - 1)
+        return 100;
 
     /* Skip certain monster indexes.
      * These have been listed mainly in Teleport Other

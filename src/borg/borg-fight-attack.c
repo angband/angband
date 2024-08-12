@@ -119,6 +119,10 @@ static int borg_thrust_damage_one(int i)
     /* Monster race */
     r_ptr = &r_info[kill->r_idx];
 
+    /* "player ghosts" */
+    if (kill->r_idx >= z_info->r_max - 1)
+        return 0;
+
     /* Damage */
     dam = (item->dd * (item->ds + 1) / 2);
 
@@ -297,6 +301,10 @@ static int borg_attack_aux_thrust(void)
         /* Obtain the monster */
         kill = &borg_kills[ag->kill];
 
+        /* "player ghosts" */
+        if (kill->r_idx >= z_info->r_max - 1)
+            continue;
+
         /* Hack -- avoid waking most "hard" sleeping monsters */
         if (!kill->awake && (d <= kill->power) && !borg.munchkin_mode) {
             /* Calculate danger */
@@ -346,7 +354,7 @@ static int borg_attack_aux_thrust(void)
 
     /* Note */
     borg_note(format("# Facing %s at (%d,%d) who has %d Hit Points.",
-        (r_info[kill->r_idx].name), borg.goal.g.y, borg.goal.g.x, kill->power));
+        borg_race_name(kill->r_idx), borg.goal.g.y, borg.goal.g.x, kill->power));
     borg_note(
         format("# Attacking with weapon '%s'", borg_items[INVEN_WIELD].desc));
 
@@ -447,6 +455,10 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
 
     /* Monster record */
     kill = &borg_kills[i];
+
+    /* "player ghosts" */
+    if (kill->r_idx >= z_info->r_max - 1)
+        return 0;
 
     /* Monster race */
     r_ptr = &r_info[kill->r_idx];
@@ -1206,6 +1218,10 @@ static int borg_launch_bolt_aux_hack(int i, int dam, int typ, int ammo_location)
     if (!kill->r_idx)
         return 0;
 
+    /* "player ghosts" */
+    if (kill->r_idx >= z_info->r_max - 1)
+        return 0;
+
     /* Require current knowledge */
     if (kill->when < borg_t - 2)
         return 0;
@@ -1433,6 +1449,10 @@ static int borg_launch_bolt_at_location(
     ag = &borg_grids[y2][x2];
     kill = &borg_kills[ag->kill];
     r_ptr = &r_info[kill->r_idx];
+
+    /* "player ghosts" */
+    if (kill->r_idx >= z_info->r_max - 1)
+        return 0;
 
     /* Simulate the spell/missile path */
     for (dist = 1; dist < max; dist++) {
@@ -1816,6 +1836,10 @@ static int borg_launch_arc_at_location(
     kill = &borg_kills[ag->kill];
     r_ptr = &r_info[kill->r_idx];
 
+    /* "player ghosts" */
+    if (kill->r_idx >= z_info->r_max - 1)
+        return 0;
+
     /* starting square is always good */
     path_grids[0].x = x;
     path_grids[0].y = y;
@@ -2134,6 +2158,10 @@ static int borg_attack_aux_rest(void)
 
         /* Skip dead monsters */
         if (!kill->r_idx)
+            continue;
+
+        /* "player ghosts" */
+        if (kill->r_idx >= z_info->r_max - 1)
             continue;
 
         /* Distance components */
@@ -3257,6 +3285,9 @@ static int borg_attack_aux_leap_into_battle(void)
         /* Acquire grid */
         ag = &borg_grids[y][x];
 
+        if (!ag->kill)
+            continue;
+
         /* Calculate "average" damage */
         d     = borg_thrust_damage_one(ag->kill);
         blows = (borg.trait[BI_CLEVEL] + 5) / 15;
@@ -3269,6 +3300,10 @@ static int borg_attack_aux_leap_into_battle(void)
 
         /* Obtain the monster */
         kill = &borg_kills[ag->kill];
+
+        /* "player ghosts" */
+        if (kill->r_idx >= z_info->r_max - 1)
+            continue;
 
         /* Hack -- avoid waking most "hard" sleeping monsters */
         if (!kill->awake && (d <= kill->power) && !borg.munchkin_mode) {
@@ -3320,7 +3355,7 @@ static int borg_attack_aux_leap_into_battle(void)
     /* Note */
     borg_note(
         format("# Leaping at %s at (%d,%d dist %d) who has %d Hit Points.",
-            (r_info[kill->r_idx].name), borg.goal.g.y, borg.goal.g.x,
+            borg_race_name(kill->r_idx), borg.goal.g.y, borg.goal.g.x,
             distance(borg.c, borg.goal.g), kill->power));
     borg_note(
         format("# Attacking with weapon '%s'", borg_items[INVEN_WIELD].desc));
@@ -3385,6 +3420,10 @@ static int borg_attack_aux_maim_foe(void)
 
         /* Obtain the monster */
         kill = &borg_kills[ag->kill];
+
+        /* "player ghosts" */
+        if (kill->r_idx >= z_info->r_max - 1)
+            continue;
 
         /* Hack -- avoid waking most "hard" sleeping monsters */
         if (!kill->awake && (d <= kill->power) && !borg.munchkin_mode) {
@@ -3630,6 +3669,10 @@ static int borg_attack_aux_vampire_strike(void)
 
     /* Obtain the monster */
     kill                       = &borg_kills[ag->kill];
+
+    /* "player ghosts" */
+    if (kill->r_idx >= z_info->r_max - 1)
+        return 0;
 
     struct monster_race *r_ptr = &r_info[kill->r_idx];
     if (rf_has(r_ptr->flags, RF_NONLIVING)
@@ -5212,13 +5255,17 @@ bool borg_attack(bool boosted_bravery)
         if (!kill->r_idx)
             continue;
 
+        /* "player ghosts" */
+        if (kill->r_idx >= z_info->r_max - 1)
+            continue;
+
         /* Require current knowledge */
         if (kill->when < borg_t - 2)
             continue;
 
         /* Ignore multiplying monsters and when fleeing from scaries*/
         if (borg.goal.ignoring && !borg.trait[BI_ISAFRAID]
-            && (rf_has(r_info[kill->r_idx].flags, RF_MULTIPLY)))
+            && (rf_has(r_ptr->flags, RF_MULTIPLY)))
             continue;
 
         /* Low level mages need to conserve the mana in town. These guys don't

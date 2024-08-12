@@ -278,7 +278,7 @@ void borg_write_map(bool ask)
 
         /* Note */
         file_putf(borg_map_file, "monster '%s' (%d) at (%d,%d) speed:%d \n",
-            (r_info[kill->r_idx].name), kill->r_idx, kill->pos.y, kill->pos.x,
+            borg_race_name(kill->r_idx), kill->r_idx, kill->pos.y, kill->pos.x,
             kill->speed);
     }
 
