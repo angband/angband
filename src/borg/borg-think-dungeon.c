@@ -1534,6 +1534,10 @@ bool borg_think_dungeon(void)
     if (borg.no_retreat > 0)
         borg.no_retreat--;
 
+    /* if we twitch a lot, time to leave */
+    if (borg.times_twitch > 20)
+        borg.goal.fleeing = true;
+
     /*** Important goals ***/
 
     /* Continue flowing towards good anti-summon grid */
@@ -2314,10 +2318,6 @@ bool borg_think_dungeon(void)
     /* No monsters here */
     borg_kills_cnt = 0;
     borg_kills_nxt = 1;
-
-    /* if we twitch a lot, time to leave */
-    if (borg.times_twitch > 20)
-        borg.goal.fleeing = true;
 
     /* Attempt to dig to the center of the dungeon */
     if (borg_flow_kill_direct(true, true))
