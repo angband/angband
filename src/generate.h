@@ -437,7 +437,7 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
 void vault_objects(struct chunk *c, struct loc grid, int depth, int num);
 void vault_traps(struct chunk *c, struct loc grid, int yd, int xd, int num);
 void vault_monsters(struct chunk *c, struct loc grid, int depth, int num);
-void alloc_objects(struct chunk *c, int set, int typ, int num, int depth,
+int alloc_objects(struct chunk *c, int set, int typ, int num, int depth,
 	uint8_t origin);
 bool alloc_object(struct chunk *c, int set, int typ, int depth, uint8_t origin);
 void uncreate_artifacts(struct chunk *c);

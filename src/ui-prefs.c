@@ -1220,12 +1220,9 @@ static bool process_pref_file_named(const char *path, bool quiet, bool user) {
 		e = PARSE_ERROR_INTERNAL; /* signal failure to callers */
 	} else {
 		char line[1024];
-		int line_no = 0;
 
 		struct parser *p = init_parse_prefs(user);
 		while (file_getl(f, line, sizeof line)) {
-			line_no++;
-
 			e = parser_parse(p, line);
 			if (e != PARSE_ERROR_NONE) {
 				print_error(path, p);
