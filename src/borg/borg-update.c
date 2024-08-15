@@ -607,7 +607,7 @@ static void borg_update_map(void)
  *   ###################
  */
 static void borg_fear_grid(
-    char *who, int y, int x, int k) /* 8-8, this was uint */
+    const char *who, int y, int x, int k) /* 8-8, this was uint */
 {
     int        x1 = 0, y1 = 0;
     borg_kill *kill;
@@ -696,7 +696,7 @@ static void borg_fear_grid(
  * unseen guys attack him.
  */
 static void borg_fear_regional(
-    char *who, int y, int x, int k, bool seen_guy) /* 8-8 , had been uint */
+    const char *who, int y, int x, int k, bool seen_guy) /* 8-8 , had been uint */
 {
     int x0, y0, x1, x2, y1, y2;
 
