@@ -3193,7 +3193,7 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 		obj->to_d = 0 - randint1(3);
 
 		/* Curse it */
-		while (num) {
+		while (num && max_tries) {
 			int pick = randint1(z_info->curse_max - 1);
 			int power = 10 * m_bonus(9, player->depth);
 			if (!curses[pick].poss[obj->tval]) {
