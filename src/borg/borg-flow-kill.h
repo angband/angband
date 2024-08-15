@@ -116,7 +116,7 @@ extern bool borg_fighting_summoner;
 /*
  * Helper to get the name of a race.
  */
-extern char *borg_race_name(int i);
+extern const char *borg_race_name(int i);
 
 /*
  * Delete an old "kill" record

@@ -113,7 +113,7 @@ bool borg_fighting_summoner;
  * Helper to get the name of a kill.  Adds safeguards against 
  * player ghosts or dead monsters 
  */
-char *borg_race_name(int r_idx)
+const char *borg_race_name(int r_idx)
 {
     /* Paranoia */
     if (!r_idx)
