@@ -3190,7 +3190,6 @@ static int borg_defend_aux_banishment_morgoth(void)
     int fail_allowed = 50;
     int i, x, y;
     int count  = 0;
-    int glyphs = 0;
 
     borg_grid           *ag;
     borg_kill           *kill;
@@ -3204,6 +3203,9 @@ static int borg_defend_aux_banishment_morgoth(void)
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
         || borg.trait[BI_ISFORGET])
         return 0;
+
+#if 0
+    int glyphs = 0;
 
     /* Scan grids looking for glyphs */
     for (i = 0; i < 8; i++) {
@@ -3222,7 +3224,6 @@ static int borg_defend_aux_banishment_morgoth(void)
     /* Only if on level 100 and in a sea of runes or
      * in the process of building one
      */
-#if 0
     if (!borg_morgoth_position && glyphs < 3) return 0;
 #endif
 
