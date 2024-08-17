@@ -1740,6 +1740,14 @@ void do_cmd_wiz_play_item(struct command *cmd)
 							obj->number
 							* object_weight_one(obj);
 					}
+					object_touch(player, obj);
+					if (object_is_equipped(player->body, obj)) {
+						assert(obj->known);
+						obj->known->notice &=
+							~OBJ_NOTICE_WORN;
+						object_learn_on_wield(player,
+							obj);
+					}
 					wiz_play_item_standard_upkeep(player,
 						obj);
 				}
