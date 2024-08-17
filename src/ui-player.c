@@ -738,11 +738,11 @@ static struct panel *get_panel_combat(void) {
 	bth = (player->state.skills[SKILL_TO_HIT_MELEE] * 10) / BTH_PLUS_ADJ;
 	dam = player->known_state.to_d;
 	hit = player->known_state.to_h;
-	if (obj) {
-		melee_dice = obj->dd;
-		melee_sides = obj->ds;
-		dam += object_to_dam(obj);
-		hit += object_to_hit(obj);
+	if (obj && obj->known) {
+		melee_dice = obj->known->dd;
+		melee_sides = obj->known->ds;
+		dam += object_to_dam(obj->known);
+		hit += object_to_hit(obj->known);
 	}
 
 	panel_space(p);
@@ -756,9 +756,9 @@ static struct panel *get_panel_combat(void) {
 	bth = (player->state.skills[SKILL_TO_HIT_BOW] * 10) / BTH_PLUS_ADJ;
 	dam = 0;
 	hit = player->known_state.to_h;
-	if (obj) {
-		dam += object_to_dam(obj);
-		hit += object_to_hit(obj);
+	if (obj && obj->known) {
+		dam += object_to_dam(obj->known);
+		hit += object_to_hit(obj->known);
 	}
 
 	panel_space(p);
