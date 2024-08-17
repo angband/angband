@@ -3188,10 +3188,11 @@ static int borg_defend_aux_tele_away_morgoth(void)
 static int borg_defend_aux_banishment_morgoth(void)
 {
     int fail_allowed = 50;
-    int i, x, y;
-    int count  = 0;
+    int i;
+    int count;
+    bool banish_evil;
+    bool banishment;
 
-    borg_grid           *ag;
     borg_kill           *kill;
     struct monster_race *r_ptr;
 
@@ -3205,6 +3206,8 @@ static int borg_defend_aux_banishment_morgoth(void)
         return 0;
 
 #if 0
+    int x, y;
+    borg_grid *ag;
     int glyphs = 0;
 
     /* Scan grids looking for glyphs */
@@ -3227,9 +3230,11 @@ static int borg_defend_aux_banishment_morgoth(void)
     if (!borg_morgoth_position && glyphs < 3) return 0;
 #endif
 
+    banish_evil = borg_spell_okay_fail(BANISH_EVIL, fail_allowed);
+    banishment = borg_spell_okay_fail(MASS_BANISHMENT, fail_allowed);
+
     /* Do I have the spell? (Banish Evil) */
-    if (!borg_spell_okay_fail(MASS_BANISHMENT, fail_allowed)
-        && !borg_spell_okay_fail(BANISH_EVIL, fail_allowed))
+    if (!banishment && !banish_evil)
         return 0;
 
     /* Nobody around so dont worry */
@@ -3237,6 +3242,7 @@ static int borg_defend_aux_banishment_morgoth(void)
         return 0;
 
     /* Find "nearby" monsters */
+    count = 0;
     for (i = 1; i < borg_kills_nxt; i++) {
         /* Monster */
         kill = &borg_kills[i];
@@ -3255,16 +3261,8 @@ static int borg_defend_aux_banishment_morgoth(void)
         if (kill->when < borg_t - 2)
             continue;
 
-        /* Acquire location */
-        x = kill->pos.x;
-        y = kill->pos.y;
-
-        /* Get grid */
-        ag = &borg_grids[y][x];
-
-        /* Never try on non-evil guys if Priest */
-        if (borg.trait[BI_CLASS] == CLASS_PRIEST
-            && !(rf_has(r_ptr->flags, RF_EVIL)))
+        /* Never try on non-evil guys if doing banish evil */
+        if (banish_evil && !banishment && !(rf_has(r_ptr->flags, RF_EVIL)))
             continue;
 
         /* Check the distance  */
