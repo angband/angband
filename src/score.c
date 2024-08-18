@@ -157,14 +157,14 @@ static void highscore_write(const struct high_score scores[], size_t sz)
 
 	safe_setuid_grab();
 	lok = file_open(lok_name, MODE_WRITE, FTYPE_RAW);
-	file_lock(lok);
-	safe_setuid_drop();
-
 	if (!lok) {
+		safe_setuid_drop();
 		msg("Failed to create lock for scorefile; not writing.");
 		return;
+	} else {
+		file_lock(lok);
+		safe_setuid_drop();
 	}
-
 
 	/* Open the new file for writing */
 	safe_setuid_grab();
