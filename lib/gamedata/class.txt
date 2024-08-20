@@ -199,7 +199,7 @@ title:Evoker
 title:Conjurer
 title:Warlock
 title:Sorcerer
-title:Arch-Mage
+title:ArchiMage
 
 magic:1:300:5
 
