@@ -281,8 +281,10 @@ static void list_saves(void)
 	savefile_getter g = NULL;
 
 	if (!got_savefile(&g)) {
+		bool nodir = !got_savefile_dir(g);
+
 		cleanup_savefile_getter(g);
-		if (!got_savefile_dir(g)) {
+		if (nodir) {
 			quit_fmt("Cannot open savefile directory");
 		}
 		printf("There are no savefiles you can use.\n");
