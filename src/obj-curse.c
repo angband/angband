@@ -544,7 +544,7 @@ void apply_curse_attributes(int i, struct object *obj)
 			} else {
 				/*
 				 * With no resistance in the base attributes,
-				 * the merged result weill be the same as
+				 * the merged result will be the same as
 				 * whatever is in the curse.
 				 */
 				assert(obj->el_info[k].res_level == 0);
