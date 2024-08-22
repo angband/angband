@@ -1137,6 +1137,9 @@ static bool borg_one_step_wearing_best(void)
             /* "Buy" the desired item from the home */
             borg_keypress(SHOP_MENU_ITEMS[i]);
             borg_keypress('p');
+            if (item->iqty > 1)
+                borg_keypress(KC_ENTER);
+
 
             borg.goal.best_item[item_num].home = false;
             return true;
