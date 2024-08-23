@@ -1743,10 +1743,10 @@ static void calc_cave_distances(int **cave_dist)
 					!square_isrubble(cave, loc(tx, ty))) continue;
 
 				/* Add the new location */
-				if (n_new == cap_new - 1) {
+				if (n_new == cap_new) {
 					cap_new *= 2;
 					ngrids = mem_realloc(ngrids,
-						cap_new * sizeof(ngrids));
+						cap_new * sizeof(*ngrids));
 				}
 				ngrids[n_new].y = ty;
 				ngrids[n_new].x = tx;
