@@ -288,7 +288,7 @@ static int add_random_effective_brand(struct player *p, struct object *o,
 		o->brands = mem_zalloc(z_info->brand_max * sizeof(*o->brands));
 	}
 	o->brands[i_add] = true;
-	object_learn_brand(p, o, i_add);
+	player_learn_brand(p, i_add);
 	player_know_object(p, o);
 	return i_add;
 }
@@ -314,7 +314,7 @@ static int add_random_ineffective_brand(struct player *p, struct object *o,
 		o->brands = mem_zalloc(z_info->brand_max * sizeof(*o->brands));
 	}
 	o->brands[i_add] = true;
-	object_learn_brand(p, o, i_add);
+	player_learn_brand(p, i_add);
 	player_know_object(p, o);
 	return i_add;
 }
@@ -342,7 +342,7 @@ static int add_random_effective_slay(struct player *p, struct object *o,
 		o->slays = mem_zalloc(z_info->slay_max * sizeof(*o->slays));
 	}
 	o->slays[i_add] = true;
-	object_learn_slay(p, o, i_add);
+	player_learn_slay(p, i_add);
 	player_know_object(p, o);
 	return i_add;
 }
@@ -370,7 +370,7 @@ static int add_random_ineffective_slay(struct player *p, struct object *o,
 		o->slays = mem_zalloc(z_info->slay_max * sizeof(*o->slays));
 	}
 	o->slays[i_add] = true;
-	object_learn_slay(p, o, i_add);
+	player_learn_slay(p, i_add);
 	player_know_object(p, o);
 	return i_add;
 }

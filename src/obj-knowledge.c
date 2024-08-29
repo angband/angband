@@ -1379,6 +1379,53 @@ void player_learn_flag(struct player *p, int flag)
 }
 
 /**
+ * Learn a slay.
+ */
+void player_learn_slay(struct player *p, int index)
+{
+	/* Learn about the slay */
+	if (!player_knows_slay(p, index)) {
+		int i;
+
+		/* Find the rune index */
+		for (i = 1; i < z_info->slay_max; i++) {
+			if (same_monsters_slain(i, index)) {
+				break;
+			}
+		}
+		assert(i < z_info->slay_max);
+
+		/* Learn the rune */
+		player_learn_rune(p, rune_index(RUNE_VAR_SLAY, i), true);
+		update_player_object_knowledge(p);
+	}
+}
+
+/**
+ * Learn a brand.
+ */
+void player_learn_brand(struct player *p, int index)
+{
+	/* Learn about the brand */
+	if (!player_knows_brand(p, index)) {
+		int i;
+
+		/* Find the rune index */
+		for (i = 1; i < z_info->brand_max; i++) {
+			if (streq(brands[i].name, brands[index].name)) {
+				break;
+			}
+		}
+		assert(i < z_info->brand_max);
+
+		/* Learn the rune */
+		player_learn_rune(p, rune_index(RUNE_VAR_BRAND, i), true);
+		update_player_object_knowledge(p);
+	}
+}
+
+
+/**
  * Learn a curse
  */
 void player_learn_curse(struct player *p, struct curse *curse)
@@ -1883,59 +1930,6 @@ void object_learn_on_use(struct player *p, struct object *obj)
 
 	p->upkeep->notice |= PN_IGNORE;
 }
-
-/**
- * Notice any slays on a particular object which affect a particular monster.
- *
- * \param obj is the object on which we are noticing slays
- * \param mon the monster we are trying to slay
- */
-void object_learn_slay(struct player *p, struct object *obj, int index)
-{
-	/* Learn about the slay */
-	if (!player_knows_slay(p, index)) {
-		int i;
-
-		/* Find the rune index */
-		for (i = 1; i < z_info->slay_max; i++) {
-			if (same_monsters_slain(i, index)) {
-				break;
-			}
-		}
-		assert(i < z_info->slay_max);
-
-		/* Learn the rune */
-		player_learn_rune(p, rune_index(RUNE_VAR_SLAY, i), true);
-		update_player_object_knowledge(p);
-	}
-}
-
-/**
- * Notice any brands on a particular object which affect a particular monster.
- *
- * \param obj is the object on which we are noticing brands
- * \param mon the monster we are trying to brand
- */
-void object_learn_brand(struct player *p, struct object *obj, int index)
-{
-	/* Learn about the brand */
-	if (!player_knows_brand(p, index)) {
-		int i;
-
-		/* Find the rune index */
-		for (i = 1; i < z_info->brand_max; i++) {
-			if (streq(brands[i].name, brands[index].name)) {
-				break;
-			}
-		}
-		assert(i < z_info->brand_max);
-
-		/* Learn the rune */
-		player_learn_rune(p, rune_index(RUNE_VAR_BRAND, i), true);
-		update_player_object_knowledge(p);
-	}
-}
-
 
 /**
  * Learn attack bonus on making a ranged attack.
