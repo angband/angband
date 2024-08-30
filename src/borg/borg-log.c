@@ -438,9 +438,10 @@ void borg_write_map(bool ask)
 
     /* Dump the Time Variables */
     file_putf(borg_map_file, "Time on this panel; %d\n", borg.time_this_panel);
-    file_putf(borg_map_file, "Time on this level; %d\n", borg_t - borg_began);
-    file_putf(borg_map_file, "Time since left town; %d\n",
-        borg_time_town + (borg_t - borg_began));
+    file_putf(borg_map_file, "Time on this level; %ld\n",
+        (long int)(borg_t - borg_began));
+    file_putf(borg_map_file, "Time since left town; %ld\n",
+        (long int)(borg_time_town + (borg_t - borg_began)));
     file_putf(borg_map_file, "Food in town; %d\n", borg_food_onsale);
     file_putf(borg_map_file, "Fuel in town; %d\n", borg_fuel_onsale);
     file_putf(borg_map_file, "Borg_no_retreat; %d\n", borg.no_retreat);
@@ -707,8 +708,8 @@ void borg_display_item(struct object *item2, int n)
     /* Describe fully */
     prt(item->desc, 2, j);
 
-    prt(format("kind = %-5d  level = %-4d  tval = %-5d  sval = %-5d",
-            item->kind, item->level, item->tval, item->sval),
+    prt(format("kind = %-5lu  level = %-4d  tval = %-5d  sval = %-5d",
+            (unsigned long)item->kind, item->level, item->tval, item->sval),
         4, j);
 
     prt(format("number = %-3d  wgt = %-6d  ac = %-5d    damage = %dd%d",
@@ -1082,12 +1083,12 @@ void borg_status(void)
             Term_putstr(60, 10, -1, COLOUR_WHITE, "Time:");
 
             Term_putstr(54, 11, -1, COLOUR_SLATE, "This Level         ");
-            Term_putstr(
-                65, 11, -1, COLOUR_WHITE, format("%d", borg_t - borg_began));
+            Term_putstr(65, 11, -1, COLOUR_WHITE,
+                format("%ld", (long int)(borg_t - borg_began)));
 
             Term_putstr(54, 12, -1, COLOUR_SLATE, "Since Town         ");
             Term_putstr(65, 12, -1, COLOUR_WHITE,
-                format("%d", borg_time_town + (borg_t - borg_began)));
+                format("%ld", (long int)(borg_time_town + (borg_t - borg_began))));
 
             Term_putstr(54, 13, -1, COLOUR_SLATE, "This Panel         ");
             Term_putstr(

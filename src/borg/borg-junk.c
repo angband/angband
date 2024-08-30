@@ -452,7 +452,7 @@ bool borg_drop_junk(void)
         borg_item *item = &borg_items[b_i];
 
         /* Message */
-        borg_note(format("# Dropping junk %s (valued at %d)", item->desc, value));
+        borg_note(format("# Dropping junk %s (valued at %ld)", item->desc, (long int)value));
 
         /* inscribe "borg ignore". The borg crushes all items */
         /* on the floor that are inscribed this way */
@@ -1083,8 +1083,8 @@ bool borg_drop_slow(void)
         borg_item *item = &borg_items[b_i];
 
         /* Message */
-        borg_note(format("# Junking %ld power (slow) value %d",
-            (long int)b_p - borg.power, item->value));
+        borg_note(format("# Junking %ld power (slow) value %ld",
+            (long int)b_p - borg.power, (long int)item->value));
 
         /* Attempt to consume it */
         if (borg_consume(b_i))

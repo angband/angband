@@ -343,14 +343,14 @@ void save_keypress_history(struct keypress *kp)
         if (kp->type == EVT_KBRD) {
             keycode_t k = kp->code;
             if (k >= 32 && k <= 126) {
-                borg_note(format("& Key <%c> (0x%02X)", k, k));
+                borg_note(format("& Key <%c> (0x%02lX)", (char)k, (unsigned long)k));
             } else {
                 if (k == KC_ENTER)
-                    borg_note(format("& Key <Enter> (0x%02X)", k));
+                    borg_note(format("& Key <Enter> (0x%02lX)", (unsigned long)k));
                 else if (k == ESCAPE)
-                    borg_note(format("& Key <Esc> (0x%02X)", k));
+                    borg_note(format("& Key <Esc> (0x%02lX)", (unsigned long)k));
                 else
-                    borg_note(format("& Key <0x%02X>", k));
+                    borg_note(format("& Key <0x%02lX>", (unsigned long)k));
             }
         } else {
             borg_note(format("& non-Keyboard <0x%02X>", kp->type));
@@ -471,14 +471,14 @@ void borg_dump_recent_keys(int num)
         if (kp->type == EVT_KBRD) {
             keycode_t k = kp->code;
             if (k >= 32 && k <= 126) {
-                borg_note(format("& Key history <%c> (0x%02X)", k, k));
+                borg_note(format("& Key history <%c> (0x%02lX)", (char)k, (unsigned long)k));
             } else {
                 if (k == KC_ENTER)
-                    borg_note(format("& Key history <Enter> (0x%02X)", k));
+                    borg_note(format("& Key history <Enter> (0x%02lX)", (unsigned long)k));
                 else if (k == ESCAPE)
-                    borg_note(format("& Key history <Esc> (0x%02X)", k));
+                    borg_note(format("& Key history <Esc> (0x%02lX)", (unsigned long)k));
                 else
-                    borg_note(format("& Key history <0x%02X>", k));
+                    borg_note(format("& Key history <0x%02lX>", (unsigned long)k));
             }
         }
         else {

@@ -537,9 +537,10 @@ static void borg_update_map(void)
 
                 /* Check for memory overflow */
                 if (borg_wank_num == AUTO_VIEW_MAX) {
-                    borg_note(format("# Wank problem at grid (%d,%d) m:%d "
-                                     "o:%d, borg at (%d,%d)",
-                        y, x, g.m_idx, g.first_kind ? g.first_kind->kidx : 0,
+                    borg_note(format("# Wank problem at grid (%d,%d) m:%lu "
+                                     "o:%lu, borg at (%d,%d)",
+                        y, x, (unsigned long)g.m_idx,
+                        (unsigned long)(g.first_kind ? g.first_kind->kidx : 0),
                         borg.c.y, borg.c.x));
                     borg_oops("too many objects...");
                 }
@@ -1582,8 +1583,9 @@ void borg_update(void)
             continue;
 
         /* Note */
-        borg_note(format("# Expiring an object '%s' (%d) at (%d,%d)",
-            (take->kind->name), take->kind->kidx, take->y, take->x));
+        borg_note(format("# Expiring an object '%s' (%lu) at (%d,%d)",
+            (take->kind->name), (unsigned long)take->kind->kidx,
+            take->y, take->x));
 
         /* Kill the object */
         borg_delete_take(i);
