@@ -298,6 +298,11 @@ static int32_t borg_object_value_guess(borg_item *item)
             value = 0L;
         if (item->to_d < 0)
             value = 0L;
+
+        for (int i = 0; i < OBJ_MOD_MAX && value; i++)
+            if (item->modifiers[i] < 0)
+                value = 0L;
+
         break;
     default:
         value = 20L;
