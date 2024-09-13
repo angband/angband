@@ -454,6 +454,7 @@ bool borg_think_home_buy_useful(void)
             continue;
 
         /* Skip it if I just sold it */
+        skip_it = false;
         for (i = 0; i < sold_item_num; i++) {
             if (sold_item_tval[i] == item->tval
                 && sold_item_sval[i] == item->sval) {
@@ -640,7 +641,7 @@ bool borg_think_home_buy_useful(void)
         }
 
         /* Restore hole */
-        borg_items[hole].iqty = 0;
+        memcpy(&borg_items[hole], &safe_items[hole], sizeof(borg_item));
 
         /* Restore shop item */
         memcpy(&borg_shops[BORG_HOME].ware[n],

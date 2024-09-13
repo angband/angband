@@ -171,6 +171,9 @@ bool borg_think(void)
         /* Cheat the "inven" screen */
         borg_cheat_inven();
 
+        /* Do a quick cheat of the shops */
+        borg_cheat_store();
+
         /* Done */
         return false;
     }

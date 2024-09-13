@@ -85,6 +85,11 @@ bool borg_recall(void)
                     /* Do reset Depth */
                     borg_note("# Not Resetting recall depth.");
                     borg_keypress('n');
+                } else if (borg.trait[BI_MAXDEPTH] == 99) {
+                    /* Do reset Depth, cleaning up last uniques to hit */
+                    /* Morgoth.  Want to keep using up the stock of potions */
+                    borg_note("# Not Resetting recall depth.");
+                    borg_keypress('n');
                 } else {
                     /* Do reset Depth */
                     borg_note("# Resetting recall depth.");

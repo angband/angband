@@ -494,6 +494,11 @@ extern const char *prefix_pref[];
 #define MAX_CLASSES 9 /* Max # of classes 0 = warrior, 5 = Paladin */
 
 /*
+ * helper to determine if swaps are being used.
+ */
+extern bool borg_uses_swaps(void);
+
+/*
  * Utility to calculate the number of blows an item will get
  */
 extern int borg_calc_blows(borg_item *item);

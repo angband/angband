@@ -1020,7 +1020,7 @@ bool borg_caution(void)
         }
     }
 
-    if (borg_cfg[BORG_USES_SWAPS]) {
+    if (borg_uses_swaps()) {
         /* do some swapping before running away! */
         if (pos_danger > (avoidance / 3)) {
             if (borg_backup_swap(pos_danger))

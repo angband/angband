@@ -1753,9 +1753,12 @@ static int32_t borg_power_inventory(void)
         value += 5000L;
 
     /* Reward empty slots (up to 6) */
-    k = 0;
-    for (; k < 6 && k < borg.trait[BI_EMPTY]; k++)
+    for (k = 1; k < 6 && k < borg.trait[BI_EMPTY]; k++)
         value += 40L;
+
+    /* first empty slot is highly rewarded */
+    if (borg.trait[BI_EMPTY])
+        value += 4000L;
 
     /* Reward carrying a shovel if low level */
     if (borg.trait[BI_MAXDEPTH] <= 40 && borg.trait[BI_MAXDEPTH] >= 25

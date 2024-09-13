@@ -606,8 +606,9 @@ const char *borg_prepared(int depth)
             return (borg_prepared_buffer);
         }
 
-        /* Return to town to get your stock from the home*/
-        if (num_ezheal_true + borg.trait[BI_AEZHEAL] >= 30
+        /* Return to town to get your stock from the home */
+        if (borg.trait[BI_AEZHEAL] < 30 &&
+            num_ezheal_true + borg.trait[BI_AEZHEAL] >= 30
             && /* Enough combined EZ_HEALS */
             num_ezheal_true >= 1
             && borg.trait[BI_MAXDEPTH]

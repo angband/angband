@@ -1012,6 +1012,14 @@ const char *prefix_pref[] = {
     NULL
 };
 
+/*
+ * helper to turn off swap items when deeper than depth 90.
+ */
+bool borg_uses_swaps(void)
+{
+    return borg_cfg[BORG_USES_SWAPS] && borg.trait[BI_MAXDEPTH] < 90;
+}
+
 /**
  * Calculate the blows a player would get.
  *
@@ -2831,6 +2839,8 @@ void borg_notice(bool notice_swap)
     /* number of inventory slots the quiver used  */
     borg.trait[BI_QUIVER_SLOTS]
         = (borg.trait[BI_AMMO_COUNT] - 1) / z_info->quiver_slot_size + 1;
+
+    borg.trait[BI_EMPTY] -= borg.trait[BI_QUIVER_SLOTS];
 
     /* Notice and locate my swap weapon */
     if (notice_swap) {

@@ -37,7 +37,7 @@
 bool borg_decurse_armour(void)
 {
     /* Nothing to decurse */
-    if (!borg_cfg[BORG_USES_SWAPS] || !decurse_armour_swap)
+    if (!borg_uses_swaps() || !decurse_armour_swap)
         return false;
 
     if (-1 == borg_slot(TV_SCROLL, sv_scroll_remove_curse)
@@ -74,7 +74,7 @@ bool borg_decurse_armour(void)
 bool borg_decurse_weapon(void)
 {
     /* Nothing to decurse */
-    if (!borg_cfg[BORG_USES_SWAPS] || !decurse_weapon_swap)
+    if (!borg_uses_swaps() || !decurse_weapon_swap)
         return false;
 
     /* Ability for curses */
