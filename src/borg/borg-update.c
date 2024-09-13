@@ -429,6 +429,10 @@ static void borg_update_map(void)
                 /* If we are twitching around unable to go anywhere, count */
                 /* regular veins as worth digging out */
                 if (borg.times_twitch > 21) {
+                    /* but only quartz if we can dig it */
+                    if (!borg_can_dig(true, FEAT_QUARTZ_K) && g.f_idx == FEAT_QUARTZ)
+                        continue;
+
                     /* Check for an existing vein */
                     for (i = 0; i < track_vein.num; i++) {
                         /* Stop if we already new about this */

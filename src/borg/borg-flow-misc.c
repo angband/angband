@@ -326,6 +326,7 @@ bool borg_flow_vein(bool viewable, int nearness)
     int b_stair = -1, j, b_j = -1;
     int cost  = 0;
     int leash = borg.trait[BI_CLEVEL] * 3 + 9;
+    uint8_t min_feat;
 
     borg_grid *ag;
 
@@ -341,8 +342,12 @@ bool borg_flow_vein(bool viewable, int nearness)
     if (borg.trait[BI_GOLD] >= 100000)
         return false;
 
-    /* Require digger, capacity, or skill to dig at least Quartz */
-    if (!borg_can_dig(true, FEAT_QUARTZ_K))
+    /* Require digger, capacity, or skill to dig  */
+    /* note, if twitchy we will try digging out magma */
+    min_feat = FEAT_QUARTZ_K;
+    if (borg.times_twitch > 21)
+        min_feat = FEAT_MAGMA_K;
+    if (!borg_can_dig(true, min_feat))
         return false;
 
     /* Nothing yet */
