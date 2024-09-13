@@ -790,7 +790,7 @@ void do_cmd_borg(void)
         /* Step forever */
         borg_step = 0;
 
-        borg_notice_player();
+        borg_notice(true);
 
         if (player->opts.lazymove_delay != 0) {
             borg_note("# Turning off lazy movement controls");
@@ -825,7 +825,7 @@ void do_cmd_borg(void)
         /* Step forever */
         borg_step = 0;
 
-        borg_notice_player();
+        borg_notice(true);
 
         /* Message */
         borg_note("# Installing keypress hook");
@@ -855,7 +855,7 @@ void do_cmd_borg(void)
         if (borg_step < 1)
             borg_step = 1;
 
-        borg_notice_player();
+        borg_notice(true);
 
         /* Message */
         borg_note("# Installing keypress hook");
@@ -1632,9 +1632,6 @@ void do_cmd_borg(void)
     case 'P': {
         int32_t p;
 
-        /* Examine the screen */
-        borg_notice_player();
-
         /* Cheat the "equip" screen */
         borg_cheat_equip();
 
@@ -1645,11 +1642,14 @@ void do_cmd_borg(void)
         borg_cheat_store();
 
         /* Examine the screen */
+        borg_notice(true);
+
+        /* Examine the screen */
         borg_update();
 
         /* Examine the inventory */
         borg_object_fully_id();
-        borg_notice(true);
+
         /* Evaluate */
         p = borg_power();
 
@@ -1794,13 +1794,13 @@ void do_cmd_borg(void)
         borg_cheat_equip();
         borg_cheat_inven();
 
+        borg_notice(true);
+
         /* Examine the screen */
-        borg_notice_player();
         borg_update();
 
         /* Examine the inventory */
         borg_object_fully_id();
-        borg_notice(true);
         borg_notice_home(NULL, false);
 
         /* Dump prep codes */
@@ -1857,9 +1857,6 @@ void do_cmd_borg(void)
 
         /* Examine the screen */
         borg_update();
-
-        /* Examine the screen */
-        borg_notice_player();
 
         /* note the swap items */
         if (weapon_swap) {
@@ -1963,14 +1960,13 @@ void do_cmd_borg(void)
         borg_cheat_inven();
 
         /* Examine the screen */
-        borg_notice_player();
+        borg_notice(true);
 
         /* Examine the screen */
         borg_update();
 
         /* Examine the inventory */
         borg_object_fully_id();
-        borg_notice(true);
         borg_notice_home(NULL, false);
         for (; item < to; item++) {
             switch (cmd) {
@@ -2043,9 +2039,6 @@ void do_cmd_borg(void)
 
         /* Examine the screen */
         borg_update();
-
-        /* Examine the screen */
-        borg_notice_player();
 
         /* Save the screen */
         Term_save();

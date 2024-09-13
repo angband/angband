@@ -922,6 +922,13 @@ const char *prefix_pref[] = {
     "no teleport",
     "treach wep",
     "aggravate",
+    "vulnerable",
+    "dullness",
+    "sickness",
+    "weakness",
+    "clumsiness",
+    "slowness",
+    "annoyance",
     "impair hp", /* Impaired HP recovery */
     "CRSMPIMP", /* Impaired MP recovery */
     "curse steel",
@@ -1227,21 +1234,8 @@ static void borg_notice_equipment(void)
 
     borg_item *item;
 
-    /* Start with a single blow per turn */
-    borg.trait[BI_BLOWS] = 1;
-
     /* Start with a single shot per turn */
     my_num_fire = 1;
-
-    /* speed starts at 110 */
-    borg.trait[BI_SPEED] = 110;
-
-    /* Reset the "ammo" attributes */
-    borg.trait[BI_AMMO_COUNT] = 0;
-    borg.trait[BI_AMMO_TVAL]  = -1;
-    borg.trait[BI_AMMO_SIDES] = 4;
-    borg.trait[BI_AMMO_POWER] = 0;
-
 
     /* Base infravision (purely racial) */
     borg.trait[BI_INFRA] = rb_ptr->infra;
@@ -1381,6 +1375,12 @@ static void borg_notice_equipment(void)
         borg.trait[BI_SDEX] = true;
     if (rf_has(f, OF_SUST_CON))
         borg.trait[BI_SCON] = true;
+
+    /* if hasting */
+    if (player->timed[TMD_FAST] || player->timed[TMD_SPRINT])
+        borg.trait[BI_SPEED] += 10;
+    else if (player->timed[TMD_TERROR])
+        borg.trait[BI_SPEED] += 5;
 
     /* I am pretty sure the CF_flags will be caught by the
      * code above when the player flags are checked
@@ -1531,41 +1531,28 @@ static void borg_notice_equipment(void)
 
         /* curses that don't have flags or stat changes that are tracked
          * elsewhere */
-        if (item->curses[BORG_CURSE_VULNERABILITY]) {
-            borg.trait[BI_CRSAGRV] = true;
-            borg.trait[BI_ARMOR] -= 50;
-        }
+        if (item->curses[BORG_CURSE_VULNERABILITY])
+            borg.trait[BI_CRSVULN] = true;
         if (item->curses[BORG_CURSE_TELEPORTATION])
             borg.trait[BI_CRSTELE] = true;
-        if (item->curses[BORG_CURSE_DULLNESS]) {
-            borg.trait[BI_CINT] -= 5;
-            borg.trait[BI_CWIS] -= 5;
-        }
-        if (item->curses[BORG_CURSE_SICKLINESS]) {
-            borg.trait[BI_CSTR] -= 5;
-            borg.trait[BI_CDEX] -= 5;
-            borg.trait[BI_CCON] -= 5;
-        }
+        if (item->curses[BORG_CURSE_DULLNESS])
+            borg.trait[BI_CRSDULL] = true;
+        if (item->curses[BORG_CURSE_SICKLINESS])
+            borg.trait[BI_CRSSICK] = true;
         if (item->curses[BORG_CURSE_ENVELOPING])
             borg.trait[BI_CRSENVELOPING] = true;
         if (item->curses[BORG_CURSE_IRRITATION]) {
             borg.trait[BI_CRSAGRV]       = true;
             borg.trait[BI_CRSIRRITATION] = true;
         }
-        if (item->curses[BORG_CURSE_WEAKNESS]) {
-            borg.trait[BI_CSTR] -= 10;
-        }
-        if (item->curses[BORG_CURSE_CLUMSINESS]) {
-            borg.trait[BI_CSTR] -= 10;
-        }
-        if (item->curses[BORG_CURSE_SLOWNESS]) {
-            borg.trait[BI_SPEED] -= 5;
-        }
-        if (item->curses[BORG_CURSE_ANNOYANCE]) {
-            borg.trait[BI_SPEED] -= 10;
-            borg.trait[BI_STL] -= 10;
-            borg.trait[BI_CRSAGRV] = true;
-        }
+        if (item->curses[BORG_CURSE_WEAKNESS])
+            borg.trait[BI_CRSWEAK] = true;
+        if (item->curses[BORG_CURSE_CLUMSINESS])
+            borg.trait[BI_CRSCLUM] = true;
+        if (item->curses[BORG_CURSE_SLOWNESS])
+            borg.trait[BI_CRSSLOW] = true;
+        if (item->curses[BORG_CURSE_ANNOYANCE])
+            borg.trait[BI_CRSANNOY] = true;
         if (item->curses[BORG_CURSE_POISON])
             borg.trait[BI_CRSPOIS] = true;
         if (item->curses[BORG_CURSE_SIREN])
@@ -1752,6 +1739,31 @@ static void borg_notice_equipment(void)
         /* Apply the bonuses to hit/damage */
         borg.trait[BI_TOHIT] += item->to_h;
         borg.trait[BI_TODAM] += item->to_d;
+    }
+
+    if (borg.trait[BI_CRSVULN]) {
+        borg.trait[BI_CRSAGRV] = true;
+        borg.trait[BI_ARMOR] -= 50;
+    }
+    if (borg.trait[BI_CRSDULL]) {
+        borg.trait[BI_CINT] -= 5;
+        borg.trait[BI_CWIS] -= 5;
+    }
+    if (borg.trait[BI_CRSSICK]) {
+        borg.trait[BI_CSTR] -= 5;
+        borg.trait[BI_CDEX] -= 5;
+        borg.trait[BI_CCON] -= 5;
+    }
+    if (borg.trait[BI_CRSWEAK])
+        borg.trait[BI_CSTR] -= 10;
+    if (borg.trait[BI_CRSCLUM])
+        borg.trait[BI_CDEX] -= 10;
+    if (borg.trait[BI_CRSSLOW])
+        borg.trait[BI_SPEED] -= 5;
+    if (borg.trait[BI_CRSANNOY]) {
+        borg.trait[BI_SPEED] -= 10;
+        borg.trait[BI_STL] -= 10;
+        borg.trait[BI_CRSAGRV] = true;
     }
 
     /* The borg needs to update his base stat points */
@@ -2824,6 +2836,16 @@ void borg_notice(bool notice_swap)
     memset(borg.trait, 0, BI_MAX * sizeof(int));
     memset(borg.activation, 0, z_info->act_max * sizeof(int));
 
+    /* Start with a single blow per turn */
+    borg.trait[BI_BLOWS] = 1;
+
+    /* speed starts at 110 */
+    borg.trait[BI_SPEED] = 110;
+
+    /* Reset the "ammo" attributes */
+    borg.trait[BI_AMMO_TVAL] = -1;
+    borg.trait[BI_AMMO_SIDES] = 4;
+
     /* Many of our variables are tied to borg.trait[], which is erased at the
      * the start of borg_notice().  So we must update the frame the cheat in
      * all the non inventory skills.
@@ -3013,15 +3035,6 @@ void borg_notice_player(void)
     borg.temp.smite_evil = (player->timed[TMD_ATT_EVIL] ? true : false);
     if (!borg.see_inv && player->timed[TMD_SINVIS])
         borg.see_inv = 1000;
-
-    /* if hasting, it doesn't count as 'borg_speed'.  The speed */
-    /* gained from hasting is counted separately. */
-    if (borg.temp.fast) {
-        if (player->timed[TMD_FAST] || player->timed[TMD_SPRINT])
-            borg.trait[BI_SPEED] -= 10;
-        else if (player->timed[TMD_TERROR])
-            borg.trait[BI_SPEED] -= 5;
-    }
 
     /* Extract "Cur HP xxxxx" */
     borg.trait[BI_CURHP] = player->chp;
