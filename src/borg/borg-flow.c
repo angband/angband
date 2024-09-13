@@ -139,7 +139,7 @@ bool borg_can_dig(bool check_fail, uint8_t feat)
 
     /* try digging even if it is hard when out of moves */
     if (borg.times_twitch > 21)
-        dig_check -= BORG_DIG;
+        dig_check -= 20;
 
     if ((weapon_swap && borg.trait[BI_DIG] >= dig_check
             && borg_items[weapon_swap - 1].tval == TV_DIGGING)
