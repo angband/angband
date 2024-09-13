@@ -568,7 +568,7 @@ void borg_init(void)
             borg_init_failure = true;
         }
 
-        if (OPT(player, birth_connect_stairs)) {
+        if (!OPT(player, birth_connect_stairs)) {
             borg_note("**STARTUP FAILURE** must connect stairs");
             borg_note("** birth option failure **");
             borg_init_failure = true;
