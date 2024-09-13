@@ -1366,7 +1366,7 @@ static void calculate_subwindow_font_size_bounds(struct subwindow *subwindow,
 		int try;
 
 		if (lo == hi - 1) {
-			*max_size = lo;
+			*max_size = hi;
 			return;
 		}
 		try = (lo + hi) / 2;
