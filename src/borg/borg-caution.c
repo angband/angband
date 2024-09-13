@@ -1116,7 +1116,8 @@ bool borg_caution(void)
                 || (borg.trait[BI_CLEVEL] < 5 && pos_danger > avoidance / 2))
             && on_upstair)) /* danger and standing on stair */
     {
-        if (borg.ready_morgoth == 0 && !borg.trait[BI_KING]) {
+        if (borg.ready_morgoth == 0 && !borg.trait[BI_KING]
+            && !OPT(player, birth_force_descend)) {
             borg.stair_less = true;
             if (scaryguy_on_level)
                 borg_note("# Fleeing and leaving the level. (scaryguy)");
@@ -1130,7 +1131,7 @@ bool borg_caution(void)
                 borg_note("# Leaving level,  Some danger but I'm on a stair.");
         }
 
-        if (scaryguy_on_level)
+        if (scaryguy_on_level && !OPT(player, birth_force_descend))
             borg.stair_less = true;
 
         /* Only go down if fleeing or prepared */
@@ -1163,12 +1164,12 @@ bool borg_caution(void)
     }
 
     /* Take stairs up */
-    if (borg.stair_less) {
+    if (borg.stair_less && !OPT(player, birth_force_descend)) {
         /* Current grid */
         borg_grid *ag = &borg_grids[borg.c.y][borg.c.x];
 
         /* Usable stairs */
-        if (ag->feat == FEAT_LESS || on_upstair) {
+        if ((ag->feat == FEAT_LESS) || on_upstair) {
             /* Log it */
             borg_note(format("# Leaving via up stairs."));
 

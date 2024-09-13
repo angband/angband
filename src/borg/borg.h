@@ -74,6 +74,7 @@ enum {
     BORG_DUMP_LEVEL,
     BORG_SAVE_DEATH,
     BORG_STOP_ON_BELL,
+    BORG_ALLOW_STRANGE_OPTS,
     BORG_MAX_SETTINGS
 };
 extern int *borg_cfg;

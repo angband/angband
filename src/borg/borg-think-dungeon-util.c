@@ -190,7 +190,8 @@ bool borg_think_dungeon_light(void)
         borg_note("# Testing for stairs .");
 
         /* Test for stairs */
-        borg_keypress('<');
+        if (!OPT(player, birth_force_descend))
+            borg_keypress('<');
 
         /* If on a glowing grid, got some food, and low mana, then rest here */
         if ((borg.trait[BI_CURSP] < borg.trait[BI_MAXSP]
@@ -298,7 +299,7 @@ bool borg_think_dungeon_light(void)
         }
 
         /* Try to flow to upstairs if on level one */
-        if (borg_flow_stair_less(GOAL_FLEE, false)) {
+        if (borg_flow_stair_less(GOAL_FLEE, false) && !OPT(player, birth_force_descend)) {
             /* Take the stairs */
             /* Log */
             borg_note("# Taking up Stairs stairs (low Light).");
@@ -503,7 +504,7 @@ bool borg_think_stair_scum(bool from_town)
                 return true;
             }
 
-            if (tmp_ag->feat == FEAT_LESS) {
+            if (tmp_ag->feat == FEAT_LESS && !OPT(player, birth_force_descend)) {
                 /* Take the Up Stair */
                 borg_keypress('<');
                 return true;
@@ -870,9 +871,11 @@ bool borg_leave_level(bool bored)
 
     /* Go Up */
     if (g < 0) {
-        /* Take next stairs */
-        borg_note("# Looking for up stairs.  Going up.");
-        borg.stair_less = true;
+        if (!OPT(player, birth_force_descend)) {
+            /* Take next stairs */
+            borg_note("# Looking for up stairs.  Going up.");
+            borg.stair_less = true;
+        }
 
         /* Hack -- recall if going to town */
         if (borg.goal.rising && ((borg_time_town + (borg_t - borg_began)) > 200)

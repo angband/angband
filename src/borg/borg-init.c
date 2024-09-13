@@ -86,6 +86,7 @@ struct borg_setting borg_settings[] = {
     { "borg_dump_level", 'i', 1 }, 
     { "borg_save_death", 'i', 1 },
     { "borg_stop_on_bell", 'b', false },
+    { "borg_allow_strange_opts", 'b', false},
     { 0, 0, 0 }};
 
 
@@ -557,6 +558,33 @@ void borg_init(void)
         || !streq(player_id2class(CLASS_BLACKGUARD)->name, "Blackguard")) {
         borg_note("**STARTUP FAILURE** classes do not match");
         borg_init_failure = true;
+    }
+
+    /* Don't allow the user to do stupid things unless they ask to */
+    if (!borg_cfg[BORG_ALLOW_STRANGE_OPTS]) {
+        if (OPT(player, birth_force_descend)) {
+            borg_note("**STARTUP FAILURE** must allow up stairs");
+            borg_note("** birth option failure **");
+            borg_init_failure = true;
+        }
+
+        if (OPT(player, birth_connect_stairs)) {
+            borg_note("**STARTUP FAILURE** must connect stairs");
+            borg_note("** birth option failure **");
+            borg_init_failure = true;
+        }
+
+        if (OPT(player, birth_no_recall)) {
+            borg_note("**STARTUP FAILURE** must allow recall");
+            borg_note("** birth option failure **");
+            borg_init_failure = true;
+        }
+
+        if (OPT(player, birth_percent_damage)) {
+            borg_note("**STARTUP FAILURE** strange damage calculation");
+            borg_note("** birth option failure **");
+            borg_init_failure = true;
+        }
     }
 
     /* Official message */

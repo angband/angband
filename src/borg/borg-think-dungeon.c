@@ -283,7 +283,7 @@ static bool borg_think_dungeon_lunal(void)
                 return true;
             }
 
-            if (tmp_ag->feat == FEAT_LESS) {
+            if (tmp_ag->feat == FEAT_LESS && !OPT(player, birth_force_descend)) {
                 /* Take the Up Stair */
                 borg_keypress('<');
                 return true;
@@ -384,7 +384,7 @@ static bool borg_think_dungeon_lunal(void)
                 return true;
             }
 
-            if (tmp_ag->feat == FEAT_LESS) {
+            if (tmp_ag->feat == FEAT_LESS && !OPT(player, birth_force_descend)) {
                 /* Take the Up Stair */
                 borg_keypress('<');
                 return true;
@@ -643,7 +643,7 @@ static bool borg_think_dungeon_munchkin(void)
                 return true;
             }
 
-            if (tmp_ag->feat == FEAT_LESS) {
+            if (tmp_ag->feat == FEAT_LESS && !OPT(player, birth_force_descend)) {
                 /* Take the Up Stair */
                 borg_keypress('<');
                 return true;
@@ -704,7 +704,7 @@ static bool borg_think_dungeon_munchkin(void)
                 return true;
             }
 
-            if (tmp_ag->feat == FEAT_LESS) {
+            if (tmp_ag->feat == FEAT_LESS && !OPT(player, birth_force_descend)) {
                 /* Take the Up Stair */
                 borg_keypress('<');
                 return true;
@@ -812,7 +812,7 @@ static bool borg_think_dungeon_munchkin(void)
                 return true;
             }
 
-            if (tmp_ag->feat == FEAT_LESS) {
+            if (tmp_ag->feat == FEAT_LESS && !OPT(player, birth_force_descend)) {
                 /* Take the Up Stair */
                 borg_keypress('<');
                 return true;
@@ -902,7 +902,7 @@ static bool borg_think_dungeon_munchkin(void)
         /* Try to find some stairs */
         if (borg_flow_stair_both(GOAL_FLEE, false))
             return true;
-        if (ag->feat == FEAT_LESS) {
+        if (ag->feat == FEAT_LESS && !OPT(player, birth_force_descend)) {
             /* Take the Up Stair */
             borg_keypress('<');
             return true;
@@ -983,6 +983,9 @@ static bool borg_think_dungeon_brave(void)
 
         if (borg.ready_morgoth == 0)
             borg.stair_less = true;
+
+        if (OPT(player, birth_force_descend))
+            borg.stair_less = false;
 
         if (borg.stair_less == true) {
             borg_note("# Fleeing and leaving the level. Brave Thinking.");
@@ -1515,7 +1518,8 @@ bool borg_think_dungeon(void)
         borg.goal.less = true;
 
         /* Take stairs */
-        if (borg_grids[borg.c.y][borg.c.x].feat == FEAT_LESS) {
+        if (borg_grids[borg.c.y][borg.c.x].feat == FEAT_LESS
+            && !OPT(player, birth_force_descend)) {
             borg_keypress('<');
             return true;
         }
@@ -1762,6 +1766,9 @@ bool borg_think_dungeon(void)
     if (borg.goal.fleeing && !borg.goal.recalling) {
         /* Hack -- Take the next stairs */
         borg.stair_less = borg.stair_more = true;
+        if (OPT(player, birth_force_descend))
+            borg.stair_less = false;
+
         borg_note("# Fleeing and leaving the level. (Looking for any stair)");
 
         /* Continue fleeing the level */
@@ -1889,8 +1896,7 @@ bool borg_think_dungeon(void)
     if ((borg.goal.leaving && !borg.goal.recalling && !unique_on_level)
         || (borg.trait[BI_CDEPTH] && borg.trait[BI_CLEVEL] < 25
             && borg.trait[BI_GOLD] < 25000 && borg_count_sell() >= 13)) {
-        /* Hack -- Take the next stairs */
-        if (borg.ready_morgoth == 0) {
+        if (borg.ready_morgoth == 0 && !OPT(player, birth_force_descend)) {
             borg_note(
                 "# Fleeing and leaving the level (Looking for Up Stair).");
             borg.stair_less = true;

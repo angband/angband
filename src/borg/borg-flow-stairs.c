@@ -133,6 +133,10 @@ bool borg_flow_stair_less(int why, bool sneak)
 {
     int i;
 
+    /* forced to go up */
+    if (OPT(player, birth_force_descend))
+        return false;
+
     /* None to flow to */
     if (!track_less.num)
         return false;

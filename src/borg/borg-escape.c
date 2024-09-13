@@ -508,7 +508,7 @@ static bool borg_escape_stair(void)
     borg_grid *ag = &borg_grids[borg.c.y][borg.c.x];
 
     /* Usable stairs */
-    if (ag->feat == FEAT_LESS) {
+    if (ag->feat == FEAT_LESS && !OPT(player, birth_force_descend)) {
         /* Take the stairs */
         borg_note("# Escaping level via stairs.");
         borg_keypress('<');
