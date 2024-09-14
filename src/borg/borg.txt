@@ -947,8 +947,10 @@ Power
 	condition(value(trait, amt *ench to wep*)): reward(5000);
 	condition(value(trait, amt *ench to armor*)): reward(5000);
 
-#   empty slots (up to 6) 
-	value(trait, empty slots): range(1, 6): reward(40);
+#   empty slots (2 to 6) 
+	value(trait, empty slots): range(2, 6): reward(40);
+#   empty slots: first one counts extra 
+	value(trait, empty slots): reward(4000);
 ]
 
 Depth Requirement

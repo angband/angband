@@ -195,6 +195,10 @@ void borg_notice_weapon_swap(void)
         if (borg.trait[BI_MAXDEPTH] < 50 && item->tval != TV_DIGGING)
             continue;
 
+        /* borg option to not use swaps (again, except diggers) */
+        if (!borg_uses_swaps() && item->tval != TV_DIGGING)
+            return;
+
         /* Clear all the swap weapon flags as I look at each one. */
         weapon_swap_digger       = 0;
         weapon_swap_slay_animal  = 0;
@@ -754,7 +758,7 @@ void borg_notice_armour_swap(void)
     armour_swap_value = -1;
 
     /* borg option to not use them */
-    if (!borg_cfg[BORG_USES_SWAPS])
+    if (!borg_uses_swaps())
         return;
 
     /*** Process the inventory ***/

@@ -235,6 +235,13 @@ enum {
     BI_CRSNOTEL,
     BI_CRSTWEP,
     BI_CRSAGRV,
+    BI_CRSVULN,
+    BI_CRSDULL,
+    BI_CRSSICK,
+    BI_CRSWEAK,
+    BI_CRSCLUM,
+    BI_CRSSLOW,
+    BI_CRSANNOY,
     BI_CRSHPIMP,
     BI_CRSMPIMP,
     BI_CRSSTEELSKIN,
@@ -492,6 +499,11 @@ extern const char *prefix_pref[];
 #define CLASS_BLACKGUARD  8
 
 #define MAX_CLASSES 9 /* Max # of classes 0 = warrior, 5 = Paladin */
+
+/*
+ * helper to determine if swaps are being used.
+ */
+extern bool borg_uses_swaps(void);
 
 /*
  * Utility to calculate the number of blows an item will get

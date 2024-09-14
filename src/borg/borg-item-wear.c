@@ -375,6 +375,9 @@ bool borg_swap_rings(void)
         return true;
     }
 
+    /* fix the inventory */
+    borg_notice(true);
+
     /* Nope */
     return false;
 }
@@ -1418,7 +1421,8 @@ void borg_clear_best(void)
 
 /*
  * Scan the item list and recharge items before leaving the
- * level.  Right now rod are not recharged from this.
+ * level.  Right now rod are not recharged from this except rods
+ * of recall.
  */
 bool borg_wear_recharge(void)
 {
@@ -1448,6 +1452,13 @@ bool borg_wear_recharge(void)
 
         /* Where can it be worn? */
         slot = borg_wield_slot(item);
+        
+        /* if this is a rod, only count it if it is a rod of recall */
+        /* and we are in town.  This is to prevent walking down when */
+        /* the borg has a perfectly serviceable rod */
+        if (item->tval == TV_ROD && item->sval != sv_rod_recall
+            && borg.trait[BI_CDEPTH] == 0)
+            continue;
 
         /* skip non-ego lights, No need to rest to recharge a torch, which uses
          * fuels turns in o_ptr->timeout */
@@ -1460,7 +1471,11 @@ bool borg_wear_recharge(void)
         b_slot = slot;
     }
 
-    if (b_i >= INVEN_WIELD) {
+    /* nothing found */
+    if (b_i == -1)
+        return false;
+
+    if (b_i >= INVEN_WIELD || borg_items[b_i].tval == TV_ROD) {
         /* Item is worn, no swap is nec. */
         borg_note(
             format("# Waiting for '%s' to Recharge.", borg_items[b_i].desc));

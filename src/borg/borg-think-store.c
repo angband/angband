@@ -114,10 +114,6 @@ bool borg_choose_shop(void)
         borg.goal.shop = 0;
     }
 
-    /* Do a quick cheat of the shops and inventory */
-    borg_cheat_store();
-    borg_notice(true);
-
     /* if No Lantern -- flow to general store */
     if (borg.trait[BI_CURLITE] == 1 && borg.trait[BI_GOLD] >= 100)
         borg.goal.shop = 0;
@@ -264,7 +260,7 @@ bool borg_choose_shop(void)
     }
 
     /* Step 7A -- Buy weapons from the home (as a backup item) */
-    if (borg_cfg[BORG_USES_SWAPS] && borg_think_home_buy_swap_weapon()) {
+    if (borg_uses_swaps() && borg_think_home_buy_swap_weapon()) {
         /* Message */
         borg_note(format("# Buying '%s' from the home as a backup",
             borg_shops[borg.goal.shop].ware[borg.goal.ware].desc));
@@ -273,7 +269,7 @@ bool borg_choose_shop(void)
         return true;
     }
     /* Step 7B -- Buy armour from the home (as a backup item) */
-    if (borg_cfg[BORG_USES_SWAPS] && borg_think_home_buy_swap_armour()) {
+    if (borg_uses_swaps() && borg_think_home_buy_swap_armour()) {
         /* Message */
         borg_note(format("# Buying '%s' from the home as a backup",
             borg_shops[borg.goal.shop].ware[borg.goal.ware].desc));
