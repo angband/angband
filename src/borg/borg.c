@@ -2015,6 +2015,13 @@ void do_cmd_borg(void)
         break;
     }
 
+    case 'l':
+        /* Cheat the "inven" screen */
+        borg_cheat_inven();
+
+        borg_write_map(true);
+        break;
+
     /* Version of the game */
     case 'v':
     case 'V': {

@@ -309,7 +309,7 @@ void borg_write_map(bool ask)
     file_putf(borg_map_file, "\n\n  [Character Quiver]\n\n");
     for (i = 0; i < z_info->quiver_size; i++) {
         struct object *obj = player->upkeep->quiver[i];
-        object_desc(o_name, sizeof(o_name), obj, ODESC_FULL, player);
+        object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL, player);
         file_putf(borg_map_file, "%c) %s\n", borg_index_to_label(i), o_name);
     }
 
@@ -320,8 +320,15 @@ void borg_write_map(bool ask)
     for (i = 0; i < z_info->pack_size; i++) {
         item = &borg_items[i];
 
-        file_putf(
-            borg_map_file, "%c) %s\n", borg_index_to_label(i), item->desc);
+        if (item->iqty) {
+            if (item->iqty > 1) {
+                file_putf(borg_map_file, "%c) %d %s\n", borg_index_to_label(i),
+                    item->iqty, item->desc);
+            } else {
+                file_putf(borg_map_file, "%c) %s\n", borg_index_to_label(i),
+                    item->desc);
+            }
+        }
     }
     file_putf(borg_map_file, "\n\n");
 
@@ -331,7 +338,7 @@ void borg_write_map(bool ask)
         = mem_zalloc(sizeof(struct object *) * z_info->store_inven_max);
     store_stock_list(&stores[BORG_HOME], list, z_info->store_inven_max);
     for (i = 0; i < z_info->store_inven_max / 2; i++) {
-        object_desc(o_name, sizeof(o_name), list[i], ODESC_FULL, player);
+        object_desc(o_name, sizeof(o_name), list[i], ODESC_PREFIX | ODESC_FULL, player);
         file_putf(
             borg_map_file, "%c) %s\n", all_letters_nohjkl[i % 12], o_name);
     }
@@ -340,7 +347,7 @@ void borg_write_map(bool ask)
     /* Dump the Home (page 2) */
     file_putf(borg_map_file, "  [Home Inventory (page 2)]\n\n");
     for (i = z_info->store_inven_max / 2; i < z_info->store_inven_max; i++) {
-        object_desc(o_name, sizeof(o_name), list[i], ODESC_FULL, player);
+        object_desc(o_name, sizeof(o_name), list[i], ODESC_PREFIX | ODESC_FULL, player);
         file_putf(
             borg_map_file, "%c) %s\n", all_letters_nohjkl[i % 12], o_name);
     }
@@ -395,7 +402,7 @@ void borg_write_map(bool ask)
         file_putf(borg_map_file, "You aggravate monsters.\n");
     }
     if (player->timed[TMD_BLESSED]) {
-        file_putf(borg_map_file, "You feel rightous.\n");
+        file_putf(borg_map_file, "You feel righteous.\n");
     }
     if (player->timed[TMD_HERO]) {
         file_putf(borg_map_file, "You feel heroic.\n");
@@ -489,8 +496,8 @@ void borg_write_map(bool ask)
                 file_putf(borg_map_file, "%-30s   %s   %ld   fail:%d \n",
                     as->name, legal, (long)as->times, failpercent);
             }
-            file_putf(borg_map_file, "\n");
         }
+        file_putf(borg_map_file, "\n");
     }
 
     /* Dump the borg.trait[] information */
