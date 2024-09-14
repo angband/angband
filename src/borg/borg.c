@@ -566,8 +566,13 @@ static struct keypress internal_borg_inkey(int flush_first)
     if (!borg.in_shop && (ch_evt.type & EVT_KBRD) && ch_evt.key.code > 0
         && ch_evt.key.code != 10) {
         /* Oops */
-        borg_note(format(
-            "# User key press <%d><%c>", ch_evt.key.code, ch_evt.key.code));
+        if (ch_evt.key.code >= 32 && ch_evt.key.code <= 126) {
+            borg_note(format("# User key press <%lu><%c>",
+                (unsigned long)ch_evt.key.code, (char)ch_evt.key.code));
+        } else {
+            borg_note(format("# User key press <%lu>",
+                (unsigned long)ch_evt.key.code));
+        }
         borg_note(format("# Key type was <%d><%c>", ch_evt.type, ch_evt.type));
         borg_oops("user abort");
 
@@ -1904,8 +1909,8 @@ void do_cmd_borg(void)
                     failpercent = (borg_spell_fail_rate(as->spell_enum));
 
                     Term_putstr(1, ii++, -1, COLOUR_WHITE,
-                        format("%s, %s, attempted %d times, fail rate:%d",
-                            as->name, legal, as->times, failpercent));
+                        format("%s, %s, attempted %ld times, fail rate:%d",
+                            as->name, legal, (long int)as->times, failpercent));
                 }
                 get_com(
                     "Exam spell books.  Press any key for next book.", &cmd);

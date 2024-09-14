@@ -714,7 +714,7 @@ bool borg_backup_swap(int p)
         && b_p <= (borg_fighting_unique ? ((avoidance * 2) / 3)
                                         : (avoidance / 2))) {
         /* Log */
-        borg_note(format("# Swapping backup.  (%d < %d).", b_p, p));
+        borg_note(format("# Swapping backup.  (%ld < %d).", (long int)b_p, p));
 
         /* Wear it */
         borg_keypress('w');
