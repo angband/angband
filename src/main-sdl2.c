@@ -3584,35 +3584,21 @@ static bool handle_mousebutton(struct my_app *a,
 		return false;
 	}
 
-	if (a->w_mouse->move_state.active || a->w_mouse->size_state.active) {
-		if (mouse->state == SDL_RELEASED) {
-			if (a->w_mouse->move_state.active
-					&& a->w_mouse->move_state.moving) {
-				a->w_mouse->move_state.moving = false;
-				return true;
-			} else if (a->w_mouse->size_state.active
-					&& a->w_mouse->size_state.sizing) {
-				a->w_mouse->size_state.sizing = false;
-				if (a->w_mouse->size_state.subwindow) {
-					resize_subwindow(a->w_mouse->size_state.subwindow);
-				}
-				return true;
-			}
+	/* Terminate moving/sizing on a mouse release. */
+	if (mouse->state == SDL_RELEASED
+			&& (a->w_mouse->move_state.moving
+			|| a->w_mouse->size_state.sizing)) {
+		if (a->w_mouse->move_state.moving) {
+			SDL_assert(a->w_mouse->move_state.active);
+			a->w_mouse->move_state.moving = false;
 		} else {
-			subwindow = get_subwindow_by_xy(a->w_mouse, mouse->x,
-				mouse->y);
-			if (subwindow && is_rect_in_rect(&subwindow->full_rect,
-					&a->w_mouse->inner_rect)) {
-				if (a->w_mouse->move_state.active
-						&& !a->w_mouse->move_state.moving) {
-					start_moving(a->w_mouse, subwindow, mouse);
-				} else if (a->w_mouse->size_state.active
-						&& !a->w_mouse->size_state.sizing) {
-					start_sizing(a->w_mouse, subwindow, mouse);
-				}
-				return true;
+			SDL_assert(a->w_mouse->size_state.active);
+			a->w_mouse->size_state.sizing = false;
+			if (a->w_mouse->size_state.subwindow) {
+				resize_subwindow(a->w_mouse->size_state.subwindow);
 			}
 		}
+		return true;
 	}
 
 	/* Have a menu or dialog handle the event if appropriate. */
@@ -3636,6 +3622,24 @@ static bool handle_mousebutton(struct my_app *a,
 		if (a->w_mouse->d_mouse->ftb->handle_mouseclick
 				&& (*a->w_mouse->d_mouse->ftb->handle_mouseclick)(
 				a->w_mouse->d_mouse, a->w_mouse, mouse)) {
+			return true;
+		}
+	}
+
+	/* If requested, start moving/sizing on a press. */
+	if (mouse->state != SDL_RELEASED
+			&& (a->w_mouse->move_state.active
+			|| a->w_mouse->size_state.active)) {
+		subwindow = get_subwindow_by_xy(a->w_mouse, mouse->x, mouse->y);
+		if (subwindow && is_rect_in_rect(&subwindow->full_rect,
+				&a->w_mouse->inner_rect)) {
+			if (a->w_mouse->move_state.active
+					&& !a->w_mouse->move_state.moving) {
+				start_moving(a->w_mouse, subwindow, mouse);
+			} else if (a->w_mouse->size_state.active
+					&& !a->w_mouse->size_state.sizing) {
+				start_sizing(a->w_mouse, subwindow, mouse);
+			}
 			return true;
 		}
 	}
