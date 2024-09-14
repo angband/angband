@@ -102,7 +102,7 @@
 
 #define DEFAULT_DIALOG_FONT "8x13x.fon"
 
-#define MAX_VECTOR_FONT_SIZE 32
+#define MAX_VECTOR_FONT_SIZE 64
 #define MIN_VECTOR_FONT_SIZE 4
 
 /* update period in window delays (160 milliseconds, assuming 60 fps) */
