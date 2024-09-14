@@ -83,6 +83,10 @@ borg_kills_uniques = FALSE
 
 borg_uses_swaps = TRUE
 
+# some birth options don't allow the borg to run well.  If you want to allow
+# the borg to run anyways, set this to true and run at your own risk.
+borg_allow_strange_opts = false
+
 
 # Respawn
 

@@ -706,7 +706,7 @@ static bool borg_play_step(int y2, int x2)
 
         /* Up stairs. Cheat the game grid info in.
          * (cave_feat[borg.c.y][borg.c.x] == FEAT_LESS) */
-        if (ag->feat == FEAT_LESS) {
+        if (ag->feat == FEAT_LESS && !OPT(player, birth_force_descend)) {
 
             borg.goal.less   = false;
             borg_keypress('<');
