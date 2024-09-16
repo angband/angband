@@ -2167,57 +2167,67 @@ static struct sdlpui_dialog *handle_menu_windows(struct sdlpui_control *ctrl,
 static void handle_menu_fullscreen(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
 {
+	bool was_fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP);
 	SDL_Rect tmp_rect;
-	size_t i;
 
 	sdlpui_popdown_dialog(dlg, window, true);
 
-	tmp_rect = window->stored_rect;
-	SDL_GetWindowPosition(window->window, &window->full_rect.x,
-		&window->full_rect.y);
-	window->stored_rect = window->full_rect;
-	window->full_rect = tmp_rect;
-	for (i = 0; i < N_ELEMENTS(window->subwindows); ++i) {
-		struct subwindow *subwindow = window->subwindows[i];
+	SDL_GetWindowSize(window->window, &tmp_rect.w, &tmp_rect.h);
+	SDL_GetWindowPosition(window->window, &tmp_rect.x, &tmp_rect.y);
+	if (!SDL_SetWindowFullscreen(window->window, (was_fullscreen) ?
+			0 : SDL_WINDOW_FULLSCREEN_DESKTOP)) {
+		/* Succeeded.  Swap cached sizes. */
+		size_t i;
 
-		if (subwindow != NULL) {
-			tmp_rect = subwindow->stored_rect;
-			subwindow->stored_rect = subwindow->full_rect;
-			subwindow->full_rect = tmp_rect;
-			if (!subwindow->full_rect.w
-					|| !subwindow->full_rect.h) {
-				/*
-				 * Nothing configured so far for this mode, so
-				 * use the configuration from the other mode.
-				 */
-				subwindow->full_rect = subwindow->stored_rect;
+		window->full_rect = window->stored_rect;
+		window->stored_rect = tmp_rect;
+		for (i = 0; i < N_ELEMENTS(window->subwindows); ++i) {
+			struct subwindow *subwindow = window->subwindows[i];
+
+			if (subwindow != NULL) {
+				tmp_rect = subwindow->stored_rect;
+				subwindow->stored_rect = subwindow->full_rect;
+				subwindow->full_rect = tmp_rect;
+				if (!subwindow->full_rect.w
+						|| !subwindow->full_rect.h) {
+					/*
+					 * Nothing configured so far for this
+					 * mode, so use the configuration from
+					 * the other mode.
+					 */
+					subwindow->full_rect =
+						subwindow->stored_rect;
+				}
 			}
 		}
-	}
 
-	if (window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
-		int minw, minh;
+		if (was_fullscreen) {
+			int minw, minh;
 
-		SDL_SetWindowFullscreen(window->window, 0);
-		get_minimum_window_size(window, &minw, &minh);
-		SDL_SetWindowMinimumSize(window->window, minw, minh);
-		/*
-		 * If there is a previously configured size, use it.
-		 * Otherwise, rely on SDL's default behavior.
-		 */
-		if (window->full_rect.w && window->full_rect.h) {
-			SDL_SetWindowSize(window->window, window->full_rect.w,
-				window->full_rect.h);
-			resize_window(window, window->full_rect.w,
-				window->full_rect.h);
-			SDL_SetWindowPosition(window->window,
-				window->full_rect.x, window->full_rect.y);
+			get_minimum_window_size(window, &minw, &minh);
+			SDL_SetWindowMinimumSize(window->window, minw, minh);
+			/*
+			 * If there is a previously configured size, use it.
+			 * Otherwise, rely on SDL's default behavior.
+			 */
+			if (window->full_rect.w && window->full_rect.h) {
+				SDL_SetWindowSize(window->window,
+					window->full_rect.w,
+					window->full_rect.h);
+				resize_window(window, window->full_rect.w,
+					window->full_rect.h);
+				SDL_SetWindowPosition(window->window,
+					window->full_rect.x,
+					window->full_rect.y);
+			}
 		}
+		window->flags = SDL_GetWindowFlags(window->window);
 	} else {
-		SDL_SetWindowFullscreen(window->window,
-			SDL_WINDOW_FULLSCREEN_DESKTOP);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING,
+			"Fullscreen failure",
+			format("Could not change fullscreen setting:\n%s",
+			SDL_GetError()), window->window);
 	}
-	window->flags = SDL_GetWindowFlags(window->window);
 }
 
 static void handle_menu_kp_mod(struct sdlpui_control *ctrl,
