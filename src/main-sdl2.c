@@ -5948,7 +5948,8 @@ static void load_subwindow(struct sdlpui_window *window,
 			++n_tries;
 		}
 		try_names[n_tries] = DEFAULT_FONT;
-		try_sizes[n_tries] = 0;
+		try_sizes[n_tries] = (suffix_i(DEFAULT_FONT, ".fon")) ?
+			0 : DEFAULT_VECTOR_FONT_SIZE;
 		++n_tries;
 		if (window->app->font_count > 0 && window->app->fonts[0].name) {
 			try_names[n_tries] = window->app->fonts[0].name;
