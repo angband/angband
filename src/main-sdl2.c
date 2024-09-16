@@ -936,7 +936,8 @@ static void redraw_window_while_menu_active(struct sdlpui_window *window)
 /* this function is mostly used while normally playing the game */
 static void redraw_window(struct sdlpui_window *window)
 {
-	if (window->d_mouse || window->d_key) {
+	if (window->move_state.moving || window->size_state.sizing
+			|| window->d_mouse || window->d_key) {
 		redraw_window_while_menu_active(window);
 		return;
 	}
@@ -3579,6 +3580,7 @@ static bool handle_mousebutton(struct my_app *a,
 	int button, col, row;
 	uint8_t mods;
 	term *old;
+	bool touched;
 
 	if (!a->w_mouse) {
 		return false;
@@ -3602,6 +3604,7 @@ static bool handle_mousebutton(struct my_app *a,
 	}
 
 	/* Have a menu or dialog handle the event if appropriate. */
+	touched = false;
 	if (a->w_mouse->d_mouse) {
 		/*
 		 * Press events outside of the dialog will act as if the dialog 
@@ -3617,9 +3620,8 @@ static bool handle_mousebutton(struct my_app *a,
 					a->w_mouse->d_mouse, a->w_mouse,
 					NULL, NULL);
 			}
-			return true;
-		}
-		if (a->w_mouse->d_mouse->ftb->handle_mouseclick
+			touched = true;
+		} else if (a->w_mouse->d_mouse->ftb->handle_mouseclick
 				&& (*a->w_mouse->d_mouse->ftb->handle_mouseclick)(
 				a->w_mouse->d_mouse, a->w_mouse, mouse)) {
 			return true;
@@ -3646,13 +3648,13 @@ static bool handle_mousebutton(struct my_app *a,
 
 	/* Otherwise only react to the button press and not the release. */
 	if (mouse->state == SDL_RELEASED) {
-		return false;
+		return touched;
 	}
 
 	subwindow = get_subwindow_by_xy(a->w_mouse, mouse->x, mouse->y);
 	if (subwindow == NULL) {
 		/* not an error, the user clicked in some random place */
-		return false;
+		return touched;
 	}
 	if (!subwindow->top) {
 		bring_to_top(a->w_mouse, subwindow);
@@ -3665,7 +3667,7 @@ static bool handle_mousebutton(struct my_app *a,
 	 * lives in the main window.
 	 */
 	if (a->w_mouse->index != MAIN_WINDOW) {
-		return false;
+		return touched;
 	}
 
 	/* all magic numbers are from ui-term.c and ui-context.c :) */
@@ -3678,11 +3680,11 @@ static bool handle_mousebutton(struct my_app *a,
 			break;
 		default:
 			/* XXX other buttons? */
-			return false;
+			return touched;
 	}
 
 	if (!get_colrow_from_xy(subwindow, mouse->x, mouse->y, &col, &row)) {
-		return false;
+		return touched;
 	}
 
 	mods = translate_key_mods(SDL_GetModState());
