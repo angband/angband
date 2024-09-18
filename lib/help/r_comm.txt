@@ -49,7 +49,7 @@ combination and does not pass it on.
   [    Display visible monster list    ^m   (special - return)
   ]    Display visible object list     ^n   (alter - south east)
   -    Walk into a trap                ^o   Show previous message
-  _    Enter store                     ^p   Show previous messages
+  _    -                               ^p   Show previous messages
   +    Alter grid (steal for rogues)   ^q   -
   =    Set options                     ^r   Redraw the screen
   ;    Walk (with pickup)              ^s   Save and don't quit

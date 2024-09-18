@@ -129,7 +129,7 @@ Original Keyset Command Summary
 ``[``  Display visible monster list  ``^m`` (special - return)
 ``]``  Display visible object list   ``^n`` (unused)
 ``-``  (unused)                      ``^o`` Show previous message
-``_``  Enter store                   ``^p`` Show previous messages
+``_``  (unused)                      ``^p`` Show previous messages
 ``+``  Alter grid                    ``^q`` (unused)
 ``=``  Set options                   ``^r`` Redraw the screen
 ``;``  Walk (with pickup)            ``^s`` Save and don't quit
@@ -191,7 +191,7 @@ Roguelike Keyset Command Summary
  ``[``  Display visible monster list  ``^m`` (special - return)
  ``]``  Display visible object list   ``^n`` (alter - south east)
  ``-``  Walk into a trap              ``^o`` Show previous message
- ``_``  Enter store                   ``^p`` Show previous messages
+ ``_``  (unused)                      ``^p`` Show previous messages
  ``+``  Alter grid                    ``^q`` (unused)
  ``=``  Set options                   ``^r`` Redraw the screen
  ``;``  Walk (with pickup)            ``^s`` Save and don't quit
