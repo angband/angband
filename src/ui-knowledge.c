@@ -1775,12 +1775,16 @@ static void do_cmd_knowledge_ego_items(const char *name, int row)
 			/* Note the tvals which are possible for this ego */
 			for (poss = ego->poss_items; poss; poss = poss->next) {
 				struct object_kind *kind = &k_info[poss->kidx];
+				assert(obj_group_order[kind->tval] >= 0);
 				tval[obj_group_order[kind->tval]]++;
 			}
 
 			/* Count and put into the list */
 			for (j = 0; j < TV_MAX; j++) {
 				int gid = obj_group_order[j];
+
+				/* Skip if nothing in this group */
+				if (gid < 0) continue;
 
 				/* Ignore duplicates */
 				if ((j > 0) && (gid == default_join[e_count - 1].gid)
