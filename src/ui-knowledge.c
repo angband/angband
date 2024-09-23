@@ -1787,11 +1787,11 @@ static void do_cmd_knowledge_ego_items(const char *name, int row)
 				if (gid < 0) continue;
 
 				/* Ignore duplicates */
-				if ((j > 0) && (gid == default_join[e_count - 1].gid)
+				if ((e_count > 0) && (gid == default_join[e_count - 1].gid)
 					&& (i == default_join[e_count - 1].oid))
 					continue;
 
-				if (tval[obj_group_order[j]]) {
+				if (tval[gid]) {
 					egoitems[e_count] = e_count;
 					default_join[e_count].oid = i;
 					default_join[e_count++].gid = gid;
