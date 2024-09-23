@@ -1522,7 +1522,7 @@ int square_digging(struct chunk *c, struct loc grid) {
 	return 0;
 }
 
-/*
+/**
  * Return the name for the terrain in a grid.  Accounts for the fact that
  * some terrain mimics another terrain.
  *
@@ -1537,7 +1537,7 @@ const char *square_apparent_name(struct chunk *c, struct loc grid) {
 	return fp->name;
 }
 
-/*
+/**
  * Return the prefix, appropriate for describing looking at the grid in
  * question, for the name returned by square_name().
  *
@@ -1555,7 +1555,7 @@ const char *square_apparent_look_prefix(struct chunk *c, struct loc grid) {
 		(is_a_vowel(fp->name[0]) ? "an " : "a ");
 }
 
-/*
+/**
  * Return a preposition, appropriate for describing the grid the viewer is on,
  * for the name returned by square_name().  May return an empty string when
  * the name doesn't require a preposition.
