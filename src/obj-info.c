@@ -2267,18 +2267,28 @@ static void describe_flavor_text(textblock *tb, const struct object *obj,
  */
 static bool describe_ego(textblock *tb, const struct ego_item *ego)
 {
-	if (kf_has(ego->kind_flags, KF_RAND_HI_RES))
-		textblock_append(tb, "It provides one random higher resistance.  ");
-	else if (kf_has(ego->kind_flags, KF_RAND_SUSTAIN))
-		textblock_append(tb, "It provides one random sustain.  ");
-	else if (kf_has(ego->kind_flags, KF_RAND_POWER))
-		textblock_append(tb, "It provides one random ability.  ");
-	else if (kf_has(ego->kind_flags, KF_RAND_RES_POWER))
-		textblock_append(tb, "It provides one random ability or base resistance.  ");
-	else
-		return false;
+	bool something = false;
 
-	return true;
+	if (kf_has(ego->kind_flags, KF_RAND_HI_RES)) {
+		something = true;
+		textblock_append(tb, "It provides one random higher resistance.  ");
+	} else if (kf_has(ego->kind_flags, KF_RAND_SUSTAIN)) {
+		something = true;
+		textblock_append(tb, "It provides one random sustain.  ");
+	} else if (kf_has(ego->kind_flags, KF_RAND_POWER)) {
+		something = true;
+		textblock_append(tb, "It provides one random ability.  ");
+	} else if (kf_has(ego->kind_flags, KF_RAND_RES_POWER)) {
+		something = true;
+		textblock_append(tb, "It provides one random ability or base resistance.  ");
+	}
+	if (of_has(ego->flags, OF_NO_FUEL)
+			&& of_has(ego->flags_off, OF_TAKES_FUEL)) {
+		something = true;
+		textblock_append(tb, "It burns forever without fuel.  ");
+	}
+
+	return something;
 }
 
 
