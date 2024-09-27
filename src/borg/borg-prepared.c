@@ -506,8 +506,8 @@ static const char *borg_prepared_aux(int depth)
             return ("5 Heal");
 
         /* must have lots of ez-heal */
-        if (borg.trait[BI_AEZHEAL] < 15)
-            return ("15 *heal*");
+        if ((borg.trait[BI_AEZHEAL] + borg.trait[BI_ALIFE]) < 15)
+            return ("15 *heal* or life");
 
         /* must have lots of speed */
         if (borg.trait[BI_ASPEED] < 10)
@@ -584,7 +584,9 @@ const char *borg_prepared(int depth)
         return (reason);
 
     /* Scum on depth 80-81 for some *heal* potions */
-    if (depth >= 82 && (num_ezheal < 10 && borg.trait[BI_AEZHEAL] < 10)) {
+    if (depth >= 82
+        && ((num_ezheal + num_life) < 10
+            && (borg.trait[BI_AEZHEAL] + borg.trait[BI_ALIFE]) < 10)) {
         /* Must know exact number of Potions  in home */
         borg_notice_home(NULL, false);
 
@@ -599,23 +601,22 @@ const char *borg_prepared(int depth)
         borg_notice_home(NULL, false);
 
         /* Scum for 30*/
-        if (num_ezheal_true + borg.trait[BI_AEZHEAL] < 30) {
+        int heals = num_ezheal_true + borg.trait[BI_AEZHEAL] + num_life_true
+                    + borg.trait[BI_ALIFE];
+        if (heals < 30) {
             strnfmt(borg_prepared_buffer, MAX_REASON,
                 "Scumming *Heal* potions (%d to go).",
-                30 - (num_ezheal_true + borg.trait[BI_AEZHEAL]));
+                30 - heals);
             return (borg_prepared_buffer);
         }
 
         /* Return to town to get your stock from the home */
-        if (borg.trait[BI_AEZHEAL] < 30 &&
-            num_ezheal_true + borg.trait[BI_AEZHEAL] >= 30
-            && /* Enough combined EZ_HEALS */
-            num_ezheal_true >= 1
-            && borg.trait[BI_MAXDEPTH]
-                   >= 99) /* Still some sitting in the house */
+        if ((borg.trait[BI_AEZHEAL] + borg.trait[BI_ALIFE]) < 30 && heals >= 30
+            && num_ezheal_true >= 1 && borg.trait[BI_MAXDEPTH] >= 99)
         {
             strnfmt(borg_prepared_buffer, MAX_REASON,
-                "Collect from house (%d potions).", num_ezheal_true);
+                "Collect from house (%d potions).",
+                num_ezheal_true + num_life_true);
             return (borg_prepared_buffer);
         }
     }

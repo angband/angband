@@ -2944,12 +2944,16 @@ void borg_notice(bool notice_swap)
         /* Examine the home */
         borg_notice_home(NULL, false);
 
-        /* pot of healing + *healing* */
+        /* pot of healing + *healing* + life */
         int total_big_heal = borg.has[kv_potion_healing];
         total_big_heal += borg.trait[BI_AEZHEAL];
+        total_big_heal += borg.trait[BI_ALIFE];
+
         /* plus the same at home */
         total_big_heal += num_heal_true;
         total_big_heal += num_ezheal_true;
+        total_big_heal += num_life_true;
+
         /* want bunches of heal and speed to feel prepped for the fight */
         if (total_big_heal < 30 || (num_speed + borg.trait[BI_ASPEED]) < 15)
             borg.trait[BI_PREP_BIG_FIGHT] = true;

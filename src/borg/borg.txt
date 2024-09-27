@@ -1064,10 +1064,10 @@ Depth Requirement
 	depth(81): condition(value(trait, speed) < 130);
 
 # going after morgoth
-	depth(100): condition(!value(trait, king) and value(potion, restore mana) < 15);
-	depth(100): condition(!value(trait, king) and value(potion, healing) < 5);
-	depth(100): condition(!value(trait, king) and value(potion, *healing*) < 15);
-	depth(100): condition(!value(trait, king) and value(potion, speed) < 10);
+	depth(100): condition(!value(trait, king) and (value(potion, restore mana) < 15));
+	depth(100): condition(!value(trait, king) and (value(potion, healing) < 5));
+	depth(100): condition(!value(trait, king) and (value(potion, *healing*) + value(potion, life)) < 15);
+	depth(100): condition(!value(trait, king) and (value(potion, speed) < 10));
 ]
 
 Restock Requirement
@@ -1093,7 +1093,7 @@ Restock Requirement
 	depth(65): condition((value(trait,  amt heal) + value(trait,  amt ezheal) + value(rod,  healing)) < 1);
 
 # !FIX there is a "borg_t - borg_began < 10" but 10 steps is hardly anything so ... ignoring for now
-	depth(100): condition((value(trait,  amt ezheal)) < 15);
+	depth(100): condition(value(trait,  amt ezheal) + (value(trait,  amt life)) < 15);
 ]
 
 [END FORMULA SECTION]
