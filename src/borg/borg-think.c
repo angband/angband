@@ -365,7 +365,7 @@ bool borg_think(void)
 
     /* Hack -- always revert shapechanged players to normal form */
     if (player_is_shapechanged(player)) {
-        /* it looks like inscribe is a good command that checks */
+        /* it looks like throw is a good command that checks */
         /* your form without a prerequisite check */
         borg_keypress('v');
         borg_keypress('r');
