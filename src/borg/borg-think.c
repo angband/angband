@@ -367,7 +367,7 @@ bool borg_think(void)
     if (player_is_shapechanged(player)) {
         /* it looks like inscribe is a good command that checks */
         /* your form without a prerequisite check */
-        borg_keypress('{');
+        borg_keypress('v');
         borg_keypress('r');
         return true;
     }
