@@ -37,6 +37,7 @@
 #include "borg-item-val.h"
 #include "borg-item-wear.h"
 #include "borg-magic.h"
+#include "borg-think.h"
 #include "borg-trait-swap.h"
 #include "borg.h"
 #include "borg-home-notice.h"
@@ -2851,6 +2852,12 @@ void borg_notice(bool notice_swap)
      * all the non inventory skills.
      */
     borg_notice_player();
+
+    /*** Process books/spells ***/
+    if (borg_do_spell) {
+        borg_cheat_spells();
+        borg_do_spell = false;
+    }
 
     /* Notice the equipment */
     borg_notice_equipment();

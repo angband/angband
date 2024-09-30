@@ -306,7 +306,7 @@ extern void borg_prepare_book_info(void);
 /*
  * Cheat/Parse the "spell" screen
  */
-extern void borg_cheat_spell(int book);
+extern void borg_cheat_spells(void);
 
 #endif
 

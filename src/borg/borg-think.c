@@ -58,7 +58,6 @@ bool    borg_do_equip     = true; /* Acquire "equip" info */
 bool    borg_do_panel     = true; /* Acquire "panel" info */
 bool    borg_do_frame     = true; /* Acquire "frame" info */
 bool    borg_do_spell     = true; /* Acquire "spell" info */
-uint8_t borg_do_spell_aux = 0; /* Hack -- book for "borg_do_spell" */
 
 /*
  * Abort the Borg, noting the reason
@@ -260,63 +259,12 @@ bool borg_think(void)
         return true;
     }
 
-    /*** Find books ***/
-
-    /* Only if needed */
-    if (borg_do_spell && (borg_do_spell_aux == 0)) {
-        /* Assume no books */
-        for (i = 0; i < 9; i++)
-            borg.book_idx[i] = -1;
-
-        /* Scan the pack */
-        for (i = 0; i < z_info->pack_size; i++) {
-            int        book_num;
-            borg_item *item = &borg_items[i];
-
-            for (book_num = 0; book_num < player->class->magic.num_books;
-                 book_num++) {
-                struct class_book book = player->class->magic.books[book_num];
-                if (item->tval == book.tval && item->sval == book.sval) {
-                    /* Note book locations */
-                    borg.book_idx[book_num] = i;
-                    break;
-                }
-            }
-        }
-    }
-
-    /*** Process books ***/
-    /* Hack -- Warriors never browse */
-    if (borg.trait[BI_CLASS] == CLASS_WARRIOR)
-        borg_do_spell = false;
-
-    /* Hack -- Blind or Confused prevents browsing */
-    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
-        borg_do_spell = false;
-
-    /* XXX XXX XXX Dark */
-
-    /* Hack -- Stop doing spells when done */
-    if (borg_do_spell_aux > 8)
-        borg_do_spell = false;
-
-    /* Cheat */
+    /*** Process books/spells ***/
     if (borg_do_spell) {
-        /* Look for the book */
-        i = borg.book_idx[borg_do_spell_aux];
-
-        /* Cheat the "spell" screens (all of them) */
-        if (i >= 0) {
-            /* Cheat that page */
-            borg_cheat_spell(borg_do_spell_aux);
-        }
-
-        /* Advance to the next book */
-        borg_do_spell_aux++;
-
-        /* Done */
-        return false;
+        borg_cheat_spells();
+        borg_do_spell = false;
     }
+
 
     /* Check for "browse" mode */
     if ((0 == borg_what_text(COL_SPELL, ROW_SPELL, -12, &t_a, buf))
@@ -406,9 +354,6 @@ bool borg_think(void)
         /* Recheck spells */
         borg_do_spell = true;
 
-        /* Restart spells */
-        borg_do_spell_aux = 0;
-
         /* Examine the inventory */
         borg_notice(true);
 
@@ -488,9 +433,6 @@ bool borg_think(void)
 
     /* Check spells again later */
     borg_do_spell = true;
-
-    /* Hack -- Start the books over */
-    borg_do_spell_aux = 0;
 
     /*** Analyze status ***/
 
