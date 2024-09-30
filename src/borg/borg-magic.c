@@ -618,14 +618,14 @@ bool borg_spell(const enum borg_spells spell)
 }
 
 /*
- * Hack -- Cheat the "spell" info
+ * Hack -- Cheat the "spell" info for a single book
  */
-void borg_cheat_spell(int book_num)
+static void borg_cheat_spell(int book_num)
 {
     struct class_book *book = &player->class->magic.books[book_num];
     for (int spell_num = 0; spell_num < book->num_spells; spell_num++) {
         struct class_spell *cspell = &book->spells[spell_num];
-        borg_magic         *as     = &borg_magics[cspell->sidx];
+        borg_magic *as = &borg_magics[cspell->sidx];
 
         /* Note "forgotten" spells */
         if (player->spell_flags[cspell->sidx] & PY_SPELL_FORGOTTEN) {
@@ -658,6 +658,53 @@ void borg_cheat_spell(int book_num)
         }
     }
 }
+
+/*
+ * Hack -- Cheat the "spell" info
+ */
+void borg_cheat_spells(void)
+{
+    int i;
+
+    /* Assume no books */
+    for (i = 0; i < 9; i++)
+        borg.book_idx[i] = -1;
+
+    /* Scan the pack */
+    for (i = 0; i < z_info->pack_size; i++) {
+        int        book_num;
+        borg_item *item = &borg_items[i];
+
+        for (book_num = 0; book_num < player->class->magic.num_books;
+            book_num++) {
+            struct class_book book = player->class->magic.books[book_num];
+            if (item->tval == book.tval && item->sval == book.sval) {
+                /* Note book locations */
+                borg.book_idx[book_num] = i;
+                break;
+            }
+        }
+    }
+
+    /* only browse spells if casting is possible */
+    if (!borg_can_cast())
+        return;
+
+    /* XXX XXX XXX Dark */
+
+    for (int book_idx = 0; book_idx < 8; book_idx++)         {
+        /* Look for the book */
+        i = borg.book_idx[book_idx];
+
+        /* Cheat the "spell" screens (all of them) */
+        if (i >= 0)
+            /* Cheat that page */
+            borg_cheat_spell(book_idx);
+    }
+
+    return;
+}
+
 
 /*
  * Get the offset in the book this spell is so you can cast it (book) (offset)

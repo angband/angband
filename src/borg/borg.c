@@ -1796,6 +1796,7 @@ void do_cmd_borg(void)
         int i = 0;
 
         /* Extract some "hidden" variables */
+        /* note: if we recode to do screen scraping again, this will fail */
         borg_cheat_equip();
         borg_cheat_inven();
 
@@ -1816,7 +1817,9 @@ void do_cmd_borg(void)
         }
         msg("Max Level: %d  Prep'd For: %d  Reason: %s",
             borg.trait[BI_MAXDEPTH], i - 1, borg_prepared(i));
-        if (borg.ready_morgoth == 1) {
+        if (!borg.trait[BI_CDEPTH]) {
+            msg("Unable to check for big fight from town.");
+        } else if (borg.ready_morgoth == 1) {
             msg("You are ready for the big fight!!");
         } else if (borg.ready_morgoth == 0) {
             msg("You are NOT ready for the big fight!!");
@@ -1854,6 +1857,7 @@ void do_cmd_borg(void)
         borg_cheat_equip();
         /* Cheat the "inven" screen */
         borg_cheat_inven();
+
         /* Examine the inventory */
         borg_notice(true);
         borg_notice_home(NULL, false);
