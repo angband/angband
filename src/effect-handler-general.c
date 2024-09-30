@@ -3495,7 +3495,8 @@ bool effect_handler_COMMAND(effect_handler_context_t *context)
 		char m_name[80];
 		monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
 		msg("%s resists your command!", m_name);
-		return false;
+		/* Take a turn and deduct mana when the monster resists. */
+		return true;
 	}
 
 	/* Player is commanding */
