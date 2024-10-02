@@ -423,6 +423,7 @@ void reincarnate_borg(void)
     /* be blank when  creating the new player */
     struct chunk* sv_cave = cave;
     struct chunk* sv_player_cave = player->cave;
+    struct loc sv_grid = player->grid;
 
     cave = NULL;
     player->cave = NULL;
@@ -586,6 +587,7 @@ void reincarnate_borg(void)
     /* restore the cave */
     cave = sv_cave;
     player->cave = sv_player_cave;
+    player->grid = sv_grid;
 
     /* the new player is now ready */
     character_generated = true;
