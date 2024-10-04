@@ -75,6 +75,11 @@ enum {
     BI_CWIS,
     BI_CDEX,
     BI_CCON,
+    BI_STR_INDEX,
+    BI_INT_INDEX,
+    BI_WIS_INDEX,
+    BI_DEX_INDEX,
+    BI_CON_INDEX,
     BI_SSTR,
     BI_SINT,
     BI_SWIS,
@@ -452,10 +457,6 @@ struct borg_struct {
 
     /* goals */
     struct goals goal;
-
-    int16_t stat_max[STAT_MAX]; /* Current "maximal" stat values    */
-    int16_t stat_cur[STAT_MAX]; /* Current "natural" stat values    */
-    int16_t stat_ind[STAT_MAX]; /* Current "additions" to stat values   */
 
     /* number of books */
     int16_t amt_book[9];

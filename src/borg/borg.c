@@ -1834,7 +1834,10 @@ void do_cmd_borg(void)
 
         int i;
         for (i = 0; i < STAT_MAX; i++) {
-            borg_note(format("stat # %d, is: %d", i, borg.stat_cur[i]));
+            borg_note(format("stat # %s, is: cur %d, used %d",
+                prefix_pref[BI_STR + i],
+                borg.trait[BI_CSTR + i],
+                borg.trait[BI_STR + i]));
         }
 #if 0
         artifact_type *a_ptr;

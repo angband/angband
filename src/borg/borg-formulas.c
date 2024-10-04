@@ -836,7 +836,7 @@ int32_t borg_power_dynamic(void)
     }
 
     /*** Penalize armor weight ***/
-    if (borg.stat_ind[STAT_STR] < 15) {
+    if (borg.trait[BI_STR_INDEX] < 15) {
         if (borg_item_weight(&borg_items[INVEN_BODY]) > 200)
             total -= (borg_item_weight(&borg_items[INVEN_BODY]) - 200) * 15;
         if (borg_item_weight(&borg_items[INVEN_HEAD]) > 30)

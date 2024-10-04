@@ -759,6 +759,11 @@ const char *prefix_pref[] = {
     "cur wis",
     "cur dex",
     "cur con",
+    "str index",
+    "int index",
+    "wis index",
+    "dex index",
+    "con index",
     "sust str",
     "sust int",
     "sust wis",
@@ -1047,7 +1052,7 @@ int borg_calc_blows(borg_item *item)
     div = (weight < min_weight) ? min_weight : weight;
 
     /* Get the strength vs weight */
-    str_index = adj_str_blow[borg.stat_ind[STAT_STR]]
+    str_index = adj_str_blow[borg.trait[BI_STR_INDEX]]
                 * player->class->att_multiply / div;
 
     /* Maximal value */
@@ -1055,7 +1060,7 @@ int borg_calc_blows(borg_item *item)
         str_index = 11;
 
     /* Index by dexterity */
-    dex_index = MIN(borg_adj_dex_blow[borg.stat_ind[STAT_DEX]], 11);
+    dex_index = MIN(borg_adj_dex_blow[borg.trait[BI_DEX_INDEX]], 11);
 
     /* Use the blows table to get energy per blow */
     blow_energy = borg_blows_table[str_index][dex_index];
@@ -1234,6 +1239,8 @@ static void borg_notice_equipment(void)
     bitflag f[OF_SIZE];
 
     borg_item *item;
+
+    int16_t stat_cur[STAT_MAX]; /* Current "natural" stat values    */
 
     /* Start with a single shot per turn */
     my_num_fire = 1;
@@ -1772,11 +1779,7 @@ static void borg_notice_equipment(void)
         /* Cheat the exact number from the game.  This number is available to
          * the player on the extra term window.
          */
-        borg.stat_cur[i] = player->stat_cur[i];
-
-        /* Max stat is the max that the cur stat ever is. */
-        if (borg.stat_cur[i] > borg.stat_max[i])
-            borg.stat_max[i] = borg.stat_cur[i];
+        stat_cur[i] = player->stat_cur[i];
     }
 
     /* Update "stats" */
@@ -1789,7 +1792,7 @@ static void borg_notice_equipment(void)
         add += (player->race->r_adj[i] + player->class->c_adj[i]);
 
         /* Extract the new "use_stat" value for the stat */
-        use = modify_stat_value(borg.stat_cur[i], add);
+        use = modify_stat_value(stat_cur[i], add);
 
         /* Values: 3, ..., 17 */
         if (use <= 18)
@@ -1805,27 +1808,29 @@ static void borg_notice_equipment(void)
 
         /* Save the index */
         if (ind > 37)
-            borg.stat_ind[i] = 37;
+            borg.trait[BI_STR_INDEX + i] = 37;
         else
-            borg.stat_ind[i] = ind;
-        borg.trait[BI_STR + i]  = borg.stat_ind[i];
-        borg.trait[BI_CSTR + i] = borg.stat_cur[i];
+            borg.trait[BI_STR_INDEX + i] = ind;
+        borg.trait[BI_STR + i]  = use;
+        borg.trait[BI_CSTR + i] = stat_cur[i];
     }
 
     borg.trait[BI_HP_ADJ] = player->player_hp[player->lev - 1]
-                            + borg_adj_con_mhp[borg.stat_ind[STAT_CON]]
+                            + borg_adj_con_mhp[borg.trait[BI_CON_INDEX]]
                                   * borg.trait[BI_CLEVEL] / 100;
 
     /* 'Mana' is actually the 'mana adjustment' */
     int spell_stat = borg_spell_stat();
     if (spell_stat >= 0) {
         borg.trait[BI_SP_ADJ]
-            = ((borg_adj_mag_mana[borg.stat_ind[spell_stat]]
+            = ((borg_adj_mag_mana[borg.trait[BI_STR_INDEX + spell_stat]]
                    * (borg.trait[BI_CLEVEL] - player->class->magic.spell_first
                        + 1))
                 / 2);
-        borg.trait[BI_FAIL1] = borg_adj_mag_stat[borg.stat_ind[spell_stat]];
-        borg.trait[BI_FAIL2] = borg_adj_mag_fail[borg.stat_ind[spell_stat]];
+        borg.trait[BI_FAIL1] = 
+            borg_adj_mag_stat[borg.trait[BI_STR_INDEX + spell_stat]];
+        borg.trait[BI_FAIL2] = 
+            borg_adj_mag_fail[borg.trait[BI_STR_INDEX + spell_stat]];
     }
 
     /* Bloating slows the player down (a little) */
@@ -1833,16 +1838,16 @@ static void borg_notice_equipment(void)
         borg.trait[BI_SPEED] -= 10;
 
     /* Actual Modifier Bonuses */
-    borg.trait[BI_ARMOR] += borg_adj_dex_ta[borg.stat_ind[STAT_DEX]];
-    borg.trait[BI_TODAM] += borg_adj_str_td[borg.stat_ind[STAT_STR]];
-    borg.trait[BI_TOHIT] += borg_adj_dex_th[borg.stat_ind[STAT_DEX]];
-    borg.trait[BI_TOHIT] += borg_adj_str_th[borg.stat_ind[STAT_STR]];
+    borg.trait[BI_ARMOR] += borg_adj_dex_ta[borg.trait[BI_DEX_INDEX]];
+    borg.trait[BI_TODAM] += borg_adj_str_td[borg.trait[BI_STR_INDEX]];
+    borg.trait[BI_TOHIT] += borg_adj_dex_th[borg.trait[BI_DEX_INDEX]];
+    borg.trait[BI_TOHIT] += borg_adj_str_th[borg.trait[BI_STR_INDEX]];
 
     /* Obtain the "hold" value */
-    hold = adj_str_hold[borg.stat_ind[STAT_STR]];
+    hold = adj_str_hold[borg.trait[BI_STR_INDEX]];
 
     /* digging */
-    borg.trait[BI_DIG] += borg_adj_str_dig[borg.stat_ind[STAT_STR]];
+    borg.trait[BI_DIG] += borg_adj_str_dig[borg.trait[BI_STR_INDEX]];
 
     /** Examine the "current bow" **/
     item = &borg_items[INVEN_BOW];
@@ -1971,14 +1976,14 @@ static void borg_notice_equipment(void)
     borg.trait[BI_STL] += 1;
 
     /* Affect Skill -- disarming (DEX and INT) */
-    borg.trait[BI_DISP] += borg_adj_dex_dis[borg.stat_ind[STAT_DEX]];
-    borg.trait[BI_DISM] += borg_adj_int_dis[borg.stat_ind[STAT_INT]];
+    borg.trait[BI_DISP] += borg_adj_dex_dis[borg.trait[BI_DEX_INDEX]];
+    borg.trait[BI_DISM] += borg_adj_int_dis[borg.trait[BI_INT_INDEX]];
 
     /* Affect Skill -- magic devices (INT) */
-    borg.trait[BI_DEV] += borg_adj_int_dev[borg.stat_ind[STAT_INT]];
+    borg.trait[BI_DEV] += borg_adj_int_dev[borg.trait[BI_INT_INDEX]];
 
     /* Affect Skill -- saving throw (WIS) */
-    borg.trait[BI_SAV] += borg_adj_wis_sav[borg.stat_ind[STAT_WIS]];
+    borg.trait[BI_SAV] += borg_adj_wis_sav[borg.trait[BI_WIS_INDEX]];
 
     /* Affect Skill -- disarming (Level, by Class) */
     borg.trait[BI_DISP] += (cb_ptr->x_skills[SKILL_DISARM_PHYS]
@@ -2799,19 +2804,19 @@ static void borg_notice_inventory(void)
         borg.trait[BI_AFUEL] += 1000;
 
     /* No need to *buy* stat increase potions */
-    if (borg.stat_cur[STAT_STR] < (18 + 100))
+    if (borg.trait[BI_CSTR] < (18 + 100))
         borg.need_statgain[STAT_STR] = true;
 
-    if (borg.stat_cur[STAT_INT] < (18 + 100))
+    if (borg.trait[BI_CINT] < (18 + 100))
         borg.need_statgain[STAT_INT] = true;
 
-    if (borg.stat_cur[STAT_WIS] < (18 + 100))
+    if (borg.trait[BI_CWIS] < (18 + 100))
         borg.need_statgain[STAT_WIS] = true;
 
-    if (borg.stat_cur[STAT_DEX] < (18 + 100))
+    if (borg.trait[BI_CDEX] < (18 + 100))
         borg.need_statgain[STAT_DEX] = true;
 
-    if (borg.stat_cur[STAT_CON] < (18 + 100))
+    if (borg.trait[BI_CCON] < (18 + 100))
         borg.need_statgain[STAT_CON] = true;
 
     /* No need for experience repair */
@@ -2925,7 +2930,7 @@ void borg_notice(bool notice_swap)
 
     /* Apply "encumbrance" from weight */
     /* Extract the "weight limit" (in tenth pounds) */
-    borg.trait[BI_CARRY] = borg_adj_str_wgt[borg.stat_ind[STAT_STR]] * 100;
+    borg.trait[BI_CARRY] = borg_adj_str_wgt[borg.trait[BI_STR_INDEX]] * 100;
 
     /* Apply "encumbrance" from weight */
     if (borg.trait[BI_WEIGHT] > borg.trait[BI_CARRY] / 2)

@@ -162,7 +162,7 @@ static int borg_danger_physical(int i, bool full_damage)
             if (borg.trait[BI_CLEVEL] < 5)
                 z += 50;
             power = 5;
-            if (100 <= adj_dex_safe[borg.stat_ind[STAT_DEX]]
+            if (100 <= adj_dex_safe[borg.trait[BI_DEX_INDEX]]
                            + borg.trait[BI_CLEVEL])
                 break;
             if (borg.trait[BI_GOLD] < 100)
@@ -178,7 +178,7 @@ static int borg_danger_physical(int i, bool full_damage)
         case MONBLOW_EAT_ITEM:
             z     = (d_dice * d_side);
             power = 5;
-            if (100 <= adj_dex_safe[borg.stat_ind[STAT_DEX]]
+            if (100 <= adj_dex_safe[borg.trait[BI_DEX_INDEX]]
                            + borg.trait[BI_CLEVEL])
                 break;
             /* Add fear for the effect */
@@ -321,7 +321,7 @@ static int borg_danger_physical(int i, bool full_damage)
             z = (d_dice * d_side);
             if (borg.trait[BI_SSTR])
                 break;
-            if (borg.stat_cur[STAT_STR] <= 3)
+            if (borg.trait[BI_CSTR] <= 3)
                 break;
             if (borg_spell_legal(RESTORATION))
                 break;
@@ -331,7 +331,7 @@ static int borg_danger_physical(int i, bool full_damage)
                 break;
             z += 150;
             /* extra scary to have str drain below 10 */
-            if (borg.stat_cur[STAT_STR] < 10)
+            if (borg.trait[BI_CSTR] < 10)
                 z += 100;
             if ((pfe) && !borg_attacking)
                 z /= 2;
@@ -341,7 +341,7 @@ static int borg_danger_physical(int i, bool full_damage)
             z = (d_dice * d_side);
             if (borg.trait[BI_SDEX])
                 break;
-            if (borg.stat_cur[STAT_DEX] <= 3)
+            if (borg.trait[BI_CDEX] <= 3)
                 break;
             if (borg_spell_legal(RESTORATION))
                 break;
@@ -349,7 +349,7 @@ static int borg_danger_physical(int i, bool full_damage)
                 break;
             z += 150;
             /* extra scary to have drain below 10 */
-            if (borg.stat_cur[STAT_DEX] < 10)
+            if (borg.trait[BI_CDEX] < 10)
                 z += 100;
             if ((pfe) && !borg_attacking)
                 z /= 2;
@@ -359,7 +359,7 @@ static int borg_danger_physical(int i, bool full_damage)
             z = (d_dice * d_side);
             if (borg.trait[BI_SCON])
                 break;
-            if (borg.stat_cur[STAT_CON] <= 3)
+            if (borg.trait[BI_CCON] <= 3)
                 break;
             if (borg_spell_legal(RESTORATION))
                 break;
@@ -370,7 +370,7 @@ static int borg_danger_physical(int i, bool full_damage)
             /* Add fear for the effect */
             z += 150;
             /* extra scary to have con drain below 8 */
-            if (borg.stat_cur[STAT_STR] < 8)
+            if (borg.trait[BI_CSTR] < 8)
                 z += 100;
             if ((pfe) && !borg_attacking)
                 z /= 2;
@@ -380,7 +380,7 @@ static int borg_danger_physical(int i, bool full_damage)
             z = (d_dice * d_side);
             if (borg.trait[BI_SINT])
                 break;
-            if (borg.stat_cur[STAT_INT] <= 3)
+            if (borg.trait[BI_CINT] <= 3)
                 break;
             if (borg_spell_legal(RESTORATION))
                 break;
@@ -400,7 +400,7 @@ static int borg_danger_physical(int i, bool full_damage)
             z = (d_dice * d_side);
             if (borg.trait[BI_SWIS])
                 break;
-            if (borg.stat_cur[STAT_WIS] <= 3)
+            if (borg.trait[BI_CWIS] <= 3)
                 break;
             if (borg_spell_legal(RESTORATION))
                 break;

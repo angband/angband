@@ -421,8 +421,12 @@ void reincarnate_borg(void)
 
     /* save the existing dungeon.  It is cleared later but needs to */
     /* be blank when  creating the new player */
-    struct chunk *sv_cave = cave;
-    cave                  = NULL;
+    struct chunk* sv_cave = cave;
+    struct chunk* sv_player_cave = player->cave;
+    struct loc sv_grid = player->grid;
+
+    cave = NULL;
+    player->cave = NULL;
 
     /* Cheat death */
     borg.trait[BI_MAXDEPTH]  = 0;
@@ -582,6 +586,8 @@ void reincarnate_borg(void)
 
     /* restore the cave */
     cave = sv_cave;
+    player->cave = sv_player_cave;
+    player->grid = sv_grid;
 
     /* the new player is now ready */
     character_generated = true;
