@@ -287,17 +287,17 @@ static const char *borg_prepared_aux(int depth)
             return ("2 basic resists");
     }
     /* have some minimal stats */
-    if (borg.stat_cur[STAT_STR] < 7)
+    if (borg.trait[BI_STR] < 7)
         return ("low STR");
 
     int spell_stat = borg_spell_stat();
     if (spell_stat != -1) {
-        if (borg.stat_cur[spell_stat] < 7)
+        if (borg.trait[BI_STR + spell_stat] < 7)
             return ("low spell stat");
     }
-    if (borg.stat_cur[STAT_DEX] < 7)
+    if (borg.trait[BI_DEX] < 7)
         return ("low DEX");
-    if (borg.stat_cur[STAT_CON] < 7)
+    if (borg.trait[BI_CON] < 7)
         return ("low CON");
 
     if (!borg_cfg[BORG_PLAYS_RISKY]) {
@@ -387,16 +387,16 @@ static const char *borg_prepared_aux(int depth)
     if (!borg.trait[BI_SRCONF])
         return ("resist conf");
 
-    if (borg.stat_cur[STAT_STR] < 16)
+    if (borg.trait[BI_STR] < 16)
         return ("STR < 16");
 
     if (spell_stat != -1) {
-        if (borg.stat_cur[spell_stat] < 16)
+        if (borg.trait[BI_STR + spell_stat] < 16)
             return ("spell stat < 16");
     }
-    if (borg.stat_cur[STAT_DEX] < 16)
+    if (borg.trait[BI_DEX] < 16)
         return ("dex < 16");
-    if (borg.stat_cur[STAT_CON] < 16)
+    if (borg.trait[BI_CON] < 16)
         return ("con < 16");
 
     /* Ok to continue */
@@ -420,16 +420,16 @@ static const char *borg_prepared_aux(int depth)
     }
 
     /* High stats XXX XXX XXX */
-    if (borg.stat_cur[STAT_STR] < 18 + 40)
+    if (borg.trait[BI_STR] < 18 + 40)
         return ("str < 18(40)");
 
     if (spell_stat != -1) {
-        if (borg.stat_cur[spell_stat] < 18 + 100)
+        if (borg.trait[BI_STR + spell_stat] < 18 + 100)
             return ("spell stat needs to be max");
     }
-    if (borg.stat_cur[STAT_DEX] < 18 + 60)
+    if (borg.trait[BI_DEX] < 18 + 60)
         return ("dex < 18 (60)");
-    if (borg.stat_cur[STAT_CON] < 18 + 60)
+    if (borg.trait[BI_CON] < 18 + 60)
         return ("con < 18 (60)");
 
     /* Hold Life */

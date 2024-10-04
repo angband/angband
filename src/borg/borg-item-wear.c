@@ -221,10 +221,6 @@ bool borg_test_stuff(void)
                 /* Select the item */
                 borg_keypress(all_letters_nohjkl[b_i - INVEN_WIELD]);
 
-                /* stats are now wrong.  They will be corrected next update */
-                for (i = 0; i < STAT_MAX; i++) 
-                    borg.stat_max[i] = 0;
-
             } else if (b_i >= QUIVER_START) {
                 /* Select quiver */
                 borg_keypress('|');

@@ -812,7 +812,7 @@ bool borg_leave_level(bool bored)
     }
 
     /* Return to town to drop off some scumming stuff */
-    if (!vault_on_level
+    if (!vault_on_level 
         && (borg.trait[BI_AEZHEAL] >= 3 || borg.trait[BI_ALIFE] >= 1)) {
         borg_note("# Going to town (Dropping off Potions).");
         borg.goal.rising = true;
