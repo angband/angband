@@ -624,12 +624,14 @@ const char *borg_prepared(int depth)
     /* Check to make sure the borg does not go below where 3 living */
     /* uniques are. */
     if (borg.trait[BI_MAXDEPTH] <= 98) {
-        struct monster_race *r_ptr = &r_info[borg_living_unique_index];
+        struct monster_race *r_ptr;
+
+        /* don't check how many uniques are alive */
+        if (borg_cfg[BORG_KILLS_UNIQUES] == false)
+            return ((char *)NULL);
 
         /* are too many uniques alive */
-        if (borg_numb_live_unique < 3 || borg_cfg[BORG_PLAYS_RISKY]
-            || borg.trait[BI_CLEVEL] == 50
-            || borg_cfg[BORG_KILLS_UNIQUES] == false)
+        if (borg_numb_live_unique < 3)
             return ((char *)NULL);
 
         /* Check for the dlevel of the unique */
@@ -638,6 +640,7 @@ const char *borg_prepared(int depth)
 
         /* To avoid double calls to format() */
         /* Reset our description for not diving */
+        r_ptr = &r_info[borg_living_unique_index];
         strnfmt(borg_prepared_buffer, MAX_REASON, "Must kill %s.", r_ptr->name);
         return (borg_prepared_buffer);
 

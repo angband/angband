@@ -2264,7 +2264,7 @@ void borg_update(void)
             borg_numb_live_unique++;
 
             /* Its important to know the depth of the most shallow guy */
-            if (r_ptr->level < borg_unique_depth)
+            if (r_ptr->level < borg_unique_depth && borg_numb_live_unique > 2)
                 borg_unique_depth = r_ptr->level;
 
             if (u_i < borg_living_unique_index || borg_living_unique_index == 0)
