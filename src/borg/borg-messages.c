@@ -288,14 +288,6 @@ static void borg_parse_aux(char *msg, int len)
         return;
     }
 
-
-    /* Nexus attacks, need to check everything! */
-    if (prefix(msg, "Your body starts to scramble...")) {
-        for (i = 0; i < STAT_MAX; i++) 
-            /* max stats may have lowered */
-            borg.stat_max[i] = 0;
-    }
-
     /* amnesia attacks, re-id wands, staves, equipment. */
     if (prefix(msg, "You feel your memories fade.")) {
         /* Set the borg flag */

@@ -407,6 +407,7 @@ Power
 	condition((value(trait, bow to damage) > 8 or value(trait, clevel) < 25) and value(trait, clevel) < 15): reward((value(trait, ammo sides) + value(trait, bow to damage)) * value(trait, ammo power) * value(trait, shots) * 200);
 # slings force you to carry heavy ammo.  Penalty for that unless you have lots of str 
 	condition(value(trait, bow is sling) and !value(trait, bow artifact) and (value(trait, str) < 9)): reward(-5000);
+	condition(value(trait, bow is sling) and (value(trait, clevel) = 1) and (value(trait, str) >= 9)): reward(5000);
 # "bonus to hit"
 	reward((value(trait, bow to hit) + value(trait, to hit)) * 100);
 # extra damage for some 
@@ -443,25 +444,25 @@ Power
 	condition(value(trait, speed) < 110): reward((value(trait, speed) - 110) * 2500);
 
 # strength bonus
-	reward(value(trait, str) * 100);
+	reward(value(trait, str index) * 100);
 
-	condition((value(class, priest) or value(class, druid) or value(class, ranger) or value(class, paladin)) and value(trait, wis) <= 37): reward(value(trait, wis) * 500);
-	condition((value(class, priest) or value(class, druid) or value(class, ranger) or value(class, paladin)) and value(config, worships_mana) and value(trait, wis) <= 37): reward((value(trait, sp adj) / 2) * 255);
-	condition((value(class, priest) or value(class, druid) or value(class, ranger) or value(class, paladin)) and !value(config, worships_mana) and value(trait, wis) <= 37): reward((value(trait, sp adj) / 2) * 155);
+	condition((value(class, priest) or value(class, druid) or value(class, ranger) or value(class, paladin))): reward(value(trait, wis index) * 500);
+	condition((value(class, priest) or value(class, druid) or value(class, ranger) or value(class, paladin)) and value(config, worships_mana)): reward((value(trait, sp adj) / 2) * 255);
+	condition((value(class, priest) or value(class, druid) or value(class, ranger) or value(class, paladin)) and !value(config, worships_mana)): reward((value(trait, sp adj) / 2) * 155);
 
-	condition((value(class, mage) or value(class, necromancer) or value(class, blackguard) or value(class, rogue)) and value(trait, int) <= 37): reward(value(trait, int) * 500);
-	condition((value(class, mage) or value(class, necromancer) or value(class, blackguard) or value(class, rogue)) and value(config, worships_mana) and value(trait, int) <= 37): reward((value(trait, sp adj) / 2) * 255);
-	condition((value(class, mage) or value(class, necromancer) or value(class, blackguard) or value(class, rogue)) and !value(config, worships_mana) and value(trait, int) <= 37): reward((value(trait, sp adj) / 2) * 155);
+	condition((value(class, mage) or value(class, necromancer) or value(class, blackguard) or value(class, rogue))): reward(value(trait, int index) * 500);
+	condition((value(class, mage) or value(class, necromancer) or value(class, blackguard) or value(class, rogue)) and value(config, worships_mana)): reward((value(trait, sp adj) / 2) * 255);
+	condition((value(class, mage) or value(class, necromancer) or value(class, blackguard) or value(class, rogue)) and !value(config, worships_mana)): reward((value(trait, sp adj) / 2) * 155);
 
 # dex bonus
-	condition(value(trait, dex) <= 37): reward(value(trait, dex) * 120);
+	condition(value(trait, dex index) <= 37): reward(value(trait, dex index) * 120);
 # con bonus
-	condition(value(config, worships_hp) and (value(trait, con) <= 37)): reward(value(trait, con) * 250);
-	condition(value(config, worships_hp) and (value(trait, con) <= 37) and value(trait, hp adj) < 800): reward(value(trait, hp adj) * 450);
-	condition(value(config, worships_hp) and (value(trait, con) <= 37) and value(trait, hp adj) >= 800): reward(((value(trait, hp adj) - 800) * 100) + 175000);
-	condition(!value(config, worships_hp) and (value(trait, con) <= 37)): reward(value(trait, con) * 150);
-	condition(!value(config, worships_hp) and (value(trait, con) <= 37) and value(trait, hp adj) < 500): reward(value(trait, hp adj) * 350);
-	condition(!value(config, worships_hp) and (value(trait, con) <= 37) and value(trait, hp adj) >= 500): reward(((value(trait, hp adj) - 500) * 100) + 175000);
+	condition(value(config, worships_hp) and (value(trait, con index) <= 37)): reward(value(trait, con index) * 250);
+	condition(value(config, worships_hp) and (value(trait, con index) <= 37) and value(trait, hp adj) < 800): reward(value(trait, hp adj) * 450);
+	condition(value(config, worships_hp) and (value(trait, con index) <= 37) and value(trait, hp adj) >= 800): reward(((value(trait, hp adj) - 800) * 100) + 175000);
+	condition(!value(config, worships_hp) and (value(trait, con index) <= 37)): reward(value(trait, con index) * 150);
+	condition(!value(config, worships_hp) and (value(trait, con index) <= 37) and value(trait, hp adj) < 500): reward(value(trait, hp adj) * 350);
+	condition(!value(config, worships_hp) and (value(trait, con index) <= 37) and value(trait, hp adj) >= 500): reward(((value(trait, hp adj) - 500) * 100) + 175000);
 
 # adjust to stat
 	reward(value(trait, str adj));
@@ -726,7 +727,7 @@ Power
 	condition(value(activation, dragon_shining)): reward(5150 * value(activation, dragon_shining));
 	condition(value(activation, dragon_power)): reward(5150 * value(activation, dragon_power));
 
-#######################
+########################
 
 
 # inventory 
@@ -816,8 +817,8 @@ Power
 	value(potion, healing): range(1, 10): condition((value(class, druid) or value(class, priest)) and value(trait, clevel) = 1): reward(-2000);
 	value(potion, healing): range(1, 5): condition(value(class, druid) or value(class, priest)): reward(2000);
 
-	value(trait, amt ezheal): range(1, 2): condition(value(trait, max depth) >= 46 and value(trait, prep big fight)): reward(10000);
-	value(trait, amt ezheal): range(1, 1): condition(value(trait, max depth) >= 46 and !value(trait, prep big fight)): reward(10000);
+	value(trait, amt ezheal): range(1, 2): condition(value(trait, max depth) >= 46 and !value(trait, prep big fight)): reward(10000);
+	value(trait, amt ezheal): range(1, 1): condition(value(trait, max depth) >= 46 and value(trait, prep big fight)): reward(10000);
 
 # Collecting Potions, prepping for Morgoth/Sauron fight
 	value(potion, healing): range(1, 99): condition(value(trait, max depth) >= 99 and !value(trait, prep big fight)): reward(8000);
@@ -888,7 +889,7 @@ Power
 	reward(value(trait, amt cursed missiles) * -1000);
 
 # ego arrows are worth a bonus
-	reward(value(trait, amt ego missiles) * 1000);
+	reward(value(trait, amt ego missiles) * 100);
 
 # carrying a staff of destruction
 	condition(value(trait, amt staff destruction)): reward(5000);

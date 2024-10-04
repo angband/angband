@@ -104,15 +104,15 @@ static bool borg_good_buy(borg_item *item, int who, int ware)
                     || (item->sval == sv_potion_life)
                     || (item->sval == sv_potion_healing)
                     || (item->sval == sv_potion_inc_str
-                        && borg.stat_cur[STAT_STR] < (18 + 100))
+                        && borg.trait[BI_CSTR] < (18 + 100))
                     || (item->sval == sv_potion_inc_int
-                        && borg.stat_cur[STAT_INT] < (18 + 100))
+                        && borg.trait[BI_CINT] < (18 + 100))
                     || (item->sval == sv_potion_inc_wis
-                        && borg.stat_cur[STAT_WIS] < (18 + 100))
+                        && borg.trait[BI_CWIS] < (18 + 100))
                     || (item->sval == sv_potion_inc_dex
-                        && borg.stat_cur[STAT_DEX] < (18 + 100))
+                        && borg.trait[BI_CDEX] < (18 + 100))
                     || (item->sval == sv_potion_inc_con
-                        && borg.stat_cur[STAT_CON] < (18 + 100))))
+                        && borg.trait[BI_CCON] < (18 + 100))))
             || (item->tval == TV_ROD
                 && ((item->sval == sv_rod_healing) ||
                     /* priests and paladins can cast recall */

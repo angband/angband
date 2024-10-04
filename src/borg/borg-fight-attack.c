@@ -2319,7 +2319,7 @@ static int borg_attack_aux_object(void)
         div = ((item->weight > 10) ? item->weight : 10);
 
         /* Hack -- Distance -- Reward strength, penalize weight */
-        b_r = (adj_str_blow[borg.stat_ind[STAT_STR]] + 20) * mul / div;
+        b_r = (adj_str_blow[borg.trait[BI_STR_INDEX]] + 20) * mul / div;
 
         /* Max distance of 10 */
         if (b_r > 10)
