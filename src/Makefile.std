@@ -38,7 +38,7 @@ SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncursesw
 # Support SDL2 frontend (main-sdl2.c) if SYS_sdl2 SYS_sdl2_objs are set; note
 # that it is not possible to build both the SDL and SDL2 front end at the same
 # time
-# SYS_sdl2 = -DUSE_SDL2 $(shell sdl2-config --cflags) $(shell sdl2-config --libs) -lSDL_ttf -lSDL_image
+# SYS_sdl2 = -DUSE_SDL2 $(shell sdl2-config --cflags) $(shell sdl2-config --libs) -lSDL2_ttf -lSDL2_image
 # SYS_sdl2_objs = $(SDL2MAINFILES)
 
 # Support stats pseudo-frontend if SYS_stats and SYS_stats_objs are set
@@ -57,7 +57,7 @@ SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncursesw
 # SOUND_sdl2 rather than SOUND_sdl if you are using the SDL2 front end or you
 # are not using the SDL front end and want sound via SDL2.
 #SOUND_sdl = -DSOUND -DSOUND_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_mixer
-#SOUND_sdl2 = -DSOUND -DSOUND_SDL2 $(shell sdl2-config --cflags) $(shell sdl2-config --libs) -lSDL_mixer
+#SOUND_sdl2 = -DSOUND -DSOUND_SDL2 $(shell sdl2-config --cflags) $(shell sdl2-config --libs) -lSDL2_mixer
 #SOUND_sdl_objs = $(SNDSDLFILES)
 
 # Compile in support for the Borg but do not include Borg players in the
