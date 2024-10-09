@@ -1000,6 +1000,14 @@ static bool borg_play_step(int y2, int x2)
         return true;
     }
 
+    /* eliminate things we can't step on */
+    /* we only seem to get this far when trying to dig out vaults */
+    if (ag->feat == FEAT_PERM)
+        return false;
+
+    if (ag->feat == FEAT_LAVA && !borg.trait[BI_IFIRE])
+        return false;
+
     /* Rubble, Treasure, Seams, Walls -- Tunnel or Melt */
     /* HACK depends on FEAT order, kinda evil. */
     if (ag->feat >= FEAT_SECRET && ag->feat <= FEAT_GRANITE) {
