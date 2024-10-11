@@ -114,10 +114,23 @@ jobs:
     name: Document Conversion
     runs-on: ubuntu-latest
     steps:
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.  Do this before installing the build
+      # dependencies as that step does some writing to the current directory
+      # and cloning the project wipes the current directory.
+      - name: Clone Project
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       # Need both Sphinx (Python documentation tool) and a 3rd party theme.
       # Also install pip (to get theme), gcc, automake, autoconf, make
       # (those four are so configuration and "make manual" work), and git
-      # (so scripts/version.sh works).
+      # (so scripts/version.sh works).  With Python 3, use a virtual
+      # environment (requires at least Python 3.3) to install the 3rd party
+      # theme and a hacked version of sphinx-build which will use that
+      # environment for compatibility with "externally managed environments"
+      # like GitHub's runner for Ubuntu 24.04.
       - name: Install Build Dependencies
         id: build_dep
         run: |
@@ -126,22 +139,24 @@ jobs:
           use_python3=`python --version 2>&1 | awk "/^Python 3\\./ { print \"YES\" ; exit 0 ; } ; { print \"NO\" ; exit 0; }"`
           if test X$use_python3 == XYES ; then
             sudo apt-get install python3-pip
+            python3 -m venv .venv/doc-builder
+            .venv/doc-builder/bin/pip install -U sphinx
+            .venv/doc-builder/bin/pip install sphinx-better-theme
+            echo "#!${PWD}/.venv/doc-builder/bin/python" >./sphinx-build
+            tail -n +2 `which sphinx-build` >>./sphinx-build
+            chmod a+x ./sphinx-build
           else
             sudo apt-get install python-pip
+            pip install sphinx-better-theme
+            ln -s `which sphinx-build` ./sphinx-build
           fi
-          pip install sphinx-better-theme
 
-      # Need commit history and tags for scripts/version.sh to work as expected
-      # so use 0 for fetch-depth.
-      - name: Clone Project
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
+      # Use the version (perhaps just a symbolic link) of sphinx-build set up
+      # in the build dependencies step.
       - name: Convert
         run: |
           ./autogen.sh
-          ./configure --with-no-install --with-sphinx
+          ./configure SPHINXBUILD="${PWD}/sphinx-build" --with-no-install --with-sphinx
           make manual
 
       - name: Archive
