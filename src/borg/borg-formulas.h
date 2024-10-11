@@ -43,7 +43,7 @@ enum value_type {
     VT_CLASS,
 /* include the TV types */
 #define TV(a, b) VT_##a,
-#include "list-tvals.h"
+#include "../list-tvals.h"
 #undef TV
     VT_MAX
 };
