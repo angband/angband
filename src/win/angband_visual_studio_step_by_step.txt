@@ -40,7 +40,14 @@ To build Angband using Microsoft's Visual Studio.
     property, open the drop-down menu and choose "Edit".  In the "Preprocessor
     Definitions" dialog box, add a line containing "SOUND" (without the quotes;
     a semicolon may be necessary after "SOUND" to separate it from the other
-    definitions).
+    definitions).  If you want to build the borg, include "ALLOW_BORG"
+    (without the quotes; as with "SOUND" a semicolon may be necessary to
+    separate it from the other definitions) in the preprocessor definitions.
+    To build the borg, you will also have to add all the files that end in
+    ".c" or ".h" in the src\borg directory to the project.  To suppress some
+    warning about standard C library and Unix-compatibility functions, you
+    may want to add "_CRT_SECURE_NO_WARNINGS" (without the quotes) to the
+    preprocessor definitions.
 
 12. Save the project, then compile the project. There will be a lot of
     warnings, but there should not be any errors. The warnings can be ignored.
