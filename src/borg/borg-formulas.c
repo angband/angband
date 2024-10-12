@@ -57,7 +57,7 @@ static const grouper value_type_names[] = {
     { VT_ACTIVATION, "activation" },
     { VT_CLASS, "class" },
 #define TV(a, b) { VT_##a, b },
-#include "list-tvals.h"
+#include "../list-tvals.h"
 #undef TV
 };
 
