@@ -21,7 +21,7 @@
 
 #ifdef ALLOW_BORG
 
-#include "ui-menu.h"
+#include "../ui-menu.h"
 
 #include "borg-inventory.h"
 #include "borg-io.h"
