@@ -635,7 +635,7 @@ const char *borg_prepared(int depth)
             return ((char *)NULL);
 
         /* Check for the dlevel of the unique */
-        if (depth < borg_unique_depth)
+        if (depth <= borg_unique_depth)
             return ((char *)NULL);
 
         /* To avoid double calls to format() */
