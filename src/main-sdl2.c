@@ -6185,8 +6185,8 @@ static int sort_cb_font_info(const void *infoa, const void *infob)
 			lv = strtol(ew + 1, &facea, 10);
 			if (facea != ew + 1 && lv > INT_MIN && lv < INT_MAX) {
 				ha = (int)lv;
-				exta = strchr(namea, '.');
-				if (exta == namea) {
+				exta = strchr(facea, '.');
+				if (exta == facea) {
 					exta = NULL;
 				}
 			}
