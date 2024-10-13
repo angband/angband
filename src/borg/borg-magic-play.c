@@ -35,7 +35,7 @@ static const struct effect_kind effects[]
     = { { EF_NONE, false, NULL, NULL, NULL, NULL },
 #define F(x)                        effect_handler_##x
 #define EFFECT(x, a, b, c, d, e, f) { EF_##x, a, b, F(x), e, f },
-#include "list-effects.h"
+#include "../list-effects.h"
 #undef EFFECT
 #undef F
           { EF_MAX, false, NULL, NULL, NULL, NULL } };
