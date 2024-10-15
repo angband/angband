@@ -4658,7 +4658,7 @@ int borg_calculate_attack_effectiveness(int attack_type)
         rad = 0;
         dam = 60;
         return (borg_attack_aux_activation(
-            act_sleep_all, rad, dam, BORG_ATTACK_OLD_SLEEP, false, -1));
+            act_sleep_all, rad, dam, BORG_ATTACK_OLD_SLEEP, true, -1));
 
     case BF_ACT_FEAR_MONSTER:
         rad = 0;
