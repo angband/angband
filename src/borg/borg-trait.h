@@ -359,6 +359,7 @@ struct goals {
     bool less; /* return to, but don't use, the next up stairs */
 
     int recalling; /* waiting for recall, guessing turns left */
+    int descending; /* waiting for deep descent */
 
     int16_t shop; /* Next shop to visit */
     int16_t ware; /* Next item to buy there */

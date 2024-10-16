@@ -37,8 +37,8 @@ static char borg_prepared_buffer[MAX_REASON];
 
 /* Track how many uniques are around at your depth */
 int          borg_numb_live_unique;
-unsigned int borg_living_unique_index;
-int          borg_unique_depth;
+unsigned int borg_first_living_unique;
+int          borg_depth_hunted_unique;
 
 /*
  * Determine if the Borg meets the "minimum" requirements for a level
@@ -635,12 +635,12 @@ const char *borg_prepared(int depth)
             return ((char *)NULL);
 
         /* Check for the dlevel of the unique */
-        if (depth <= borg_unique_depth)
+        if (depth <= borg_depth_hunted_unique)
             return ((char *)NULL);
 
         /* To avoid double calls to format() */
         /* Reset our description for not diving */
-        r_ptr = &r_info[borg_living_unique_index];
+        r_ptr = &r_info[borg_first_living_unique];
         strnfmt(borg_prepared_buffer, MAX_REASON, "Must kill %s.", r_ptr->name);
         return (borg_prepared_buffer);
 
@@ -651,13 +651,14 @@ const char *borg_prepared(int depth)
         struct monster_race *r_ptr;
 
         /* Access the living unique obtained from borg_update() */
-        r_ptr = &r_info[borg_living_unique_index];
+        r_ptr = &r_info[borg_first_living_unique];
 
         /* -1 is unknown. */
         borg.ready_morgoth = -1;
 
+        /* is only Morgoth alive? */
         if (borg_numb_live_unique < 1
-            || borg_living_unique_index == borg_morgoth_id) /* Morgoth */
+            || borg_first_living_unique == borg_morgoth_id)
         {
             if (depth >= 99)
                 borg.ready_morgoth = 1;
