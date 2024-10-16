@@ -684,6 +684,15 @@ static void borg_parse_aux(char *msg, int len)
         return;
     }
 
+    /* Deep Descent -- Ignition */
+    if (prefix(msg, "The air around you starts ")) {
+        /* Initiate descent */
+        /* Guess how long it will take to lift off */
+        /* Guess. game turns x 1000 ( 3+rand(4))*/
+        borg.goal.descending = 3000 + 2000;
+        return;
+    }
+
     /* Word of Recall -- Lift off */
     if (prefix(msg, "You feel yourself yanked ")) {
         /* Flush our key-buffer */
@@ -696,10 +705,29 @@ static void borg_parse_aux(char *msg, int len)
         return;
     }
 
+    /* Deep Descent  -- Lift off */
+    if (prefix(msg, "The floor opens beneath you!")) {
+        /* Flush our key-buffer */
+        /* this is done in case the borg had been aiming a */
+        /* shot before descent hit */
+        borg_flush();
+
+        /* Recall complete */
+        borg.goal.descending = 0;
+        return;
+    }
+
     /* Word of Recall -- Cancelled */
     if (prefix(msg, "A tension leaves ")) {
         /* Hack -- Oops */
         borg.goal.recalling = 0;
+        return;
+    }
+
+    /* Deep Descent -- Cancelled (only happens on death) */
+    if (prefix(msg, "The air around you stops ")) {
+        /* Hack -- Oops */
+        borg.goal.descending = 0;
         return;
     }
 
