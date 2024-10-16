@@ -533,7 +533,7 @@ static int test_missing_dice0(void *state) {
 
 	eq(r, PARSE_ERROR_NONE);
 	/*
-	 * Specifying and expression without preceding dice should do nothing
+	 * Specifying an expression without preceding dice should do nothing
 	 * and not flag an error.
 	 */
 	r = parser_parse(p, "expr:B:PLAYER_LEVEL:/ 6 + 1");

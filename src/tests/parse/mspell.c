@@ -132,7 +132,7 @@ static int test_hit0(void *state) {
 }
 
 /*
- * Check the placing "effect-yx:", "dice:", and "expr:' directives before
+ * Check that placing "effect-yx:", "dice:", and "expr:' directives before
  * any "effect:" directives for a spell works as expected:  do nothing and
  * return PARSE_ERROR_NONE.
  */

@@ -286,8 +286,7 @@ static int test_type0(void *state) {
 		}
 	}
 	/*
-	 * Now check the the list of all kinds to see if all swords were
-	 * included.
+	 * Now check the list of all kinds to see if all swords were included.
 	 */
 	for (i = 0; i < z_info->k_max; ++i) {
 		if (k_info[i].tval == TV_SWORD && !marked[i]) {
@@ -570,7 +569,7 @@ static int test_values_bad0(void *state) {
 	eq(r, PARSE_ERROR_INVALID_VALUE);
 	r = parser_parse(p, "values:RES_POIS1]");
 	eq(r, PARSE_ERROR_INVALID_VALUE);
-	/* CHeck handling of a missing closing bracket. */
+	/* Check handling of a missing closing bracket. */
 	r = parser_parse(p, "values:STEALTH[1");
 	eq(r, PARSE_ERROR_INVALID_VALUE);
 	r = parser_parse(p, "values:RES_POIS[1");

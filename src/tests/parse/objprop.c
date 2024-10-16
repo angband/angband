@@ -11,7 +11,7 @@
 
 int setup_tests(void **state) {
 	*state = object_property_parser.init();
-	/* Need by object_property_parser.finish. */
+	/* Needed by object_property_parser.finish. */
 	z_info = mem_zalloc(sizeof(*z_info));
 	return !*state;
 }

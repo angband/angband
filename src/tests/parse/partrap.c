@@ -222,7 +222,7 @@ static int test_missing_effect0(void *state) {
 	notnull(t);
 	null(t->effect);
 	/*
-	 * Specifying effect details without and effect should not signal an
+	 * Specifying effect details without an effect should not signal an
 	 * error and leave the trap unmodified.
 	 */
 	r = parser_parse(p, "effect-yx:11:23");
@@ -854,13 +854,8 @@ const char *suite_name = "parse/partrap";
  * test_effect_xtra0(), test_effect_xtra_bad0(), test_effect_yx_xtra0(),
  * test_dice_xtra0(), test_dice_xtra_bad0(), test_missing_dice_xtra0(),
  * test_expr_xtra0(), test_expr_xtra_bad0(), and test_complete0().
- * test_graphics0(), test_appear0(), test_visibility0(),
- * test_visibility_bad0(), test_flags0(), test_flags_bad0(), test_effect0(),
- * test_effect_bad0(), test_effect_yx0(), test_dice0(), test_dice_bad0(),
- * test_missing_dice0(), test_expr0(), test_expr_bad0(), test_effect_xtra0(),
- * test_effect_xtra_bad0(), test_effect_yx_xtra0(), test_dice_xtra0(),
- * test_dice_xtra_bad0(), test_expr_xtra0(), test_expr_xtra_bad0(),
- * test_save0(), and test_save_bad0() have to be after test_name0().
+ * Unless otherwise indicated, all other functions have to be after
+ * test_name0().
  */
 struct test tests[] = {
 	{ "missing_header_record0", test_missing_header_record0 },
