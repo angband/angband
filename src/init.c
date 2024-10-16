@@ -4467,7 +4467,7 @@ static struct init_module *modules[] = {
  * The only input/output in this file should be via event_signal_string().
  * We cannot rely on any particular UI as this part should be UI-agnostic.
  * We also cannot rely on anything else having being initialised into any
- * particlar state.  Which is why you'd be calling this function in the
+ * particular state.  Which is why you'd be calling this function in the
  * first place.
  *
  * Old comment, not sure if still accurate:

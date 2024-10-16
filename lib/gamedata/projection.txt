@@ -74,7 +74,7 @@
 
 # 'msgt' is the message type code used by the message system.  The type must
 # either match (case-insensitve) the first argument to one of the MSG() macros
-# in list-message.h or ben an unsigned integer less than MSG_MAX which is the
+# in list-message.h or be an unsigned integer less than MSG_MAX which is the
 # index of the message type to use within list-message.h.  For the textui
 # user interface, the message type affects the message color (configured
 # globally by lib/customize/message.prf; also configurable by preferences

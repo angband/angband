@@ -126,7 +126,7 @@ static int test_kind_bad0(void *state) {
 const char *suite_name = "parse/flavor";
 /*
  * test_flavor0() and test_fixed0() have to be after test_kind0().  Run
- * test_kind_bad0() to avoid potential effects on the other tests.
+ * test_kind_bad0() last to avoid potential effects on the other tests.
  */
 struct test tests[] = {
 	{ "kind0", test_kind0 },

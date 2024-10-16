@@ -351,8 +351,8 @@ bool ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, b
 		free(row_pointers[y]);
 	}
 	free(row_pointers);
-	
-	/* release all the the PNG Structures */
+
+	/* release all the PNG Structures */
 	if (info_ptr) {
 		png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
 		info_ptr = NULL;

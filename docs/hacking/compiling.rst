@@ -361,7 +361,7 @@ When debugging crashes it can be very useful to get more information about *what
     ./configure [options]
     SANITIZE_FLAGS="-fsanitize=undefined -fsanitize=address" make
 
-Note that compiling with this tools will require installing additional dependencies: libubsan libasan (names of the packages might be different in your distribution).
+Note that compiling with these tools will require installing additional dependencies: libubsan libasan (names of the packages might be different in your distribution).
 
 There is probably a way to get these tools to work on Windows. If you know how, please add the information to this file.
 

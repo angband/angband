@@ -54,7 +54,7 @@ int setup_tests(void **state) {
 	k_info = mem_zalloc(z_info->k_max * sizeof(*k_info));
 	kb_info = mem_zalloc(TV_MAX * sizeof(*kb_info));
 	kb_info[TV_LIGHT].tval = TV_LIGHT;
-	/* Do minimal setup to for testing slay, brand, and curse directives. */
+	/* Do minimal setup for testing slay, brand, and curse directives. */
 	z_info->slay_max = (uint8_t) N_ELEMENTS(dummy_slays);
 	slays = dummy_slays;
 	z_info->brand_max = (uint8_t) N_ELEMENTS(dummy_brands);

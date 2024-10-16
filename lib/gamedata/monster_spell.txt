@@ -4,7 +4,7 @@
 # name - sets the spell name; must match the first argument (other than NONE or
 #        MAX) to one of the RSF() macros in list-mon-spells.h
 # msgt - sets the message type to use for message-vis, message-invis, and
-#        message-miss messages of the current spell; the type must be either
+#        message-miss messages of the current spell; the type must either
 #        match (case-insensitive) the first argument to one of the MSG()
 #        macros in list-message.h or be an unsigned integer less than MSG_MAX
 #        which is the index of the message type to use within list-message.h;
