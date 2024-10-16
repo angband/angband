@@ -5298,7 +5298,7 @@ bool borg_attack(bool boosted_bravery)
                        || borg_time_town + (borg_t - borg_began) >= 3000) {
                 /* Try to fight been there too long. */
             } else if (boosted_bravery || borg.no_retreat >= 1
-                       || borg.goal.recalling) {
+                       || borg.goal.recalling || borg.goal.descending) {
                 /* Try to fight if being Boosted or recall engaged. */
                 borg_note("# Bored, or recalling and fighting a monster on "
                           "Scaryguy Level.");
