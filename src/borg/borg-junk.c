@@ -244,7 +244,7 @@ static bool borg_consume(int i)
  */
 bool borg_drop_junk(void)
 {
-    int     i, b_i;
+    int     i, b_i = -1;
     bool    fix = false;
     int32_t p, b_p = borg.power;
     int32_t value;
@@ -423,8 +423,8 @@ bool borg_drop_junk(void)
             if (OPT(player, birth_randarts) && item->art_idx && !item->ident)
                 continue;
 
-            /* Destroy the item */
-            borg_items[i].iqty = 0;
+            /* Destroy one item */
+            borg_items[i].iqty -= 1;
 
             /* Fix later */
             fix = true;
@@ -448,7 +448,7 @@ bool borg_drop_junk(void)
     }
 
     /* if we found something junky, junk it */
-    if ( b_p != borg.power) {
+    if ( b_i != -1) {
         borg_item *item = &borg_items[b_i];
 
         /* Message */
