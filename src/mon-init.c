@@ -1128,6 +1128,9 @@ static enum parser_error parse_monster_name(struct parser *p) {
 static enum parser_error parse_monster_base(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
 	r->base = lookup_monster_base(parser_getsym(p, "base"));
 	if (r->base == NULL)
 		return PARSE_ERROR_INVALID_MONSTER_BASE;
@@ -1143,6 +1146,9 @@ static enum parser_error parse_monster_base(struct parser *p) {
 
 static enum parser_error parse_monster_glyph(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
 	/* If the display character is specified, it overrides any template */
 	r->d_char = parser_getchar(p, "glyph");
@@ -1266,12 +1272,13 @@ static enum parser_error parse_monster_experience(struct parser *p) {
 
 static enum parser_error parse_monster_blow(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
-	struct monster_blow *b = r->blow;
+	struct monster_blow *b;
 
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
 	/* Go to the last valid blow, then allocate a new one */
+	b = r->blow;
 	if (!b) {
 		r->blow = mem_zalloc(sizeof(struct monster_blow));
 		b = r->blow;
