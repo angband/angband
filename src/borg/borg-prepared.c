@@ -801,7 +801,7 @@ const char *borg_restock(int depth)
 
     /* Must have Scroll of Teleport (or good 2nd choice) */
     if (borg.trait[BI_ATELEPORT] + borg.trait[BI_ATELEPORTLVL] < 2)
-        return ("restock teleport + teleport level");
+        return ("restock teleport + teleport level scrolls");
 
     /* Assume happy at level 44 */
     if (depth <= 45)
