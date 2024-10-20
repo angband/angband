@@ -1146,6 +1146,14 @@ int borg_count_sell(void)
         if (obj_kind_can_browse(&k_info[item->kind]))
             continue;
 
+        /* Never sell valuable non-id'd items */
+        /* unless you have a stack, in which case, sell one to ID them */
+        if (borg_item_note_needs_id(item)) {
+            /* note if we have more than one */
+            if (!borg_has_mutiple(item))
+                return false;
+        }
+
         /* Don't sell my needed potion/wands/staff/scroll collection */
         if ((item->tval == TV_POTION && item->sval == sv_potion_cure_serious)
             || (item->tval == TV_POTION
