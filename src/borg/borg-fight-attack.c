@@ -2389,10 +2389,6 @@ int borg_attack_aux_spell_bolt(
         && (randint0(100) < 1))
         return 0;
 
-    /* Not if money scumming in town */
-    if (borg_cfg[BORG_MONEY_SCUM_AMOUNT] && borg.trait[BI_CDEPTH] == 0)
-        return 0;
-
     /* Not if low on food */
     if (borg.trait[BI_FOOD] == 0
         && (borg.trait[BI_ISWEAK]
