@@ -287,6 +287,8 @@ static bool borg_think_home_sell_bad(int i, int32_t borg_empty_home_power)
 {
     borg_item *item = &borg_items[i];
 
+    int charge_each;
+
     /* Skip empty or unknown items */
     if (!item->iqty || (!item->kind && !item->aware))
         return true;
@@ -320,18 +322,35 @@ static bool borg_think_home_sell_bad(int i, int32_t borg_empty_home_power)
     if (borg_power_home() <= borg_empty_home_power)
         return true;
 
+    /* for wands and staffs adjust charges */
+    if (item->tval == TV_STAFF || item->tval == TV_WAND)
+        charge_each = item->pval / item->iqty;
+
     /* assume one item sold.  */
-    borg_items[i].iqty--;
+    item->iqty--;
+
+    /* for wands and staffs adjust charges */
+    if (item->tval == TV_STAFF || item->tval == TV_WAND)
+        item->pval -= charge_each;
 
     /* Examine borg */
     borg_notice(true);
 
     /* if this reduces the borgs power, it is a bad transaction */
     if (borg_power() < borg.power) {
-        borg_items[i].iqty++;
+        item->iqty++;
+
+        /* for wands and staffs adjust charges */
+        if (item->tval == TV_STAFF || item->tval == TV_WAND)
+            item->pval += charge_each;
+
         return true;
     }
-    borg_items[i].iqty++;
+    item->iqty++;
+
+    /* for wands and staffs adjust charges */
+    if (item->tval == TV_STAFF || item->tval == TV_WAND)
+        item->pval += charge_each;
 
     return false;
 }
@@ -347,6 +366,7 @@ static void borg_think_home_sell_best(int32_t * best_home_power)
     int32_t    home_power;
     int32_t    borg_empty_home_power;
     int        i, k, n;
+    int        charge_each = 0;
 
     /* get what an empty home would have for power */
     borg_notice_home(NULL, true);
@@ -377,10 +397,16 @@ static void borg_think_home_sell_best(int32_t * best_home_power)
             if (borg_think_home_sell_bad(i, borg_empty_home_power))
                 continue;
 
+            /* for wands and staffs adjust charges */
+            if (item->tval == TV_STAFF || item->tval == TV_WAND) 
+                charge_each = safe_items[i].pval / safe_items[i].iqty;
+
             /* stacking? */
             if (borg_object_similar(item2, item)) {
                 /* if this stacks with what was previously here */
                 item2->iqty++;
+                if (item->tval == TV_STAFF || item->tval == TV_WAND)
+                    item2->pval += charge_each;
             } else {
                 bool found_match = false;
 
@@ -400,10 +426,16 @@ static void borg_think_home_sell_best(int32_t * best_home_power)
 
                 /* only move one into a non-stack slot */
                 item2->iqty = 1;
+                if (item->tval == TV_STAFF || item->tval == TV_WAND)
+                    item2->pval = charge_each;
+
             }
 
             /* remove item from pack */
             item->iqty--;
+
+            if (item->tval == TV_STAFF || item->tval == TV_WAND)
+                item->pval -= charge_each;
 
             /* Note the attempt */
             test_item[n] = i + z_info->store_inven_max;
@@ -875,6 +907,7 @@ bool borg_think_shop_sell_useless(void)
     int     k, b_k = -1;
     int     i, b_i = -1;
     int     qty = 1;
+
     int32_t p, b_p = 0L;
     int32_t c   = 0L;
     int32_t b_c = 30001L;
@@ -910,18 +943,6 @@ bool borg_think_shop_sell_useless(void)
                 && item->sval == sv_rod_mapping && item->iqty <= 2)
                 continue;
 
-            /* Avoid selling some staffs */
-            if (item->tval == TV_STAFF) {
-                /* destruction */
-                if (item->sval == sv_staff_destruction
-                    && borg.trait[BI_ASTFDEST] < 2)
-                    continue;
-                /* teleportation */
-                if (item->sval == sv_staff_teleportation
-                    && num_tele_staves < kb_info[TV_STAFF].max_stack)
-                    continue;
-            }
-
             /* Do not sell our attack wands if they still have charges */
             if (item->tval == TV_WAND && borg.trait[BI_CLEVEL] < 35
                 && (item->sval == sv_wand_magic_missile
@@ -952,6 +973,13 @@ bool borg_think_shop_sell_useless(void)
 
             /* Lose a single item */
             borg_items[i].iqty -= qty;
+
+            /* for wands and staffs adjust charges */
+            if (item->tval == TV_STAFF || item->tval == TV_WAND) {
+                int charge_loss = safe_items[i].pval/safe_items[i].iqty;
+                borg_shops[k].ware[icky].pval = qty * charge_loss;
+                borg_items[i].pval -= (qty * charge_loss);
+            }
 
             /* Fix later */
             fix = true;

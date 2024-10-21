@@ -435,6 +435,7 @@ bool borg_think_home_buy_useful(void)
     int     stack;
     int     qty = 1;
     int     n, b_n = -1;
+    int     charge_each;
     int32_t p, b_p = 0L;
     int32_t p_left  = 0;
     int32_t p_right = 0;
@@ -476,11 +477,19 @@ bool borg_think_home_buy_useful(void)
         /* borg_note(format("# Considering buying (%d)'%s' (pval=%d) from
          * home.", item->iqty,item->desc, item->pval)); */
 
+        /* for wands and staffs adjust charges */
+        if (item->tval == TV_STAFF || item->tval == TV_WAND)
+            charge_each = item->pval / item->iqty;
+
         /* Save the number */
         qty = borg_min_item_quantity(item);
 
         /* Remove one item from shop (sometimes) */
         borg_shops[BORG_HOME].ware[n].iqty -= qty;
+
+        /* for wands and staffs adjust charges */
+        if (item->tval == TV_STAFF || item->tval == TV_WAND)
+            borg_shops[BORG_HOME].ware[n].pval -= (qty * charge_each);
 
         /* Obtain "slot" */
         slot  = borg_wield_slot(item);
@@ -625,9 +634,18 @@ bool borg_think_home_buy_useful(void)
             if (stack != -1) {
                 /* Add a quantity to the stack */
                 borg_items[hole].iqty = safe_items[hole].iqty + qty;
+
+                /* for wands and staffs adjust charges */
+                if (item->tval == TV_STAFF || item->tval == TV_WAND)
+                    borg_items[hole].pval += (qty * charge_each);
+
             } else {
                 /* Only a single item */
                 borg_items[hole].iqty = qty;
+
+                /* for wands and staffs adjust charges */
+                if (item->tval == TV_STAFF || item->tval == TV_WAND)
+                    borg_items[hole].pval = (qty * charge_each);
             }
 
             /* Fix later */
@@ -684,6 +702,7 @@ bool borg_think_shop_grab_interesting(void)
     int k, b_k = -1;
     int n, b_n = -1;
     int qty   = 1;
+    int charge_each;
 
     int32_t s = 0L, b_s = 0L;
     int32_t c, b_c      = 0L;
@@ -735,6 +754,10 @@ bool borg_think_shop_grab_interesting(void)
             if (borg.trait[BI_GOLD] < 1000L + item->cost * 5)
                 continue;
 
+            /* for wands and staffs adjust charges */
+            if (item->tval == TV_STAFF || item->tval == TV_WAND)
+                charge_each = item->pval / item->iqty;
+
             /* make this the next to last item that the player has */
             /* (can't make it the last or it thinks that both player and */
             /*  home are full) */
@@ -746,6 +769,10 @@ bool borg_think_shop_grab_interesting(void)
 
             /* Give a single item */
             borg_items[hole].iqty = qty;
+
+            /* for wands and staffs adjust charges */
+            if (item->tval == TV_STAFF || item->tval == TV_WAND)
+                borg_items[hole].pval = charge_each * qty;
 
             /* make sure this item would help an empty home */
             borg_notice_home(&borg_shops[k].ware[n], false);
@@ -816,6 +843,7 @@ bool borg_think_home_grab_useless(void)
     int     p, n, b_n = -1;
     int32_t s, b_s = 0L;
     int     qty     = 1;
+    int     charge_each;
     bool    skip_it = false;
     int     hole    = borg_first_empty_inventory_slot();
 
@@ -849,11 +877,19 @@ bool borg_think_home_grab_useless(void)
         if (skip_it == true)
             continue;
 
+        /* for wands and staffs adjust charges */
+        if (item->tval == TV_STAFF || item->tval == TV_WAND)
+            charge_each = item->pval / item->iqty;
+
         /* Save the number */
         qty = borg_min_item_quantity(item);
 
         /* Remove one item from shop */
         borg_shops[BORG_HOME].ware[n].iqty -= qty;
+
+        /* for wands and staffs adjust charges */
+        if (item->tval == TV_STAFF || item->tval == TV_WAND)
+            borg_shops[BORG_HOME].ware[n].pval -= charge_each * qty;
 
         /* Examine the home */
         borg_notice_home(NULL, false);
