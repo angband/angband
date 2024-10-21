@@ -112,9 +112,10 @@ static int borg_danger_physical(int i, bool full_damage)
             if ((d_side < 3) && (z > d_dice * d_side)) {
                 n += 200;
             }
-            /* fudge- only mystics kick and they tend to KO.  Avoid close */
-            /* combat like the plague */
-            if (method->stun) {
+            /* fudge- some baddies kick and they tend to KO.  Avoid close */
+            /* combat like the plague.  10d2 is common but take and very low */
+            /* sides and high dice count as dangerous */
+            if (d_side < 3 && d_dice > 5) {
                 n += 400;
             }
             power = 60;

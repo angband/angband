@@ -1683,7 +1683,8 @@ bool borg_flow_kill(bool viewable, int nearness)
         return false;
 
     /* Don't chase down town monsters when you are just starting out */
-    if (borg.trait[BI_CDEPTH] == 0 && borg.trait[BI_CLEVEL] < 20)
+    if (borg.trait[BI_CDEPTH] == 0 && borg.trait[BI_CLEVEL] < 20
+        && !borg_cfg[BORG_MONEY_SCUM_AMOUNT])
         return false;
 
     /* YOU ARE NOT A WARRIOR!! DON'T ACT LIKE ONE!! */
