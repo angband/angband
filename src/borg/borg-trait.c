@@ -2490,15 +2490,12 @@ static void borg_notice_inventory(void)
         case TV_STAFF:
             /* Analyze */
             if (item->sval == sv_staff_teleportation) {
-                if (borg.trait[BI_MAXDEPTH] <= 95) {
-                    borg.trait[BI_AESCAPE] += (item->iqty);
-                    if (borg_activate_failure(item->tval, item->sval) < 500) {
-                        borg.trait[BI_AESCAPE] += item->pval;
-                    }
+                borg.trait[BI_AESCAPE] += (item->iqty);
+                if (borg_activate_failure(item->tval, item->sval) < 500) {
+                    borg.trait[BI_AESCAPE] += item->pval;
                 }
             } else if (item->sval == sv_staff_speed) {
-                if (borg.trait[BI_MAXDEPTH] <= 95)
-                    borg.trait[BI_ASPEED] += item->pval;
+                borg.trait[BI_ASPEED] += item->pval;
             } else if (item->sval == sv_staff_healing)
                 borg.trait[BI_AHEAL] += item->pval;
             else if (item->sval == sv_staff_the_magi)
