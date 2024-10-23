@@ -894,18 +894,28 @@ static bool borg_play_step(int y2, int x2)
     }
 
     /* Traps -- disarm -- */
+    /* NOTE: If a scary guy is on the level, we allow the borg to run over */
+    /* the trap in order to escape this level. */
     if (borg.trait[BI_CURLITE] && !borg.trait[BI_ISBLIND]
         && !borg.trait[BI_ISCONFUSED] && !scaryguy_on_level && ag->trap) {
 
-        /* NOTE: If a scary guy is on the level, we allow the borg to run over
-         * the trap in order to escape this level.
-         */
+        /* allow "destroy doors" activation */
+        if (borg_activate_item(act_disable_traps)) {
+            borg_note("# Activation to Disable Traps, Destroy Doors");
+            ag->trap = 0;
+            /* since this just disables the trap and doesn't remove it, */
+            /* don't rest next to it */
+            borg.no_rest_prep = 3000;
 
-        /* allow "destroy doors" */
+            /* the activation needs to target the trap */
+            borg_target(borg.goal.g);
+            return true;
+        }
+
+        /* allow "destroy doors" spell */
         /* don't bother unless we are near full mana */
         if (borg.trait[BI_CURSP] > ((borg.trait[BI_MAXSP] * 4) / 5)) {
-            if (borg_spell(DISABLE_TRAPS_DESTROY_DOORS)
-                || borg_activate_item(act_disable_traps)) {
+            if (borg_spell(DISABLE_TRAPS_DESTROY_DOORS)) {
                 borg_note("# Disable Traps, Destroy Doors");
                 ag->trap = 0;
                 /* since this just disables the trap and doesn't remove it, */
