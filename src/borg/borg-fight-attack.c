@@ -1104,6 +1104,10 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
                 dam = kill->power - sp_drain;
         }
         break;
+
+    case BORG_ATTACK_CURSE:
+        dam = ((borg.trait[BI_CLEVEL] / 12) * ((50 + kill->injury) + 1)) / 2;
+        break;
     }
 
     /* use Missiles on certain types of monsters */
@@ -3481,110 +3485,6 @@ static int borg_attack_aux_maim_foe(void)
     return d;
 }
 
-/* trying the Curse spell */
-static int borg_attack_aux_curse(void)
-{
-    int p;
-
-    int i, b_i = -1;
-    int d, b_d = -1;
-
-    borg_grid *ag;
-
-    borg_kill *kill;
-
-    /* costs 100hp to cast.  Don't kill yourself doing it */
-    if (borg.trait[BI_CURHP] < 120)
-        return 0;
-
-    /* Can I do it */
-    if (!borg_spell_okay_fail(CURSE, (borg_fighting_unique ? 40 : 25)))
-        return 0;
-
-    /* Too afraid to attack */
-    if (borg.trait[BI_ISAFRAID] || borg.trait[BI_CRSFEAR])
-        return 0;
-
-    /* Examine possible kills */
-    for (i = 0; i < borg_temp_n; i++) {
-        int x = borg_temp_x[i];
-        int y = borg_temp_y[i];
-
-        /* Acquire grid */
-        ag = &borg_grids[y][x];
-
-        /* Obtain the monster */
-        kill = &borg_kills[ag->kill];
-
-        /* Calculate "average" damage */
-        d = (((((kill->injury * kill->power) / 100) + 1) / 2) + 50)
-            * (borg.trait[BI_CLEVEL] / 12 + 1);
-
-        /* No damage */
-        if (d <= 0)
-            continue;
-
-        /* Hack -- avoid waking most "hard" sleeping monsters */
-        if (!kill->awake && (d <= kill->power) && !borg.munchkin_mode) {
-            /* Calculate danger */
-            p = borg_danger_one_kill(y, x, 1, ag->kill, true, true);
-
-            if (p > avoidance * 2)
-                continue;
-        }
-
-        /* Hack -- ignore sleeping town monsters */
-        if (!borg.trait[BI_CDEPTH] && !kill->awake)
-            continue;
-
-        /* Calculate "danger" to player */
-        p = borg_danger_one_kill(borg.c.y, borg.c.x, 2, ag->kill, true, true);
-
-        /* Reduce "bonus" of partial kills when higher level */
-        if (d <= kill->power && borg.trait[BI_MAXCLEVEL] > 15)
-            p = p / 10;
-
-        /* Add the danger-bonus to the damage */
-        d += p;
-
-        /* Ignore lower damage */
-        if ((b_i >= 0) && (d < b_d))
-            continue;
-
-        /* Save the info */
-        b_i = i;
-        b_d = d;
-    }
-
-    /* Nothing to attack */
-    if (b_i <= 0)
-        return 0;
-
-    /* Simulation */
-    if (borg_simulate)
-        return b_d;
-
-    /* Save the location */
-    borg.goal.g.x = borg_temp_x[b_i];
-    borg.goal.g.y = borg_temp_y[b_i];
-
-    ag            = &borg_grids[borg.goal.g.y][borg.goal.g.x];
-    kill          = &borg_kills[ag->kill];
-
-    /* Attack the grid */
-    borg_target(borg.goal.g);
-    borg_spell(CURSE);
-
-    /* Use target */
-    borg_keypress('5');
-
-    /* Set our shooting flag */
-    successful_target = -1;
-
-    /* Success */
-    return b_d;
-}
-
 /* trying the Vampire Strike spell */
 static int borg_attack_aux_vampire_strike(void)
 {
@@ -4206,7 +4106,15 @@ int borg_calculate_attack_effectiveness(int attack_type)
 
     /* Spell - Curse */
     case BF_SPELL_CURSE:
-        return (borg_attack_aux_curse());
+        /* costs 100hp to cast.  Don't kill yourself doing it */
+        if (borg.trait[BI_CURHP] < 120)
+            return 0;
+
+        rad = 0;
+        dam = -1;
+
+        return (borg_attack_aux_spell_bolt(
+            CURSE, rad, dam, BORG_ATTACK_CURSE, z_info->max_range, false));
 
     /* spell - Whirlwind Attack */
     case BF_SPELL_WHIRLWIND_ATTACK:
