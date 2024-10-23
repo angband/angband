@@ -399,7 +399,7 @@ static void borg_think_home_sell_best(int32_t * best_home_power)
 
             /* for wands and staffs adjust charges */
             if (item->tval == TV_STAFF || item->tval == TV_WAND) 
-                charge_each = safe_items[i].pval / safe_items[i].iqty;
+                charge_each = item->pval / item->iqty;
 
             /* stacking? */
             if (borg_object_similar(item2, item)) {
