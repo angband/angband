@@ -1439,6 +1439,9 @@
     <None Include="lib\customize\font-gcu.prf">
       <Filter>Resource Files\customize</Filter>
     </None>
+    <None Include="lib\customize\font-ibm.prf">
+      <Filter>Resource Files\customize</Filter>
+    </None>
     <None Include="lib\customize\font-sdl.prf">
       <Filter>Resource Files\customize</Filter>
     </None>
@@ -1449,9 +1452,6 @@
       <Filter>Resource Files\customize</Filter>
     </None>
     <None Include="lib\customize\font-x11.prf">
-      <Filter>Resource Files\customize</Filter>
-    </None>
-    <None Include="lib\customize\keys-gcu.prf">
       <Filter>Resource Files\customize</Filter>
     </None>
     <None Include="lib\customize\message.prf">
@@ -1745,6 +1745,9 @@
       <Filter>Resource Files\screens</Filter>
     </Text>
     <Text Include="lib\screens\news.txt">
+      <Filter>Resource Files\screens</Filter>
+    </Text>
+    <Text Include="lib\screens\retire.txt">
       <Filter>Resource Files\screens</Filter>
     </Text>
   </ItemGroup>
