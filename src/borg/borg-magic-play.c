@@ -59,6 +59,7 @@ static bool borg_can_play_spell(borg_magic *as)
     case VAMPIRE_STRIKE:
     case COMMAND:
     case CURSE:
+    case FORCEFUL_BLOW:
     return false;
     default:
         break;
