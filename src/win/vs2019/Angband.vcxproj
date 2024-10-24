@@ -630,12 +630,12 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
   </ItemGroup>
   <ItemGroup>
     <None Include="lib\customize\font-gcu.prf" />
+    <None Include="lib\customize\font-ibm.prf" />
     <None Include="lib\customize\font-sdl.prf" />
     <None Include="lib\customize\font-sdl2.prf" />
     <None Include="lib\customize\font-win.prf" />
     <None Include="lib\customize\font-x11.prf" />
     <None Include="lib\customize\font.prf" />
-    <None Include="lib\customize\keys-gcu.prf" />
     <None Include="lib\customize\message.prf" />
     <None Include="lib\customize\pref.prf" />
     <None Include="lib\customize\sound.prf" />
@@ -734,6 +734,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <Text Include="lib\screens\crown.txt" />
     <Text Include="lib\screens\dead.txt" />
     <Text Include="lib\screens\news.txt" />
+    <Text Include="lib\screens\retire.txt" />
     <Text Include="lib\tiles\list.txt" />
   </ItemGroup>
   <ItemGroup>
