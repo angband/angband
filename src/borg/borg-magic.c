@@ -25,6 +25,8 @@
 #include "../player-spell.h"
 #include "../ui-menu.h"
 
+#include "borg-cave.h"
+#include "borg-cave-view.h"
 #include "borg-init.h"
 #include "borg-io.h"
 #include "borg-trait.h"
@@ -522,6 +524,13 @@ int borg_spell_fail_rate(const enum borg_spells spell)
     if (!player_has(player, PF_ZERO_FAIL)) {
         if (minfail < 5)
             minfail = 5;
+    }
+
+    /* Necromancers are punished by being on lit squares */
+    if (player_has(player, PF_UNLIGHT) && 
+        borg_grids[borg.c.y][borg.c.x].info & BORG_LIGHT) {
+        chance += 25;
+
     }
 
     /* Minimum failure rate and max */
