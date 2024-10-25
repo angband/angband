@@ -60,6 +60,7 @@ static bool borg_can_play_spell(borg_magic *as)
     case COMMAND:
     case CURSE:
     case FORCEFUL_BLOW:
+    case MAIM_FOE:
     return false;
     default:
         break;
