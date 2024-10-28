@@ -519,7 +519,8 @@ bool borg_flow_take(bool viewable, int nearness)
         /* No need to chase certain things down after a certain amount.  Don't
          * chase: Money Other spell books Wrong ammo
          */
-        if (borg.trait[BI_GOLD] >= 500000) {
+        if (borg.trait[BI_GOLD] >= 500000
+            && borg_cfg[BORG_MONEY_SCUM_AMOUNT] == 0) {
             if (take->tval == TV_GOLD)
                 continue;
             if (tval_is_book_k(&k_info[take->kind->kidx])
