@@ -2976,11 +2976,14 @@ static int borg_defend_aux_rest(void)
         && (!borg_as_position || borg_t - borg_t_antisummon >= 50))
         return 0;
 
-        /* Not if I can not teleport others away */
-#if 0
-    if (!borg_spell_okay_fail(3, 1, 30) &&
-        !borg_spell_okay_fail(4, 2, 30)) return 0;
-#endif
+    /* never in town */
+    if (borg.trait[BI_CDEPTH] == 0)
+        return 0;
+
+    /* Not if I can not teleport others away */
+    if (borg_spell_okay_fail(TELEPORT_OTHER, 30))
+        return 0;
+
     /* Not if a monster can see me */
     /* Examine all the monsters */
     for (i = 1; i < borg_kills_nxt; i++) {
