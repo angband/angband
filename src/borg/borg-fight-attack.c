@@ -1108,6 +1108,13 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
     case BORG_ATTACK_CURSE:
         dam = ((borg.trait[BI_CLEVEL] / 12) * ((50 + kill->injury) + 1)) / 2;
         break;
+
+    case BORG_ATTACK_ELEC_STRIKE:
+        if (rf_has(r_ptr->flags, RF_IM_ELEC))
+            dam = 0;
+        else if (borg_grids[kill->pos.y][kill->pos.x].feat == FEAT_NONE)
+            dam = 0;
+        break;
     }
 
     /* use Missiles on certain types of monsters */
@@ -3993,8 +4000,8 @@ int borg_calculate_attack_effectiveness(int attack_type)
         rad = 0;
         dam = ((borg.trait[BI_CLEVEL] / 4) * (4 + 1) / 2)
               + borg.trait[BI_CLEVEL] + 5; /* HACK pretend it is all elec */
-        return (borg_attack_aux_spell_bolt(
-            LIGHTNING_STRIKE, rad, dam, BORG_ATTACK_ELEC, z_info->max_range, false));
+        return (borg_attack_aux_spell_bolt(LIGHTNING_STRIKE, rad, dam,
+            BORG_ATTACK_ELEC_STRIKE, z_info->max_range, false));
 
     /* Spell -- Earth Rising */
     case BF_SPELL_EARTH_RISING:
