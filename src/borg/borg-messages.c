@@ -77,6 +77,8 @@ static const char *suffix_died[] = {
     " dies.",
     " is destroyed.", 
     " are destroyed.",
+    " is destroyed!",
+    " are destroyed!",
     " shrivel away in the light!",
     " shrivels away in the light!",
     " dissolve!",
@@ -1233,7 +1235,7 @@ void borg_parse(char *msg)
     /* Continued message */
     else if (msg[0] == ' ') {
         /* Collect, verify, and grow */
-        len += strnfmt(buf + len, 1024 - len, "%s", msg + 1);
+        len += strnfmt(buf + len, 1024 - len, "%s", msg);
     }
 
     /* New message */
