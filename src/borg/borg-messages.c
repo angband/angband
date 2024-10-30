@@ -70,11 +70,24 @@ static const char *prefix_kill[]
  * Hack -- methods of monster death (order not important).
  *
  * See "project_m()", "do_cmd_fire()", "mon_take_hit()" for details.
+ * !FIX this should use MON_MSG* 
  */
 static const char *suffix_died[] = { 
-    " dies.", 
+    " die.",
+    " dies.",
     " is destroyed.", 
-    " is drained dry!", 
+    " are destroyed.",
+    " shrivel away in the light!",
+    " shrivels away in the light!",
+    " dissolve!",
+    " dissolves!",
+    " scream of agony!",
+    " screams of agony!",
+    " disintegrate!",
+    " disintegrates!",
+    " freeze and shatter!",
+    " freezes and shatters!",
+    " is drained dry!",
     NULL };
 
 static const char *suffix_blink[] = { 
