@@ -21,6 +21,7 @@
 
 #ifdef ALLOW_BORG
 
+#include "../mon-msg.h"
 #include "../ui-term.h"
 
 #include "borg-cave.h"
@@ -1527,6 +1528,18 @@ static void borg_insert_pain(const char *pain, int *capacity, int *count)
     suffix_pain[(*count)++] = new_message;
 }
 
+/* !FIX see mon-msg.c */
+static const struct
+{
+    const char *msg;
+    bool omit_subject;
+    int type;
+} borg_msg_repository[] = {
+    #define MON_MSG(x, t, o, s) { s, o, t },
+    #include "list-mon-message.h"
+    #undef MON_MSG
+};
+
 static void borg_init_pain_messages(void)
 {
     int                  capacity = 1;
@@ -1543,6 +1556,27 @@ static void borg_init_pain_messages(void)
                 break;
             borg_insert_pain(pain->messages[i], &capacity, &count);
         }
+    }
+
+    /* some more standard messages */
+    for (idx = 0; idx < MON_MSG_MAX; idx++) {
+        if (borg_msg_repository[idx].type == MSG_KILL)
+            continue;
+
+        const char *std_pain = borg_msg_repository[idx].msg;
+
+        switch (idx) {
+        case MON_MSG_DISAPPEAR:
+        case MON_MSG_95:
+        case MON_MSG_75: 
+        case MON_MSG_50: 
+        case MON_MSG_35: 
+        case MON_MSG_20: 
+        case MON_MSG_10: 
+        case MON_MSG_0:  continue;
+        }
+        if (std_pain != NULL)
+            borg_insert_pain(std_pain, &capacity, &count);
     }
 
     if ((count + 1) != capacity)
