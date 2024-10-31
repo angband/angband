@@ -772,6 +772,8 @@ static bool player_of_has_not_timed(struct player *p, int flag)
  * \param p is the player to affect.
  * \param idx is the index, greater than equal to zero and less than TMD_MAX,
  * for the effect.
+ * \param v is the new value for the effect.  Internally, v is coerced to lie
+ * within the range of acceptable values for the effect.
  * \param notify, if true, allows for messages, updates to the user interface,
  * and player disturbance if setting the effect doesn't duplicate an effect
  * already present.  If false, prevents messages, updates to the user interface,
