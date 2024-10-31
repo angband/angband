@@ -194,8 +194,7 @@ static int get_tile_fraction_from_size(const graphics_mode *gm,
         tileHeight = cell_h;
     }
     while (1) {
-        CGFloat fracf = tile_size_fractions[i] / 1000.0;
-        CGFloat this_area = (fracf * tileWidth) * (fracf * tileHeight);
+        CGFloat fracf, this_area;
 
         if (i >= (int) N_ELEMENTS(tile_size_fractions)) {
             /*
@@ -204,6 +203,8 @@ static int get_tile_fraction_from_size(const graphics_mode *gm,
              */
             return tile_size_fractions[N_ELEMENTS(tile_size_fractions) - 1];
         }
+        fracf = tile_size_fractions[i] / 1000.0;
+        this_area = (fracf * tileWidth) * (fracf * tileHeight);
         if (area <= this_area) {
             if (i == 0) {
                 /*
@@ -218,8 +219,6 @@ static int get_tile_fraction_from_size(const graphics_mode *gm,
         prev_area = this_area;
         ++i;
     }
-    /* Area is larger than that for any available option.  Use the largest. */
-    return tile_size_fractions[N_ELEMENTS(tile_size_fractions) - 1];
 }
 
 /**
