@@ -1017,9 +1017,12 @@ bool borg_excavate_vault(int range)
         borg_target(loc(borg_temp_x[i], borg_temp_y[i]));
 
         /* Attempt to excavate it with "stone to mud" */
-        if (borg_spell(TURN_STONE_TO_MUD) || borg_spell(SHATTER_STONE)
+        if (borg_spell(TURN_STONE_TO_MUD) 
             || borg_activate_ring(sv_ring_digging)
-            || borg_activate_item(act_stone_to_mud)) {
+            || borg_activate_item(act_stone_to_mud)
+            || (distance(borg.c, loc(borg_temp_x[i], borg_temp_y[i])) == 1 
+                && borg_spell(SHATTER_STONE))
+            ) {
             borg_note("# Excavation of vault");
             borg_keypress('5');
 
@@ -1047,9 +1050,6 @@ bool borg_excavate_vault(int range)
 
             return true;
         }
-
-        /* Success */
-        return true;
     }
 
     /* No grid to excavate */
