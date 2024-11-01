@@ -3278,6 +3278,9 @@ static int borg_attack_aux_leap_into_battle(void)
     if (borg.trait[BI_ISAFRAID] || borg.trait[BI_CRSFEAR])
         return 0;
 
+    if (target_closest < 10)
+        return 0;
+
     /* Examine possible destinations */
     for (i = 0; i < borg_temp_n; i++) {
         int blows;

@@ -363,6 +363,10 @@ static void borg_parse_aux(char *msg, int len)
         target_closest = -12;
         return;
     }
+    if (prefix(msg, "This spell must target a monster.")) {
+        target_closest = -12;
+        return;
+    }
     if (prefix(msg, "Not enough room next to ")) {
         target_closest = -12;
         return;
