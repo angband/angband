@@ -21,6 +21,7 @@
 
 #ifdef ALLOW_BORG
 
+#include "../mon-msg.h"
 #include "../ui-term.h"
 
 #include "borg-cave.h"
@@ -70,11 +71,26 @@ static const char *prefix_kill[]
  * Hack -- methods of monster death (order not important).
  *
  * See "project_m()", "do_cmd_fire()", "mon_take_hit()" for details.
+ * !FIX this should use MON_MSG* 
  */
 static const char *suffix_died[] = { 
-    " dies.", 
+    " die.",
+    " dies.",
     " is destroyed.", 
-    " is drained dry!", 
+    " are destroyed.",
+    " is destroyed!",
+    " are destroyed!",
+    " shrivel away in the light!",
+    " shrivels away in the light!",
+    " dissolve!",
+    " dissolves!",
+    " scream of agony!",
+    " screams of agony!",
+    " disintegrate!",
+    " disintegrates!",
+    " freeze and shatter!",
+    " freezes and shatters!",
+    " is drained dry!",
     NULL };
 
 static const char *suffix_blink[] = { 
@@ -1220,7 +1236,7 @@ void borg_parse(char *msg)
     /* Continued message */
     else if (msg[0] == ' ') {
         /* Collect, verify, and grow */
-        len += strnfmt(buf + len, 1024 - len, "%s", msg + 1);
+        len += strnfmt(buf + len, 1024 - len, "%s", msg);
     }
 
     /* New message */
@@ -1512,6 +1528,18 @@ static void borg_insert_pain(const char *pain, int *capacity, int *count)
     suffix_pain[(*count)++] = new_message;
 }
 
+/* !FIX see mon-msg.c */
+static const struct
+{
+    const char *msg;
+    bool omit_subject;
+    int type;
+} borg_msg_repository[] = {
+    #define MON_MSG(x, t, o, s) { s, o, t },
+    #include "list-mon-message.h"
+    #undef MON_MSG
+};
+
 static void borg_init_pain_messages(void)
 {
     int                  capacity = 1;
@@ -1528,6 +1556,27 @@ static void borg_init_pain_messages(void)
                 break;
             borg_insert_pain(pain->messages[i], &capacity, &count);
         }
+    }
+
+    /* some more standard messages */
+    for (idx = 0; idx < MON_MSG_MAX; idx++) {
+        if (borg_msg_repository[idx].type == MSG_KILL)
+            continue;
+
+        const char *std_pain = borg_msg_repository[idx].msg;
+
+        switch (idx) {
+        case MON_MSG_DISAPPEAR:
+        case MON_MSG_95:
+        case MON_MSG_75: 
+        case MON_MSG_50: 
+        case MON_MSG_35: 
+        case MON_MSG_20: 
+        case MON_MSG_10: 
+        case MON_MSG_0:  continue;
+        }
+        if (std_pain != NULL)
+            borg_insert_pain(std_pain, &capacity, &count);
     }
 
     if ((count + 1) != capacity)
