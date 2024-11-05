@@ -1808,10 +1808,11 @@ static void write_lore_entries(ang_file *fff)
 		/* Output 'drop' */
 		if (lore->drops) {
 			struct monster_drop *drop = lore->drops;
-			struct object_kind *kind = drop->kind;
 			char name[120] = "";
 
 			while (drop) {
+				struct object_kind *kind = drop->kind;
+
 				if (kind) {
 					object_short_name(name, sizeof name, kind->name);
 					file_putf(fff, "drop:%s:%s:%d:%d:%d\n",
