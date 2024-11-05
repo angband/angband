@@ -2240,25 +2240,6 @@ static int borg_attack_aux_rest(void)
     return 1;
 }
 
-/* look for a throwable item */
-static bool borg_has_throwable(void)
-{
-    int i;
-    for (i = 0; i < QUIVER_END; i++) {
-        /* it will show wield in the list */
-        /* but not if that is the only thing */
-        if (i == INVEN_WIELD)
-            continue;
-
-        if (!borg_items[i].iqty)
-            continue;
-
-        if (of_has(borg_items[i].flags, OF_THROWING))
-            return true;
-    }
-    return false;
-}
-
 /*
  * Simulate/Apply the optimal result of throwing an object
  *
@@ -2359,9 +2340,6 @@ static int borg_attack_aux_object(void)
 
     /* Fire */
     borg_keypress('v');
-
-    if (borg_has_throwable())
-        borg_keypress('/');
 
     /* Use the object */
     borg_keypress(all_letters_nohjkl[b_k]);

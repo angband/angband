@@ -443,6 +443,16 @@ static struct keypress internal_borg_inkey(int flush_first)
         return key;
     }
 
+    /* make sure inventory is used for throwing */
+    if (borg_prompt && !inkey_flag && (y == 1) && (x >= 12)
+        && (prefix(buf, "Throw which item? (Throw"))) {
+        if (borg_cfg[BORG_VERBOSE])
+            borg_note("# switching to inventory for throws");
+        /* yes step in */
+        key.code = '/';
+        return key;
+    }
+
     /* Mega-Hack -- Handle death */
     if (player->is_dead) {
 #ifndef BABLOS
