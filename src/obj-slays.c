@@ -494,19 +494,22 @@ static void learn_brand_slay_helper(struct player *p, struct object *obj1,
 		 * Check for the temporary brand (only relevant if the brand
 		 * is not already present).
 		 */
-		if (!learn && allow_temp && !player_has_temporary_brand(p, i)) {
+		if (!learn && !(allow_temp && player_has_temporary_brand(p, i))) {
 			continue;
 		}
 
 		b = &brands[i];
-		if (!rf_has(mon->race->flags, b->resist_flag)) {
+		if (!b->resist_flag || !rf_has(mon->race->flags, b->resist_flag)) {
 			/* Learn the brand */
 			if (learn) {
 				player_learn_brand(p, i);
 			}
 
 			/* Learn about the monster. */
-			lore_learn_flag_if_visible(lore, mon, b->resist_flag);
+			if (b->resist_flag) {
+				lore_learn_flag_if_visible(lore, mon,
+					b->resist_flag);
+			}
 			if (b->vuln_flag) {
 				lore_learn_flag_if_visible(lore, mon,
 					b->vuln_flag);
@@ -514,10 +517,6 @@ static void learn_brand_slay_helper(struct player *p, struct object *obj1,
 		} else if (player_knows_brand(p, i)) {
 			/* Learn about the monster. */
 			lore_learn_flag_if_visible(lore, mon, b->resist_flag);
-			if (b->vuln_flag) {
-				lore_learn_flag_if_visible(lore, mon,
-					b->vuln_flag);
-			}
 		}
 	}
 
@@ -552,14 +551,17 @@ static void learn_brand_slay_helper(struct player *p, struct object *obj1,
 		 * Check for the temporary slay (only relevant if the slay
 		 * is not already present.
 		 */
-		if (!learn && allow_temp && !player_has_temporary_slay(p, i)) {
+		if (!learn && !(allow_temp && player_has_temporary_slay(p, i))) {
 			continue;
 		}
 
 		s = &slays[i];
 		if (react_to_specific_slay(s, mon)) {
 			/* Learn about the monster. */
-			lore_learn_flag_if_visible(lore, mon, s->race_flag);
+			if (s->race_flag) {
+				lore_learn_flag_if_visible(lore, mon,
+					s->race_flag);
+			}
 			if (monster_is_visible(mon)) {
 				/* Learn the slay */
 				if (learn) {
@@ -568,7 +570,10 @@ static void learn_brand_slay_helper(struct player *p, struct object *obj1,
 			}
 		} else if (player_knows_slay(p, i)) {
 			/* Learn about unaffected monsters. */
-			lore_learn_flag_if_visible(lore, mon, s->race_flag);
+			if (s->race_flag) {
+				lore_learn_flag_if_visible(lore, mon,
+					s->race_flag);
+			}
 		}
 	}
 }
