@@ -2149,7 +2149,7 @@ static struct sdlpui_dialog *handle_menu_windows(struct sdlpui_control *ctrl,
 		dlg, ctrl, MAX_WINDOWS, true, false, NULL, 0);
 	unsigned int i;
 
-	for (i = 0; i < MAX_WINDOWS; ++i) {
+	for (i = 1; i < MAX_WINDOWS; ++i) {
 		struct sdlpui_control *c = sdlpui_get_simple_menu_next_unused(
 			result, SDLPUI_MFLG_NONE);
 
