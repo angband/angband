@@ -107,7 +107,7 @@ bool borg_happy_grid_bold(int y, int x)
         return false;
 
     /* Hack -- weak/dark is very unhappy */
-    if (borg.trait[BI_ISWEAK] || borg.trait[BI_CURLITE] == 0)
+    if (borg.trait[BI_ISWEAK] || borg.trait[BI_LIGHT] == 0)
         return false;
 
     /* Apply a control effect so that he does not get stuck in a loop */
@@ -1265,7 +1265,7 @@ bool borg_check_rest(int y, int x)
             return false;
 
         /* Be concerned if low on food */
-        if ((borg.trait[BI_CURLITE] == 0 || borg.trait[BI_ISWEAK]
+        if ((borg.trait[BI_LIGHT] == 0 || borg.trait[BI_ISWEAK]
                 || borg.trait[BI_FOOD] < 2)
             && !borg.munchkin_mode)
             return false;

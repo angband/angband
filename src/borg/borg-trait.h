@@ -98,7 +98,6 @@ enum {
     BI_CLEVEL,
     BI_MAXCLEVEL,
     BI_ESP,
-    BI_CURLITE,
     BI_RECALL,
     BI_FOOD,
     BI_FOOD_HI,

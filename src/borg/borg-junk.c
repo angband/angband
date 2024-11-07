@@ -625,7 +625,7 @@ bool borg_drop_hole(bool desperate)
                 && borg.trait[BI_ATPORTOTHER] <= 8)
                 continue;
             if (item->tval == TV_ROD
-                && (item->sval == sv_rod_light && borg.trait[BI_CURLITE] <= 0))
+                && (item->sval == sv_rod_light && borg.trait[BI_LIGHT] <= 0))
                 continue;
         } else
             value_boost = 7000;
@@ -1027,7 +1027,7 @@ bool borg_drop_slow(void)
 
         /* Don't crush it if it is our only source of light */
         if (item->tval == TV_ROD
-            && (item->sval == sv_rod_light && borg.trait[BI_CURLITE] <= 0))
+            && (item->sval == sv_rod_light && borg.trait[BI_LIGHT] <= 0))
             continue;
 
         /* Rods of healing are too hard to come by */

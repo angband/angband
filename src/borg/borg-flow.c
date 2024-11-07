@@ -896,7 +896,7 @@ static bool borg_play_step(int y2, int x2)
     /* Traps -- disarm -- */
     /* NOTE: If a scary guy is on the level, we allow the borg to run over */
     /* the trap in order to escape this level. */
-    if (borg.trait[BI_CURLITE] && !borg.trait[BI_ISBLIND]
+    if (borg.trait[BI_LIGHT] && !borg.trait[BI_ISBLIND]
         && !borg.trait[BI_ISCONFUSED] && !scaryguy_on_level && ag->trap) {
 
         /* allow "destroy doors" activation */

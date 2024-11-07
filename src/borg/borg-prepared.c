@@ -59,7 +59,7 @@ static const char *borg_prepared_aux(int depth)
     /*** Essential Items for Level 1 ***/
 
     /* Require lite (any) */
-    if (borg.trait[BI_CURLITE] < 1)
+    if (borg.trait[BI_LIGHT] < 1)
         return ("1 Lite");
 
     /* Require food */
@@ -209,8 +209,9 @@ static const char *borg_prepared_aux(int depth)
 
     /*** Essential Items for Level 10 to 19 ***/
 
-    /* Require light (radius 2) */
-    if (borg.trait[BI_CURLITE] < 2)
+    /* Require light (radius 2) */    /* necromancers like the dark */
+    if (borg.trait[BI_LIGHT] < 2
+        && (borg.trait[BI_CLASS] != CLASS_NECROMANCER))
         return "2 light radius";
 
     /* Escape or Teleport */
@@ -715,7 +716,7 @@ const char *borg_restock(int depth)
     /*** Level 1 ***/
 
     /* Must have some lite */
-    if (borg.trait[BI_CURLITE] < 1)
+    if (borg.trait[BI_LIGHT] < 1)
         return ("restock light radius < 1");
 
     /* Must have "fuel" */
@@ -766,7 +767,8 @@ const char *borg_restock(int depth)
     /*** Level 10 - 19  ***/
 
     /* Must have good light */
-    if (borg.trait[BI_CURLITE] < 2)
+    if (borg.trait[BI_LIGHT] < 2
+        && (borg.trait[BI_CLASS] != CLASS_NECROMANCER))
         return "2 light radius";
 
     /* Must have "cure" */

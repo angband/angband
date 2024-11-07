@@ -202,7 +202,8 @@ static int borg_danger_physical(int i, bool full_damage)
         case MONBLOW_EAT_LIGHT:
             z     = (d_dice * d_side);
             power = 5;
-            if (borg.trait[BI_CURLITE] == 0)
+            if (!borg_items[INVEN_LIGHT].timeout
+                || of_has(borg_items[INVEN_LIGHT].flags, OF_NO_FUEL))
                 break;
             if (borg.trait[BI_AFUEL] > 5)
                 break;

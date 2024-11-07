@@ -98,7 +98,7 @@ bool borg_play_magic(bool bored)
         return false;
 
     /* Dark */
-    if (!borg.trait[BI_CURLITE])
+    if (!borg.trait[BI_LIGHT])
         return false;
     if (borg_grids[borg.c.y][borg.c.x].info == BORG_DARK)
         return false;

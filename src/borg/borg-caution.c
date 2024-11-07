@@ -1144,7 +1144,7 @@ bool borg_caution(void)
 
         /* don't go down if we can go up and are hungry */
         if (track_less.num
-            && (borg.trait[BI_CURLITE] == 0 || borg.trait[BI_ISHUNGRY]
+            && (borg.trait[BI_LIGHT] == 0 || borg.trait[BI_ISHUNGRY]
                 || borg.trait[BI_ISWEAK] || borg.trait[BI_FOOD] < 2))
             borg.stair_more = false;
 
@@ -1205,8 +1205,7 @@ bool borg_caution(void)
     /*** Deal with critical situations ***/
 
     /* Hack -- require light */
-    if (!borg.trait[BI_CURLITE]
-        && !borg.trait[BI_LIGHT]) /* No Lite, AND Not Glowing */
+    if (!borg.trait[BI_LIGHT]) /* No Lite, AND Not Glowing */
     {
         enum borg_need need = borg_maintain_light();
         if (need == BORG_MET_NEED)

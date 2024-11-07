@@ -660,7 +660,7 @@ static int borg_perma_aux_see_inv(void)
         return 0;
 
     /* Darkness */
-    if (!(ag->info & BORG_GLOW) && !borg.trait[BI_CURLITE])
+    if (!(ag->info & BORG_GLOW) && !borg.trait[BI_LIGHT])
         return 0;
 
     /* No real value known, but lets cast it to find the bad guys. */

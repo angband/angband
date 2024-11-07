@@ -276,7 +276,7 @@ static int borg_new_take(struct object_kind *kind, int y, int x)
         take->x, take->y));
 
     /* Wipe goals only if I have some light source */
-    if (borg.trait[BI_CURLITE])
+    if (borg.trait[BI_LIGHT])
         borg.goal.type = 0;
 
     /* Hack -- Force the object to sit on a floor grid */
@@ -446,7 +446,7 @@ bool borg_flow_take(bool viewable, int nearness)
         return false;
 
     /* If out of fuel, don't mess around */
-    if (!borg.trait[BI_CURLITE])
+    if (!borg.trait[BI_LIGHT])
         return false;
 
     /* Not if sitting in a sea of runes */

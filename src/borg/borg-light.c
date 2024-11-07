@@ -38,6 +38,62 @@
 #include "borg.h"
 
 /*
+ * Check to see if the surrounding dungeon should be darkened
+ * This is only done for necromancers 
+ */
+static bool borg_check_dark_only(void)
+{
+    /* Only necromancers like the dark */
+    if (borg.trait[BI_CLASS] != CLASS_NECROMANCER)
+        return false;
+
+    /** Work out if there's any reason to call darkness */
+
+    /* Don't bother because we only just did it */
+    /* necromancers borrow the call light counter for darkness */
+    if (borg.when_call_light != 0 && (borg_t - borg.when_call_light) < 7)
+        return false;
+    int x, y;
+    int floors = 0;
+
+    /*
+     * Scan the surrounding 5x5 area for lit tiles.
+     */
+    for (y = borg.c.y - 2; y <= borg.c.y + 2; y++) {
+        for (x = borg.c.x - 2; x <= borg.c.x + 2; x++) {
+            borg_grid *ag;
+
+            /* Bounds check */
+            if (!square_in_bounds_fully(cave, loc(x, y)))
+                continue;
+
+            /* Get grid */
+            ag = &borg_grids[y][x];
+
+            /* Must be a glowing floor grid */
+            if (borg_cave_floor_grid(ag) 
+                && square_isglow(cave, loc(x, y))) {
+                floors++;
+            }
+        }
+    }
+
+    /* Don't bother unless there are enough unlit floors */
+    /* 11 is the empirical cutoff point for sensible behaviour here */
+    if (floors < 11)
+        return false;
+
+    if (borg_spell_fail(CREATE_DARKNESS, 40)) {
+        borg_note("# Calling Darkness in the dungeon");
+        borg.when_call_light = borg_t;
+        return true;
+    }
+
+    return false;
+}
+
+
+/*
  * Check to see if the surrounding dungeon should be illuminated, and if
  * it should, do it.
  *
@@ -58,7 +114,6 @@ bool borg_check_light_only(void)
         return false;
 
     /** Use wizard light sometimes **/
-
     if (!borg.when_wizard_light || (borg_t - borg.when_wizard_light >= 1000)) {
         if (borg_activate_item(act_clairvoyance)
             || borg_activate_item(act_enlightenment)
@@ -71,13 +126,17 @@ bool borg_check_light_only(void)
         }
     }
 
+    /* necromancers like the dark */
+    if (borg.trait[BI_CLASS] == CLASS_NECROMANCER)
+        return borg_check_dark_only();
+
     /** Work out if there's any reason to light */
 
     /* Don't bother because we only just did it */
     if (borg.when_call_light != 0 && (borg_t - borg.when_call_light) < 7)
         return false;
 
-    if (borg.trait[BI_CURLITE] == 1) {
+    if (borg.trait[BI_LIGHT] == 1) {
         int i;
         int corners = 0;
 
@@ -118,7 +177,7 @@ bool borg_check_light_only(void)
         /* This is quite an arbitrary cutoff */
         if (corners > 2)
             return false;
-    } else if (borg.trait[BI_CURLITE] > 1) {
+    } else if (borg.trait[BI_LIGHT] > 1) {
         int x, y;
         int floors = 0;
 
@@ -533,6 +592,10 @@ enum borg_need borg_maintain_light(void)
     if (of_has(current_light->flags, OF_NO_FUEL))
         return BORG_NO_NEED;
 
+    /* necromancers like the dark */
+    if (borg.trait[BI_CLASS] == CLASS_NECROMANCER)
+        return BORG_NO_NEED;
+
     /*  current torch */
     if (current_light->tval == TV_LIGHT) {
         if (current_light->sval == sv_light_torch) {
@@ -615,16 +678,16 @@ bool borg_light_beam(bool simulation)
     /*** North Direction Test***/
 
     /* Quick Boundary check */
-    if (borg.c.y - borg.trait[BI_CURLITE] - 1 > 0) {
+    if (borg.c.y - borg.trait[BI_LIGHT] - 1 > 0) {
         /* Look just beyond my light */
-        ag = &borg_grids[borg.c.y - borg.trait[BI_CURLITE] - 1][borg.c.x];
+        ag = &borg_grids[borg.c.y - borg.trait[BI_LIGHT] - 1][borg.c.x];
         bold = borg_cave_floor_bold(
-            borg.c.y - borg.trait[BI_CURLITE] - 1, borg.c.x);
+            borg.c.y - borg.trait[BI_LIGHT] - 1, borg.c.x);
 
         /* Must be on the panel */
-        if (panel_contains(borg.c.y - borg.trait[BI_CURLITE] - 1, borg.c.x)) {
+        if (panel_contains(borg.c.y - borg.trait[BI_LIGHT] - 1, borg.c.x)) {
             /* Check each grid in our light radius along the course */
-            for (i = 0; i <= borg.trait[BI_CURLITE]; i++) {
+            for (i = 0; i <= borg.trait[BI_LIGHT]; i++) {
                 if (borg_cave_floor_bold(borg.c.y - i, borg.c.x) && !bold
                     && ag->feat < FEAT_SECRET && ag->feat != FEAT_CLOSED
                     && blocked == false) {
@@ -642,17 +705,17 @@ bool borg_light_beam(bool simulation)
     /*** South Direction Test***/
 
     /* Quick Boundary check */
-    if (borg.c.y + borg.trait[BI_CURLITE] + 1 < AUTO_MAX_Y && dir == 5) {
+    if (borg.c.y + borg.trait[BI_LIGHT] + 1 < AUTO_MAX_Y && dir == 5) {
         blocked = false;
         /* Look just beyond my light */
-        ag = &borg_grids[borg.c.y + borg.trait[BI_CURLITE] + 1][borg.c.x];
+        ag = &borg_grids[borg.c.y + borg.trait[BI_LIGHT] + 1][borg.c.x];
         bold = borg_cave_floor_bold(
-            borg.c.y + borg.trait[BI_CURLITE] + 1, borg.c.x);
+            borg.c.y + borg.trait[BI_LIGHT] + 1, borg.c.x);
 
         /* Must be on the panel */
-        if (panel_contains(borg.c.y + borg.trait[BI_CURLITE] + 1, borg.c.x)) {
+        if (panel_contains(borg.c.y + borg.trait[BI_LIGHT] + 1, borg.c.x)) {
             /* Check each grid in our light radius along the course */
-            for (i = 0; i <= borg.trait[BI_CURLITE]; i++) {
+            for (i = 0; i <= borg.trait[BI_LIGHT]; i++) {
                 /* all floors */
                 if (borg_cave_floor_bold(borg.c.y + i, borg.c.x) && !bold
                     && ag->feat < FEAT_SECRET && ag->feat != FEAT_CLOSED
@@ -671,17 +734,17 @@ bool borg_light_beam(bool simulation)
     /*** East Direction Test***/
 
     /* Quick Boundary check */
-    if (borg.c.x + borg.trait[BI_CURLITE] + 1 < AUTO_MAX_X && dir == 5) {
+    if (borg.c.x + borg.trait[BI_LIGHT] + 1 < AUTO_MAX_X && dir == 5) {
         blocked = false;
         /* Look just beyond my light */
-        ag = &borg_grids[borg.c.y][borg.c.x + borg.trait[BI_CURLITE] + 1];
+        ag = &borg_grids[borg.c.y][borg.c.x + borg.trait[BI_LIGHT] + 1];
         bold = borg_cave_floor_bold(
-            borg.c.y, borg.c.x + borg.trait[BI_CURLITE] + 1);
+            borg.c.y, borg.c.x + borg.trait[BI_LIGHT] + 1);
 
         /* Must be on the panel */
-        if (panel_contains(borg.c.y, borg.c.x + borg.trait[BI_CURLITE] + 1)) {
+        if (panel_contains(borg.c.y, borg.c.x + borg.trait[BI_LIGHT] + 1)) {
             /* Check each grid in our light radius along the course */
-            for (i = 0; i <= borg.trait[BI_CURLITE]; i++) {
+            for (i = 0; i <= borg.trait[BI_LIGHT]; i++) {
                 /* all floors */
                 if (borg_cave_floor_bold(borg.c.y, borg.c.x + i) && !bold
                     && ag->feat < FEAT_SECRET && ag->feat != FEAT_CLOSED
@@ -700,17 +763,17 @@ bool borg_light_beam(bool simulation)
     /*** West Direction Test***/
 
     /* Quick Boundary check */
-    if (borg.c.x - borg.trait[BI_CURLITE] - 1 > 0 && dir == 5) {
+    if (borg.c.x - borg.trait[BI_LIGHT] - 1 > 0 && dir == 5) {
         blocked = false;
         /* Look just beyond my light */
-        ag   = &borg_grids[borg.c.y][borg.c.x - borg.trait[BI_CURLITE] - 1];
+        ag   = &borg_grids[borg.c.y][borg.c.x - borg.trait[BI_LIGHT] - 1];
         bold = borg_cave_floor_bold(
-            borg.c.y, borg.c.x - borg.trait[BI_CURLITE] - 1);
+            borg.c.y, borg.c.x - borg.trait[BI_LIGHT] - 1);
 
         /* Must be on the panel */
-        if (panel_contains(borg.c.y, borg.c.x - borg.trait[BI_CURLITE] - 1)) {
+        if (panel_contains(borg.c.y, borg.c.x - borg.trait[BI_LIGHT] - 1)) {
             /* Check each grid in our light radius along the course */
-            for (i = 1; i <= borg.trait[BI_CURLITE]; i++) {
+            for (i = 1; i <= borg.trait[BI_LIGHT]; i++) {
                 /* Verify that there are no blockers in my light radius and
                  * the 1st grid beyond my light is not a floor nor a blocker
                  */
