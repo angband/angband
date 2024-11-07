@@ -84,7 +84,7 @@ bool borg_flow_stair_both(int why, bool sneak)
         return false;
 
     /* Absolutely no diving if no light */
-    if (borg.trait[BI_CURLITE] == 0 && borg.trait[BI_CDEPTH] != 0
+    if (borg.trait[BI_LIGHT] == 0 && borg.trait[BI_CDEPTH] != 0
         && borg.munchkin_mode == false)
         return false;
 
@@ -154,7 +154,7 @@ bool borg_flow_stair_less(int why, bool sneak)
         borg_flow_enqueue_grid(track_less.y[i], track_less.x[i]);
     }
 
-    if (borg.trait[BI_CLEVEL] > 35 || borg.trait[BI_CURLITE] == 0) {
+    if (borg.trait[BI_CLEVEL] > 35 || borg.trait[BI_LIGHT] == 0) {
         /* Spread the flow */
         borg_flow_spread(250, true, false, false, -1, sneak);
     } else {
@@ -205,7 +205,7 @@ bool borg_flow_stair_more(int why, bool sneak, bool brave)
             return false;
 
         /* No diving if no light */
-        if (borg.trait[BI_CURLITE] == 0 && borg.munchkin_mode == false)
+        if (borg.trait[BI_LIGHT] == 0 && borg.munchkin_mode == false)
             return false;
     }
 

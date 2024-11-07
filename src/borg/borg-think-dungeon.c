@@ -184,7 +184,7 @@ static bool borg_think_dungeon_lunal(void)
         borg_note("# Lunal. (need fuel)");
 
     /* No Light at all */
-    if (borg.trait[BI_CURLITE] == 0 && borg_items[INVEN_LIGHT].tval == 0) {
+    if (borg.trait[BI_LIGHT] == 0 && borg_items[INVEN_LIGHT].tval == 0) {
         borg_note("# No Light at all.");
         return false;
     }
@@ -525,7 +525,7 @@ static bool borg_think_dungeon_munchkin(void)
         borg_note("# Munchkin. (need fuel)");
 
     /* No Light at all */
-    if (borg.trait[BI_CURLITE] == 0) {
+    if (borg.trait[BI_LIGHT] == 0) {
         borg_note("# No Light at all.");
     }
 
@@ -591,7 +591,7 @@ static bool borg_think_dungeon_munchkin(void)
     /* Full of Items - Going up */
     if (track_less.num && (borg_items[PACK_SLOTS - 2].iqty)
         && (safe_place || ag->feat == FEAT_LESS
-            || borg.trait[BI_CURLITE] == 0)) {
+            || borg.trait[BI_LIGHT] == 0)) {
         borg_grid *tmp_ag = &borg_grids[borg.c.y][borg.c.x];
 
         /* Check for an existing "up stairs" */
@@ -1553,10 +1553,10 @@ bool borg_think_dungeon(void)
         return true;
 
     /*** if returning from dungeon in bad shape...***/
-    if (borg.trait[BI_CURLITE] == 0 || borg.trait[BI_ISCUT]
+    if (borg.trait[BI_LIGHT] == 0 || borg.trait[BI_ISCUT]
         || borg.trait[BI_ISPOISONED] || borg.trait[BI_FOOD] == 0) {
         /* First try to wear something */
-        if (borg.trait[BI_CURLITE] == 0) {
+        if (borg.trait[BI_LIGHT] == 0) {
             /* attempt to refuel/swap */
             if (borg_maintain_light() == BORG_MET_NEED)
                 return true;

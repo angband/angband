@@ -248,7 +248,7 @@ bool borg_think_shop_buy_useful(void)
     for (k = 0; k < (z_info->store_max - 1); k++) {
 
         /* If I am bad shape up, only see certain stores */
-        if ((borg.trait[BI_CURLITE] == 0 || borg.trait[BI_FOOD] == 0) && k != 0
+        if ((borg.trait[BI_LIGHT] == 0 || borg.trait[BI_FOOD] == 0) && k != 0
             && k != BORG_HOME)
             continue;
         if ((borg.trait[BI_ISCUT] || borg.trait[BI_ISPOISONED]) && k != 3)

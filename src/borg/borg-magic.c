@@ -140,7 +140,7 @@ static borg_spell_rating borg_spell_ratings_NECROMANCER[] =
 {
     { "Nether Bolt", 95, NETHER_BOLT },
     { "Sense Invisible", 85, SENSE_INVISIBLE },
-    { "Create Darkness", 5, CREATE_DARKNESS }, /* not sure this is borg happy */
+    { "Create Darkness", 5, CREATE_DARKNESS }, 
     { "Bat Form", 5, BAT_FORM }, // !FIX !TODO !AJG shapechange
     { "Read Minds", 85, READ_MINDS },
     { "Tap Unlife", 85, TAP_UNLIFE },
@@ -527,7 +527,8 @@ int borg_spell_fail_rate(const enum borg_spells spell)
     }
 
     /* Necromancers are punished by being on lit squares */
-    if (player_has(player, PF_UNLIGHT) && 
+    /* necromancers like the dark */
+    if (borg.trait[BI_CLASS] == CLASS_NECROMANCER &&
         borg_grids[borg.c.y][borg.c.x].info & BORG_LIGHT) {
         chance += 25;
 

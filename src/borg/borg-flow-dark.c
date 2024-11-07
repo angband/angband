@@ -73,7 +73,7 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
             return false;
 
         /* Not when darkened */
-        if (borg.trait[BI_CURLITE] == 0)
+        if (borg.trait[BI_LIGHT] == 0)
             return false;
 
         /* don't try to dig if we can't */
@@ -160,7 +160,7 @@ static bool borg_flow_dark_interesting(int y, int x, int b_stair)
             return false;
 
         /* Do not flow without lite */
-        if (borg.trait[BI_CURLITE] == 0)
+        if (borg.trait[BI_LIGHT] == 0)
             return false;
 
         /* Do not disarm trap doors on level 99 */
@@ -549,7 +549,7 @@ static bool borg_flow_dark_2(int b_stair)
         return false;
 
     /* Maximal radius */
-    r = borg.trait[BI_CURLITE] + 1;
+    r = borg.trait[BI_LIGHT] + 1;
 
     /* Reset */
     borg_temp_n = 0;

@@ -1088,7 +1088,7 @@ static void borg_parse_aux(char *msg, int len)
                  * broken doors.  This routine is only needed if the borg
                  * is out of lite and searching in the dark.
                  */
-                if (borg.trait[BI_CURLITE])
+                if (borg.trait[BI_LIGHT])
                     continue;
 
                 if (ag->feat == FEAT_RUBBLE)

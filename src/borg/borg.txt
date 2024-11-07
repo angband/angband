@@ -417,8 +417,9 @@ Power
 	condition(value(trait, heavy bow)): reward(-500000);
 
 #light radius
-	condition(value(trait, cur light) <= 3): reward(value(trait, cur light) * 10000);
-	condition(value(trait, cur light) > 3): reward(value(trait, cur light) * 1000 + 30000);
+	condition(value(class, necromancer)): reward(value(trait, light) * 10000);
+	condition(value(trait, light) <= 3 and !value(class, necromancer)): reward(value(trait, light) * 10000);
+	condition(value(trait, light) > 3 and ! value(class, necromancer)): reward(value(trait, light) * 1000 + 30000);
 
 	reward(value(trait, extra moves) * 3000);
 	reward(value(trait, damage reduction) * 10000);
@@ -861,8 +862,8 @@ Power
 # magic map
 	value(trait, amt magic map): range(1, 1): reward(4000);
 
-# lite
-	value(trait, amt lite): range(1, 1): reward(1000);
+# call lite
+	value(trait, amt call lite): condition(!value(class, necromancer)): range(1, 1): reward(1000);
 
 # genocide
 	value(scroll, mass banishment): range(1, 10): condition(value(trait, max depth) >= 100): reward(10000);
@@ -1073,7 +1074,7 @@ Depth Requirement
 
 Restock Requirement
 [
-	depth(1): condition(value(trait, cur light) < 1);
+	depth(1): condition(value(trait, light) < 1);
 	depth(1): condition(value(trait, fuel) < 1 and !value(trait, light));
 
 	depth(2): condition(value(trait, fuel) < 2 and !value(trait, light));
@@ -1082,7 +1083,7 @@ Restock Requirement
 	depth(6): condition(value(trait, amt phase) < 1);
 	depth(6): condition(value(trait, max clevel) < 30 and (value(trait,  amt potion clw) + value(trait,  amt potion csw) + value(trait,  amt potion ccw)) < 1);
 
-	depth(10): condition(value(trait, cur light) < 2);
+	depth(10): condition(value(trait, light) < 2 and !value(class, necromancer));
 	depth(10): condition(value(trait, max clevel) < 30 and (value(trait,  amt potion clw) + value(trait,  amt potion csw) + value(trait,  amt potion ccw)) < 2);
 	depth(10): condition((value(trait,  amt teleport) + value(trait,  amt escape)) < 2);
 

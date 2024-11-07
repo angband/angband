@@ -173,7 +173,7 @@ static int borg_defend_aux_bless(int p1)
         return 0;
 
     /* Dark */
-    if (!(ag->info & BORG_GLOW) && borg.trait[BI_CURLITE] == 0)
+    if (!(ag->info & BORG_GLOW) && borg.trait[BI_LIGHT] == 0)
         return 0;
 
     /* no spell */
@@ -996,7 +996,7 @@ static int borg_defend_aux_prot_evil(int p1)
         || borg.trait[BI_ISIMAGE])
         pfe_spell = false;
 
-    if (!(ag->info & BORG_GLOW) && borg.trait[BI_CURLITE] == 0)
+    if (!(ag->info & BORG_GLOW) && borg.trait[BI_LIGHT] == 0)
         pfe_spell = false;
 
     if (borg_equips_item(act_protevil, true))
@@ -1561,7 +1561,7 @@ static int borg_defend_aux_glyph(int p1)
         && glyph_spell)
         glyph_spell = false;
 
-    if (!(ag->info & BORG_GLOW) && borg.trait[BI_CURLITE] == 0)
+    if (!(ag->info & BORG_GLOW) && borg.trait[BI_LIGHT] == 0)
         glyph_spell = false;
 
     if (!glyph_spell)
@@ -2688,7 +2688,7 @@ static int borg_defend_aux_inviso(int p1)
         return 0;
 
     /* Darkness */
-    if (!(ag->info & BORG_GLOW) && !borg.trait[BI_CURLITE])
+    if (!(ag->info & BORG_GLOW) && !borg.trait[BI_LIGHT])
         return 0;
 
     /* No real value known, but lets cast it to find the bad guys. */

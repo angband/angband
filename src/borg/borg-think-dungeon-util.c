@@ -154,7 +154,7 @@ bool borg_think_dungeon_light(void)
         return true;
 
     if (!borg.trait[BI_LIGHT]
-        && (borg.trait[BI_CURLITE] <= 0 || borg_items[INVEN_LIGHT].timeout <= 3)
+        && (borg.trait[BI_LIGHT] <= 0 || borg_items[INVEN_LIGHT].timeout <= 3)
         && borg.trait[BI_CDEPTH] >= 1) {
         enum borg_need need;
 
@@ -196,7 +196,8 @@ bool borg_think_dungeon_light(void)
         /* If on a glowing grid, got some food, and low mana, then rest here */
         if ((borg.trait[BI_CURSP] < borg.trait[BI_MAXSP]
                 && borg.trait[BI_MAXSP] > 0)
-            && (borg_grids[borg.c.y][borg.c.x].info & BORG_GLOW)
+            && ((borg_grids[borg.c.y][borg.c.x].info & BORG_GLOW)
+                || borg.trait[BI_CLASS] == CLASS_NECROMANCER)
             && !borg.trait[BI_ISWEAK]
             && (borg_spell_legal(HERBAL_CURING)
                 || borg_spell_legal(REMOVE_HUNGER)
@@ -272,28 +273,42 @@ bool borg_think_dungeon_light(void)
                 }
 
                 /* Look for a dark one */
-                if ((ag->info & BORG_DARK) || /* Known to be dark */
-                    ag->feat == FEAT_NONE || /* Nothing known about feature */
-                    !(ag->info & BORG_MARK) || /* Nothing known about info */
-                    !(ag->info & BORG_GLOW)) /* not glowing */
-                {
-                    /* Attempt to Call Light */
-                    if (borg_activate_item(act_illumination)
-                        || borg_activate_item(act_light)
-                        || borg_zap_rod(sv_rod_illumination)
-                        || borg_use_staff(sv_staff_light)
-                        || borg_read_scroll(sv_scroll_light)
-                        || borg_spell(CALL_LIGHT) || borg_spell(LIGHT_ROOM)) {
-                        borg_note("# Illuminating the region while dark.");
-                        borg_react("SELF:lite", "SELF:lite");
-                        borg.when_call_light = borg_t;
+                if (borg.trait[BI_CLASS] != CLASS_NECROMANCER) {
+                    if ((ag->info & BORG_DARK) || /* Known to be dark */
+                        ag->feat == FEAT_NONE || /* Nothing known about feature */
+                        !(ag->info & BORG_MARK) || /* Nothing known about info */
+                        !(ag->info & BORG_GLOW)) /* not glowing */
+                    {
+                        /* Attempt to Call Light */
+                        if (borg_activate_item(act_illumination)
+                            || borg_activate_item(act_light)
+                            || borg_zap_rod(sv_rod_illumination)
+                            || borg_use_staff(sv_staff_light)
+                            || borg_read_scroll(sv_scroll_light)
+                            || borg_spell(CALL_LIGHT) || borg_spell(LIGHT_ROOM)) {
+                            borg_note("# Illuminating the region while dark.");
+                            borg_react("SELF:lite", "SELF:lite");
+                            borg.when_call_light = borg_t;
 
-                        return true;
+                            return true;
+                        }
+
+                        /* Attempt to use Light Beam requiring a direction. */
+                        if (borg_light_beam(false))
+                            return true;
                     }
-
-                    /* Attempt to use Light Beam requiring a direction. */
-                    if (borg_light_beam(false))
-                        return true;
+                } else {
+                    if (!(ag->info & BORG_DARK) || /* Not dark */
+                        ag->feat == FEAT_NONE || /* Nothing known about feature */
+                        !(ag->info & BORG_MARK) || /* Nothing known about info */
+                        (ag->info & BORG_GLOW)) /* glowing */
+                    {
+                        if (borg_spell(CREATE_DARKNESS)) {
+                            borg_note("# Darkening the region that is lit.");
+                            borg.when_call_light = borg_t;
+                            return true;
+                        }
+                    }
                 }
             }
         }

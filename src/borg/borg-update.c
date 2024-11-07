@@ -1314,7 +1314,7 @@ static void borg_handle_self(char *str)
         borg_note(format("# Called lite at (%d,%d)", old_c.y, old_c.x));
 
         /* If not holding a lite, then glow adjacent grids */
-        if (!borg.trait[BI_CURLITE]) {
+        if (!borg.trait[BI_LIGHT]) {
             /* Scan the "local" grids (5x5) 2 same as torch grid
              * The spells do some goofy radius thing.
              */
