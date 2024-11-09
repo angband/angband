@@ -421,14 +421,6 @@ void borg_init(void)
     mem_free(memory_test);
     memory_test = NULL;
 
-    /* HACK this directory isn't automatically created on Windows */
-    /*  source install */
-    {
-        char dirpath[512];
-        path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_ARCHIVE, "");
-        if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
-    }
-
     /* Prapare a local random number seed */
     if (!borg_rand_local)
         borg_rand_local = randint1(0x10000000);
