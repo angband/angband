@@ -435,7 +435,7 @@ bool borg_think_home_buy_useful(void)
     int     stack;
     int     qty = 1;
     int     n, b_n = -1;
-    int     charge_each;
+    int     charge_each = 0;
     int32_t p, b_p = 0L;
     int32_t p_left  = 0;
     int32_t p_right = 0;
@@ -702,7 +702,7 @@ bool borg_think_shop_grab_interesting(void)
     int k, b_k = -1;
     int n, b_n = -1;
     int qty   = 1;
-    int charge_each;
+    int charge_each = 0;
 
     int32_t s = 0L, b_s = 0L;
     int32_t c, b_c      = 0L;
@@ -843,7 +843,7 @@ bool borg_think_home_grab_useless(void)
     int     p, n, b_n = -1;
     int32_t s, b_s = 0L;
     int     qty     = 1;
-    int     charge_each;
+    int     charge_each = 0;
     bool    skip_it = false;
     int     hole    = borg_first_empty_inventory_slot();
 
