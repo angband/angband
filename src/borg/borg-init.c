@@ -87,6 +87,7 @@ struct borg_setting borg_settings[] = {
     { "borg_save_death", 'i', 1 },
     { "borg_stop_on_bell", 'b', false },
     { "borg_allow_strange_opts", 'b', false},
+    { "borg_autosave", 'b', false},
     { 0, 0, 0 }};
 
 
@@ -419,6 +420,14 @@ void borg_init(void)
     memory_test = mem_zalloc(400 * 1024L * sizeof(uint8_t));
     mem_free(memory_test);
     memory_test = NULL;
+
+    /* HACK this directory isn't automatically created on Windows */
+    /*  source install */
+    {
+        char dirpath[512];
+        path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_ARCHIVE, "");
+        if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
+    }
 
     /* Prapare a local random number seed */
     if (!borg_rand_local)

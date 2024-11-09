@@ -2308,7 +2308,7 @@ void borg_update(void)
         reset = true;
 
         /* save once per level, but not if Lunal Scumming */
-        if (borg_flag_save && !borg.lunal_mode && !borg.munchkin_mode)
+        if (borg_cfg[BORG_AUTOSAVE] && !borg.lunal_mode && !borg.munchkin_mode)
             borg_save = true;
 
         /* Save new depth */

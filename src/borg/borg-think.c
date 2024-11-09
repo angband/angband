@@ -211,7 +211,7 @@ bool borg_think(void)
             }
             svSavefile2[i] = 0;
 
-            path_build(savefile, 1024, ANGBAND_DIR_USER, svSavefile2);
+            path_build(savefile, 1024, ANGBAND_DIR_ARCHIVE, svSavefile2);
 
             justSaved = true;
         }
