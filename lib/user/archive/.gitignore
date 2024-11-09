@@ -1,0 +1,8 @@
+# This directory is used for randart files and borg dumps if running the
+# game from where it was built and using the Windows front end (main-win.c)
+# or a front end that uses main.c but was compiled without PRIVATE_USER_PATH
+# set.  Front ends using main.c would create this directory if needed, but
+# main-win.c does not.
+# For git, ignore everything here except for this file.
+*
+!.gitignore
