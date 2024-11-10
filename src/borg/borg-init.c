@@ -87,6 +87,7 @@ struct borg_setting borg_settings[] = {
     { "borg_save_death", 'i', 1 },
     { "borg_stop_on_bell", 'b', false },
     { "borg_allow_strange_opts", 'b', false},
+    { "borg_autosave", 'b', false},
     { 0, 0, 0 }};
 
 

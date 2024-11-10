@@ -54,7 +54,7 @@ void borg_log_death(void)
         return;
 
     /* Build path to location of the definition file */
-    path_build(buf, 1024, ANGBAND_DIR_USER, "borg-log.txt");
+    path_build(buf, 1024, ANGBAND_DIR_ARCHIVE, "borg-log.txt");
 
     /* Append to the file */
     borg_log_file = file_open(buf, MODE_APPEND, FTYPE_TEXT);
@@ -99,7 +99,7 @@ void borg_log_death_data(void)
     if (!borg_cfg[BORG_SAVE_DEATH])
         return;
 
-    path_build(buf, 1024, ANGBAND_DIR_USER, "borg.dat");
+    path_build(buf, 1024, ANGBAND_DIR_ARCHIVE, "borg.dat");
 
     /* Append to the file */
     borg_log_file = file_open(buf, MODE_APPEND, FTYPE_TEXT);
@@ -186,7 +186,7 @@ void borg_write_map(bool ask)
     buf[i++] = 'p';
     buf[i++] = '\0';
 
-    path_build(buf2, 1024, ANGBAND_DIR_USER, buf);
+    path_build(buf2, 1024, ANGBAND_DIR_ARCHIVE, buf);
 
     /* XXX XXX XXX Get the name and open the map file */
     if (ask && get_string("Borg map File: ", buf2, 70)) {

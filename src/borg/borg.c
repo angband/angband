@@ -89,7 +89,6 @@ int *borg_cfg;
  */
 bool borg_active; /* Actually active */
 bool borg_cancel; /* Being cancelled */
-bool borg_flag_save     = false; /* Save savefile at each level */
 bool borg_save          = false; /* do a save next level */
 bool borg_graphics      = false; /* rr9's graphics */
 
@@ -890,37 +889,58 @@ void do_cmd_borg(void)
     case 'f':
     case 'F': {
         /* Get a "Borg command", or abort */
-        if (!get_com("Borg command: Toggle Flag: (m/d/s/f/g) ", &cmd))
+        if (!get_com("Borg command: Toggle Flag: (b/c/k/l/s/v) ", &cmd))
             return;
 
         switch (cmd) {
-            /* Give borg thought messages in window */
-        case 'm':
-        case 'M': {
-            msg("Command No Longer Useful");
+        /* stop when alert bell rings */
+        case 'b':
+        case 'B': {
+            borg_cfg[BORG_STOP_ON_BELL] = !borg_cfg[BORG_STOP_ON_BELL];
+            msg("Borg -- borg_stop_on_bell is now %d.",
+                borg_cfg[BORG_STOP_ON_BELL]);
             break;
         }
 
-        /* Give borg the ability to use graphics ----broken */
-        case 'g':
-        case 'G': {
-            borg_graphics = !borg_graphics;
-            msg("Borg -- borg_graphics is now %d.", borg_graphics);
+        /* self scum */
+        case 'c':
+        case 'C': {
+            borg_cfg[BORG_SELF_SCUM] = !borg_cfg[BORG_SELF_SCUM];
+            msg("Borg -- borg_self_scum is now %d.", borg_cfg[BORG_SELF_SCUM]);
+            break;
+        }
+
+        /* Stop when the borg wins */
+        case 'k':
+        case 'K': {
+            borg_cfg[BORG_STOP_KING] = !borg_cfg[BORG_STOP_KING];
+            msg("Borg -- borg_stop_king is now %d.", borg_cfg[BORG_STOP_KING]);
+            break;
+        }
+
+        /* Stop when the borg wins */
+        case 'l':
+        case 'L': {
+            borg_cfg[BORG_LUNAL_MODE] = !borg_cfg[BORG_LUNAL_MODE];
+            msg("Borg -- borg_lunal_mode is now %d.",
+                borg_cfg[BORG_LUNAL_MODE]);
             break;
         }
 
         /* Dump savefile at each level */
         case 's':
         case 'S': {
-            borg_flag_save = !borg_flag_save;
-            msg("Borg -- borg_flag_save is now %d.", borg_flag_save);
+            borg_cfg[BORG_AUTOSAVE] = !borg_cfg[BORG_AUTOSAVE];
+            msg("Borg -- borg_autosave is now %d.", borg_cfg[BORG_AUTOSAVE]);
             break;
         }
 
-        /* clear 'fear' levels */
-        case 'f':
-        case 'F': {
-            msg("Command No Longer Useful");
+        /* verbose mode */
+        case 'v':
+        case 'V':
+        {
+            borg_cfg[BORG_VERBOSE] = !borg_cfg[BORG_VERBOSE];
+            msg("Borg -- borg_verbose is now %d.", borg_cfg[BORG_VERBOSE]);
             break;
         }
         }

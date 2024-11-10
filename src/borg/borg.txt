@@ -146,13 +146,18 @@ borg_respawn_winners = FALSE
 # This variable will determine the minimal character level at which the borg
 # will create a character dump file.  That file contains some vital information
 # concerning the status of the borg at the time of his demise.  It is placed
-# in the user directory.
-# The borg_save_death variable will tell the borg to save the game in the user
-# directory so that it can be examined more closely.  The clevel of the borg
-# must at least equal the borg_dump_level in order for the game to save.
+# in the archive directory.
+# The borg_save_death variable will tell the borg to save the game in the 
+# archive directory so that it can be examined more closely.  The clevel of the
+# borg must at least equal the borg_dump_level in order for the game to save.
 
 borg_dump_level = 1
 borg_save_death = 1
+
+# Autosave 
+# this causes the borg to do a (redundant) save at the start of every level and
+@ create a backup of that save to the archive directory
+borg_autosave = FALSE
 
 # Auto Stops
 

@@ -75,6 +75,7 @@ enum {
     BORG_SAVE_DEATH,
     BORG_STOP_ON_BELL,
     BORG_ALLOW_STRANGE_OPTS,
+    BORG_AUTOSAVE,
     BORG_MAX_SETTINGS
 };
 extern int *borg_cfg;
@@ -84,7 +85,6 @@ extern int *borg_cfg;
  */
 extern bool borg_active; /* Actually active */
 extern bool borg_cancel; /* Being cancelled */
-extern bool borg_flag_save; /* Save savefile at each level */
 extern bool borg_save; /* do a save next time we get to press a key! */
 extern bool borg_graphics; /* rr9's graphics */
 
