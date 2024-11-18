@@ -804,8 +804,6 @@ void do_cmd_borg(void)
         /* Step forever */
         borg_step = 0;
 
-        borg_notice(true);
-
         if (player->opts.lazymove_delay != 0) {
             borg_note("# Turning off lazy movement controls");
             player->opts.lazymove_delay = 0;

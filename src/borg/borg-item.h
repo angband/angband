@@ -154,8 +154,7 @@ struct borg_item {
 
 /* Quiver */
 #define QUIVER_START INVEN_TOTAL
-#define QUIVER_SIZE  (z_info->quiver_size)
-#define QUIVER_END   (QUIVER_START + QUIVER_SIZE)
+#define QUIVER_END   (QUIVER_START + (z_info->quiver_size))
 
 /*
  * Current "inventory"

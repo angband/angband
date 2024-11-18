@@ -187,7 +187,7 @@ void borg_notice_weapon_swap(void)
             continue;
 
         /* Skip non-wearable items */
-        if (borg_slot(item->tval, item->sval) == -1)
+        if (borg_wield_slot(item) == -1)
             continue;
 
         /* Don't carry swaps until dlevel 50.  They are heavy.
@@ -779,7 +779,7 @@ void borg_notice_armour_swap(void)
             continue;
 
         /* Skip non-wearable items */
-        if (borg_slot(item->tval, item->sval) == -1)
+        if (borg_wield_slot(item) == -1)
             continue;
 
         /* Dont carry swaps until dlevel 50.  They are heavy */
