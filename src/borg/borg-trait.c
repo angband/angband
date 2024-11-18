@@ -1123,6 +1123,11 @@ static void borg_notice_ammo(int slot)
     if (!item->iqty)
         return;
 
+
+    /* number of inventory slots the quiver used  */
+    if (slot >= QUIVER_START)
+        borg.trait[BI_QUIVER_SLOTS]++;
+
     /* total up the weight of the items */
     borg.trait[BI_WEIGHT] += borg_item_weight(item);
 
@@ -2851,12 +2856,6 @@ void borg_notice(bool notice_swap)
 
     /* Notice the inventory */
     borg_notice_inventory();
-
-    /* number of inventory slots the quiver used  */
-    borg.trait[BI_QUIVER_SLOTS]
-        = (borg.trait[BI_AMMO_COUNT] - 1) / z_info->quiver_slot_size + 1;
-
-    borg.trait[BI_EMPTY] -= borg.trait[BI_QUIVER_SLOTS];
 
     /* Notice and locate my swap weapon */
     if (notice_swap) {
