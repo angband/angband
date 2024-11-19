@@ -90,6 +90,7 @@ SOUND_sdl2_cflags := \
 SOUND_sdl2_ldflags := \
 	$(shell sdl2-config --libs) \
 	-lSDL2_mixer \
+	-lmodplug \
 	-lmpg123 \
 	-lopusfile \
 	-lopus \
