@@ -1195,16 +1195,17 @@ static void render_mb(struct sdlpui_control *c,
 
 		if ((mbp->subtype_code == SDLPUI_MB_TOGGLE
 				|| mbp->subtype_code == SDLPUI_MB_INDICATOR)
-				&& mbp->v.toggled && mbp->caption_rect.h > 4
+				&& mbp->caption_rect.h > 4
 				&& c->rect.w > mbp->caption_rect.x
 					+ mbp->caption_rect.w
 					+ SDLPUI_DEFAULT_CTRL_BORDER
 					+ mbp->caption_rect.h) {
 			/*
-			 * Add an indicator that this control has been toggled
-			 * on.  Use a square drawn on the right side of the
+			 * Add an indicator for the toggled state of this
+			 * control.  Use a square drawn on the right side of the
 			 * control with a side length set by the height of the
-			 * caption minus 4.
+			 * caption minus 4.  Fill the square if the toggled
+			 * state is on.
 			 */
 			dst_r.x = c->rect.x + c->rect.w
 				- SDLPUI_DEFAULT_CTRL_BORDER
@@ -1218,7 +1219,11 @@ static void render_mb(struct sdlpui_control *c,
 				dst_r.x += d->rect.x;
 				dst_r.y += d->rect.y;
 			}
-			SDL_RenderFillRect(r, &dst_r);
+			if (mbp->v.toggled) {
+				SDL_RenderFillRect(r, &dst_r);
+			} else {
+				SDL_RenderDrawRect(r, &dst_r);
+			}
 		}
 	}
 
