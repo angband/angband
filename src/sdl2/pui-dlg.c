@@ -2073,13 +2073,24 @@ void sdlpui_menu_handle_loses_key(struct sdlpui_dialog *d,
  * be layed out in a single column; if false, it causes the controls to layed
  * out in a single row.
  * \param border will, if true, cause a border to be drawn about the menu.
+ * \param pop_callback will, if not NULL, be the function called when the
+ * menu is popped up or down.
+ * \param recreate_textures_callback will, if not NULL, be the function
+ * called by the controlling application in response to
+ * SDL_RENDER_TARGETS_RESET (all set to false) or SDL_RENDER_DEVICE_RESET
+ * (all set to true) events.
+ * \param tag sets the tag field of the generated menu so different menus using
+ * the same callbacks can be distinguished.
  * \return a pointer to the structure describing the menu.
  */
 struct sdlpui_dialog *sdlpui_start_simple_menu(struct sdlpui_dialog *parent,
 		struct sdlpui_control *parent_ctrl, int preallocated,
 		bool vertical, bool border, void (*pop_callback)(
 			struct sdlpui_dialog *d, struct sdlpui_window *w,
-			bool up), int tag)
+			bool up),
+		void (*recreate_textures_callback)(struct sdlpui_dialog *d,
+			struct sdlpui_window *w, bool all),
+		int tag)
 {
 	struct sdlpui_dialog *result = SDL_malloc(sizeof(*result));
 	struct sdlpui_simple_menu *psm = SDL_malloc(sizeof(*psm));
@@ -2106,6 +2117,7 @@ struct sdlpui_dialog *sdlpui_start_simple_menu(struct sdlpui_dialog *parent,
 
 	result->ftb = &simple_menu_funcs;
 	result->pop_callback = pop_callback;
+	result->recreate_textures_callback = recreate_textures_callback;
 	result->next = NULL;
 	result->prev = NULL;
 	result->texture = NULL;
@@ -2208,11 +2220,20 @@ void sdlpui_complete_simple_menu(struct sdlpui_dialog *d,
  *
  * \param button_label is the text label to use for the button that dismisses
  * the dialog.
+ * \param pop_callback will, if not NULL, be the function called when the
+ * dialog is popped up or down.
+ * \param recreate_textures_callback will, if not NULL, be the function
+ * called by the controlling application in response to
+ * SDL_RENDER_TARGETS_RESET (all set to false) or SDL_RENDER_DEVICE_RESET
+ * (all set to true) events.
  * \return a pointer to the structure describing the dialog.
  */
 struct sdlpui_dialog *sdlpui_start_simple_info(const char *button_label,
 		void (*pop_callback)(struct sdlpui_dialog *d,
-			struct sdlpui_window *w, bool up), int tag)
+			struct sdlpui_window *w, bool up),
+		void (*recreate_textures_callback)(struct sdlpui_dialog *d,
+			struct sdlpui_window *w, bool all),
+		int tag)
 {
 	struct sdlpui_dialog *result = SDL_malloc(sizeof(*result));
 	struct sdlpui_simple_info *psi = SDL_malloc(sizeof(*psi));
@@ -2226,6 +2247,7 @@ struct sdlpui_dialog *sdlpui_start_simple_info(const char *button_label,
 
 	result->ftb = &simple_info_funcs;
 	result->pop_callback = pop_callback;
+	result->recreate_textures_callback = recreate_textures_callback;
 	result->next = NULL;
 	result->prev = NULL;
 	result->texture = NULL;

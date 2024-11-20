@@ -166,6 +166,15 @@ struct sdlpui_dialog {
 	void (*pop_callback)(struct sdlpui_dialog *d, struct sdlpui_window *w,
 		bool up);
 	/*
+	 * If not NULL, used by a controlling application to recreate
+	 * textures in response to a SDL_RENDER_TARGETS_RESET (all set to
+	 * false to request that all non-static textures be recreated) or
+	 * SDL_RENDER_DEVICE_RESET (all set to true to request all textures
+	 * be recreated) event.
+	 */
+	void (*recreate_textures_callback)(struct sdlpui_dialog *d,
+		struct sdlpui_window *w, bool all);
+	/*
 	 * Managed by the containing window so it can keep a stack of its
 	 * menus and dialogs.
 	 */
@@ -192,7 +201,7 @@ struct sdlpui_dialog {
 	Uint32 type_code;
 	/*
 	 * Allow for different behavior for different dialogs with the same
-	 * pop_callback.
+	 * callback.
 	 */
 	int tag;
 	/*
@@ -307,7 +316,10 @@ struct sdlpui_dialog *sdlpui_start_simple_menu(struct sdlpui_dialog *parent,
 		struct sdlpui_control *parent_ctrl, int preallocated,
 		bool vertical, bool border, void (*pop_callback)(
 			struct sdlpui_dialog *d, struct sdlpui_window *w,
-			bool up), int tag);
+			bool up),
+		void (*recreate_textures_callback)(struct sdlpui_dialog *d,
+			struct sdlpui_window *w, bool all),
+		int tag);
 struct sdlpui_control *sdlpui_get_simple_menu_next_unused(
 		struct sdlpui_dialog *d, int flags);
 void sdlpui_complete_simple_menu(struct sdlpui_dialog *d,
@@ -316,7 +328,10 @@ void sdlpui_complete_simple_menu(struct sdlpui_dialog *d,
 /* Construct a simple information dialog. */
 struct sdlpui_dialog *sdlpui_start_simple_info(const char *button_label,
 		void (*pop_callback)(struct sdlpui_dialog *d,
-			struct sdlpui_window *w, bool up), int tag);
+			struct sdlpui_window *w, bool up),
+		void (*recreate_textures_callback)(struct sdlpui_dialog *d,
+			struct sdlpui_window *w, bool all),
+		int tag);
 void sdlpui_simple_info_add_image(struct sdlpui_dialog *d, SDL_Texture *image,
 		enum sdlpui_hor_align halign, int top_margin, int bottom_margin,
 		int left_margin, int right_margin);
