@@ -531,6 +531,7 @@ static void keyboard_event_to_angband_key(const SDL_KeyboardEvent *key,
 		bool kp_as_mod, keycode_t *ch, uint8_t *mods);
 static void textinput_event_to_angband_key(const SDL_TextInputEvent *key,
 		bool kp_as_mod, keycode_t *ch, uint8_t *mods);
+static void recreate_textures(struct my_app *a, bool all);
 
 /* Global variables. */
 
@@ -1973,6 +1974,7 @@ static void show_shortcut_editor(struct sdlpui_window *w, int x, int y)
 
 	w->shorte->ftb = &shortcut_editor_funcs;
 	w->shorte->pop_callback = hide_shortcut_editor;
+	w->shorte->recreate_textures_callback = NULL;
 	w->shorte->next = NULL;
 	w->shorte->prev = NULL;
 	w->shorte->texture = NULL;
@@ -2005,13 +2007,45 @@ static void hide_about(struct sdlpui_dialog *d, struct sdlpui_window *w,
 	}
 }
 
+static void recreate_about_dialog_textures(struct sdlpui_dialog *d,
+		struct sdlpui_window *w, bool all)
+{
+	struct sdlpui_simple_info *psi;
+	int i;
+
+	if (!all) {
+		return;
+	}
+
+	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_INFO);
+	psi = (struct sdlpui_simple_info*)d->priv;
+
+	/* Recreate the static texture for the one image in the dialog. */
+	for (i = 0; i < psi->number; ++i) {
+		if (psi->labels[i].type_code == SDLPUI_CTRL_IMAGE) {
+			char path[4096];
+			struct sdlpui_image *pi =
+				(struct sdlpui_image*)psi->labels[i].priv;
+
+			if (pi->image) {
+				SDL_DestroyTexture(pi->image);
+			}
+			path_build(path, sizeof(path), DEFAULT_ABOUT_ICON_DIR,
+				DEFAULT_ABOUT_ICON);
+			pi->image = load_image(w, path);
+			break;
+		}
+	}
+}
+
 static void show_about(struct sdlpui_window *window, int x, int y)
 {
 	if (!window->infod) {
 		char path[4096];
 		SDL_Texture *texture;
 
-		window->infod = sdlpui_start_simple_info("Ok", NULL, 0);
+		window->infod = sdlpui_start_simple_info("Ok", NULL,
+			recreate_about_dialog_textures, 0);
 		path_build(path, sizeof(path), DEFAULT_ABOUT_ICON_DIR,
 			DEFAULT_ABOUT_ICON);
 		texture = load_image(window, path);
@@ -2146,7 +2180,7 @@ static struct sdlpui_dialog *handle_menu_windows(struct sdlpui_control *ctrl,
 		int ul_x_win, int ul_y_win)
 {
 	struct sdlpui_dialog *result = sdlpui_start_simple_menu(
-		dlg, ctrl, MAX_WINDOWS, true, false, NULL, 0);
+		dlg, ctrl, MAX_WINDOWS, true, false, NULL, NULL, 0);
 	unsigned int i;
 
 	for (i = 1; i < MAX_WINDOWS; ++i) {
@@ -2332,8 +2366,8 @@ static struct sdlpui_dialog *handle_menu_tile_sizes(struct sdlpui_control *ctrl,
 	 */
 	bool disabled = (window->graphics.id == GRAPHICS_NONE
 		|| !character_generated || !inkey_flag);
-	struct sdlpui_dialog *result =
-		sdlpui_start_simple_menu(dlg, ctrl, 2, true, false, NULL, 0);
+	struct sdlpui_dialog *result = sdlpui_start_simple_menu(dlg, ctrl, 2,
+		true, false, NULL, NULL, 0);
 	struct sdlpui_control *c;
 
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
@@ -2365,7 +2399,7 @@ static struct sdlpui_dialog *handle_menu_tile_sets(struct sdlpui_control *ctrl,
 	 */
 	bool disabled = !character_generated || !inkey_flag;
 	struct sdlpui_dialog *result = sdlpui_start_simple_menu(dlg, ctrl,
-		0, true, false, NULL, 0);
+		0, true, false, NULL, NULL, 0);
 	graphics_mode *mode = graphics_modes;
 
 	while (mode) {
@@ -2389,7 +2423,7 @@ static struct sdlpui_dialog *handle_menu_tiles(struct sdlpui_control *ctrl,
 		int ul_x_win, int ul_y_win)
 {
 	struct sdlpui_dialog *result = sdlpui_start_simple_menu(dlg, ctrl, 2,
-		true, false, NULL, 0);
+		true, false, NULL, NULL, 0);
 	struct sdlpui_control *c;
 
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
@@ -2585,7 +2619,8 @@ static struct sdlpui_dialog *handle_menu_font_sizes(
 	calculate_subwindow_font_size_bounds(subwindow, NULL,
 		&subwindow->min_font_size, &subwindow->max_font_size);
 	SDL_assert(subwindow);
-	result = sdlpui_start_simple_menu(dlg, ctrl, 2, true, false, NULL, 0);
+	result = sdlpui_start_simple_menu(dlg, ctrl, 2, true, false, NULL,
+		NULL, 0);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_ranged_int(c, "- %2d points +", SDLPUI_HOR_LEFT,
 		handle_menu_font_size, tag, !is_vector_font
@@ -2647,7 +2682,7 @@ static struct sdlpui_dialog *handle_menu_font_names(struct sdlpui_control *ctrl,
 		count = window->app->font_count - start;
 	}
 	result = sdlpui_start_simple_menu(dlg, ctrl,
-		count + ((more_nesting) ? 1 : 0), true, false, NULL, 0);
+		count + ((more_nesting) ? 1 : 0), true, false, NULL, NULL, 0);
 	if (more_nesting) {
 		c = sdlpui_get_simple_menu_next_unused(result,
 			SDLPUI_MFLG_NONE);
@@ -2683,7 +2718,7 @@ static struct sdlpui_dialog *handle_menu_purpose(struct sdlpui_control *ctrl,
 	subw_idx = (*ctrl->ftb->get_tag)(ctrl);
 	SDL_assert(subw_idx >= 0 && subw_idx != MAIN_SUBWINDOW);
 	result = sdlpui_start_simple_menu(dlg, ctrl,
-		(int)N_ELEMENTS(window_flag_desc), true, false, NULL, 0);
+		(int)N_ELEMENTS(window_flag_desc), true, false, NULL, NULL, 0);
 	while (i < (int)N_ELEMENTS(window_flag_desc)) {
 		if (window_flag_desc[i]) {
 			struct sdlpui_control *c =
@@ -2714,7 +2749,8 @@ static struct sdlpui_dialog *handle_menu_font(struct sdlpui_control *ctrl,
 
 	SDL_assert(ctrl->ftb->get_tag);
 	tag = (*ctrl->ftb->get_tag)(ctrl);
-	result = sdlpui_start_simple_menu(dlg, ctrl, 2, true, false, NULL, 0);
+	result = sdlpui_start_simple_menu(dlg, ctrl, 2, true, false, NULL,
+		NULL, 0);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_submenu_button(c, "Name", SDLPUI_HOR_LEFT,
 		handle_menu_font_names, SDLPUI_CHILD_MENU_RIGHT, tag, false);
@@ -2813,7 +2849,7 @@ static struct sdlpui_dialog *handle_menu_alpha(struct sdlpui_control *ctrl,
 	nstep = 1 + ((100 - DEFAULT_ALPHA_LOWEST + (DEFAULT_ALPHA_STEP - 1))
 		/ DEFAULT_ALPHA_STEP);
 	result = sdlpui_start_simple_menu(dlg, ctrl, nstep, true, false,
-		NULL, 0);
+		NULL, NULL, 0);
 	for (i = 0; i < nstep; ++i) {
 		int alpha_pct = MIN(100,
 			DEFAULT_ALPHA_LOWEST + i * DEFAULT_ALPHA_STEP);
@@ -2879,7 +2915,7 @@ static struct sdlpui_dialog *handle_menu_terms(struct sdlpui_control *ctrl,
 	SDL_assert(subwindow);
 	result = sdlpui_start_simple_menu(dlg, ctrl,
 		(subwindow->index == MAIN_SUBWINDOW) ? 4 : 5, true, false,
-		handle_menu_term_pop, tag);
+		handle_menu_term_pop, NULL, tag);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_submenu_button(c, "Font", SDLPUI_HOR_LEFT,
 		handle_menu_font, SDLPUI_CHILD_MENU_RIGHT, tag, false);
@@ -2919,7 +2955,7 @@ static struct sdlpui_dialog *handle_menu_button(struct sdlpui_control *ctrl,
 	struct sdlpui_dialog *result = sdlpui_start_simple_menu(
 		parent, ctrl, 3 + (int)N_ELEMENTS(angband_term_name)
 		+ ((window->index == MAIN_WINDOW) ? 2 : 0), true, false,
-		NULL, 0);
+		NULL, NULL, 0);
 	unsigned int i;
 	struct sdlpui_control *c;
 
@@ -4091,6 +4127,12 @@ static void wait_anykey(struct my_app *a)
 			case SDL_QUIT:
 				handle_quit();
 				break;
+			case SDL_RENDER_TARGETS_RESET:
+				recreate_textures(a, false);
+				break;
+			case SDL_RENDER_DEVICE_RESET:
+				recreate_textures(a, true);
+				break;
 			case SDL_WINDOWEVENT:
 				handle_windowevent(a, &event.window);
 				return;
@@ -4134,6 +4176,12 @@ static bool get_event(struct my_app *a)
 			return handle_mousewheel(a, &event.wheel);
 		case SDL_WINDOWEVENT:
 			handle_windowevent(a, &event.window);
+			return false;
+		case SDL_RENDER_TARGETS_RESET:
+			recreate_textures(a, false);
+			return false;
+		case SDL_RENDER_DEVICE_RESET:
+			recreate_textures(a, true);
 			return false;
 		case SDL_QUIT:
 			handle_quit();
@@ -5088,6 +5136,88 @@ static void free_font(struct font *font)
 	mem_free(font);
 }
 
+static void recreate_textures(struct my_app *a, bool all)
+{
+	int i;
+
+	reload_all_graphics(a, current_graphics_mode);
+	for (i = 0; i < MAX_WINDOWS; ++i) {
+		struct sdlpui_window *w = &a->windows[i];
+		struct sdlpui_dialog *d;
+		int j;
+
+		if (!w->loaded) {
+			continue;
+		}
+
+		/*
+		 * Recreate the dynamic texture used to cache the dialog font.
+		 */
+		if (w->dialog_font->cache.texture) {
+			SDL_DestroyTexture(w->dialog_font->cache.texture);
+			w->dialog_font->cache.texture = NULL;
+			make_font_cache(w, w->dialog_font);
+		}
+
+		/* Recreate the static texture used for the stipple pattern. */
+		if (all && w->stipple.texture) {
+			SDL_DestroyTexture(w->stipple.texture);
+			w->stipple = sdlpui_compute_stipple(w->renderer);
+		}
+
+		/*
+		 * Recreate the texture used for the wallpaper.  That texture
+		 * is dynamic if the wallpapering mode is WALLPAPER_TILED;
+		 * otherwise, that texture is static.
+		 */
+		if (w->wallpaper.mode != WALLPAPER_DONT_SHOW
+				&& w->wallpaper.texture && (all
+				|| w->wallpaper.mode == WALLPAPER_TILED)) {
+			SDL_DestroyTexture(w->wallpaper.texture);
+			w->wallpaper.texture = NULL;
+			if (w->config) {
+				load_wallpaper(w, w->config->wallpaper_path);
+			} else {
+				load_default_wallpaper(w);
+			}
+		}
+
+		/*
+		 * Recreate the textures for subwindows; those are all
+		 * dynamic.
+		 */
+		for (j = 0; j < MAX_SUBWINDOWS; ++j) {
+			struct subwindow *sw = w->subwindows[j];
+
+			if (!sw) {
+				continue;
+			}
+			if (!sw->texture) {
+				SDL_DestroyTexture(sw->texture);
+				sw->texture = make_subwindow_texture(w,
+					sw->full_rect.w, sw->full_rect.h);
+				SDL_assert(sw->texture);
+			}
+			if (sw->font->cache.texture) {
+				SDL_DestroyTexture(sw->font->cache.texture);
+				sw->font->cache.texture = NULL;
+				make_font_cache(w, sw->font);
+			}
+		}
+
+		/*
+		 * Recreate any textures used by dialogs or menus in the window.
+		 */
+		for (d = w->d_head; d; d = d->next) {
+			if (d->recreate_textures_callback) {
+				(*d->recreate_textures_callback)(d, w, all);
+			}
+		}
+	}
+
+	refresh_angband_terms(a);
+}
+
 static bool is_ok_col_row(const struct subwindow *subwindow,
 		const SDL_Rect *rect, int cell_w, int cell_h)
 {
@@ -5332,7 +5462,7 @@ static void load_status_bar(struct sdlpui_window *window)
 	window->status_bar = sdlpui_start_simple_menu(NULL, NULL,
 		2 + N_ELEMENTS(window->subwindows)
 		+ ((window->index == MAIN_WINDOW) ? 1 : 0), false, true,
-		NULL, 0);
+		NULL, NULL, 0);
 	c = sdlpui_get_simple_menu_next_unused(window->status_bar,
 		SDLPUI_MFLG_NONE);
 	sdlpui_create_submenu_button(c, "Menu", SDLPUI_HOR_CENTER,
