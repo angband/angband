@@ -2033,6 +2033,9 @@ static void recreate_about_dialog_textures(struct sdlpui_dialog *d,
 			path_build(path, sizeof(path), DEFAULT_ABOUT_ICON_DIR,
 				DEFAULT_ABOUT_ICON);
 			pi->image = load_image(w, path);
+
+			d->dirty = true;
+			sdlpui_signal_redraw(w);
 			break;
 		}
 	}
@@ -5197,6 +5200,12 @@ static void recreate_textures(struct my_app *a, bool all)
 				sw->texture = make_subwindow_texture(w,
 					sw->full_rect.w, sw->full_rect.h);
 				SDL_assert(sw->texture);
+			}
+			if (!sw->aux_texture) {
+				SDL_DestroyTexture(sw->aux_texture);
+				sw->aux_texture =
+					make_subwindow_texture(w, 1, 1);
+				SDL_assert(sw->aux_texture);
 			}
 			if (sw->font->cache.texture) {
 				SDL_DestroyTexture(sw->font->cache.texture);
