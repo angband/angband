@@ -2075,10 +2075,12 @@ static void signal_move_state(struct sdlpui_window *window)
 	bool was_active = window->move_state.active;
 
 	SDL_assert(!window->size_state.active);
+	window->alpha = was_active ? DEFAULT_ALPHA_FULL : DEFAULT_ALPHA_LOW;
 	if (was_active) {
 		window->move_state.active = false;
 		window->move_state.moving = false;
 		window->move_state.subwindow = NULL;
+		set_subwindows_alpha(window, window->alpha);
 	} else {
 		window->move_state.active = true;
 	}
@@ -2094,7 +2096,6 @@ static void signal_move_state(struct sdlpui_window *window)
 	}
 
 	SDL_SetWindowGrab(window->window, was_active ? SDL_FALSE : SDL_TRUE);
-	window->alpha = was_active ? DEFAULT_ALPHA_FULL : DEFAULT_ALPHA_LOW;
 }
 
 static void signal_size_state(struct sdlpui_window *window)
@@ -2102,6 +2103,7 @@ static void signal_size_state(struct sdlpui_window *window)
 	bool was_active = window->size_state.active;
 
 	SDL_assert(!window->move_state.active);
+	window->alpha = was_active ? DEFAULT_ALPHA_FULL : DEFAULT_ALPHA_LOW;
 	if (was_active) {
 		window->size_state.active = false;
 		window->size_state.sizing = false;
@@ -2110,6 +2112,7 @@ static void signal_size_state(struct sdlpui_window *window)
 				sizeof(window->size_state.subwindow->sizing_rect));
 			window->size_state.subwindow = NULL;
 		}
+		set_subwindows_alpha(window, window->alpha);
 	} else {
 		window->size_state.active = true;
 	}
@@ -2125,7 +2128,6 @@ static void signal_size_state(struct sdlpui_window *window)
 	}
 
 	SDL_SetWindowGrab(window->window, was_active ? SDL_FALSE : SDL_TRUE);
-	window->alpha = was_active ? DEFAULT_ALPHA_FULL : DEFAULT_ALPHA_LOW;
 }
 
 static void handle_button_movesize(struct sdlpui_control *ctrl,
@@ -5454,14 +5456,6 @@ static void handle_button_open_subwindow(struct sdlpui_control *ctrl,
 	redraw_all_windows(subwindow->app, false);
 }
 
-static void close_status_bar_menu(struct sdlpui_window *window)
-{
-	sdlpui_popdown_dialog(window->status_bar, window, false);
-	window->status_bar = NULL;
-	window->move_button = NULL;
-	window->size_button = NULL;
-}
-
 static void load_status_bar(struct sdlpui_window *window)
 {
 	struct sdlpui_control *c;
@@ -5502,12 +5496,12 @@ static void load_status_bar(struct sdlpui_window *window)
 		SDLPUI_MFLG_END_GRAVITY);
 	window->move_button = c;
 	sdlpui_create_menu_toggle(c, "Move", SDLPUI_HOR_CENTER,
-		handle_button_movesize, 0, false, false);
+		handle_button_movesize, 0, false, window->move_state.active);
 	c = sdlpui_get_simple_menu_next_unused(window->status_bar,
 		SDLPUI_MFLG_END_GRAVITY);
 	window->size_button = c;
 	sdlpui_create_menu_toggle(c, "Size", SDLPUI_HOR_CENTER,
-		handle_button_movesize, 1, false, false);
+		handle_button_movesize, 1, false, window->size_state.active);
 	sdlpui_complete_simple_menu(window->status_bar, window);
 	if (window->status_bar->ftb->query_minimum_size) {
 		(*window->status_bar->ftb->query_minimum_size)(
@@ -5535,12 +5529,6 @@ static void load_status_bar(struct sdlpui_window *window)
 	window->status_bar->rect.y = 0;
 	window->status_bar->pinned = true;
 	sdlpui_popup_dialog(window->status_bar, window, false);
-}
-
-static void reload_status_bar(struct sdlpui_window *window)
-{
-	close_status_bar_menu(window);
-	load_status_bar(window);
 }
 
 static void fit_subwindow_in_window(const struct sdlpui_window *window,
@@ -5581,8 +5569,6 @@ static void resize_window(struct sdlpui_window *window, int w, int h)
 			fit_subwindow_in_window(window, subwindow);
 		}
 	}
-
-	reload_status_bar(window);
 
 	redraw_window(window);
 }
