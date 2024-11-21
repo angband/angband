@@ -487,6 +487,7 @@ static struct sdlpui_window *get_window_by_id(struct my_app *a, Uint32 id);
 static struct sdlpui_window *get_window_direct(struct my_app *a,
 		unsigned index);
 static void resize_window(struct sdlpui_window *window, int w, int h);
+static void resize_subwindow(struct subwindow *subwindow);
 static struct subwindow *get_new_subwindow(struct my_app *a, unsigned index);
 static void load_subwindow(struct sdlpui_window *window,
 		struct subwindow *subwindow);
@@ -2236,6 +2237,13 @@ static void handle_menu_fullscreen(struct sdlpui_control *ctrl,
 					 */
 					subwindow->full_rect =
 						subwindow->stored_rect;
+				} else if (subwindow->full_rect.w
+						!= subwindow->stored_rect.w
+						|| subwindow->full_rect.h
+						!= subwindow->stored_rect.h) {
+					subwindow->sizing_rect =
+						subwindow->full_rect;
+					resize_subwindow(subwindow);
 				}
 			}
 		}
