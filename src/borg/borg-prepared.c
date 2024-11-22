@@ -546,7 +546,7 @@ const char *borg_prepared(int depth)
     if (borg_cfg[BORG_USES_DYNAMIC_CALCS]) {
 
         /* use the base restock so special checks can be done */
-        if ((reason = borg_restock(depth)))
+        if ((reason = borg_restock(depth, true)))
             return reason;
 
         if ((reason = borg_prepared_dynamic(depth)))
@@ -554,7 +554,7 @@ const char *borg_prepared(int depth)
 
     } else {
         /* Not prepared if I need to restock */
-        if ((reason = borg_restock(depth)))
+        if ((reason = borg_restock(depth, true)))
             return (reason);
 
         /*** Require his Clevel to be greater than or equal to Depth */
@@ -691,24 +691,28 @@ const char *borg_prepared(int depth)
  * Note that we ignore "restock" issues for the first several turns
  * on each level, to prevent repeated "level bouncing".
  */
-const char *borg_restock(int depth)
+const char *borg_restock(int depth, bool do_always_checks)
 {
 
     /* We are now looking at our preparedness */
     if (-1 == borg.ready_morgoth)
         borg.ready_morgoth = 0;
 
-    /* Always ready for the town */
-    if (!depth)
-        return ((char *)NULL);
+    /* some checks for things we are always prepared for */
+    if (do_always_checks) {
 
-    /* Always Ready to leave town */
-    if (borg.trait[BI_CDEPTH] == 0)
-        return ((char *)NULL);
+        /* Always ready for the town */
+        if (!depth)
+            return ((char *)NULL);
 
-    /* Always spend time on a level unless 100*/
-    if (borg_t - borg_began < 100 && borg.trait[BI_CDEPTH] != 100)
-        return ((char *)NULL);
+        /* Always Ready to leave town */
+        if (borg.trait[BI_CDEPTH] == 0)
+            return ((char *)NULL);
+
+        /* Always spend time on a level unless 100*/
+        if (borg_t - borg_began < 100 && borg.trait[BI_CDEPTH] != 100)
+            return ((char *)NULL);
+    }
 
     if (borg_cfg[BORG_USES_DYNAMIC_CALCS]) 
         return borg_restock_dynamic(depth);

@@ -1582,7 +1582,7 @@ bool borg_think_dungeon(void)
     }
 
     /* if I must go to town without delay */
-    if ((char *)NULL != borg_restock(borg.trait[BI_CDEPTH])) {
+    if ((char *)NULL != borg_restock(borg.trait[BI_CDEPTH], true)) {
         if (borg_leave_level(false))
             return true;
     }
