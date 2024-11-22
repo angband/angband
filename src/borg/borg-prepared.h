@@ -37,7 +37,7 @@ extern const char *borg_prepared(int depth);
 /*
  * Determine if the Borg is out of "crucial" supplies.
  */
-extern const char *borg_restock(int depth);
+extern const char *borg_restock(int depth, bool do_always_checks);
 
 #endif
 #endif

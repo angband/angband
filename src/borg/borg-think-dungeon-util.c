@@ -622,7 +622,7 @@ bool borg_leave_level(bool bored)
 
         /* Case for those who cannot Teleport Level */
         if (borg.trait[BI_MAXDEPTH] == 100 && !borg_cfg[BORG_PLAYS_RISKY]) {
-            if (borg.trait[BI_ATELEPORTLVL] == 0) {
+            if (borg_restock(100, false)) {
                 /* These pple must crawl down to 100, Sorry */
                 borg.goal.fleeing = true;
                 borg.goal.leaving = true;
@@ -759,9 +759,9 @@ bool borg_leave_level(bool bored)
         }
 
         /* if I must  go to town without delay */
-        if (NULL != borg_restock(borg.trait[BI_CDEPTH])) {
+        if (NULL != borg_restock(borg.trait[BI_CDEPTH], true)) {
             borg_note(format("# returning to town to restock(too deep: %s)",
-                borg_restock(borg.trait[BI_CDEPTH])));
+                borg_restock(borg.trait[BI_CDEPTH], true)));
             borg.goal.rising = true;
             need_restock     = true;
         }
@@ -812,10 +812,13 @@ bool borg_leave_level(bool bored)
 
     /* return to town if it has been a while */
     if ((!borg.goal.rising && bored && !vault_on_level && !borg_fighting_unique
-            && borg_time_town + borg_t - borg_began > 8000)
+        && borg_time_town + borg_t - borg_began > 8000)
         || (borg_time_town + borg_t - borg_began > 12000)) {
-        borg_note("# Going to town (I miss my home).");
-        borg.goal.rising = true;
+        /* don't get bored when hunting uniques */
+        if (borg.trait[BI_MAXDEPTH] < 99 || !unique_on_level) {
+            borg_note("# Going to town (I miss my home).");
+            borg.goal.rising = true;
+        }
     }
 
     /* return to town if been scumming for a bit */
@@ -872,16 +875,19 @@ bool borg_leave_level(bool bored)
 
     /* do not hangout on boring levels for *too* long */
     if (!g && (borg_t - borg_began) > borg_time_to_stay_on_level(bored)) {
-        /* Note */
-        borg_note(format("# Spent too long (%ld) on level, leaving.",
-            (long int)(borg_t - borg_began)));
+        /* don't get bored when hunting uniques */
+        if (borg.trait[BI_MAXDEPTH] < 99 || !unique_on_level) {
+            /* Note */
+            borg_note(format("# Spent too long (%ld) on level, leaving.",
+                (long int)(borg_t - borg_began)));
 
-        /* if we are trying not to go down, go up*/
-        if (try_not_to_descend)
-            g = -1;
-        else
-            /* otherwise use random stairs */
-            g = ((randint0(100) < 50) ? -1 : 1);
+            /* if we are trying not to go down, go up*/
+            if (try_not_to_descend)
+                g = -1;
+            else
+                /* otherwise use random stairs */
+                g = ((randint0(100) < 50) ? -1 : 1);
+        }
     }
 
     /* Go Up */
@@ -892,16 +898,20 @@ bool borg_leave_level(bool bored)
             borg.stair_less = true;
         }
 
-        /* Hack -- recall if going to town */
-        if (borg.goal.rising && ((borg_time_town + (borg_t - borg_began)) > 200)
-            && (borg.trait[BI_CDEPTH] >= 5) && borg_recall()) {
-            borg_note("# Recalling to town (goal rising)");
-            return true;
-        }
+        /* don't recall to town from 100 if we are prepared for 99 */
+        if (borg.trait[BI_CDEPTH] < 100 || !borg_prepared(99)) {
 
-        /* Hack -- Recall if needing to Restock */
-        if (need_restock && borg.trait[BI_CDEPTH] >= 5 && borg_recall()) {
-            borg_note("# Recalling to town (need to restock)");
+            /* Hack -- recall if going to town */
+            if (borg.goal.rising && ((borg_time_town + (borg_t - borg_began)) > 200)
+                && (borg.trait[BI_CDEPTH] >= 5) && borg_recall()) {
+                borg_note("# Recalling to town (goal rising)");
+                return true;
+            }
+
+            /* Hack -- Recall if needing to Restock */
+            if (need_restock && borg.trait[BI_CDEPTH] >= 5 && borg_recall()) {
+                borg_note("# Recalling to town (need to restock)");
+            }
         }
 
         /* Attempt to use stairs */
