@@ -17,6 +17,6 @@
 {light slate}          Battle be gathered..."                                        {/}
 
 {light slate}                         Website: http://rephial.org/           {/}
-{light slate}                     Forums: http://angband.oook.cz/forum/      {/}
+{light slate}                     Forums: https://angband.live/forums/       {/}
               
                            For help press '?' in-game
