@@ -664,7 +664,7 @@ Help (``?``)
   just text files in a particular format, and that other help files may be
   available on the Net. In particular, there are a variety of spoiler files
   which do not come with the standard distribution. Check the place you got
-  Angband from or ask on the Angband forums, angband.oook.cz , about them.
+  Angband from or ask on the Angband forums, angband.live/forums/ , about them.
 
 Identify Symbol (``/``)
   Use this command to find out what a character stands for. For instance,
@@ -712,7 +712,7 @@ Save screen dump (|``)``|)
 
   - html, suitable for viewing in a web browser.
   - forum embedded html for vBulletin, suitable for pasting in
-    web forums like http://angband.oook.cz/forums.
+    web forums like https://angband.live/forums/.
 	
 Special Keys
 ============

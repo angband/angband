@@ -127,7 +127,7 @@ struct monster *monster_target_monster(effect_handler_context_t *context)
  *     3) if a player is moving, it does not have player traps
  *     4) if a monster is moving, it does not have a glyph of warding
  * There's some discussion here,
- * http://angband.oook.cz/forum/showthread.php?t=11066
+ * https://angband.live/forums/forum/angband/vanilla/10323-the-evil-eye-commands-you-to-return-or-not .
  */
 static bool has_teleport_destination_prereqs(struct chunk *c, struct loc grid,
 		bool is_player_moving)

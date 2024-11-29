@@ -81,5 +81,5 @@ Non-code activities are different. Documentation can be written on the wiki, or 
 
 
 .. _GitHub: https://github.com/angband/angband/
-.. _Angband forum: http://angband.oook.cz/forum
-.. _Vanilla section: http://angband.oook.cz/forum/forumdisplay.php?f=3
+.. _Angband forum: https://angband.live/forums/
+.. _Vanilla section: https://angband.live/forums/forum/angband/vanilla
