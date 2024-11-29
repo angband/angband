@@ -2061,7 +2061,7 @@ static void show_about(struct sdlpui_window *window, int x, int y)
 		sdlpui_simple_info_add_label(window->infod,
 			"See http://www.rephial.org", SDLPUI_HOR_CENTER);
 		sdlpui_simple_info_add_label(window->infod,
-			"Visit our forum at http://angband.oook.cz/forum",
+			"Visit our forum at https://angband.live/forums/",
 			SDLPUI_HOR_CENTER);
 		sdlpui_complete_simple_info(window->infod, window);
 		window->infod->pop_callback = hide_about;
