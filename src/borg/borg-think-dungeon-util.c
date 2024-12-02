@@ -186,12 +186,16 @@ bool borg_think_dungeon_light(void)
         if (!borg.goal.recalling && borg_recall())
             return true;
 
-        /* Log */
-        borg_note("# Testing for stairs .");
-
         /* Test for stairs */
-        if (!OPT(player, birth_force_descend))
-            borg_keypress('<');
+        if (!OPT(player, birth_force_descend)) {
+            /* Usable stairs */
+            if (borg_grids[borg.c.y][borg.c.x].feat == FEAT_LESS) {
+                /* Log */
+                borg_note("# Testing for stairs .");
+
+                borg_keypress('<');
+            }
+        }
 
         /* If on a glowing grid, got some food, and low mana, then rest here */
         if ((borg.trait[BI_CURSP] < borg.trait[BI_MAXSP]
@@ -313,12 +317,21 @@ bool borg_think_dungeon_light(void)
             }
         }
 
+        /* don't flee to the stairs if already fleeing */
+        if (borg_flow_old(GOAL_FLEE))
+            return true;
+
         /* Try to flow to upstairs if on level one */
         if (borg_flow_stair_less(GOAL_FLEE, false) && !OPT(player, birth_force_descend)) {
-            /* Take the stairs */
-            /* Log */
-            borg_note("# Taking up Stairs stairs (low Light).");
-            borg_keypress('<');
+            /* Usable stairs */
+            if (borg_grids[borg.c.y][borg.c.x].feat == FEAT_LESS) {
+
+                /* Take the stairs */
+                borg_note("# Taking up Stairs (low Light).");
+                borg_keypress('<');
+                return true;
+            }
+            borg_note("# Flowing to stairs (low Light).");
             return true;
         }
 
