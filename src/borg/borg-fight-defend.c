@@ -1232,7 +1232,7 @@ static int borg_defend_aux_tele_away(int p1)
      * end up 500, since p1 - his danger is 500-0. If we are fighting two guys
      * each creating 500 danger, then p2 will be 500, since 1000-500 = 500.
      */
-    p2 = borg_launch_bolt(-1, p1, BORG_ATTACK_AWAY_ALL, z_info->max_range, 0);
+    p2 = borg_launch_bolt(0, p1, BORG_ATTACK_AWAY_ALL, z_info->max_range, 0);
     if (p2 <= 0)
         return 0;
 
@@ -3144,7 +3144,7 @@ static int borg_defend_aux_tele_away_morgoth(void)
      * If left as beam, he targets the collection of monsters.
      */
     p2 = borg_launch_bolt(
-        -1, 50, BORG_ATTACK_AWAY_ALL_MORGOTH, z_info->max_range, 0);
+        0, 50, BORG_ATTACK_AWAY_ALL_MORGOTH, z_info->max_range, 0);
 
     /* Normalize the value a bit */
     if (p2 > 1000)
