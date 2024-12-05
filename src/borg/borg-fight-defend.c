@@ -1226,14 +1226,15 @@ static int borg_defend_aux_tele_away(int p1)
     /* choose, then target a bad guy.
      * Damage will be the danger to my grid which the monster creates.
      * We are targeting the single most dangerous monster.
-     * p2 will be the original danger (p1) minus the danger from the most
-     * dangerous monster eliminated. ie:  if we are fighting only a single
-     * monster who is generating 500 danger and we target him, then p2 _should_
-     * end up 0, since p1 - his danger is 500-500. If we are fighting two guys
+     * p1 will be the original danger. p2 is how much p1 is reduced by
+     * the teleported monsters. ie:  if we are fighting only a single monster 
+     * is generating 500 danger and we target him, then p2 _should_
+     * end up 500, since p1 - his danger is 500-0. If we are fighting two guys
      * each creating 500 danger, then p2 will be 500, since 1000-500 = 500.
      */
-    p2 = p1
-         - borg_launch_bolt(-1, p1, BORG_ATTACK_AWAY_ALL, z_info->max_range, 0);
+    p2 = borg_launch_bolt(0, p1, BORG_ATTACK_AWAY_ALL, z_info->max_range, 0);
+    if (p2 <= 0)
+        return 0;
 
     /* check to see if I am left better off */
     if (borg_simulate) {
@@ -1241,9 +1242,9 @@ static int borg_defend_aux_tele_away(int p1)
         borg_temp_n     = 0;
         borg_tp_other_n = 0;
 
-        if (p1 > p2 && p2 < avoidance / 2) {
+        if (p2 && p2 > avoidance / 2) {
             /* Simulation */
-            return (p1 - p2);
+            return p2;
         } else
             return 0;
     }
@@ -1271,7 +1272,7 @@ static int borg_defend_aux_tele_away(int p1)
         successful_target = -1;
 
         /* Value */
-        return (p2);
+        return p2;
     }
 
     return 0;
@@ -3143,7 +3144,7 @@ static int borg_defend_aux_tele_away_morgoth(void)
      * If left as beam, he targets the collection of monsters.
      */
     p2 = borg_launch_bolt(
-        -1, 50, BORG_ATTACK_AWAY_ALL_MORGOTH, z_info->max_range, 0);
+        0, 50, BORG_ATTACK_AWAY_ALL_MORGOTH, z_info->max_range, 0);
 
     /* Normalize the value a bit */
     if (p2 > 1000)

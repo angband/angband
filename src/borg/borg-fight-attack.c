@@ -1737,9 +1737,10 @@ int borg_launch_bolt(int rad, int dam, int typ, int max, int ammo_location)
                      */
                     n = borg_danger(borg.c.y, borg.c.x, 1, true, false);
 
-                    /* Skip Offsets that do only 1 damage */
-                    if (n == 1)
-                        n = -10;
+                    /* since this is the danger after monster removal */
+                    /* and dam for tel away is the previous danger */
+                    /* we want the biggest reduction in danger */
+                    n = dam - n;
                 }
 
                 /* Reset Teleport Other variables */
