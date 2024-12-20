@@ -287,7 +287,7 @@ static bool borg_think_home_sell_bad(int i, int32_t borg_empty_home_power)
 {
     borg_item *item = &borg_items[i];
 
-    int charge_each;
+    int charge_each = 0;
 
     /* Skip empty or unknown items */
     if (!item->iqty || (!item->kind && !item->aware))
