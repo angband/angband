@@ -942,8 +942,10 @@ bool borg_leave_level(bool bored)
         }
 
         /* No up stairs found. do down then back up */
-        if (track_less.num == 0)
+        if (track_less.num == 0) {
+            borg_note("# no up stairs found, going down");
             g = 1;
+        }
     }
 
     /* Go Down */

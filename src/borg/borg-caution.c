@@ -1074,7 +1074,8 @@ bool borg_caution(void)
         }
         /* Start fleeing */
         if (!borg.goal.fleeing && borg.trait[BI_ACCW] < 2
-            && borg.trait[BI_FOOD] > 3 && borg.trait[BI_AFUEL] > 2) {
+            && borg.trait[BI_FOOD] > 3 && borg.trait[BI_AFUEL] > 2
+            && (borg_t - borg_began) > 400) {
             /* Flee */
             borg_note(format("# Fleeing (restock) %s",
                 borg_restock(borg.trait[BI_CDEPTH], false)));
