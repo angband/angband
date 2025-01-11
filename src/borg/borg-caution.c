@@ -1060,14 +1060,13 @@ bool borg_caution(void)
     /* Don't take off in the middle of a fight */
     /* just to restock and it is useless to restock */
     /* if you have just left town. */
-    if (!borg_fighting_unique
-        && (borg_time_town + (borg_t - borg_began)) > 200 
-        && borg_restock(borg.trait[BI_CDEPTH], false)) {
+    if (!borg_fighting_unique && (borg_time_town + (borg_t - borg_began)) > 200
+        && borg_restock(borg.trait[BI_CDEPTH])) {
         /* Start leaving */
         if (!borg.goal.leaving) {
             /* Note */
-            borg_note(format("# Leaving (restock) %s",
-                borg_restock(borg.trait[BI_CDEPTH], false)));
+            borg_note(format(
+                "# Leaving (restock) %s", borg_restock(borg.trait[BI_CDEPTH])));
 
             /* Start leaving */
             borg.goal.leaving = true;
@@ -1077,8 +1076,8 @@ bool borg_caution(void)
             && borg.trait[BI_FOOD] > 3 && borg.trait[BI_AFUEL] > 2
             && (borg_t - borg_began) > 400) {
             /* Flee */
-            borg_note(format("# Fleeing (restock) %s",
-                borg_restock(borg.trait[BI_CDEPTH], false)));
+            borg_note(format(
+                "# Fleeing (restock) %s", borg_restock(borg.trait[BI_CDEPTH])));
 
             /* Start fleeing */
             borg.goal.fleeing = true;
