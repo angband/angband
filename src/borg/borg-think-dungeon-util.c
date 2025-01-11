@@ -635,7 +635,7 @@ bool borg_leave_level(bool bored)
 
         /* Case for those who cannot Teleport Level */
         if (borg.trait[BI_MAXDEPTH] == 100 && !borg_cfg[BORG_PLAYS_RISKY]) {
-            if (borg_restock(100, false)) {
+            if (borg_restock(100)) {
                 /* These pple must crawl down to 100, Sorry */
                 borg.goal.fleeing = true;
                 borg.goal.leaving = true;
@@ -771,10 +771,10 @@ bool borg_leave_level(bool bored)
             }
         }
 
-        /* if I must  go to town without delay */
-        if (NULL != borg_restock(borg.trait[BI_CDEPTH], true)) {
+        /* if I must go to town without delay */
+        if (NULL != borg_must_return_to_town()) {
             borg_note(format("# returning to town to restock(too deep: %s)",
-                borg_restock(borg.trait[BI_CDEPTH], true)));
+                borg_must_return_to_town()));
             borg.goal.rising = true;
             need_restock     = true;
         }

@@ -546,7 +546,7 @@ const char *borg_prepared(int depth)
     if (borg_cfg[BORG_USES_DYNAMIC_CALCS]) {
 
         /* use the base restock so special checks can be done */
-        if ((reason = borg_restock(depth, true)))
+        if ((reason = borg_restock(depth)))
             return reason;
 
         if ((reason = borg_prepared_dynamic(depth)))
@@ -554,7 +554,7 @@ const char *borg_prepared(int depth)
 
     } else {
         /* Not prepared if I need to restock */
-        if ((reason = borg_restock(depth, true)))
+        if ((reason = borg_restock(depth)))
             return (reason);
 
         /*** Require his Clevel to be greater than or equal to Depth */
@@ -691,28 +691,12 @@ const char *borg_prepared(int depth)
  * Note that we ignore "restock" issues for the first several turns
  * on each level, to prevent repeated "level bouncing".
  */
-const char *borg_restock(int depth, bool do_always_checks)
+const char *borg_restock(int depth)
 {
 
     /* We are now looking at our preparedness */
     if (-1 == borg.ready_morgoth)
         borg.ready_morgoth = 0;
-
-    /* some checks for things we are always prepared for */
-    if (do_always_checks) {
-
-        /* Always ready for the town */
-        if (!depth)
-            return ((char *)NULL);
-
-        /* Always Ready to leave town */
-        if (borg.trait[BI_CDEPTH] == 0)
-            return ((char *)NULL);
-
-        /* Always spend time on a level unless 100*/
-        if (borg_t - borg_began < 100 && borg.trait[BI_CDEPTH] != 100)
-            return ((char *)NULL);
-    }
 
     if (borg_cfg[BORG_USES_DYNAMIC_CALCS]) 
         return borg_restock_dynamic(depth);
@@ -840,5 +824,21 @@ const char *borg_restock(int depth, bool do_always_checks)
     /* Assume happy */
     return ((char *)NULL);
 }
+
+extern const char *borg_must_return_to_town(void)
+{
+    /* don't need to go to town if in town */
+    if (borg.trait[BI_CDEPTH] == 0)
+        return ((char *)NULL);
+
+    /* Always spend time on a level unless 100*/
+    if (borg_t - borg_began < 100 && borg.trait[BI_CDEPTH] != 100)
+        return ((char *)NULL);
+
+    /* need to return to town if restock is needed */
+    return borg_restock(borg.trait[BI_CDEPTH]);
+}
+
+
 
 #endif

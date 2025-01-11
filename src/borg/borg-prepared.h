@@ -37,7 +37,12 @@ extern const char *borg_prepared(int depth);
 /*
  * Determine if the Borg is out of "crucial" supplies.
  */
-extern const char *borg_restock(int depth, bool do_always_checks);
+extern const char *borg_restock(int depth);
+
+/*
+ * Determine if the Borg should return to town immediately.
+ */
+extern const char *borg_must_return_to_town(void);
 
 #endif
 #endif
