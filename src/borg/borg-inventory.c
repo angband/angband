@@ -98,7 +98,7 @@ int borg_slot(int tval, int sval)
             continue;
 
         /* Skip un-aware items */
-        if (!item->kind)
+        if (!item->aware)
             continue;
 
         /* Require correct tval */

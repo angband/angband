@@ -2900,7 +2900,7 @@ static int borg_attack_aux_wand_bolt_unknown(int dam, int typ)
             continue;
 
         /* known */
-        if (borg_items[i].kind)
+        if (borg_items[i].aware)
             continue;
 
         /* No charges */
@@ -2968,7 +2968,7 @@ static int borg_attack_aux_rod_bolt_unknown(int dam, int typ)
             continue;
 
         /* known */
-        if (borg_items[i].kind)
+        if (borg_items[i].aware)
             continue;
 
         /* No charges */

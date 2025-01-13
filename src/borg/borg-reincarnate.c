@@ -281,7 +281,7 @@ static void create_random_name(int race, char *name, size_t name_len)
 /*
  * Init players with some belongings
  *
- * Having an item makes the player "aware" of its purpose.
+ * Having an item makes the player aware of its purpose.
  */
 static void borg_outfit_player(struct player *p)
 {

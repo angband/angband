@@ -75,6 +75,9 @@ static bool borg_consume(int i)
 {
     borg_item *item = &borg_items[i];
 
+    if (!item->aware)
+        return false;
+
     /* Special destruction */
     switch (item->tval) {
     case TV_POTION:
@@ -288,7 +291,7 @@ bool borg_drop_junk(void)
             continue;
 
         /* Do not crush unID'd Scrolls, sell them in town */
-        if (item->tval == TV_SCROLL && (!item->ident && !item->kind))
+        if (item->tval == TV_SCROLL && !item->aware)
             continue;
 
         /* Do not crush Boots, they could be SPEED */
@@ -303,7 +306,7 @@ bool borg_drop_junk(void)
          * Only 2 charges in 5 staves means top 3 are empty.
          */
         if ((item->tval == TV_STAFF || item->tval == TV_WAND)
-            && (item->ident || (item->note && strstr(item->note, "empty")))) {
+            && (item->aware || (item->note && strstr(item->note, "empty")))) {
             if (item->iqty > item->pval)
                 value = 0L;
         }
@@ -328,8 +331,12 @@ bool borg_drop_junk(void)
             }
 
             /* Keep some stuff */
-            if ((item->tval == borg.trait[BI_AMMO_TVAL] && value > 0)
-                || ((item->tval == TV_POTION
+            if (item->tval == borg.trait[BI_AMMO_TVAL] && value > 0)
+            {
+                value += 5000L;
+            }
+
+            if (item->aware && (((item->tval == TV_POTION
                     && item->sval == sv_potion_restore_mana)
                     && (borg.trait[BI_MAXSP] >= 1))
                 || (item->tval == TV_POTION && item->sval == sv_potion_healing)
@@ -355,7 +362,7 @@ bool borg_drop_junk(void)
                     && item->sval == sv_scroll_teleport_level
                     && borg.trait[BI_ATELEPORTLVL] < 1000)
                 || (item->tval == TV_SCROLL
-                    && item->sval == sv_scroll_protection_from_evil))
+                    && item->sval == sv_scroll_protection_from_evil)))
 
             {
                 value += 5000L;
@@ -593,40 +600,45 @@ bool borg_drop_hole(bool desperate)
 
         /* never crush cool stuff that we might be needing later */
         if (!desperate) {
-            if ((item->tval == TV_POTION && item->sval == sv_potion_restore_mana)
-                && (borg.trait[BI_MAXSP] >= 1))
-                continue;
-            if (item->tval == TV_POTION && item->sval == sv_potion_healing)
-                continue;
-            if (item->tval == TV_POTION && item->sval == sv_potion_star_healing)
-                continue;
-            if (item->tval == TV_POTION && item->sval == sv_potion_life)
-                continue;
-            if (item->tval == TV_POTION && item->sval == sv_potion_speed)
-                continue;
-            if (item->tval == TV_SCROLL
-                && item->sval == sv_scroll_protection_from_evil)
-                continue;
-            if (item->tval == TV_SCROLL
-                && item->sval == sv_scroll_rune_of_protection)
-                continue;
-            if (item->tval == TV_SCROLL && item->sval == sv_scroll_teleport_level
-                && borg.trait[BI_ATELEPORTLVL] < 1000)
-                continue;
-            if (item->tval == TV_ROD
-                && (item->sval == sv_rod_healing
-                    || (item->sval == sv_rod_mapping
-                        && borg.trait[BI_CLASS] == CLASS_WARRIOR))
-                && item->iqty <= 5)
-                continue;
-            if (item->tval == TV_WAND
-                && item->sval == sv_wand_teleport_away
-                && borg.trait[BI_CLASS] == CLASS_WARRIOR
-                && borg.trait[BI_ATPORTOTHER] <= 8)
-                continue;
-            if (item->tval == TV_ROD
-                && (item->sval == sv_rod_light && borg.trait[BI_LIGHT] <= 0))
-                continue;
+            if (item->aware) {
+                if ((item->tval == TV_POTION
+                        && item->sval == sv_potion_restore_mana)
+                    && (borg.trait[BI_MAXSP] >= 1))
+                    continue;
+                if (item->tval == TV_POTION && item->sval == sv_potion_healing)
+                    continue;
+                if (item->tval == TV_POTION
+                    && item->sval == sv_potion_star_healing)
+                    continue;
+                if (item->tval == TV_POTION && item->sval == sv_potion_life)
+                    continue;
+                if (item->tval == TV_POTION && item->sval == sv_potion_speed)
+                    continue;
+                if (item->tval == TV_SCROLL
+                    && item->sval == sv_scroll_protection_from_evil)
+                    continue;
+                if (item->tval == TV_SCROLL
+                    && item->sval == sv_scroll_rune_of_protection)
+                    continue;
+                if (item->tval == TV_SCROLL
+                    && item->sval == sv_scroll_teleport_level
+                    && borg.trait[BI_ATELEPORTLVL] < 1000)
+                    continue;
+                if (item->tval == TV_ROD
+                    && (item->sval == sv_rod_healing
+                        || (item->sval == sv_rod_mapping
+                            && borg.trait[BI_CLASS] == CLASS_WARRIOR))
+                    && item->iqty <= 5)
+                    continue;
+                if (item->tval == TV_WAND && item->sval == sv_wand_teleport_away
+                    && borg.trait[BI_CLASS] == CLASS_WARRIOR
+                    && borg.trait[BI_ATPORTOTHER] <= 8)
+                    continue;
+                if (item->tval == TV_ROD
+                    && (item->sval == sv_rod_light
+                        && borg.trait[BI_LIGHT] <= 0))
+                    continue;
+            }
         } else
             value_boost = 7000;
 
@@ -682,7 +694,7 @@ bool borg_drop_hole(bool desperate)
 
         /* Hack  show preference for destroying things we will not use */
         /* if we are high enough level not to worry about gold. */
-        if (borg.trait[BI_CLEVEL] > 35) {
+        if (borg.trait[BI_CLEVEL] > 35 && item->aware) {
             switch (item->tval) {
                 /* rings are under valued. */
             case TV_RING:
@@ -786,7 +798,7 @@ bool borg_drop_hole(bool desperate)
         /* Hack -- try not to destroy "unaware" items
          * unless deep
          */
-        if (!item->kind && (value > 0)) {
+        if (!item->aware && (value > 0)) {
             /* Hack -- Reward "unaware" items */
             switch (item->tval) {
             case TV_RING:
@@ -1026,12 +1038,12 @@ bool borg_drop_slow(void)
             continue;
 
         /* Don't crush it if it is our only source of light */
-        if (item->tval == TV_ROD
+        if (item->tval == TV_ROD && item->aware
             && (item->sval == sv_rod_light && borg.trait[BI_LIGHT] <= 0))
             continue;
 
         /* Rods of healing are too hard to come by */
-        if (item->tval == TV_ROD && item->sval == sv_rod_healing)
+        if (item->tval == TV_ROD && item->aware && item->sval == sv_rod_healing)
             continue;
 
         /* Destroy one of the items */
@@ -1281,8 +1293,8 @@ bool borg_remove_stuff(void)
         if (!item->iqty)
             continue;
 
-        /* Require "aware" */
-        if (!item->kind)
+        /* Require aware */
+        if (!item->aware)
             continue;
 
         /* Require "known" (or needs id) unless we know it is cursed */

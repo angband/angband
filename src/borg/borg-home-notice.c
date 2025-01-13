@@ -311,7 +311,7 @@ static void borg_notice_home_dupe(borg_item *item, bool check_sval, int i)
             item2 = &borg_items[((x - z_info->store_inven_max) + INVEN_WIELD)];
 
         /* skip zero quantity or unknown items */
-        if (!item2->iqty || !item2->kind)
+        if (!item2->iqty || !item2->aware)
             continue;
 
         /* if everything matches it is a duplicate item */
@@ -374,7 +374,7 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
 
 
         /* Hack -- skip un-aware items */
-        if (!item->kind)
+        if (!item->aware)
             continue;
 
         if (of_has(item->flags, OF_SLOW_DIGEST))

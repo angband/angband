@@ -767,7 +767,7 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
                     if (borg_items[ii].iqty == z_info->quiver_slot_size)
                         continue;
 
-                    /* Both objects should have the same ID value */
+                    /* Both objects should have the same kind value */
                     if (take->kind->kidx != borg_items[ii].kind)
                         continue;
 
@@ -783,7 +783,7 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
                     if (!borg_items[ii].iqty)
                         continue;
 
-                    /* Both objects should have the same ID value */
+                    /* Both objects should have the same kind value */
                     if (take->kind->kidx != borg_items[ii].kind)
                         continue;
 

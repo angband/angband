@@ -460,7 +460,9 @@ void borg_item_analyze(
     item->weight  = object_weight_one(real_item);
     item->timeout = real_item->timeout;
     item->level   = real_item->kind->level;
-    item->aware   = object_flavor_is_aware(real_item);
+
+    /* always aware of items in the store */
+    item->aware   = in_store || object_flavor_is_aware(real_item);
 
     /* get info from the known part of the object */
     item->ac   = o->ac;
@@ -576,8 +578,8 @@ void borg_item_analyze(
             item->pval = 0;
     }
 
-    /* Kind index -- Only if partially ID or this is a store object */
-    if (item->aware || in_store)
+    /* Kind index -- Only if we are aware of its kind */
+    if (item->aware)
         item->kind = o->kind->kidx;
 
     if (o->artifact)
