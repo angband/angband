@@ -2231,7 +2231,7 @@ static void borg_notice_inventory(void)
         }
 
         /* Hack -- skip un-aware items */
-        if (!item->kind)
+        if (!item->aware)
             continue;
 
         /* count up the items on the borg (do not count artifacts  */
@@ -2282,10 +2282,6 @@ static void borg_notice_inventory(void)
         case TV_FOOD:
             /* Analyze */
             {
-                /* unknown types */
-                if (!item->kind)
-                    break;
-
                 /* check for food that hurts us */
                 if (borg_obj_has_effect(item->kind, EF_CRUNCH, -1)
                     || borg_obj_has_effect(

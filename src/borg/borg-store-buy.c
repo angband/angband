@@ -1226,6 +1226,7 @@ bool borg_think_shop_buy(void)
         /* leave the store */
         borg_keypress(ESCAPE);
         borg_keypress(ESCAPE);
+        borg_keypress(ESCAPE);
 
         /* I'm not in a store */
         borg.in_shop = false;

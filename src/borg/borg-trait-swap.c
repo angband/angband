@@ -183,7 +183,7 @@ void borg_notice_weapon_swap(void)
             continue;
 
         /* Hack -- skip un-aware items */
-        if (!item->kind)
+        if (!item->aware)
             continue;
 
         /* Skip non-wearable items */
@@ -775,7 +775,7 @@ void borg_notice_armour_swap(void)
             continue;
 
         /* Hack -- skip un-aware items */
-        if (!item->kind)
+        if (!item->aware)
             continue;
 
         /* Skip non-wearable items */

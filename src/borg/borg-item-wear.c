@@ -158,7 +158,7 @@ bool borg_test_stuff(void)
             v = item->value;
 
         /* Hack -- reward "unaware" items */
-        if (!item->kind) {
+        if (!item->aware) {
             /* Analyze the type */
             switch (item->tval) {
             case TV_RING:
@@ -438,8 +438,8 @@ bool borg_wear_rings(void)
         if (!item->iqty)
             continue;
 
-        /* Require "aware" */
-        if (!item->kind)
+        /* Require aware */
+        if (!item->aware)
             continue;
 
         /* Hack -- ignore "worthless" items */
@@ -793,8 +793,8 @@ bool borg_wear_stuff(void)
         if (!item->iqty)
             continue;
 
-        /* Require "aware" */
-        if (!item->kind)
+        /* Require aware */
+        if (!item->aware)
             continue;
 
         /* Hack -- ignore "worthless" items */
@@ -1231,8 +1231,8 @@ static void borg_best_stuff_aux(
         if (!item->iqty)
             continue;
 
-        /* Require "aware" */
-        if (!item->kind)
+        /* Require aware */
+        if (!item->aware)
             continue;
 
         /* Hack -- ignore "worthless" items */

@@ -118,7 +118,7 @@ bool borg_quaff_unknown(void)
             continue;
 
         /* Skip aware items */
-        if (item->kind)
+        if (item->aware)
             continue;
 
         /* Save this item */
@@ -202,7 +202,7 @@ bool borg_read_unknown(void)
             continue;
 
         /* Skip aware items */
-        if (item->kind)
+        if (item->aware)
             continue;
 
         /* Save this item */
@@ -287,7 +287,7 @@ bool borg_eat_unknown(void)
             continue;
 
         /* Skip aware items */
-        if (item->kind)
+        if (item->aware)
             continue;
 
         /* Save this item */
@@ -328,7 +328,7 @@ bool borg_eat_food_any(void)
             continue;
 
         /* Skip unknown food */
-        if (!item->kind)
+        if (!item->aware)
             continue;
 
         /* Skip non-food */
@@ -349,7 +349,7 @@ bool borg_eat_food_any(void)
             continue;
 
         /* Skip unknown food */
-        if (!item->kind)
+        if (!item->aware)
             continue;
 
         /* Skip non-food */
@@ -537,7 +537,7 @@ bool borg_use_unknown(void)
             continue;
 
         /* Skip aware items */
-        if (item->kind)
+        if (item->aware)
             continue;
 
         /* Save this item */
@@ -722,7 +722,10 @@ bool borg_equips_ring(int ring_sval)
     for (i = INVEN_RIGHT; i < INVEN_LEFT; i++) {
         borg_item *item = &borg_items[i];
 
-        /* Skip incorrect armours */
+        if (!item->iqty || !item->aware)
+            continue;
+
+        /* Skip incorrect armors */
         if (item->tval != TV_RING)
             continue;
         if (item->sval != ring_sval)
@@ -774,6 +777,10 @@ bool borg_activate_ring(int ring_sval)
     for (i = INVEN_RIGHT; i < INVEN_LEFT; i++) {
         borg_item *item = &borg_items[i];
 
+        /*  Make Sure item is IDed */
+        if (!item->aware)
+            continue;
+
         /* Skip incorrect mails */
         if (item->tval != TV_RING)
             continue;
@@ -816,7 +823,7 @@ bool borg_equips_dragon(int drag_sval)
     /* Check the equipment */
     borg_item *item = &borg_items[INVEN_BODY];
 
-    if (!item->iqty)
+    if (!item->iqty || !item->aware)
         return false;
 
     /* Skip incorrect armours */
@@ -879,7 +886,7 @@ bool borg_activate_dragon(int drag_sval)
 
     borg_item *item = &borg_items[INVEN_BODY];
 
-    if (!item->iqty)
+    if (!item->iqty || !item->aware)
         return false;
 
     /* Skip incorrect mails */
@@ -1093,7 +1100,7 @@ bool borg_use_things(void)
         borg_item *item = &borg_items[i];
 
         /* Skip empty items */
-        if (!item->iqty)
+        if (!item->iqty || !item->aware)
             continue;
 
         /* Process "force" items */
@@ -1184,7 +1191,7 @@ bool borg_recharging(void)
             continue;
 
         /* Skip non-identified items */
-        if (!item->ident)
+        if (!item->ident || !item->aware)
             continue;
 
         if (item->note && strstr(item->note, "empty"))

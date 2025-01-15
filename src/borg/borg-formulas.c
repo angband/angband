@@ -965,7 +965,7 @@ int32_t borg_power_dynamic(void)
 
         /* Some items will be used immediately and should not contribute to
          * encumbrance */
-        if (item && item->iqty
+        if (item && item->iqty && item->aware
             && ((item->tval == TV_SCROLL
                     && ((item->sval == sv_scroll_enchant_armor
                             && borg.trait[BI_AENCH_ARM] < 1000
