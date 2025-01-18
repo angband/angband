@@ -327,6 +327,11 @@ static void monster_list_get_glyphs(monster_list_t *list)
 		/* If no monster attribute use the standard UI picture. */
 		if (!entry->attr)
 			entry->attr = monster_x_attr[entry->race->ridx];
+		/* If purple_uniques is relevant, apply it. */
+		if (!(entry->attr & 0x80) && OPT(player, purple_uniques)
+				&& rf_has(entry->race->flags, RF_UNIQUE)) {
+			entry->attr = COLOUR_VIOLET;
+		}
 	}
 }
 
