@@ -245,9 +245,14 @@ int apply_autoinscription(struct player *p, struct object *obj)
 	bool aware = obj->kind->aware;
 	const char *note = obj ? get_autoinscription(obj->kind, aware) : NULL;
 
-	/* Remove unaware inscription if aware */
-	if (aware && quark_str(obj->note) && quark_str(obj->kind->note_unaware) &&
-		streq(quark_str(obj->note), quark_str(obj->kind->note_unaware)))
+	/*
+	 * Remove unaware inscription if aware and the aware inscription
+	 * differs from the unaware one.
+	 */
+	if (aware && quark_str(obj->note) && quark_str(obj->kind->note_unaware)
+			&& streq(quark_str(obj->note),
+			quark_str(obj->kind->note_unaware)) && (!note
+			|| !streq(quark_str(obj->note), note)))
 		obj->note = 0;
 
 	/* Make rune autoinscription go first, for now */
