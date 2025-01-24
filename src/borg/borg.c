@@ -452,6 +452,15 @@ static struct keypress internal_borg_inkey(int flush_first)
         return key;
     }
 
+    /* Sometimes the borg will overshoot the range limit of his shooter */
+    if (borg_prompt && !inkey_flag && (x >= 12)
+        && (prefix(buf, "Target out of range"))) {
+        /* Fire Anyway? [Y/N] */
+        /* yes step in */
+        key.code = 'y';
+        return key;
+    }
+
     /* Mega-Hack -- Handle death */
     if (player->is_dead) {
 #ifndef BABLOS

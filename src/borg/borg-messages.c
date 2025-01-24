@@ -1155,12 +1155,6 @@ static void borg_parse_aux(char *msg, int len)
         borg_note("# Disconnecting Lunal Mode due to monster spell.");
     }
 
-    /* Sometimes the borg will overshoot the range limit of his shooter */
-    if (prefix(msg, "Target out of range.")) {
-        /* Fire Anyway? [Y/N] */
-        borg_keypress('y');
-    }
-
     /* Feelings about the level */
     for (i = 0; prefix_feeling_danger[i]; i++) {
         /* "You feel..." (etc) */
