@@ -28,6 +28,7 @@
 #include "../store.h"
 
 #include "borg-init.h"
+#include "borg-inventory.h"
 #include "borg-item-analyze.h"
 #include "borg-item-val.h"
 #include "borg-store-sell.h"
