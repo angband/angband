@@ -1074,7 +1074,7 @@ static uint16_t borg_best_stuff_order(int n)
 /*
  * Take one step in wearing the optimized equipment
  */
-static bool borg_one_step_wearing_best(void)
+static bool borg_one_step_wearing_best(int skip)
 {
     borg_item *item;
     int        item_num = 0;
@@ -1086,17 +1086,30 @@ static bool borg_one_step_wearing_best(void)
 
     /* find a change */
     while (true) {
+        /* skip some if there are issues with full inventory */
+        int skipping = skip;
         if (borg.goal.best_item[item_num].tval
             || borg.goal.best_item[item_num].pval
-            || borg.goal.best_item[item_num].sval)
+            || borg.goal.best_item[item_num].sval) {
+            if (skipping) {
+                item_num++;
+                skipping--;
+                continue;
+            }
+
             break;
+        }
 
         item_num++;
-        if (item_num > 11) {
+        if (item_num >= z_info->equip_slots_max) {
             borg_clear_best();
 
-            /* we have done our best optimization.  */
-            borg.goal.do_best = false;
+            /* If we aren't skipping we have done our best optimization.  */
+            /* if we are skipping and got to the end, we probably need */
+            /*  to start over */
+            if (!skip) {
+                borg.goal.do_best = false;
+            }
 
             return false;
         }
@@ -1119,11 +1132,21 @@ static bool borg_one_step_wearing_best(void)
     if (borg.goal.best_item[item_num].home) {
         /* if wearing an item in that slot, drop it */
         if (borg_items[slot].iqty) {
+
+            /* if we can't drop an item into the home try the next change */
+            if (borg_home_full())
+                return borg_one_step_wearing_best(skip+1);
+
+
             borg_keypress('d');
             borg_keypress('/');
             borg_keypress(all_letters_nohjkl[slot - INVEN_WIELD]);
             return true;
         }
+
+        /* if we can't get an item from the home, try the next change */
+        if (borg_inventory_full())
+            return borg_one_step_wearing_best(skip + 1);
 
         for (i = 0; i < z_info->store_inven_max; i++) {
             item = &borg_shops[BORG_HOME].ware[i];
@@ -1147,6 +1170,10 @@ static bool borg_one_step_wearing_best(void)
     } else {
         /* if wearing an item in that slot, take it off */
         if (borg_items[slot].iqty) {
+            /* take off an item because there is no room, try next */
+            if (borg_inventory_full())
+                return borg_one_step_wearing_best(skip + 1);
+
             borg_keypress('t');
             borg_keypress(all_letters_nohjkl[slot - INVEN_WIELD]);
             return true;
@@ -1316,11 +1343,10 @@ bool borg_best_stuff(void)
 
     /* if we don't need to do "best", check if we need to process the list */
     if (!borg.goal.do_best)
-        return borg_one_step_wearing_best();
+        return borg_one_step_wearing_best(0);
 
     /* must have a free inventory slot and a free home slot */
-    if (borg_shops[BORG_HOME].ware[z_info->store_inven_max - 1].iqty
-        || borg_first_empty_inventory_slot() == -1)
+    if (borg_home_full() || borg_inventory_full())
         return false;
 
     /* only do this once per trip to town */
@@ -1399,7 +1425,7 @@ bool borg_best_stuff(void)
     mem_free(test);
     test = NULL;
 
-    return borg_one_step_wearing_best();
+    return borg_one_step_wearing_best(0);
 }
 
 /*
