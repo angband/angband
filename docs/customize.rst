@@ -52,6 +52,7 @@ When the game starts up, after you have loaded or created a character, some user
 
 After these are complete, the game will try to load (in order):
 
+* window.prf - loaded for all characters
 * *race*.prf - where *race* is your character's race, so something like ``Dwarf.prf``
 * *class*.prf - where *class* is your character's class, so something like ``Paladin.prf``
 * *name*.prf - where *name* is your character's name, so something like ``Balin.prf``
