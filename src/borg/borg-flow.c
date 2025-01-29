@@ -339,7 +339,7 @@ void borg_flow_spread(int depth, bool optimize, bool avoid, bool tunneling,
             /* Access the grid */
             ag = &borg_grids[y][x];
 
-            if (sneak) {
+            if (sneak && !borg_desperate && !twitchy) {
                 /* Scan the neighbors */
                 for (ii = 0; ii < 8; ii++) {
                     /* Neighbor grid */
@@ -361,7 +361,7 @@ void borg_flow_spread(int depth, bool optimize, bool avoid, bool tunneling,
                 }
             }
             /* The grid I am thinking about is adjacent to a monster */
-            if (sneak && bad_sneak && !borg_desperate && !twitchy)
+            if (bad_sneak)
                 continue;
 
             /* Avoid "wall" grids (not doors) unless tunneling*/

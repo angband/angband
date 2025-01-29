@@ -155,9 +155,7 @@ bool borg_choose_shop(void)
 
     /* If it is time to try to put on our best stuff, and we have free slots, go
      * home */
-    if (borg.goal.do_best
-        && !borg_shops[BORG_HOME].ware[z_info->store_inven_max - 1].iqty
-        && borg_first_empty_inventory_slot() != -1) {
+    if (borg.goal.do_best && !borg_home_full() && !borg_inventory_full()) {
         borg.goal.shop = BORG_HOME;
         return true;
     }

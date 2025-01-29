@@ -566,18 +566,21 @@ bool borg_think_stair_scum(bool from_town)
  */
 static int borg_time_to_stay_on_level(bool bored)
 {
-    /* at low level, don't stay too long, */
-    /* but long enough to hope for a feeling */
-    if (borg.trait[BI_MAXCLEVEL] < 20)
-        return z_info->feeling_need * 100;
+    if (borg.trait[BI_CLEVEL] < 5 || !borg_feeling_stuff) {
 
-    /* at very low level, stay less time */
-    if (borg.trait[BI_CLEVEL] < 10)
-        return borg.trait[BI_CLEVEL] * 250;
+        /* at very low level, stay less time */
+        if (borg.trait[BI_CLEVEL] < 10)
+            return borg.trait[BI_CLEVEL] * 50;
 
-    /* at slightly low level, try not to run out of food staying */
-    if (borg.trait[BI_CLEVEL] < 15)
-        return borg.trait[BI_REG] ? 2000 : 2500;
+        /* at slightly low level, try not to run out of food staying */
+        if (borg.trait[BI_CLEVEL] < 15 && borg.trait[BI_FOOD] < 3)
+            return borg.trait[BI_REG] ? 2000 : 2500;
+
+        /* at low level, don't stay too long, */
+        /* but long enough to hope for a feeling */
+        if (borg.trait[BI_MAXCLEVEL] < 20 && borg_feeling_stuff == 0)
+            return z_info->feeling_need * 10;
+    }
 
     if (bored)
         return borg_stuff_feeling[borg_feeling_stuff] / 10;
@@ -929,8 +932,10 @@ bool borg_leave_level(bool bored)
 
         /* Attempt to use stairs */
         if (borg_flow_stair_less(GOAL_BORE, false)) {
-            borg_note("# Looking for stairs. I'm bored.");
+            borg_note("# Going to stairs up. I'm bored.");
             return true;
+        } else {
+            borg_note("# Bored but unable to flow to up stairs.");
         }
 
         /* Cannot find any stairs */

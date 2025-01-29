@@ -28,6 +28,7 @@
 #include "../store.h"
 
 #include "borg-init.h"
+#include "borg-inventory.h"
 #include "borg-item-analyze.h"
 #include "borg-item-val.h"
 #include "borg-store-sell.h"
@@ -39,6 +40,21 @@ borg_shop *borg_safe_shops; /* Safety (save) "shops" */
 
 int borg_food_onsale = -1; /* Are shops selling food? */
 int borg_fuel_onsale = -1; /* Are shops selling fuel? */
+
+
+/* check for the a full home */
+bool borg_home_full(void)
+{
+    /* must have a free inventory slot and a free home slot */
+    return borg_shops[BORG_HOME].ware[z_info->store_inven_max - 1].iqty != 0;
+}
+
+/* check for the a full inventory */
+bool borg_inventory_full(void)
+{
+    return borg_first_empty_inventory_slot() == -1;
+}
+
 
 static int32_t borg_price_item(
     const struct object *obj, bool store_buying, int qty, int this_store)
