@@ -89,7 +89,7 @@ int sdlpui_init(void)
  * Can safey be called multiple times without an intervening call to.
  * sdlpui_init().  Once called, the only sdlpui_*() calls that can be safely
  * used are sdlpui_init() and sdlpui_quit().  For multithreaded applications,
- * race condtitions are possible if sdlpui_init() or sdlpui_quit() can be
+ * race conditions are possible if sdlpui_init() or sdlpui_quit() can be
  * called while a call to sdlpui_quit() is in progress.  Those applications
  * should be structured to avoid that possibility.
  */
@@ -197,6 +197,7 @@ Uint32 sdlpui_register_code(const char *name)
 			}
 			code = ++my_registry.serial;
 			my_registry.entries[ilo].code = code;
+			++my_registry.count;
 			break;
 		}
 

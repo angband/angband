@@ -1144,6 +1144,9 @@ static void cleanup_simple_info(struct sdlpui_dialog *d)
 		}
 	}
 	SDL_free(id->labels);
+	if (id->button.ftb->cleanup) {
+		(*id->button.ftb->cleanup)(&id->button);
+	}
 	SDL_free(id);
 }
 
