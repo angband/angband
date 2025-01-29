@@ -25,6 +25,10 @@
 #include "sdl2/pui-misc.h"
 #include "sdl2/pui-win.h"
 #include "SDL_image.h"
+#ifdef SOUND_SDL2
+#include "SDL_mixer.h"
+#endif
+#include "SDL_revision.h"
 
 #include "main.h"
 #include "init.h"
@@ -41,6 +45,9 @@
 #include "ui-game.h"
 #include "ui-map.h"
 #include "parser.h"
+#ifdef SOUND_SDL2
+#include "sound.h"
+#endif
 
 #define MAX_SUBWINDOWS \
 	ANGBAND_TERM_MAX
@@ -378,6 +385,8 @@ struct sdlpui_window {
 	struct sdlpui_dialog *infod;
 	/* The keyboard shortcut dialog; NULL if not currently displayed */
 	struct sdlpui_dialog *shorte;
+	/* The SDL details dialog; NULL if not currently displayed */
+	struct sdlpui_dialog *detaild;
 
 	int pixelformat;
 
@@ -458,6 +467,8 @@ struct my_app {
 	 * expense of not handling some keyboard layouts properly
 	 */
 	bool kp_as_mod;
+	/* true if details about the SDL environment are to be logged. */
+	bool print_sdl_details;
 };
 
 /* Forward declarations */
@@ -536,7 +547,7 @@ static void recreate_textures(struct my_app *a, bool all);
 
 /* Global variables. */
 
-const char help_sdl2[] = "SDL2 frontend";
+const char help_sdl2[] = "SDL2 frontend, subopts -v";
 static struct my_app g_app;
 static Uint32 SHORTCUT_EDITOR_CODE;
 
@@ -699,6 +710,67 @@ void sdlpui_force_quit(void)
 }
 
 /* Functions */
+
+static void log_window_details(int my_index, SDL_Window *w, SDL_Renderer *r)
+{
+	Uint32 flags = SDL_GetWindowFlags(w);
+	int wid, hgt, x, y, bt, bl, bb, br;
+	SDL_RendererInfo r_info;
+
+	SDL_Log("Window %d:", my_index);
+	SDL_Log("    Display index and ID: %d %lu",
+		SDL_GetWindowDisplayIndex(w),
+		(unsigned long)SDL_GetWindowID(w));
+	SDL_GetWindowPosition(w, &x, &y);
+	SDL_GetWindowSize(w, &wid, &hgt);
+	SDL_Log("    Geometry: (%d, %d) %d x %d", x, y, wid, hgt);
+	SDL_GetWindowBordersSize(w, &bt, &bl, &bb, &br);
+	SDL_Log("    Border sizes: %d %d %d %d", bt, bl, bb, br);
+	/* Skipping the more transient flags about focus and grabs. */
+	SDL_Log("    Flags:%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+		(flags & SDL_WINDOW_FULLSCREEN) ? " FULLSCREEN" : "",
+		(flags & SDL_WINDOW_OPENGL) ? " OPENGL" : "",
+		(flags & SDL_WINDOW_SHOWN) ? " SHOWN" : "",
+		(flags & SDL_WINDOW_HIDDEN) ? " HIDDEN" : "",
+		(flags & SDL_WINDOW_BORDERLESS) ? " BORDERLESS" : "",
+		(flags & SDL_WINDOW_RESIZABLE) ? " RESIZABLE" : "",
+		(flags & SDL_WINDOW_MINIMIZED) ? " MINIMIZED" : "",
+		(flags & SDL_WINDOW_MAXIMIZED) ? " MAXIMIZED" : "",
+		(flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+		? " FULLSCREEN_DESKTOP" : "",
+		(flags & SDL_WINDOW_FOREIGN) ? " FOREIGN" : "",
+		(flags & SDL_WINDOW_ALLOW_HIGHDPI) ? " ALLOW_HIGHDPI" : "",
+		(flags & SDL_WINDOW_ALWAYS_ON_TOP) ? " ALWAYS_ON_TOP" : "",
+		(flags & SDL_WINDOW_SKIP_TASKBAR) ? " SKIP_TASKBAR" : "",
+		(flags & SDL_WINDOW_UTILITY) ? " UTILITY" : "",
+		(flags & SDL_WINDOW_POPUP_MENU) ? " POPUP_MENU" : "",
+		(flags & SDL_WINDOW_VULKAN) ? " VULKAN" : "",
+		(flags & SDL_WINDOW_METAL) ? " METAL" : "");
+
+	if (!r) return;
+	if (SDL_GetRendererInfo(r, &r_info)) {
+		SDL_Log("    Renderer: No details available: %s",
+			SDL_GetError());
+	} else {
+		SDL_Log("    Renderer: %s", r_info.name);
+		if (SDL_GetRendererOutputSize(r, &wid, &hgt)) {
+			SDL_Log("        Output size: %s", SDL_GetError());
+		} else {
+			SDL_Log("        Output size: %d x %d", wid, hgt);
+		}
+		SDL_Log("        Maximum texture size: %d x %d",
+			r_info.max_texture_width, r_info.max_texture_height);
+		SDL_Log("        Flags:%s%s%s%s",
+			(r_info.flags & SDL_RENDERER_SOFTWARE)
+			? " SOFTWARE" : "",
+			(r_info.flags & SDL_RENDERER_ACCELERATED)
+			? " ACCELERATED" : "",
+			(r_info.flags & SDL_RENDERER_PRESENTVSYNC)
+			? " PRESENTVSYNC" : "",
+			(r_info.flags & SDL_RENDERER_TARGETTEXTURE)
+			? " TARGETTEXTURE" : "");
+	}
+}
 
 static void render_clear(const struct sdlpui_window *window,
 		SDL_Texture *texture, const SDL_Color *color)
@@ -2071,6 +2143,236 @@ static void show_about(struct sdlpui_window *window, int x, int y)
 	sdlpui_popup_dialog(window->infod, window, true);
 }
 
+static void hide_sdl_details(struct sdlpui_dialog *d, struct sdlpui_window *w,
+		bool up)
+{
+	if (!up) {
+		SDL_assert(w->detaild == d);
+		w->detaild = NULL;
+	}
+}
+
+static void show_sdl_details(struct sdlpui_window *window, int x, int y)
+{
+	if (!window->detaild) {
+		char *label;
+		int wid, hgt, wx, wy, bt, bl, bb, br;
+		Uint32 flags;
+
+		window->detaild = sdlpui_start_simple_info("Ok", NULL, NULL, 0);
+
+		if (window->index == MAIN_WINDOW) {
+			const char *driver_name;
+			const SDL_version *pvr;
+			SDL_version vr, vc;
+			int num_displays, i;
+
+			SDL_GetVersion(&vr);
+			SDL_VERSION(&vc);
+			label = format("SDL version: %u.%u.%u (runtime; %s) "
+				"%u.%u.%u (compiled; %s)", vr.major, vr.minor,
+				vr.patch, SDL_GetRevision(),
+				vc.major, vc.minor, vc.patch, SDL_REVISION);
+			sdlpui_simple_info_add_label(window->detaild, label,
+				SDLPUI_HOR_LEFT);
+			pvr = IMG_Linked_Version();
+			SDL_IMAGE_VERSION(&vc);
+			label = format("SDL_image version; %u.%u.%u (runtime) "
+				"%u.%u.%u (compiled)",
+				pvr->major, pvr->minor, pvr->patch,
+				vc.major, vr.minor, vc.patch);
+			sdlpui_simple_info_add_label(window->detaild, label,
+				SDLPUI_HOR_LEFT);
+			pvr = TTF_Linked_Version();
+			SDL_TTF_VERSION(&vc);
+			label = format("SDL_ttf version; %u.%u.%u (runtime) "
+				"%u.%u.%u (compiled)",
+				pvr->major, pvr->minor, pvr->patch,
+				vc.major, vr.minor, vc.patch);
+			sdlpui_simple_info_add_label(window->detaild, label,
+				SDLPUI_HOR_LEFT);
+#ifdef SOUND_SDL2
+			if (is_sound_inited()) {
+				pvr = Mix_Linked_Version();
+				SDL_MIXER_VERSION(&vc);
+				label = format("SDL_mixer version: %u.%u.%u "
+					"(runtime) %u.%u.%u (compiled)",
+					pvr->major, pvr->minor, pvr->patch,
+					vc.major, vc.minor, vc.patch);
+				sdlpui_simple_info_add_label(window->detaild,
+					label, SDLPUI_HOR_LEFT);
+			}
+#endif
+			driver_name = SDL_GetCurrentVideoDriver();
+			label = format("Platform and video driver: \"%s\" "
+				"\"%s\"", SDL_GetPlatform(), (driver_name) ?
+				driver_name : "Not initialized");
+			sdlpui_simple_info_add_label(window->detaild, label,
+				SDLPUI_HOR_LEFT);
+			num_displays = SDL_GetNumVideoDisplays();
+			if (num_displays < 0) {
+				label = format("No available displays: %s",
+					SDL_GetError());
+				sdlpui_simple_info_add_label(window->detaild,
+					label, SDLPUI_HOR_LEFT);
+			}
+			for (i = 0; i < num_displays; ++i) {
+				const char *name = SDL_GetDisplayName(i);
+
+				if (name) {
+					SDL_DisplayMode mode;
+
+					label = format("Display %d: %s:", i,
+						name);
+					sdlpui_simple_info_add_label(
+						window->detaild, label,
+						SDLPUI_HOR_LEFT);
+					if (SDL_GetCurrentDisplayMode(i,
+							&mode)) {
+						label = format("    Mode "
+							"unavailable: %s",
+							SDL_GetError());
+						sdlpui_simple_info_add_label(
+							window->detaild, label,
+							SDLPUI_HOR_LEFT);
+					} else {
+						label = format("    Size: %d x "
+							"%d", mode.w, mode.h);
+						sdlpui_simple_info_add_label(
+							window->detaild, label,
+							SDLPUI_HOR_LEFT);
+						label = format("    Refresh "
+							"rate and pixel "
+							"format: %d %lu",
+							mode.refresh_rate,
+							(unsigned long)mode.format);
+						sdlpui_simple_info_add_label(
+							window->detaild, label,
+							SDLPUI_HOR_LEFT);
+					}
+				} else {
+					label = format("Display %d: no name: "
+						"%s", i, SDL_GetError());
+					sdlpui_simple_info_add_label(
+						window->detaild, label,
+						SDLPUI_HOR_LEFT);
+				}
+			}
+		}
+		label = format("Window %u:", window->index);
+		sdlpui_simple_info_add_label(window->detaild, label,
+			SDLPUI_HOR_LEFT);
+		label = format("    Display index and ID: %d %lu",
+			SDL_GetWindowDisplayIndex(window->window),
+			(unsigned long)SDL_GetWindowID(window->window));
+		sdlpui_simple_info_add_label(window->detaild, label,
+			SDLPUI_HOR_LEFT);
+		SDL_GetWindowPosition(window->window, &wx, &wy);
+		SDL_GetWindowSize(window->window, &wid, &hgt);
+		label = format("    Geometry: (%d, %d) %d x %d", wx, wy, wid,
+			hgt);
+		sdlpui_simple_info_add_label(window->detaild, label,
+			SDLPUI_HOR_LEFT);
+		SDL_GetWindowBordersSize(window->window, &bt, &bl, &bb, &br);
+		label = format("    Border sizes: %d %d %d %d", bt, bl, bb, br);
+		sdlpui_simple_info_add_label(window->detaild, label,
+			SDLPUI_HOR_LEFT);
+		flags = SDL_GetWindowFlags(window->window);
+		label = format("    Flags:%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+			(flags & SDL_WINDOW_FULLSCREEN) ? " FULLSCREEN" : "",
+			(flags & SDL_WINDOW_OPENGL) ? " OPENGL" : "",
+			(flags & SDL_WINDOW_SHOWN) ? " SHOWN" : "",
+			(flags & SDL_WINDOW_HIDDEN) ? " HIDDEN" : "",
+			(flags & SDL_WINDOW_BORDERLESS) ?  " BORDERLESS" : "",
+			(flags & SDL_WINDOW_RESIZABLE) ? " RESIZABLE" : "",
+			(flags & SDL_WINDOW_MINIMIZED) ? " MINIMIZED" : "",
+			(flags & SDL_WINDOW_MAXIMIZED) ? " MAXIMIZED" : "",
+			(flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+			? " FULLSCREEN_DESKTOP" : "",
+			(flags & SDL_WINDOW_FOREIGN) ? " FOREIGN" : "",
+			(flags & SDL_WINDOW_ALLOW_HIGHDPI)
+			? " ALLOW_HIGHDPI" : "",
+			(flags & SDL_WINDOW_ALWAYS_ON_TOP)
+			? "ALWAYS_ON_TOP" : "",
+			(flags & SDL_WINDOW_SKIP_TASKBAR)
+			? " SKIP_TASKBAR" : "",
+			(flags & SDL_WINDOW_UTILITY) ? " UTILITY" : "",
+			(flags & SDL_WINDOW_POPUP_MENU) ? " POPUP_MENU" : "",
+			(flags & SDL_WINDOW_VULKAN) ? " VULKAN" : "",
+			(flags & SDL_WINDOW_METAL) ? " METAL" : "");
+		sdlpui_simple_info_add_label(window->detaild, label,
+			SDLPUI_HOR_LEFT);
+		if (window->renderer) {
+			SDL_RendererInfo r_info;
+
+			if (SDL_GetRendererInfo(window->renderer, &r_info)) {
+				label = format("    Renderer: No details "
+					"available: %s", SDL_GetError());
+				sdlpui_simple_info_add_label(window->detaild,
+					label, SDLPUI_HOR_LEFT);
+			} else {
+				label = format("    Renderer: %s", r_info.name);
+				sdlpui_simple_info_add_label(window->detaild,
+					label, SDLPUI_HOR_LEFT);
+				if (SDL_GetRendererOutputSize(window->renderer,
+						&wid, &hgt)) {
+					label = format("        Output size: "
+						"%s", SDL_GetError());
+				} else {
+					label = format("        Output size: "
+						"%d x %d", wid, hgt);
+				}
+				sdlpui_simple_info_add_label(window->detaild,
+					label, SDLPUI_HOR_LEFT);
+				label = format("        Maximum texture size: "
+					"%d x %d", r_info.max_texture_width,
+					r_info.max_texture_height);
+				sdlpui_simple_info_add_label(window->detaild,
+					label, SDLPUI_HOR_LEFT);
+				label = format("        Flags:%s%s%s%s",
+					(r_info.flags & SDL_RENDERER_SOFTWARE)
+					? " SOFTWARE" : "",
+					(r_info.flags & SDL_RENDERER_ACCELERATED)
+					? " ACCELERATED" : "",
+					(r_info.flags & SDL_RENDERER_PRESENTVSYNC)
+					? " PRESENTVSYNC" : "",
+					(r_info.flags & SDL_RENDERER_TARGETTEXTURE)
+					? " TARGETTEXTURE" : "");
+				sdlpui_simple_info_add_label(window->detaild,
+					label, SDLPUI_HOR_LEFT);
+			}
+		}
+#ifdef SOUND_SDL2
+		if (window->index == MAIN_WINDOW && is_sound_inited()) {
+			const char *driver_name;
+			int freq, n_chan;
+			Uint16 fmt;
+
+			driver_name = SDL_GetCurrentAudioDriver();
+			label = format("Audio driver: %s", (driver_name)
+				? driver_name : "Not initialized");
+			sdlpui_simple_info_add_label(window->detaild, label,
+				SDLPUI_HOR_LEFT);
+			if (Mix_QuerySpec(&freq, &fmt, &n_chan)) {
+				label = format("Mixer channels, frequency, and "
+					"format: %d %d %lu", n_chan, freq,
+					(unsigned long)fmt);
+			} else {
+				label = format("Mixer channels, frequency, and "
+					"format: %s", SDL_GetError());
+			}
+			sdlpui_simple_info_add_label(window->detaild, label,
+				SDLPUI_HOR_LEFT);
+		}
+#endif
+		sdlpui_complete_simple_info(window->detaild, window);
+		window->detaild->pop_callback = hide_sdl_details;
+		window->detaild->rect.x = x;
+		window->detaild->rect.y = y;
+	}
+	sdlpui_popup_dialog(window->detaild, window, true);
+}
+
 static void signal_move_state(struct sdlpui_window *window)
 {
 	bool was_active = window->move_state.active;
@@ -2291,6 +2593,15 @@ static void handle_menu_about(struct sdlpui_control *ctrl,
 
 	sdlpui_popdown_dialog(dlg, window, true);
 	show_about(window, x, y);
+}
+
+static void handle_menu_sdl_details(struct sdlpui_control *ctrl,
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+{
+	int x = ctrl->rect.x, y = ctrl->rect.y;
+
+	sdlpui_popdown_dialog(dlg, window, true);
+	show_sdl_details(window, x, y);
 }
 
 static void handle_menu_quit(struct sdlpui_control *ctrl,
@@ -3007,6 +3318,9 @@ static struct sdlpui_dialog *handle_menu_button(struct sdlpui_control *ctrl,
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_button(c, "About...", SDLPUI_HOR_LEFT,
 		handle_menu_about, 0, false);
+	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
+	sdlpui_create_menu_button(c, "SDL Details...", SDLPUI_HOR_LEFT,
+		handle_menu_sdl_details, 0, false);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_button(c, "Quit", SDLPUI_HOR_LEFT,
 		handle_menu_quit, 0, false);
@@ -5668,6 +5982,7 @@ static void load_window(struct sdlpui_window *window)
 	load_status_bar(window);
 	window->infod = NULL;
 	window->shorte = NULL;
+	window->detaild = NULL;
 	adjust_window_geometry(window);
 	set_window_delay(window);
 	if (window->wallpaper.mode != WALLPAPER_DONT_SHOW) {
@@ -6465,6 +6780,7 @@ static void free_window(struct sdlpui_window *window)
 	window->size_button = NULL;
 	window->infod = NULL;
 	window->shorte = NULL;
+	window->detaild = NULL;
 
 	for (size_t i = 0; i < N_ELEMENTS(window->subwindows); i++) {
 		struct subwindow *subwindow = window->subwindows[i];
@@ -6687,9 +7003,87 @@ static void init_systems(void)
 
 errr init_sdl2(int argc, char **argv)
 {
+	int i;
+
+	g_app.print_sdl_details = false;
+	for (i = 1; i < argc; ++i) {
+		if (streq(argv[i], "-v")) {
+			g_app.print_sdl_details = true;
+			continue;
+		}
+		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Ignoring option: %s",
+			argv[i]);
+	}
+
 	quit_aux = quit_hook;
 
+	/* Dump details about SDL that do not require SDL_Init(). */
+	if (g_app.print_sdl_details) {
+		SDL_version vr, vc;
+
+		SDL_GetVersion(&vr);
+		SDL_VERSION(&vc);
+		SDL_Log("SDL library version: %u.%u.%u (runtime) "
+			"%u.%u.%u (compiled; %s)", vr.major, vr.minor, vr.patch,
+			vc.major, vc.minor, vc.patch, SDL_REVISION);
+	}
+
 	init_systems();
+
+	/*
+	 * Dump details about SDL that may require that SDL_Init() has been
+	 * called.
+	 */
+	if (g_app.print_sdl_details) {
+		const char *driver_name;
+		const SDL_version *pv;
+		SDL_version lv;
+		int num_displays;
+
+		SDL_Log("Runtime SDL library revision: %s", SDL_GetRevision());
+		pv = IMG_Linked_Version();
+		SDL_IMAGE_VERSION(&lv);
+		SDL_Log("SDL_image library version: %u.%u.%u (runtime) "
+			"%u.%u.%u (compiled)", pv->major, pv->minor, pv->patch,
+			lv.major, lv.minor, lv.patch);
+		pv = TTF_Linked_Version();
+		SDL_TTF_VERSION(&lv);
+		SDL_Log("SDL_ttf library version: %u.%u.%u (runtime) "
+			"%u.%u.%u (compiled)", pv->major, pv->minor, pv->patch,
+			lv.major, lv.minor, lv.patch);
+		driver_name = SDL_GetCurrentVideoDriver();
+		SDL_Log("Platform and video driver: \"%s\" \"%s\"",
+			SDL_GetPlatform(), (driver_name) ? driver_name :
+			"Not initialized");
+		num_displays = SDL_GetNumVideoDisplays();
+		if (num_displays < 0) {
+			SDL_Log("No available displays: %s",
+				SDL_GetError());
+		}
+		for (i = 0; i < num_displays; ++i) {
+			const char *name = SDL_GetDisplayName(i);
+
+			if (name) {
+				SDL_DisplayMode mode;
+
+				SDL_Log("Display %d: %s:", i, name);
+				if (SDL_GetCurrentDisplayMode(i, &mode)) {
+					SDL_Log("    Mode unavailable: %s",
+						SDL_GetError());
+				} else {
+					SDL_Log("    Size: %d x %d",
+						mode.w, mode.h);
+					SDL_Log("    Refresh rate and "
+						"pixel format: %d %lu",
+						mode.refresh_rate,
+						(unsigned long)mode.format);
+				}
+			} else {
+				SDL_Log("Display %d: no name: %s", i,
+					SDL_GetError());
+			}
+		}
+	}
 
 	if (!init_graphics_modes()) {
 		quit("Graphics list load failed");
@@ -6853,9 +7247,18 @@ static void free_globals(struct my_app *a)
 
 static void start_windows(struct my_app *a)
 {
-	for (size_t i = N_ELEMENTS(a->windows); i > 0; i--) {
+	int i;
+
+	for (i = (int)N_ELEMENTS(a->windows); i > 0; i--) {
 		if (a->windows[i - 1].inited) {
 			start_window(&a->windows[i - 1]);
+		}
+	}
+	if (a->print_sdl_details) {
+		for (i = 0; i < (int)N_ELEMENTS(a->windows); ++i) {
+			if (!a->windows[i].window) continue;
+			log_window_details(i, a->windows[i].window,
+				a->windows[i].renderer);
 		}
 	}
 }

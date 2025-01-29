@@ -84,6 +84,7 @@ struct sound_hooks
 bool set_preloaded_sounds(bool new_setting);
 errr init_sound(const char *soundstr, int argc, char **argv);
 void close_sound(void);
+bool is_sound_inited(void);
 errr register_sound_pref_parser(struct parser *p);
 void print_sound_help(void);
 

@@ -417,6 +417,15 @@ void close_sound(void)
 }
 
 /**
+ * Return true if there has been a succesful call to init_sound() without
+ * a later call to close_sound().  Otherwse, return false.
+ */
+bool is_sound_inited(void)
+{
+	return next_sound_id != 0;
+}
+
+/**
  * Print out the 'help' information for the sound module.
  */
 void print_sound_help(void)
