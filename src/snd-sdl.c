@@ -31,6 +31,7 @@
 #ifdef SOUND_SDL2
 #  include <SDL.h>
 #  include <SDL_mixer.h>
+#  include <SDL_revision.h>
 #endif /* SOUND_SDL2 */
 
 /**
@@ -57,6 +58,10 @@ static const struct sound_file_type supported_sound_files[] = { {".mp3", SDL_MUS
 								{".ogg", SDL_CHUNK},
 								{"", SDL_NULL} };
 
+#ifdef SOUND_SDL2
+static bool print_sdl_details = false;
+#endif
+
 /**
  * Initialise SDL and open the mixer.
  */
@@ -79,6 +84,36 @@ static bool open_audio_sdl(void)
 		SDL_QuitSubSystem(SDL_INIT_AUDIO);
 		return false;
 	}
+
+#ifdef SOUND_SDL2
+	if (print_sdl_details) {
+		const SDL_version *pv;
+		const char *driver_name;
+		SDL_version lv;
+		int freq, n_chan;
+		Uint16 fmt;
+
+		SDL_Log("SDL audio: Runtime SDL library revision: %s",
+			SDL_GetRevision());
+		pv = Mix_Linked_Version();
+		SDL_MIXER_VERSION(&lv);
+		SDL_Log("SDL audio: SDL_mixer library version: "
+			"%u.%u.%u (runtime) %u.%u.%u (compiled)",
+			pv->major, pv->minor, pv->patch,
+			lv.major, lv.minor, lv.patch);
+		driver_name = SDL_GetCurrentAudioDriver();
+		SDL_Log("SDL audio: Current driver: %s",
+			(driver_name) ? driver_name : "Not initialized");
+		if (Mix_QuerySpec(&freq, &fmt, &n_chan)) {
+			SDL_Log("SDL audio: Mixer channels, frequency, and "
+				"format: %d %d %lu", n_chan, freq,
+				(unsigned long)fmt);
+		} else {
+			SDL_Log("SDL audio: Mixer channels, frequency, and"
+				"format: %s", Mix_GetError());
+		}
+	}
+#endif
 
 	/* Success */
 	return true;
@@ -232,6 +267,29 @@ errr init_sound_sdl(struct sound_hooks *hooks, int argc, char **argv)
 	hooks->load_sound_hook = load_sound_sdl;
 	hooks->unload_sound_hook = unload_sound_sdl;
 	hooks->play_sound_hook = play_sound_sdl;
+
+#ifdef SOUND_SDL2
+	{
+		int i;
+
+		for (i = 1; i < argc; ++i) {
+			if (streq(argv[i], "-v")) {
+				print_sdl_details = true;
+			}
+		}
+
+		if (print_sdl_details) {
+			SDL_version vr, vc;
+
+			SDL_GetVersion(&vr);
+			SDL_VERSION(&vc);
+			SDL_Log("SDL audio: SDL library version: "
+				"%u.%u.%u (runtime) %u.%u.%u (compiled; %s)",
+				vr.major, vr.minor, vr.patch,
+				vc.major, vc.minor, vc.patch, SDL_REVISION);
+		}
+	}
+#endif
 
 	/* Success */
 	return (0);
