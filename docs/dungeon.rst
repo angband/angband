@@ -8,6 +8,9 @@ walls, floor, objects, features, and creatures lurking about. In order to
 direct your character through their adventure, you will enter single
 character commands (see 'commands.txt').
 
+.. index::
+   single: map symbols
+
 Symbols On Your Map
 ===================
 
@@ -174,11 +177,19 @@ If it is a good object, they will add it to their inventory. If it was a bad
 bargain, they simply throw the item away. You can use this feature to learn
 item flavors.
 
+.. index::
+   single: general store
+   seealso: store; general store
+
 The General Store (``1``)
   The General Store sells foods, some clothing, torches, oil, shovels and
   picks. All of these items and some others can be sold back to the general
   store for money. The general store restocks like every store, but the
   inventory types never change.
+
+.. index::
+   single: armoury
+   seealso: store; armoury
 
 The Armoury (``2``)
   The Armoury is where the town's armour is fashioned. All sorts of
@@ -187,28 +198,52 @@ The Armoury (``2``)
   armoury. However, some armour types will never appear here unless you
   sell them.
 
+.. index::
+   single: weaponsmith
+   seealso: store; weaponsmith
+
 The Weaponsmith's Shop (``3``)
   The Weaponsmith's Shop is where the town's weapons are fashioned. Hand
   and missile weapons may be purchased and sold here, along with arrows,
   bolts, and shots. As with the armoury, not all weapon types will be
   stocked here, unless they are sold to the shop by the player first.
 
+.. index::
+   single: bookseller
+   seealso: store; bookseller
+
 The Bookseller (``4``)
   The Bookseller holds supplies of the simpler books needed by magic users,
   and will buy the more advanced books which can be found in the dungeon.
 
+.. index::
+   single: alchemy shop
+   seealso: store; alchemy shop
+
 The Alchemy shop (``5``)
   The Alchemy Shop deals in all types of potions and scrolls.
+
+.. index::
+   single: magic user's shop
+   seealso: store; magic user's shop
 
 The Magic User's Shop (``6``)
   The Magic User's Shop deals in all sorts of rings, wands, amulets, and
   staves.
+
+.. index::
+   single: black market
+   seealso: store; black market
 
 The Black Market (``7``)
   The Black Market will sell and buy anything at extortionate prices.
   However it occasionally has **very** good items in it. With the exception
   of artifacts, every item found in the dungeon may appear in the black
   market.
+
+.. index::
+   single: home
+   seealse: store; home
 
 Your Home (``8``)
   This is your house where you can store objects that you cannot carry on
@@ -444,6 +479,9 @@ Creatures in the dungeon will generally know and use these secret doors,
 and can often be counted on to leave them open behind them when they pass
 through.
 
+.. index::
+   single: level feelings
+
 Level and object feelings
 =========================
 
@@ -502,6 +540,9 @@ and the second one is the object feeling. The second one will be ?
 if you need to explore more before getting a feeling about the value
 of the treasures present in the dungeon.
 
+.. index::
+   single: winning
+
 Winning The Game
 ================
 
@@ -524,6 +565,9 @@ When you are ready to retire, simply kill your character (using the ``Q`` key)
 to have your character entered into the high score list as a winner. Note
 that until you retire, you can still be killed, so you may want to retire
 before wandering into yet another horde of greater demons.
+
+.. index::
+   single: dying
 
 Upon Death and Dying
 ====================

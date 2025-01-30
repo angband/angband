@@ -93,10 +93,17 @@ which provides a rare power that the character needs at two separate times.
 Note that a digging tool need only be carried in your pack, as when you try
 to dig your best digging tool will automatically be used.
 
+.. index::
+   single: to-hit; equipment values
+   single; to-dam; equipment values
+
 Weapons have two main magical characteristics, their enchanted ability to
 hit and their enchanted ability to do damage, expressed as '(+#,+#)'. A
 normal weapon would be '(+0,+0)'. Many weapons in Angband have bonuses to
 hit and/or to damage.
+
+.. index::
+   single; blows; upper limit
 
 Angband assumes that your youth in the rough environment near the dungeons
 has taught you the relative merits of different weapons, and displays as
@@ -137,6 +144,9 @@ identification.
 
 Some of the more common ego weapons are described at the end of this file.
 
+.. index::
+   single: armour class; effect on attacks
+
 Your Armor Class
 ================
 
@@ -152,6 +162,10 @@ some of the damage that your character would have taken from normal
 attacks. Third, acid damage is reduced by wearing body armor (but the
 armor may be damaged instead). It is obvious that a high armor class is
 vital for surviving the deeper levels of Angband.
+
+.. index::
+   single: armour class; equipment values
+   single: to-hit; armour values
 
 Armor class values are always displayed between a set of square brackets,
 as '[#]' or '[#,+#]'. The first value is the base armor class of the
@@ -297,6 +311,9 @@ The character may also gain immunity to fire, cold, lightning and acid if
 he is fortunate to find any of the few artifacts that provide these
 immunities: immunity means that no damage is taken, and the character's
 equipment is also totally protected. Immunities are EXTREMELY rare.
+
+.. index::
+   single: experience points; draining attacks
 
 Another attack that the player will come into contact with all too often is
 the soul-chilling nature of the undead, which can drain the character's
