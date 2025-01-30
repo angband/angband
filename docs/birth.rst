@@ -47,6 +47,10 @@ Each character may have one or more "racially intrinsic skills", based on
 the race of the character. These may include special resistances, or
 abilities such as infravision.
 
+.. index::
+   single: experience points; description
+   see: EXP; experience points
+
 Each character has a number of "experience points", which increases as the
 character defeats monsters and attempts new spells and uses new items.
 Characters also have a level, which is based on experience. The amount of
@@ -55,6 +59,10 @@ and class. Races and classes with more intrinsic benefits require more
 experience to gain levels. As the experience rises, so does the level, and
 as the level rises, certain other abilities and characteristics rise as
 well. All characters start at 0 experience and at the first level.
+
+.. index::
+   single: gold; description
+   see: AU; gold
 
 Each character has some gold, which can be used to buy items from the shops
 in the town. A character starts with a fixed amount of gold and some items.
@@ -70,6 +78,10 @@ A shopkeeper also has an upper limit for the amount of gold offered for an
 item. The more generous shop-keepers will buy an item for up to 30,000 gold
 pieces, but some of the stingy ones will only pay 5,000.
 
+.. index::
+   single: armour class; description
+   see: AC; armour class
+
 Each character has an "armour class", abbreviated to AC, representing how
 well the character can avoid damage. The armour class is affected by
 dexterity and equipment, so the concept includes both avoiding blows and
@@ -77,6 +89,12 @@ being able to take blows without being hurt. Armour class on equipment is
 always denoted in square brackets, usually as a figure of '[X,+Y]' where
 X is the intrinsic AC of the armour in question, and Y is the magical bonus
 to armour class provided by that item.
+
+.. index::
+   single: hit points; description
+   see: HP; hit points
+   single: hit dice; description
+   see: HD; hit dice
 
 Each character has "hit points", or hp, representing how much damage the
 character can sustain before they die. How many hit points a character has
@@ -94,6 +112,10 @@ further modified by constitution - a character with high constitution will
 get a flat bonus of a certain number of hit points per level (recalculated
 right back to level 1: if you gain an extra hit point per level, and you
 are 42nd level, you will suddenly be 42 hit points better off.)
+
+.. index::
+   single: spell points; description
+   see: mana; spell points
 
 Each character has spell points, or mana, which limits how many spells (or
 prayers) a character can cast (or pray). The maximum number of spell points
@@ -375,6 +397,10 @@ default setting for these statistics.  Statistics can be permanently
 raised by various potions in the dungeon up to 18/100.  They can also be 
 temporarily drained by some monster attacks.
 
+.. index::
+   single: strength; description
+   see: STR; strength
+
 Strength
   Strength is important in fighting with weapons and in melee combat. A
   high strength can improve your chances of hitting as well as the amount
@@ -383,6 +409,10 @@ Strength
   being slowed. It also allows you to get extra blows with heavier weapons.
   Strength is one of the most important stats in the beginning of the game.
  
+.. index::
+   single: intelligence; description
+   see: INT; intelligence
+
 Intelligence
   Intelligence affects the spellcasting abilities of spellcasters from the
   arcane and shadow realms: mages, rogues, necromancers and blackguards.
@@ -393,6 +423,10 @@ Intelligence
   spells if your intelligence is 7 or lower. A good intelligence can also
   help with using magic devices, picking locks, and disarming traps.
  
+.. index::
+   single: wisdom; description
+   see: WIS; wisdom
+
 Wisdom
   The primary function of wisdom is to determine the ability of a priest or
   paladin to use prayers, and druids and rangers to use verses, just like
@@ -402,6 +436,10 @@ Wisdom
   wisdom increases your saving throw, thereby improving your chances of
   resisting magical spells cast upon you by monsters.
  
+.. index::
+   single: dexterity; description
+   see: DEX; dexterity
+
 Dexterity
   Dexterity is a combination of agility and quickness. A high dexterity may
   allow a character to get multiple blows with lighter weapons. Dexterity
@@ -412,6 +450,10 @@ Dexterity
   If the character has a high enough dexterity, thieves will never
   be successful in stealing from them.
  
+.. index::
+   single: constitution; description
+   see: CON; constitution
+
 Constitution
   Constitution is a character's ability to resist damage to his body, and
   to recover from damage received. Therefore a character with a high
@@ -427,6 +469,9 @@ The starting skill levels of a character are based upon race and class.
 Skill levels may be adjusted by high or low stats, and may increase with 
 the level of the character.
 
+.. index::
+   single: infravision; description
+
 Infravision
   Infravision is the ability to see heat sources. Since most of the dungeon
   is cool or cold, infravision will not allow the player to see walls and
@@ -439,6 +484,13 @@ Infravision
   not increase with character level, and is purely dependent on race and on
   magical equipment.
  
+.. index::
+   single: fighting skill; description
+   see: melee skill; fighting skill
+   seealso: to-hit; fighting skill
+   seealso: to-dam; fighting skill
+   seealso; blows; fighting skill
+
 Fighting
   Fighting is the ability to hit and do damage with weapons or fists.
   Normally a character gets a single blow from any weapon, but with
@@ -447,6 +499,9 @@ Fighting
   opponent. This skill increases with the level of the character. Inspecting
   a weapon will show you how quickly you can attack with it.
  
+.. index::
+   single: shooting skill; description
+
 Shooting Ability
   Using ranged missile weapons (and throwing objects) is included in this
   skill. Different stats apply to different weapons, but this ability may
@@ -454,6 +509,9 @@ Shooting Ability
   and the ability to hit a creature. This skill increases with the level of
   the character.
  
+.. index::
+   single: saving throw; description
+
 Saving Throws
   A Saving Throw is the ability of a character to resist the effects of a
   spell cast on him by another person/creature. This does not include
@@ -463,6 +521,9 @@ Saving Throws
   even out. A high wisdom also increases this ability. It is possible to
   get 100% saving throw, making you immune to many attacks.
  
+.. index::
+   single: stealth; description
+
 Stealth
   The ability to move silently about is very useful. Characters with good
   stealth can usually surprise their opponents, gaining the first blow.
@@ -470,6 +531,11 @@ Stealth
   allowing a player to avoid certain fights. This skill is based upon race 
   and class, but can be magically enhanced.
  
+.. index::
+   single: disarming skill; description
+   see: disarm physical; disarming skill
+   see: disarm magical; disarming skill
+
 Disarming
   Disarming is the ability to remove traps safely, and also includes
   picking locks on traps and doors. A successful disarming will gain the
@@ -479,11 +545,17 @@ Disarming
   physical traps, and intelligence modifies disarming of magical traps.
   Both these abilities increase with the level of the character.
  
+.. index::
+   single: magic devices skill; description
+
 Magical Devices
   Using a magical device such as a wand or staff requires experience and
   knowledge. Spell users such as mages and priests are therefore much
   better at using a magical device than say a warrior. This skill is
   modified by intelligence, and increases with the level of the character.
+
+.. index::
+   single: searching skill; description
 
 Searching (Perception)
   Perception is the ability to notice traps without actively seeking them
@@ -498,6 +570,15 @@ race and class are listed in the following table.  To get the total hit
 dice, add the "race" and "class" numbers: for instance, a Dwarf Priest
 has a hit die of 11+2=13 (i.e. they will get 1d13 hit points per level,
 adjusted for constitution).
+
+.. index::
+   single: strength; racial bonus
+   single: intelligence; racial bonus
+   single: wisdom; racial bonus
+   single: dexterity; racial bonus
+   single: consistution; racial bonus
+   single: hit dice; base from race
+   single: infravision; racial bonus
 
 ================ ===  ===  ===  ===  ===  =========  ========  ====== 
       Race       STR  INT  WIS  DEX  CON  HD (base)  XP/level  Infra
@@ -516,6 +597,14 @@ adjusted for constitution).
 ================ ===  ===  ===  ===  ===  =========  ========  ======
 
 
+.. index::
+   single: strength; class bonus
+   single: intelligence; class bonus
+   single: wisdom; class bonus
+   single: dexterity; class bonus
+   single: consistution; class bonus
+   single: hit dice; class bonus
+
 ================= ===  ===  ===  ===  ===  ==========
       Class       STR  INT  WIS  DEX  CON  HD (bonus)
 ================= ===  ===  ===  ===  ===  ==========
@@ -533,6 +622,15 @@ adjusted for constitution).
 Ability Tables
 ==============
 
+.. index::
+   single: disarming skill; racial bonus
+   single: magic devices skill; racial bonus
+   single: saving throw; racial bonus
+   single: stealth; racial bonus
+   single: searching skill; racial bonus
+   single: fighting skill; racial bonus
+   single: shooting skill; racial bonus
+
 ============ =======  =======  ======  =====  =======  ======  ======  =====
   Race       DisarmP  DisarmM  Device   Save  Stealth  Search   Fight   Bows
 ============ =======  =======  ======  =====  =======  ======  ======  ===== 
@@ -549,6 +647,15 @@ Ability Tables
   Kobold       10       10        5       0       3      10      -5      10
 ============ =======  =======  ======  =====  =======  ======  ======  =====
 
+
+.. index::
+   single: disarming skill; class bonus
+   single: magic devices skill; class bonus
+   single: saving throw; class bonus
+   single: stealth; class bonus
+   single: searching skill; class bonus
+   single: fighting skill; class bonus
+   single: shooting skill; class bonus
 
 ============   ======= ======= ======= ======= ======= =======  ======= =======
  Class         DisarmP DisarmM Device   Save   Stealth Search    Fight   Bows

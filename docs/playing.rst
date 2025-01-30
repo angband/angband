@@ -54,6 +54,10 @@ inscription contains '@#' or '@x#', where ``x`` is the current
 command. Whenever an item inscription contains '!*' or '!x' (with ``x``
 as above) you must verify its selection.
 
+.. index::
+   single: original keyset; directions
+   single: roguelike keyset; directions
+
 Some commands will prompt for a direction. You may enter a "compass"
 direction using any of the "direction keys" shown below. Sometimes, you may
 specify that you wish to use the current "target", by pressing ``t`` or
@@ -83,6 +87,10 @@ holding the shift or control modifier key down while pressing a "roguelike"
 direction key, instead of using the "run" or "alter" command plus a
 direction. Both keysets allow the use of the ``5`` key to "stand still",
 which is most convenient when using the original keyset.
+
+.. index::
+   single: original keyset
+   see: keyset; original keyset
 
 Original Keyset Command Summary
 ===============================
@@ -145,6 +153,10 @@ Original Keyset Command Summary
 ``/``  Identify symbol
 ``|``  List contents of quiver
 ====== ============================= ====== ============================
+
+.. index::
+   single: roguelike keyset
+   see: keyset; roguelike keyset
 
 Roguelike Keyset Command Summary
 ================================
