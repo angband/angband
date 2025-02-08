@@ -760,13 +760,19 @@ void process_world(struct chunk *c)
 		for (x = 0; x < c->width; x++) {
 			struct loc grid = loc(x, y);
 			struct trap *trap = square(c, grid)->trap;
+			bool changed = false;
 			while (trap) {
 				if (trap->timeout) {
 					trap->timeout--;
-					if (!trap->timeout)
-						square_light_spot(c, grid);
+					if (!trap->timeout) {
+						changed = true;
+					}
 				}
 				trap = trap->next;
+			}
+			if (changed && square_isseen(c, grid)) {
+				square_memorize_traps(c, grid);
+				square_light_spot(c, grid);
 			}
 		}
 	}
