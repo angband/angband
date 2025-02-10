@@ -5100,20 +5100,25 @@ static BOOL send_event(NSEvent *event)
                 [NSApp sendEvent:event];
                 break;
             }
-            
-            if (! [[event characters] length]) break;
-            
-            
+
             /* Extract some modifiers */
             int mc = !! (modifiers & NSControlKeyMask);
             int ms = !! (modifiers & NSShiftKeyMask);
             int mo = !! (modifiers & NSAlternateKeyMask);
             int mx = !! (modifiers & NSCommandKeyMask);
             int kp = !! (modifiers & NSNumericPadKeyMask);
-            
-            
+
             /* Get the Angband char corresponding to this unichar */
-            unichar c = [[event characters] characterAtIndex:0];
+            unichar c;
+            if ([[event characters] length]) {
+                c = [[event characters] characterAtIndex:0];
+#ifdef KC_MOD_ALT
+            } else if ([[event charactersIgnoringModifiers] length]) {
+                c = [[event charactersIgnoringModifiers] characterAtIndex:0];
+#endif
+            } else {
+                break;
+            }
             keycode_t ch;
             switch (c) {
                 /*
