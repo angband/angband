@@ -55,7 +55,7 @@
 #define MAX_WINDOWS 4
 
 #define INIT_SDL_FLAGS \
-	(SDL_INIT_VIDEO)
+	(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER)
 #define INIT_IMG_FLAGS \
 	(IMG_INIT_PNG)
 
@@ -469,6 +469,8 @@ struct my_app {
 	bool kp_as_mod;
 	/* true if details about the SDL environment are to be logged. */
 	bool print_sdl_details;
+
+	SDL_GameController *controller;
 };
 
 /* Forward declarations */
@@ -4089,6 +4091,96 @@ static bool handle_mousewheel(struct my_app *a,
 	return false;
 }
 
+static void handle_controller_added(struct my_app *a,
+		const SDL_ControllerDeviceEvent *event)
+{
+	/* Support only one controller */
+	if (a->controller) return;
+	a->controller = SDL_GameControllerOpen(event->which);
+}
+
+static void handle_controller_removed(struct my_app *a,
+		const SDL_ControllerDeviceEvent *event)
+{
+	if (!a->controller) return;
+
+	SDL_Joystick *joystick = SDL_GameControllerGetJoystick(a->controller);
+	if (event->which == SDL_JoystickInstanceID(joystick)) {
+		SDL_GameControllerClose(a->controller);
+		a->controller = NULL;
+	}
+}
+
+static bool handle_controller_button(struct my_app *a,
+		 const SDL_ControllerButtonEvent *event)
+{
+	keycode_t ch;
+	uint8_t mods = 0;
+
+	if (event->state == SDL_RELEASED) {
+		return false;
+	}
+
+	/* Translate controller buttons into keycodes */
+	switch (event->button) {
+	case SDL_CONTROLLER_BUTTON_A:
+		ch = KC_ENTER;
+		break;
+	case SDL_CONTROLLER_BUTTON_B:
+		ch = ESCAPE;
+		break;
+	case SDL_CONTROLLER_BUTTON_BACK:
+		ch = KC_BACKSPACE;
+		break;
+	case SDL_CONTROLLER_BUTTON_START:
+		ch = '=';
+		break;
+	case SDL_CONTROLLER_BUTTON_GUIDE:
+		ch = '?';
+		break;
+	case SDL_CONTROLLER_BUTTON_DPAD_UP:
+		ch = ARROW_UP;
+		break;
+	case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+		ch = ARROW_DOWN;
+		break;
+	case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+		ch = ARROW_LEFT;
+		break;
+	case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+		ch = ARROW_RIGHT;
+		break;
+	default:
+		return false;
+	}
+
+	Term_keypress(ch, mods);
+	return true;
+}
+
+static bool handle_controller_axis(struct my_app *a,
+		 const SDL_ControllerAxisEvent *event)
+{
+	keycode_t ch;
+	uint8_t mods = 0;
+
+	/* Translate controller axes into keycodes */
+	if (event->axis == 0) {
+		/* left-right */
+		if (event->value > 1000) ch = ARROW_RIGHT;
+		else if (event->value < -1000) ch = ARROW_LEFT;
+	} else if (event->axis == 1) {
+		/* up-down */
+		if (event->value > 1000) ch = ARROW_UP;
+		else if (event->value < -1000) ch = ARROW_DOWN;
+	} else {
+		return false;
+	}
+
+	Term_keypress(ch, mods);
+	return true;
+}
+
 static bool trigger_menu_shortcut(struct my_app *a, keycode_t ch, uint8_t mods)
 {
 	/*
@@ -4501,6 +4593,17 @@ static bool get_event(struct my_app *a)
 			return handle_mousebutton(a, &event.button);
 		case SDL_MOUSEWHEEL:
 			return handle_mousewheel(a, &event.wheel);
+		case SDL_CONTROLLERDEVICEADDED:
+			handle_controller_added(a, &event.cdevice);
+			return false;
+		case SDL_CONTROLLERDEVICEREMOVED:
+			handle_controller_removed(a, &event.cdevice);
+			return false;
+		case SDL_CONTROLLERBUTTONDOWN:
+		case SDL_CONTROLLERBUTTONUP:
+			return handle_controller_button(a, &event.cbutton);
+		case SDL_CONTROLLERAXISMOTION:
+			return handle_controller_axis(a, &event.caxis);
 		case SDL_WINDOWEVENT:
 			handle_windowevent(a, &event.window);
 			return false;
@@ -7123,6 +7226,8 @@ errr init_sdl2(int argc, char **argv)
 
 static void init_globals(struct my_app *a)
 {
+	int num_joysticks;
+
 	path_build(a->config_file, sizeof(a->config_file),
 			DEFAULT_CONFIG_FILE_DIR, DEFAULT_CONFIG_FILE);
 
@@ -7142,6 +7247,14 @@ static void init_globals(struct my_app *a)
 	a->w_mouse = NULL;
 	a->w_key = NULL;
 	a->kp_as_mod = true;
+	a->controller = NULL;
+	num_joysticks = SDL_NumJoysticks();
+	for (int i = 0; i < num_joysticks; i++) {
+		if (!SDL_IsGameController(i)) continue;
+		a->controller = SDL_GameControllerOpen(i);
+		/* We support one controller only */
+		if (a->controller) break;
+	}
 }
 
 static bool is_subwindow_loaded(struct my_app *a, unsigned index)
@@ -7242,6 +7355,10 @@ static void free_globals(struct my_app *a)
 		assert(!a->subwindows[i].inited);
 		assert(!a->subwindows[i].loaded);
 		assert(!a->subwindows[i].linked);
+	}
+	if (a->controller) {
+		SDL_GameControllerClose(a->controller);
+		a->controller = NULL;
 	}
 }
 
