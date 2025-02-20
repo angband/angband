@@ -2963,7 +2963,7 @@ flags:UNIQUE | NAME_COMMA
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
 friends:50:2d5:snaga:servant
 friends:80:2d7:Wolf
-friends:100:5d4:Hill orc:servant
+friends:100:5d4:cave orc:servant
 desc:He is a cunning and devious orc with a chaotic nature.
 
 name:giant white tick
@@ -3363,7 +3363,7 @@ flags:DROP_2 | DROP_GOOD | ONLY_ITEM
 flags:IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
 friends:50:4d4:snaga:servant
 friends:80:2d7:Warg
-friends:100:5d4:Hill orc:servant
+friends:100:5d4:cave orc:servant
 friends:100:1d1:Bullroarer the Hobbit
 friends:100:1d1:Grishnákh, the Hill Orc
 desc:A leader of a band of raiding orcs, he picks on hobbits.
