@@ -150,72 +150,111 @@ int teardown_tests(void *state) {
 	for (i = 1; i < OF_MAX; ++i) {
 		if (i == OF_PROT_FEAR) {
 			if (!of_has(kb_info[test_tv1.tval].flags, i)) {
-				(void) printf("%s: delayed check for object "
-					"flag %d failed at line %d\n",
-					suite_name, i, __LINE__ - 3);
+				if (verbose) {
+					(void) printf("%s: delayed check for "
+						"object flag %d failed at "
+						"line %d\n", suite_name, i,
+						__LINE__ - 5);
+				}
+				r = 1;
 			}
 		} else {
 			if (of_has(kb_info[test_tv1.tval].flags, i)) {
-				(void) printf("%s: delayed check for object "
-					"flag %d failed at line %d\n",
-					suite_name, i, __LINE__ - 3);
+				if (verbose) {
+					(void) printf("%s: delayed check for "
+						"object flag %d failed at "
+						"line %d\n", suite_name, i,
+						__LINE__ - 5);
+				}
+				r = 1;
 			}
 		}
 		if (of_has(kb_info[test_tv2.tval].flags, i)) {
-			(void) printf("%s: delayed check for object "
-				"flag %d failed at line %d\n",
-				suite_name, i, __LINE__ - 3);
+			if (verbose) {
+				(void) printf("%s: delayed check for object "
+					"flag %d failed at line %d\n",
+					suite_name, i, __LINE__ - 4);
+			}
+			r = 1;
 		}
 	}
 	for (i = 1; i < KF_MAX; ++i) {
 		if (i == KF_EASY_KNOW) {
 			if (!kf_has(kb_info[test_tv1.tval].kind_flags, i)) {
-				(void) printf("%s: delayed check for kind "
-					"flag %d failed at line %d\n",
-					suite_name, i, __LINE__ - 3);
+				if (verbose) {
+					(void) printf("%s: delayed check for "
+						"kind flag %d failed at "
+						"line %d\n", suite_name, i,
+						__LINE__ - 5);
+				}
+				r = 1;
 			}
 		} else {
 			if (kf_has(kb_info[test_tv1.tval].kind_flags, i)) {
-				(void) printf("%s: delayed check for kind "
-					"flag %d failed at line %d\n",
-					suite_name, i, __LINE__ - 3);
+				if (verbose) {
+					(void) printf("%s: delayed check for "
+						"kind flag %d failed at "
+						"line %d\n", suite_name, i,
+						__LINE__ - 5);
+				}
+				r = 1;
 			}
 		}
 		if (kf_has(kb_info[test_tv2.tval].kind_flags, i)) {
-			(void) printf("%s: delayed check for kind "
-				"flag %d failed at line %d\n",
-				suite_name, i, __LINE__ - 3);
+			if (verbose) {
+				(void) printf("%s: delayed check for kind "
+					"flag %d failed at line %d\n",
+					suite_name, i, __LINE__ - 4);
+			}
+			r = 1;
 		}
 	}
 	for (i = 0; i < ELEM_MAX; ++i) {
 		if (kb_info[test_tv1.tval].el_info[i].res_level != 0) {
-			(void) printf("%s: delayed check for element %d "
-				"failed at line %d\n", suite_name, i,
-				__LINE__ - 3);
+			if (verbose) {
+				(void) printf("%s: delayed check for element "
+					"%d failed at line %d\n", suite_name, i,
+					__LINE__ - 4);
+			}
+			r = 1;
 		}
 		if (i == ELEM_ACID) {
 			if (kb_info[test_tv1.tval].el_info[i].flags
 					& ~(EL_INFO_HATES)) {
-				(void) printf("%s: deleyed check for element "
-					"%d failed at line %d\n", suite_name, i,
-					__LINE__ - 4);
+				if (verbose) {
+					(void) printf("%s: delayed check for "
+						"element %d failed at line "
+						"%d\n", suite_name, i,
+						__LINE__ - 6);
+				}
+				r = 1;
 			}
 		} else {
 			if (kb_info[test_tv1.tval].el_info[i].flags) {
-				(void) printf("%s: deleyed check for element "
-					"%d failed at line %d\n", suite_name, i,
-					__LINE__ - 3);
+				if (verbose) {
+					(void) printf("%s: delayed check for "
+						"element %d failed at "
+						"line %d\n", suite_name, i,
+						__LINE__ - 5);
+				}
+				r = 1;
 			}
 		}
 		if (kb_info[test_tv2.tval].el_info[i].res_level != 0) {
-			(void) printf("%s: delayed check for element %d "
-				"failed at line %d\n", suite_name, i,
-				__LINE__ - 3);
+			if (verbose) {
+				(void) printf("%s: delayed check for element "
+					"%d failed at line %d\n", suite_name, i,
+					__LINE__ - 4);
+			}
+			r = 1;
 		}
 		if (kb_info[test_tv2.tval].el_info[i].flags) {
-			(void) printf("%s: deleyed check for element "
-				"%d failed at line %d\n", suite_name, i,
-				__LINE__ - 3);
+			if (verbose) {
+				(void) printf("%s: delayed check for element "
+					"%d failed at line %d\n", suite_name, i,
+					__LINE__ - 4);
+			}
+			r = 1;
 		}
 	}
 	object_base_parser.cleanup();
@@ -337,12 +376,10 @@ static int test_default_passthrough0(void *state) {
 
 const char *suite_name = "parse/objbase";
 /*
- * test_defaults0() must be before test_name0().
+ * test_default0() must be before test_name0().
  * test_missing_record_header0() and test_name_bad0() must be
- * before test_name0().  test_graphics0(), test_break0(), test_stack0(),
- * test_flags0(), and test_flags_bad0() must be after test_name0().
- * test_default_passthrough0() must be after test_graphics0(), test_break0(),
- * test_stack0(), test_flags0(), and test_flags_bad0().
+ * before test_name0().  All others must be after test_name0().
+ * test_default_passthrough0() must appear last.
  */
 struct test tests[] = {
 	{ "default0", test_default0 },
@@ -350,7 +387,7 @@ struct test tests[] = {
 	{ "missing_record_header0", test_missing_record_header0 },
 	{ "name_bad0", test_name_bad0 },
 	{ "name0", test_name0 },
-	{ "graphcis0", test_graphics0 },
+	{ "graphics0", test_graphics0 },
 	{ "break0", test_break0 },
 	{ "stack0", test_stack0 },
 	{ "flags0", test_flags0 },
