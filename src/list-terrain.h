@@ -1,6 +1,6 @@
 /**
  * \file list-terrain.h
- * \brief List the terrain (features) types that can appear
+ * \brief List the terrain (feature) types that can appear
  *
  * These are how the code and data files refer to terrain.  Any changes will
  * break savefiles.  Note that the terrain code is stored as an unsigned 8-bit
