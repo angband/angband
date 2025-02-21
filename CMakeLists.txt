@@ -997,7 +997,7 @@ FOREACH(ANGBAND_TEST_CASE_SOURCE ${ANGBAND_TEST_CASE_SOURCES})
            WIN32_EXECUTABLE OFF)
        IF(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
            # Despite the guarantee above, the Visual Studio generator still
-           # needs this to avoid a linker about missing WinMain.
+           # needs this to avoid a linker error about missing WinMain.
            TARGET_LINK_OPTIONS(${ANGBAND_TEST_CASE_NAME} PRIVATE "/SUBSYSTEM:CONSOLE")
        ENDIF()
     ENDIF()
