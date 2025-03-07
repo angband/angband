@@ -281,7 +281,7 @@ static int test_combine_pack_mixed(void *state) {
 
 /*
  * Test case that triggered assertion failure in 4.2.3; see PowerWyrm's
- * report here, http://angband.oook.cz/forum/showpost.php?p=155986&postcount=1 .
+ * report here, https://angband.live/forums/forum/angband/vanilla/10170-assert-in-object_absorb_partial#post10170
  */
 static int test_combine_pack_4_2_3_assertion(void *state) {
 	struct simple_test_case assertion_case = {
