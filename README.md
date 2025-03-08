@@ -1,26 +1,132 @@
-# Angband 4.2.5
+# Tower of Babel
 
 <p align="center">
-  <img src="screenshots/title.png" width="425"/>
-  <img src="screenshots/game.png" width="425"/>
+  <img src="docs/images/tower-of-babel-logo.png" width="500" alt="Tower of Babel Logo"/>
 </p>
 
-Angband is a graphical dungeon adventure game that uses textual characters to
-represent the walls and floors of a dungeon and the inhabitants therein, in the
-vein of games like NetHack and Rogue. If you need help in-game, press `?`.
+> *Climb the Tower of Babel with your AI companion, Lute the Bard, in this unique roguelike adventure.*
 
-- **Installing Angband:** See the [Official Website](https://angband.github.io/angband/) or [compile it yourself](https://angband.readthedocs.io/en/latest/hacking/compiling.html).
-- **How to Play:** [The Angband Manual](https://angband.readthedocs.io/en/latest/)
-- **Getting Help:** [Angband Forums](https://angband.live/forums/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Build Status](https://img.shields.io/badge/build-in_development-yellow)](https://github.com/machinepilot/angband)
+[![Made with Angband](https://img.shields.io/badge/Made%20with-Angband-purple)](https://angband.github.io/angband/)
 
-Enjoy!
+## 🔍 Overview
 
--- The Angband Dev Team
-# AI-Augmented Roguelike Game: Enhanced Design and Mechanics
+Tower of Babel is an AI-augmented roguelike game built on Angband 4.2.5. Explore 100 unique "ringdoms" as you ascend the tower, accompanied by your AI-driven bard companion who narrates your journey with dynamic storytelling. This project combines traditional roguelike elements (procedural generation, permadeath, turn-based combat) with cutting-edge AI to create a unique gameplay experience.
 
-To address your request for a higher level of order and a better outcome, this iteration refines the previous design by improving clarity, structure, and depth. The content is organized with precise headings, detailed explanations, and practical examples tailored to a kinesthetic learning style—emphasizing tangible actions and interactions. Below is a comprehensive, standalone design document for your modding project.
+This repository serves as a **complete project workbench** for AI-assisted game development, documenting every step of the process from initial concept to playable game.
+
+### Key Features
+
+- **Vertical Exploration**: 100 procedurally generated floors ("ringdoms"), each with unique themes and challenges
+- **AI Companion**: Lute the Bard, an AI-driven character who narrates your actions and evolves with you
+- **Faction System**: Build relationships with various factions that affect your journey
+- **Local AI Integration**: Uses lightweight LLMs for dynamic storytelling while respecting your privacy
+
+## 🏗️ Development Approach
+
+This project uses an AI-assisted iterative development cycle, with each work session focusing on specific, testable goals. The process follows these principles:
+
+1. **Small, Testable Iterations**: Each development session targets specific, achievable goals
+2. **Test-Driven Development**: Features are validated with tests before moving forward
+3. **Documentation First**: Design decisions and implementation details are documented here
+4. **AI Collaboration**: Leveraging Claude as a development partner while building AI game mechanics
+
+### Development Loop
+
+```mermaid
+graph TD
+    A[Plan Session Goals] --> B[Implement Feature]
+    B --> C[Test Feature]
+    C --> D[Document Progress]
+    D --> E[Commit Changes]
+    E --> A
+```
+
+## 📚 Project Documentation
+
+### Game Design
+
+- [Game Overview](#game-overview)
+- [Setting](#setting)
+- [Core Mechanics](#core-mechanics)
+- [The Bard: Lute](#the-bard-lute)
+- [Model Context Protocol](#model-context-protocol)
+- [Factions](#factions)
+- [Gameplay Loop](#gameplay-loop)
+
+### Technical Architecture
+
+- [Development Tools](#development-tools)
+- [Core Game Components](#core-game-components)
+- [Bard System Architecture](#bard-system-architecture)
+- [LLM Integration](#llm-integration)
+- [Programming Tips](#programming-tips)
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- C development environment (GCC, Make, CMake)
+- Python 3.8+ (for MCP server)
+- Git
+- [Ollama](https://ollama.ai/) for local LLM deployment
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/machinepilot/angband.git
+cd angband
+
+# Set up build environment
+mkdir build && cd build
+cmake ..
+make
+
+# Install required Python packages
+pip install -r requirements.txt
+
+# Download the Llama3 model via Ollama
+ollama pull llama3:8b
+```
+
+### Running the Game
+
+```bash
+# Start the MCP server
+python server/mcp_server.py
+
+# In another terminal, run the game
+cd build
+./tower_of_babel
+```
+
+## 📝 Development Log
+
+The development log tracks progress, decisions, and lessons learned throughout the project:
+
+| Date | Milestone | Description |
+|------|-----------|-------------|
+| 2025-03-07 | Project Initiation | Fork of Angband, initial design document created |
+| 2025-03-08 | MCP Prototype | Basic Model Context Protocol implementation |
+| ... | ... | ... |
+
+## 📋 Task Board
+
+- [x] Fork Angband repository
+- [x] Create initial design document
+- [ ] Set up development environment
+- [ ] Implement basic Bard structure
+- [ ] Create MCP server prototype
+- [ ] Modify level generation for first ringdom
+- [ ] Implement basic narration system
+- [ ] Add test framework
+- [ ] Create first playable prototype
 
 ---
+
+# Game Design Document
 
 ## Game Overview
 
@@ -38,8 +144,6 @@ This is a turn-based roguelike set in the **Tower of Babel**, a 100-floor megast
   - **Mechanics Fit**: Offers turn-based combat, permadeath, and procedural levels—perfect for this project.
   - **Support**: Active community with resources (e.g., GitHub repository).
 - **Modding Plan**: Fork *Angband* to integrate Lute, the Model Context Protocol (MCP), and new systems.
-
----
 
 ## Setting
 
@@ -67,8 +171,6 @@ The **Tower of Babel** is a sprawling, vertical world with 100 procedurally gene
 ### Narrative Goal
 - **Mission**: Find a lost companion (e.g., a friend or spouse).
 - **Progression**: Clues unfold via Lute's narration and ringdom interactions.
-
----
 
 ## Core Mechanics
 
@@ -106,8 +208,6 @@ These mechanics form the game's foundation, expanded from *Angband*'s systems.
 - **Method**: Rooms and corridors themed by ringdom.
 - **Static Integration**: Hardcoded features (e.g., docks) ensure consistency.
 - **Code**: Enhanced in `generate.c`.
-
----
 
 ## The Bard: Lute
 
@@ -160,7 +260,7 @@ struct bard {
 #### Knowledge
 - **Stats**: Perception (relics), Lore (texts).
 - **Growth**: +1 per floor, max 20.
-- **Check**: $d20 + (\text{Perception} + \text{Lore})$ vs. DC (e.g., 15).
+- **Check**: d20 + (Perception + Lore) vs. DC (e.g., 15).
 - **Success**: Reveals bonuses (e.g., +5 attack) or clues.
 - **Code**: `bard_knowledge_roll()`.
 
@@ -170,8 +270,6 @@ struct bard {
 - **Output**: 256-character narration.
 - **Prompt**: "Narrate {action} on {floor}, health {health}, grim tone."
 - **Code**: `bard_ai_call()` in `mcp.c`.
-
----
 
 ## Model Context Protocol (MCP)
 
@@ -207,8 +305,6 @@ app.run(port=5000)
 - **Refresh**: Every 10 turns or major event.
 - **Goal**: <0.1s latency.
 
----
-
 ## Factions
 
 Factions add replayability and social dynamics.
@@ -235,47 +331,24 @@ Factions add replayability and social dynamics.
 - **Example**: "Sabotage automaton for 50 gold."
 - **Generation**: Via MCP in `faction_quest_generate()`.
 
----
-
 ## Gameplay Loop
 
 Here's how it feels to play:
 
 1. **Start**: Pick Lute's trait (e.g., +5 Lore), spawn at (10,10) on floor 1.
 2. **Explore**: Move across the 100x100 grid, finding items and NPCs. Lute narrates: "A gondola sways—trade awaits."
-3. **Fight**: Attack a golem (roll $d20 + 10$ vs. 18). Lute cheers: "Steel bends to your will!"
-4. **Interact**: Persuade an NPC (roll $d20 + \text{charisma}$ vs. DC 12). Lute advises: "He's greedy—haggle hard."
+3. **Fight**: Attack a golem (roll d20 + 10 vs. 18). Lute cheers: "Steel bends to your will!"
+4. **Interact**: Persuade an NPC (roll d20 + charisma vs. DC 12). Lute advises: "He's greedy—haggle hard."
 5. **Ascend**: Reach stairs at (90,90), climb to the next floor.
 6. **End**: Floor 100 → fight boss (HP 200, Attack 25).
 
 ---
 
-## Systems Breakdown
+# Technical Architecture
 
-### Map
-- **Grid**: 100x100 tiles.
-- **Tiles**: 0 (floor), 1 (wall), 2-5 (features like vents).
+## Development Tools
 
-### Combat
-- **Hit**: $d20 + \text{Attribute} \geq \text{Defense}$.
-- **Damage**: $\text{Attribute} + d6 - \text{Armor}$.
-
-### Memory
-- **Events**: 10 slots (e.g., {type: "loot", floor: 3}).
-- **Recall**: 50% chance per turn.
-
-### Courage
-- **Formula**: $C_{\text{new}} = C_{\text{old}} + \Delta$ (e.g., +10 for kills).
-- **Effect**: ≥ 75 → 10% enemy miss chance.
-
-### Recognition
-- **Check**: $d20 + (\text{Perception} + \text{Lore}) \geq \text{DC}$.
-
----
-
-## Architecture
-
-### Development Tools & Environment
+### Development Environment
 
 - **Version Control**:
   - **Git** with GitHub repository
@@ -302,7 +375,7 @@ Here's how it feels to play:
   - **Markdown** for design documents and user guides
   - Wiki integration with GitHub
 
-### Core Game Components
+## Core Game Components
 
 - **Base Engine** (Angband Fork):
   - `main-*.c` - Platform-specific main functions
@@ -323,9 +396,9 @@ Here's how it feels to play:
   - LLM integration layer (`llm_wrapper.py`)
   - Tools for content generation (`content_tools/`)
 
-### Bard System Architecture
+## Bard System Architecture
 
-#### Core Structure
+### Core Structure
 
 ```c
 typedef struct event_memory {
@@ -379,204 +452,87 @@ typedef struct bard {
 } Bard;
 ```
 
-#### Key Systems & Algorithms
+### Key Systems & Algorithms
 
-- **Memory Management System**:
-  ```c
-  void bard_remember_event(Bard *lute, const char *type, int floor, const char *detail, int importance) {
-      // Find slot (replace least important or oldest)
-      int slot = find_memory_slot(lute);
-      
-      // Store the new memory
-      strncpy(lute->memories[slot].type, type, sizeof(lute->memories[slot].type) - 1);
-      lute->memories[slot].floor = floor;
-      strncpy(lute->memories[slot].detail, detail, sizeof(lute->memories[slot].detail) - 1);
-      lute->memories[slot].importance = importance;
-      lute->memories[slot].timestamp = current_game_turn;
-      
-      // Update memory count and pointer
-      if (lute->memory_count < MAX_MEMORIES)
-          lute->memory_count++;
-      lute->recent_memory_idx = slot;
-  }
+#### Memory Management System
 
-  const EventMemory *bard_recall_relevant_memory(Bard *lute, const char *type, int floor) {
-      // Probability increases with more similar contexts
-      int best_match = -1;
-      int best_score = 0;
-      
-      for (int i = 0; i < lute->memory_count; i++) {
-          // Calculate relevance score based on type, recency, location, importance
-          int score = calculate_memory_relevance(lute->memories[i], type, floor);
-          
-          if (score > best_score) {
-              best_score = score;
-              best_match = i;
-          }
-      }
-      
-      // Only recall if score passes threshold (affected by lore attribute)
-      if (best_match >= 0 && best_score > (20 - lute->lore) * 5)
-          return &lute->memories[best_match];
-          
-      return NULL;  // No relevant memory found
-  }
-  ```
+```c
+void bard_remember_event(Bard *lute, const char *type, int floor, const char *detail, int importance) {
+    // Find slot (replace least important or oldest)
+    int slot = find_memory_slot(lute);
+    
+    // Store the new memory
+    strncpy(lute->memories[slot].type, type, sizeof(lute->memories[slot].type) - 1);
+    lute->memories[slot].floor = floor;
+    strncpy(lute->memories[slot].detail, detail, sizeof(lute->memories[slot].detail) - 1);
+    lute->memories[slot].importance = importance;
+    lute->memories[slot].timestamp = current_game_turn;
+    
+    // Update memory count and pointer
+    if (lute->memory_count < MAX_MEMORIES)
+        lute->memory_count++;
+    lute->recent_memory_idx = slot;
+}
 
-- **Narration Caching System**:
-  ```c
-  void bard_cache_narration(Bard *lute, int state_hash, const char *narration) {
-      // Find LRU cache slot or matching state
-      int slot = find_cache_slot(lute, state_hash);
-      
-      // Store narration and state hash
-      strncpy(lute->cached_narrations[slot], narration, MAX_NARRATION_LENGTH - 1);
-      lute->cache_indices[slot] = state_hash;
-      
-      // Update cache statistics
-      lute->narrations_generated++;
-  }
+const EventMemory *bard_recall_relevant_memory(Bard *lute, const char *type, int floor) {
+    // Probability increases with more similar contexts
+    int best_match = -1;
+    int best_score = 0;
+    
+    for (int i = 0; i < lute->memory_count; i++) {
+        // Calculate relevance score based on type, recency, location, importance
+        int score = calculate_memory_relevance(lute->memories[i], type, floor);
+        
+        if (score > best_score) {
+            best_score = score;
+            best_match = i;
+        }
+    }
+    
+    // Only recall if score passes threshold (affected by lore attribute)
+    if (best_match >= 0 && best_score > (20 - lute->lore) * 5)
+        return &lute->memories[best_match];
+        
+    return NULL;  // No relevant memory found
+}
+```
 
-  bool bard_get_cached_narration(Bard *lute, int state_hash, char *output, size_t output_size) {
-      // Look for matching state in cache
-      for (int i = 0; i < CACHE_SIZE; i++) {
-          if (lute->cache_indices[i] == state_hash) {
-              // Copy cached narration to output
-              strncpy(output, lute->cached_narrations[i], output_size - 1);
-              output[output_size - 1] = '\0';
-              
-              // Update cache statistics
-              lute->cache_hits++;
-              return true;
-          }
-      }
-      
-      return false;  // Cache miss
-  }
+#### Narration Caching System
 
-  int calculate_state_hash(const char *action, const char *target, int floor, int health) {
-      // A simple hash function for game state
-      int hash = floor * 1000 + health;
-      
-      for (const char *c = action; *c; c++)
-          hash = ((hash << 5) + hash) + *c;
-          
-      for (const char *c = target; *c; c++)
-          hash = ((hash << 5) + hash) + *c;
-          
-      return hash;
-  }
-  ```
+```c
+void bard_cache_narration(Bard *lute, int state_hash, const char *narration) {
+    // Find LRU cache slot or matching state
+    int slot = find_cache_slot(lute, state_hash);
+    
+    // Store narration and state hash
+    strncpy(lute->cached_narrations[slot], narration, MAX_NARRATION_LENGTH - 1);
+    lute->cache_indices[slot] = state_hash;
+    
+    // Update cache statistics
+    lute->narrations_generated++;
+}
 
-- **Courage & Mood System**:
-  ```c
-  void bard_update_courage(Bard *lute, int event_type, void *event_data) {
-      int change = 0;
-      
-      switch(event_type) {
-          case EVENT_PLAYER_KILL_ENEMY:
-              change = 10 * (1 + ((struct monster *)event_data)->level / 10);
-              break;
-          case EVENT_PLAYER_DAMAGED:
-              change = -5 * (*((int *)event_data) / player->max_hp * 10);
-              break;
-          case EVENT_PLAYER_FLEE:
-              change = -10;
-              break;
-          case EVENT_QUEST_COMPLETE:
-              change = 15;
-              break;
-      }
-      
-      // Apply change with dampening based on current value
-      if (change > 0) {
-          lute->courage += change * (1 - (lute->courage / 120.0));
-      } else {
-          lute->courage += change * (1 - ((100 - lute->courage) / 120.0));
-      }
-      
-      // Ensure within bounds
-      lute->courage = MIN(MAX(lute->courage, 0), 100);
-      
-      // Trigger personality shifts at thresholds
-      if (lute->courage >= 75 && !lute->abilities[ABILITY_DISTRACTION])
-          bard_unlock_ability(lute, ABILITY_DISTRACTION);
-      else if (lute->courage <= 25 && !lute->abilities[ABILITY_CAUTION])
-          bard_unlock_ability(lute, ABILITY_CAUTION);
-  }
-  
-  bool bard_attempt_courage_action(Bard *lute, int action_type, void *target) {
-      // Check if courage is high enough for the action
-      int threshold = get_courage_threshold(action_type);
-      
-      if (lute->courage >= threshold) {
-          // Roll with bonus from courage
-          int roll = randint0(100) + (lute->courage - threshold) / 2;
-          
-          if (roll >= 50) {
-              // Action succeeds
-              perform_courage_action(lute, action_type, target);
-              
-              // Cooldown effect
-              lute->courage -= threshold / 5;
-              return true;
-          }
-      }
-      
-      return false;
-  }
-  ```
+bool bard_get_cached_narration(Bard *lute, int state_hash, char *output, size_t output_size) {
+    // Look for matching state in cache
+    for (int i = 0; i < CACHE_SIZE; i++) {
+        if (lute->cache_indices[i] == state_hash) {
+            // Copy cached narration to output
+            strncpy(output, lute->cached_narrations[i], output_size - 1);
+            output[output_size - 1] = '\0';
+            
+            // Update cache statistics
+            lute->cache_hits++;
+            return true;
+        }
+    }
+    
+    return false;  // Cache miss
+}
+```
 
-- **MCP Request Formation**:
-  ```c
-  bool bard_generate_narration(Bard *lute, const char *action, const char *target, 
-                              int floor, int health, char *output, size_t output_size) {
-      // Calculate state hash for caching
-      int state_hash = calculate_state_hash(action, target, floor, health);
-      
-      // Check cache first
-      if (bard_get_cached_narration(lute, state_hash, output, output_size))
-          return true;
-      
-      // Prepare request JSON
-      json_t *request = json_object();
-      json_object_set_new(request, "action", json_string(action));
-      json_object_set_new(request, "target", json_string(target));
-      json_object_set_new(request, "floor", json_integer(floor));
-      json_object_set_new(request, "health", json_integer(health));
-      json_object_set_new(request, "courage", json_integer(lute->courage));
-      json_object_set_new(request, "mood", json_integer(lute->mood));
-      
-      // Add relevant memory if available
-      const EventMemory *memory = bard_recall_relevant_memory(lute, action, floor);
-      if (memory) {
-          json_t *memory_obj = json_object();
-          json_object_set_new(memory_obj, "type", json_string(memory->type));
-          json_object_set_new(memory_obj, "floor", json_integer(memory->floor));
-          json_object_set_new(memory_obj, "detail", json_string(memory->detail));
-          json_object_set_new(request, "memory", memory_obj);
-      }
-      
-      // Convert to JSON string
-      char *json_str = json_dumps(request, JSON_COMPACT);
-      
-      // Make MCP request
-      bool success = mcp_request("narrate", json_str, output, output_size);
-      
-      // Cache result if successful
-      if (success)
-          bard_cache_narration(lute, state_hash, output);
-      
-      json_decref(request);
-      free(json_str);
-      
-      return success;
-  }
-  ```
+## LLM Integration
 
-### LLM Integration
-
-#### Recommended Open Source Models
+### Recommended Open Source Models
 
 - **Primary Model**: **Llama 3 8B** 
   - Balanced performance and resource usage
@@ -598,7 +554,7 @@ typedef struct bard {
   - Can run on very modest hardware
   - Sacrifices some narrative quality
 
-#### Model Optimization Techniques
+### Model Optimization Techniques
 
 - **Quantization**:
   - Use 4-bit quantization (GGUF format)
@@ -620,9 +576,9 @@ typedef struct bard {
   - Lore generation: Mistral
   - Quick responses: TinyLlama
 
-#### Prompt Engineering
+### Prompt Engineering
 
-- **Base Template**:
+**Base Template**:
 ```
 You are Lute, a bard in the Tower of Babel. Narrate this moment in the adventure:
 - Action: {action}
@@ -635,20 +591,9 @@ Write 1-2 sentences (maximum 50 words) in a {tone} style that captures this mome
 If referencing a memory, smoothly incorporate: {memory_detail}
 ```
 
-- **Dynamic Prompt Adaptation**:
-  - Adjust tone based on Lute's courage (bold vs. cautious)
-  - Include floor-specific keywords
-  - Reference relevant past events based on memory system
+## Programming Tips
 
-- **Specialized Templates**:
-  - Combat narration
-  - Discovery narration
-  - NPC interaction narration
-  - Idle/exploration narration
-
-### Programming Tips & Pitfalls
-
-#### Memory Management
+### Memory Management
 
 - **Use Static Buffers**:
   - Pre-allocate fixed-size memory for narrations
@@ -672,27 +617,7 @@ If referencing a memory, smoothly incorporate: {memory_detail}
   strcpy(dest, src);  // Can cause buffer overflows
   ```
 
-- **Resource Cleanup**:
-  - Implement proper cleanup for MCP connections
-  - Use systematic error handling with cleanup blocks
-  ```c
-  // Pattern for resource management
-  bool function_with_resources() {
-      Resource *r = acquire_resource();
-      if (!r) return false;
-      
-      if (!use_resource(r)) {
-          release_resource(r);
-          return false;
-      }
-      
-      bool result = finish_with_resource(r);
-      release_resource(r);
-      return result;
-  }
-  ```
-
-#### Threading & Performance
+### Threading & Performance
 
 - **Asynchronous Processing**:
   - Use a worker thread for AI requests to prevent gameplay stutter
@@ -716,324 +641,62 @@ If referencing a memory, smoothly incorporate: {memory_detail}
 - **Caching Strategy**:
   - Implement tiered caching (memory and disk)
   - Pre-generate common narrations during load times
-  ```c
-  void pregenerate_common_narrations(Bard *lute, int floor) {
-      const char *common_actions[] = {"attack", "dodge", "discover", "enter"};
-      const char *common_targets[] = {"enemy", "trap", "item", "doorway"};
-      
-      for (int i = 0; i < 4; i++) {
-          for (int j = 0; j < 4; j++) {
-              char narration[MAX_NARRATION_LENGTH];
-              bard_generate_narration(lute, common_actions[i], common_targets[j], 
-                                      floor, player->hp, narration, sizeof(narration));
-              // Narration automatically cached by the function
-          }
-      }
-  }
-  ```
-
+  
 - **Fallback Mechanisms**:
   - Create template-based narrations as backup
   - Apply degradation strategies when performance issues occur
-  ```c
-  char *generate_fallback_narration(const char *action, const char *target) {
-      static char buffer[256];
-      static const char *templates[] = {
-          "You %s the %s with determination.",
-          "With a swift motion, you %s the %s.",
-          "The %s is affected by your %s.",
-          "You carefully %s the %s and continue forward."
-      };
-      
-      snprintf(buffer, sizeof(buffer), templates[randint0(4)], action, target);
-      return buffer;
-  }
-  ```
 
-#### AI Integration Robustness
+### AI Integration Robustness
 
 - **Error Recovery**:
   - Implement timeouts for AI requests
   - Provide graceful degradation when AI is unavailable
-  ```c
-  #define MCP_TIMEOUT_MS 500
   
-  bool mcp_request_with_timeout(const char *endpoint, const char *data, 
-                               char *response, size_t response_size) {
-      // Start timer
-      struct timespec start, current;
-      clock_gettime(CLOCK_MONOTONIC, &start);
-      
-      // Start request
-      MCP_Request *req = begin_mcp_request(endpoint, data);
-      
-      // Poll with timeout
-      while (!req->complete) {
-          clock_gettime(CLOCK_MONOTONIC, &current);
-          long elapsed_ms = (current.tv_sec - start.tv_sec) * 1000 + 
-                           (current.tv_nsec - start.tv_nsec) / 1000000;
-          
-          if (elapsed_ms > MCP_TIMEOUT_MS) {
-              cancel_mcp_request(req);
-              return false;
-          }
-          
-          // Short sleep to prevent CPU spinning
-          usleep(10000);  // 10ms
-      }
-      
-      // Copy response
-      strncpy(response, req->response, response_size - 1);
-      response[response_size - 1] = '\0';
-      
-      free_mcp_request(req);
-      return true;
-  }
-  ```
-
 - **State Serialization**:
   - Save and restore MCP state during game save/load
   - Persist memory and narration caches
-  ```c
-  bool bard_save_state(Bard *lute, const char *filename) {
-      FILE *f = fopen(filename, "wb");
-      if (!f) return false;
-      
-      // Write basic attributes
-      fwrite(&lute->courage, sizeof(int), 1, f);
-      fwrite(&lute->perception, sizeof(int), 1, f);
-      fwrite(&lute->lore, sizeof(int), 1, f);
-      
-      // Write memory system
-      fwrite(&lute->memory_count, sizeof(int), 1, f);
-      fwrite(lute->memories, sizeof(EventMemory), lute->memory_count, f);
-      
-      // Write narration cache (indices and content)
-      fwrite(lute->cache_indices, sizeof(int), CACHE_SIZE, f);
-      for (int i = 0; i < CACHE_SIZE; i++) {
-          fwrite(lute->cached_narrations[i], sizeof(char), MAX_NARRATION_LENGTH, f);
-      }
-      
-      fclose(f);
-      return true;
-  }
-  
-  bool bard_load_state(Bard *lute, const char *filename) {
-      FILE *f = fopen(filename, "rb");
-      if (!f) return false;
-      
-      // Read basic attributes
-      fread(&lute->courage, sizeof(int), 1, f);
-      fread(&lute->perception, sizeof(int), 1, f);
-      fread(&lute->lore, sizeof(int), 1, f);
-      
-      // Read memory system
-      fread(&lute->memory_count, sizeof(int), 1, f);
-      fread(lute->memories, sizeof(EventMemory), lute->memory_count, f);
-      
-      // Read narration cache
-      fread(lute->cache_indices, sizeof(int), CACHE_SIZE, f);
-      for (int i = 0; i < CACHE_SIZE; i++) {
-          fread(lute->cached_narrations[i], sizeof(char), MAX_NARRATION_LENGTH, f);
-      }
-      
-      fclose(f);
-      return true;
-  }
-  ```
 
-### Advanced Bard Features
+---
 
-#### Adaptive Personality
+## About the Original Angband
 
-- **Mood Tracking**:
-  ```c
-  void bard_update_mood(Bard *lute, int event_type, void *event_data) {
-      int change = 0;
-      
-      // Calculate mood change based on event
-      switch(event_type) {
-          case EVENT_PLAYER_DISCOVER_TREASURE:
-              change = 10 + randint0(5);
-              break;
-          case EVENT_PLAYER_LOSE_ITEM:
-              change = -10 - randint0(5);
-              break;
-          case EVENT_FLOOR_CHANGE_UP:
-              change = 5;
-              break;
-          case EVENT_FLOOR_CHANGE_DOWN:
-              change = -5;
-              break;
-      }
-      
-      // Apply change with personality-based modifiers
-      lute->mood += change * (lute->courage > 50 ? 1.2 : 0.8);
-      
-      // Bound mood
-      lute->mood = MIN(MAX(lute->mood, -100), 100);
-      
-      // Update narration style based on mood
-      if (lute->mood > 50)
-          lute->prompt_template_idx = TEMPLATE_EXCITED;
-      else if (lute->mood < -50)
-          lute->prompt_template_idx = TEMPLATE_MELANCHOLY;
-      else
-          lute->prompt_template_idx = TEMPLATE_NEUTRAL;
-  }
-  ```
+This project is based on Angband 4.2.5, a classic roguelike game. The original README is preserved below:
 
-- **Relationship Development**:
-  ```c
-  void bard_update_relationship(Bard *lute, int event_type) {
-      int change = 0;
-      
-      switch(event_type) {
-          case EVENT_PLAYER_USE_BARD_ADVICE:
-              change = 5;
-              break;
-          case EVENT_PLAYER_GIVE_ITEM:
-              change = 10;
-              break;
-          case EVENT_PLAYER_TAKE_ITEM:
-              change = -3;
-              break;
-          case EVENT_PLAYER_IGNORE_BARD:
-              change = -5;
-              break;
-      }
-      
-      // Apply and bound
-      lute->relationship += change;
-      lute->relationship = MIN(MAX(lute->relationship, 0), 100);
-      
-      // Unlock special abilities at thresholds
-      if (lute->relationship >= 75 && !lute->abilities[ABILITY_INSPIRE])
-          bard_unlock_ability(lute, ABILITY_INSPIRE);
-  }
-  ```
+<details>
+<summary>Original Angband README (click to expand)</summary>
 
-#### Ability System
+# Angband 4.2.5
 
-- **Ability Types**:
-  ```c
-  enum BardAbilities {
-      ABILITY_DISTRACTION,    // Combat: Distract enemies
-      ABILITY_INSPIRE,        // Buff: Temporarily increase player stats
-      ABILITY_RECALL,         // Knowledge: Reveal map section from memory
-      ABILITY_COMPOSE,        // Special: Create consumable item from components
-      ABILITY_CHARM,          // Social: Influence NPC attitudes
-      ABILITY_CAUTION,        // Defense: Warn of nearby dangers
-      MAX_ABILITIES
-  };
-  
-  bool bard_use_ability(Bard *lute, int ability_idx, void *target) {
-      // Check if ability is unlocked and not on cooldown
-      if (!lute->abilities[ability_idx] || lute->ability_cooldowns[ability_idx] > 0)
-          return false;
-      
-      // Check energy cost
-      int cost = get_ability_cost(ability_idx);
-      if (lute->energy < cost)
-          return false;
-      
-      // Apply ability effect
-      bool success = execute_ability(lute, ability_idx, target);
-      
-      if (success) {
-          // Consume energy and set cooldown
-          lute->energy -= cost;
-          lute->ability_cooldowns[ability_idx] = get_ability_cooldown(ability_idx);
-          lute->abilities_used[ability_idx]++;
-          
-          // Generate special narration for ability use
-          char ability_narration[MAX_NARRATION_LENGTH];
-          generate_ability_narration(lute, ability_idx, target, ability_narration, sizeof(ability_narration));
-          msg("%s", ability_narration);
-      }
-      
-      return success;
-  }
-  ```
+<p align="center">
+  <img src="screenshots/title.png" width="425"/>
+  <img src="screenshots/game.png" width="425"/>
+</p>
 
-#### Knowledge Evolution
+Angband is a graphical dungeon adventure game that uses textual characters to
+represent the walls and floors of a dungeon and the inhabitants therein, in the
+vein of games like NetHack and Rogue. If you need help in-game, press `?`.
 
-- **Progressive Learning**:
-  ```c
-  void bard_learn_from_event(Bard *lute, int event_type, void *event_data) {
-      switch(event_type) {
-          case EVENT_DISCOVER_ITEM:
-              // Increase perception when finding hidden items
-              if (((struct object *)event_data)->hidden)
-                  bard_gain_perception(lute, 1);
-              break;
-              
-          case EVENT_READ_INSCRIPTION:
-              // Gain lore from reading inscriptions and books
-              bard_gain_lore(lute, 1 + ((struct text *)event_data)->complexity / 10);
-              break;
-              
-          case EVENT_IDENTIFY_ITEM:
-              // Learn from item identification
-              bard_gain_lore(lute, 1);
-              bard_gain_perception(lute, 1);
-              break;
-      }
-  }
-  
-  void bard_gain_perception(Bard *lute, int amount) {
-      // Apply diminishing returns based on current level
-      float factor = 1.0f - (lute->perception / 30.0f);
-      int actual_gain = MAX(1, (int)(amount * factor));
-      
-      lute->perception = MIN(lute->perception + actual_gain, MAX_ATTRIBUTE);
-      
-      // Notify player of significant gains
-      if (actual_gain > 0)
-          msg("Lute's perception has improved to %d.", lute->perception);
-  }
-  ```
+- **Installing Angband:** See the [Official Website](https://angband.github.io/angband/) or [compile it yourself](https://angband.readthedocs.io/en/latest/hacking/compiling.html).
+- **How to Play:** [The Angband Manual](https://angband.readthedocs.io/en/latest/)
+- **Getting Help:** [Angband Forums](https://angband.live/forums/)
 
-- **Knowledge Checks**:
-  ```c
-  bool bard_knowledge_check(Bard *lute, int check_type, int difficulty, void *object, char *result, size_t result_size) {
-      int attribute = 0;
-      int bonus = 0;
-      
-      // Determine primary attribute for check
-      switch(check_type) {
-          case CHECK_IDENTIFY_ITEM:
-              attribute = lute->perception;
-              // Bonus for previously seen similar items
-              bonus = count_similar_items_in_memory(lute, (struct object *)object) * 2;
-              break;
-              
-          case CHECK_RECALL_LORE:
-              attribute = lute->lore;
-              // Bonus for related memories
-              bonus = count_related_memories(lute, ((struct text *)object)->category) * 3;
-              break;
-              
-          case CHECK_DETECT_TRAP:
-              attribute = lute->perception;
-              // Penalty for higher floors
-              bonus = -current_floor / 5;
-              break;
-      }
-      
-      // Make the roll
-      int roll = randint0(20) + 1;  // d20
-      int total = roll + attribute + bonus;
-      
-      // Check against difficulty
-      bool success = (total >= difficulty);
-      
-      // Generate appropriate result text using MCP
-      generate_knowledge_check_result(lute, check_type, roll, total, difficulty, 
-                                     success, object, result, result_size);
-      
-      return success;
-  }
-  ```
+Enjoy!
 
-This design offers a comprehensive, standalone architecture for your AI-augmented roguelike, with detailed mechanics, code snippets, and a structured layout to bring the Tower of Babel to life.
+-- The Angband Dev Team
+</details>
+
+## License
+
+This project is licensed under [GPL v3](LICENSE) - the same license as the original Angband.
+
+## Credits
+
+- Original Angband by [Angband Dev Team](https://angband.github.io/angband/)
+- Tower of Babel concept and AI integration by machinepilot
+- Development assistance by [Claude AI](https://www.anthropic.com/claude)
+
+---
+
+<p align="center">
+  <i>Tower of Babel: Where AI and Roguelike Adventure Converge</i>
+</p>
