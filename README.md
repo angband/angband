@@ -124,6 +124,14 @@ The development log tracks progress, decisions, and lessons learned throughout t
 
 ---
 
+<div align="center">
+  <a href="#tower-of-babel-comprehensive-training-plan">
+    <img src="https://img.shields.io/badge/📚_Start_Developer_Training-6a0dad?style=for-the-badge&logo=bookstack&logoColor=white" alt="Start Developer Training" />
+  </a>
+</div>
+
+---
+
 # Game Design Document
 
 ## Game Overview
@@ -656,6 +664,1534 @@ If referencing a memory, smoothly incorporate: {memory_detail}
 
 ---
 
+# Tower of Babel: Comprehensive Training Plan
+
+## Introduction to the Training Plan
+
+Welcome to the Tower of Babel training plan! This comprehensive guide will take you from setup to deployment of this unique AI-augmented roguelike game. The following modules are specifically designed for hands-on learners, with visual aids and interactive exercises to make complex concepts stick.
+
+### Project Overview
+
+Tower of Babel is a roguelike game built on the Angband 4.2.5 codebase, enhanced with AI-driven narrative and companion features. The game features a 100-floor vertical tower where players climb through unique "ringdoms" (themed floors) accompanied by an AI companion named Lute the Bard who narrates the journey and evolves based on player actions.
+
+### Tech Stack Summary
+
+- **C**: Core game engine (modified Angband) handling gameplay mechanics, rendering, and game state
+- **Python**: MCP server that bridges the game with AI language models
+- **Angband 4.2.5**: Base roguelike engine providing turn-based mechanics and procedural generation
+- **MCP (Model Context Protocol)**: Custom implementation connecting game events to AI responses
+- **Ollama**: Local LLM deployment for generating narrative content without external API dependencies
+
+### Training Purpose
+
+This plan equips you with the skills to contribute to the Tower of Babel project by mastering its tools, codebase, and development workflows. By the end, you'll understand how each component works together and be able to implement new features.
+
+### Learner Focus
+
+This training is designed for hands-on learners who prefer active engagement:
+- Every module includes visual aids (diagrams, flowcharts, tables) to clarify concepts
+- Each section features hands-on tasks to immediately apply what you've learned
+- Concepts are broken into manageable chunks with suggested breaks
+
+```mermaid
+flowchart LR
+    Game[C Game Engine] -->|HTTP Requests| MCP[Python MCP Server]
+    MCP -->|Prompts| LLM[Ollama LLM]
+    LLM -->|Generated Text| MCP
+    MCP -->|Response Data| Game
+    Game -->|Display| UI[Game Display]
+```
+
+## Module 1: Introduction to the Project
+
+### Learning Objectives
+- Understand the Tower of Babel project's goals and unique features
+- Identify the roles of C, Python, Angband, MCP, and Ollama in the tech stack
+- Experience the game flow through a hands-on exploration
+
+### Content Description
+
+Tower of Babel extends Angband (a classic dungeon crawler) into a vertical tower-climbing adventure with a unique twist: an AI-driven companion called Lute the Bard. This companion narrates your journey, remembers your actions, and evolves alongside you.
+
+The tech stack consists of:
+- **C**: Powers the core game logic including player movement, combat, inventory, and the Bard system
+- **Python**: Runs the MCP server that handles communication with the LLM
+- **Angband**: Provides the foundation including dungeon generation, turn-based mechanics, and UI
+- **MCP**: Custom HTTP-based protocol that translates game events into AI requests and responses
+- **Ollama**: Runs language models locally to generate unique narrations and dialogue
+
+Game flow example: When a player defeats an enemy, the game sends a request to the MCP server with details like "action: kill", "target: goblin", "floor: 3". The MCP server formats this into a prompt for Ollama, which generates a narrative response like "The goblin crumbles before your might, its crude weapon clattering to the floor." This text is then displayed in the game.
+
+### Resources
+- Project README: GitHub repository at https://github.com/machinepilot/angband
+- Angband Documentation: https://angband.readthedocs.io/en/latest/
+- Ollama GitHub: https://github.com/ollama/ollama
+- Roguelike Development Resources: http://roguebasin.com
+
+### Assignments
+
+**Task 1: Game Experience Analysis**
+1. Clone the repository: `git clone https://github.com/machinepilot/angband.git`
+2. Run the original Angband game: `cd angband && make && ./angband`
+3. Play for 15 minutes, noting gameplay mechanics
+4. Write a 3-sentence summary comparing what you experienced versus the Tower of Babel concept
+
+**Task 2: Codebase Exploration**
+1. Navigate the source code using VS Code or your preferred editor
+2. Locate the following files and note their purposes:
+   - `bard.c`: AI companion implementation
+   - `mcp.c`: Communication protocol
+   - `generate-ringdom.c`: Level generation for Tower floors
+3. Create a simple document mapping how these components connect
+
+### Visual Elements
+
+```mermaid
+flowchart TD
+    subgraph "Game Engine (C/Angband)"
+        GameState[Game State]
+        PlayerActions[Player Actions]
+        Combat[Combat System]
+        LevelGen[Level Generation]
+    end
+    
+    subgraph "MCP Client"
+        Request[Request Formation]
+        Response[Response Handling]
+    end
+    
+    subgraph "MCP Server (Python)"
+        API[HTTP Endpoints]
+        Prompts[Prompt Templates]
+        Cache[Response Cache]
+    end
+    
+    subgraph "Ollama LLM"
+        Model[Language Model]
+        Inference[Text Generation]
+    end
+    
+    PlayerActions --> Request
+    Request -->|HTTP POST| API
+    API --> Prompts
+    Prompts --> Model
+    Model --> Inference
+    Inference --> Response
+    Response --> GameState
+```
+
+## Module 2: Development Environment Setup
+
+### Learning Objectives
+- Install and configure a development environment on Ubuntu (or Windows with dual-boot)
+- Set up VS Code with essential extensions for C/Python development
+- Configure Ollama for local LLM deployment
+- Clone and build the Tower of Babel codebase
+
+### Content Description
+
+Setting up your development environment is crucial for efficient work on this project. We'll establish a consistent environment using Ubuntu Linux (preferred) or Windows with appropriate tools.
+
+For Ubuntu setup:
+- Install Ubuntu 20.04 LTS or newer (or use Windows Subsystem for Linux)
+- Install necessary development packages with: `sudo apt-get install build-essential libncurses5-dev git cmake python3-pip`
+
+For VS Code:
+- Install VS Code (https://code.visualstudio.com)
+- Add essential extensions:
+  * C/C++ Extension
+  * Python Extension
+  * CMake Tools
+  * GitHub Copilot (if available)
+  * CodeGPT (if available)
+
+For Ollama:
+- Install Ollama following instructions at https://ollama.ai
+- Pull the required model: `ollama pull llama3:8b`
+
+Project setup:
+- Clone the repository: `git clone https://github.com/machinepilot/angband.git`
+- Create build directory: `mkdir build && cd build`
+- Configure with CMake: `cmake ..`
+- Build the project: `make`
+
+### Resources
+- Ubuntu Installation Guide: https://ubuntu.com/tutorials/install-ubuntu-desktop
+- VS Code Download: https://code.visualstudio.com/download
+- Ollama Installation: https://github.com/ollama/ollama#installation
+- Git Documentation: https://git-scm.com/doc
+
+### Assignments
+
+**Task 1: Environment Setup Verification**
+1. Install Ubuntu (or configure WSL on Windows)
+2. Install all required development packages
+3. Create a simple "Hello World" C program and compile it
+4. Run the program and take a screenshot of the output
+
+**Task 2: IDE Configuration**
+1. Install VS Code and required extensions
+2. Open a C file and verify syntax highlighting works
+3. Configure a build task for C compilation
+4. Test the build task with a simple program
+
+**Task 3: Ollama Setup and Testing**
+1. Install Ollama
+2. Pull the required model: `ollama pull llama3:8b`
+3. Test with a simple query: `ollama run llama3:8b "Write a one-sentence description of a dungeon"`
+4. Verify you receive a coherent response
+
+### Visual Elements
+
+```mermaid
+flowchart TD
+    subgraph "Development Environment"
+        Ubuntu["Ubuntu OS/WSL"]
+        VSCode["VS Code IDE"]
+        Git["Git Version Control"]
+        CMake["CMake Build System"]
+    end
+    
+    subgraph "Required Libraries"
+        LibC["C Libraries"]
+        LibPython["Python Libraries"]
+        LibCurl["libcurl"]
+        LibJson["json-c/jansson"]
+        LibNcurses["ncurses"]
+    end
+    
+    subgraph "AI Components"
+        Ollama["Ollama LLM"] 
+        Models["Llama3 Models"]
+        Flask["Flask Server"]
+    end
+    
+    subgraph "Project Structure"
+        SourceCode["Source Code"]
+        BuildDir["Build Directory"]
+        Executable["Game Executable"]
+        Tests["Test Suite"]
+    end
+    
+    Ubuntu --> LibC & LibPython
+    VSCode --> SourceCode
+    Git --> SourceCode
+    CMake --> BuildDir
+    BuildDir --> Executable
+    LibC & LibCurl & LibJson & LibNcurses --> Executable
+    LibPython & Flask --> MCP["MCP Server"]
+    Ollama & Models --> MCP
+```
+
+## Module 3: C Programming Fundamentals for Roguelikes
+
+### Learning Objectives
+- Master key C concepts needed for roguelike development
+- Understand pointers and memory management in game state tracking
+- Implement basic game mechanics in C
+- Analyze existing Angband code to understand its structure
+
+### Content Description
+
+C is the foundation of the Tower of Babel, handling core gameplay and game state. For roguelike development, these concepts are particularly important:
+
+**Key C Concepts:**
+- Structs for game objects (players, monsters, items)
+- Pointers for efficient data manipulation
+- Dynamic memory allocation for game elements
+- 2D arrays for map representation
+
+**Roguelike-Specific Patterns:**
+```c
+// Example: Player struct in a roguelike
+struct player {
+    int x, y;          // Position
+    int hp, max_hp;    // Health
+    int strength;      // Attack power
+    struct item *inventory; // Pointer to inventory
+};
+
+// Example: Move function
+bool move_player(struct player *p, int dx, int dy, char map[MAP_HEIGHT][MAP_WIDTH]) {
+    int new_x = p->x + dx;
+    int new_y = p->y + dy;
+    
+    // Check if move is valid (not wall)
+    if (map[new_y][new_x] != '#') {
+        p->x = new_x;
+        p->y = new_y;
+        return true;
+    }
+    return false;
+}
+```
+
+**Memory Management:**
+In roguelikes, we frequently allocate/free memory for monsters, items, and level features. Always pair `malloc()` with `free()` to prevent memory leaks, especially important in long gameplay sessions.
+
+### Resources
+- "C Programming in Roguelike Development": http://roguebasin.com/index.php/C_programming
+- Angband Source (focus on `player.c`, `monster.c`): https://github.com/angband/angband/tree/master/src
+- C Memory Management Guide: https://www.cprogramming.com/tutorial/c/lesson6.html
+
+### Assignments
+
+**Task 1: Implement a Basic Roguelike Element**
+1. Create a C file with a struct for a monster with health, position, and name
+2. Write a function to damage the monster that uses pointer parameters
+3. Implement a simple death check function
+4. Test with a small program that creates a monster, damages it, and checks if it's dead
+
+```c
+// Example starting point:
+struct monster {
+    char name[20];
+    int hp;
+    int x, y;
+};
+
+void damage_monster(struct monster *m, int amount) {
+    // Your code here
+}
+
+bool is_dead(struct monster *m) {
+    // Your code here
+}
+
+int main() {
+    // Test your code here
+}
+```
+
+**Task 2: Analyze Angband Code**
+1. Open `player.c` from the Angband source
+2. Identify how player movement is implemented
+3. Find where health calculations occur
+4. Create a flowchart of the player movement function
+
+### Visual Elements
+
+```mermaid
+classDiagram
+    class GameState {
+        +int turn
+        +process_turn()
+    }
+    
+    class Map {
+        +int width
+        +int height
+        +Tile tiles[][]
+        +get_tile(x, y)
+        +set_tile(x, y, tile)
+    }
+    
+    class Player {
+        +int x
+        +int y
+        +int hp
+        +int max_hp
+        +int strength
+        +Item* inventory
+        +move(dx, dy)
+        +attack(monster)
+        +take_damage(amount)
+    }
+    
+    class Monster {
+        +int x
+        +int y
+        +int hp
+        +char name[20]
+        +move(dx, dy)
+        +attack(player)
+        +take_damage(amount)
+        +is_dead()
+    }
+    
+    class Item {
+        +char name[20]
+        +int type
+        +int value
+        +Item* next
+    }
+    
+    GameState --> Map
+    GameState --> Player
+    GameState --> Monster
+    Player --> Item
+    Monster ..> Player: attacks
+    Player ..> Monster: attacks
+```
+
+## Module 4: Python and MCP Server Implementation
+
+### Learning Objectives
+- Understand the Model Context Protocol architecture
+- Set up a Flask-based MCP server
+- Create endpoints to process game requests and generate AI responses
+- Implement caching for performance optimization
+
+### Content Description
+
+The MCP (Model Context Protocol) server is the bridge between our C game engine and the LLM. It's a Flask-based Python application that:
+1. Receives HTTP requests from the game with context information
+2. Formats this information into appropriate prompts
+3. Sends requests to the Ollama API
+4. Processes responses and returns them to the game
+5. Caches responses for performance
+
+**Basic Flask MCP Server:**
+```python
+from flask import Flask, request, jsonify
+import ollama
+import json
+import os
+
+app = Flask(__name__)
+
+@app.route('/narrate', methods=['POST'])
+def narrate():
+    # Get data from request
+    data = request.json
+    
+    # Extract important context
+    action = data.get('action', '')
+    target = data.get('target', '')
+    floor = data.get('floor', 1)
+    
+    # Create prompt for LLM
+    prompt = f"You are Lute the Bard. Narrate this action in the Tower of Babel:\nAction: {action}\nTarget: {target}\nFloor: {floor}\n\nWrite 1-2 sentences of narration:"
+    
+    # Generate response with Ollama
+    response = ollama.generate(model='llama3:8b', prompt=prompt)
+    
+    # Return formatted response
+    return jsonify({"text": response['response']})
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
+```
+
+**Caching System:**
+For performance, we cache responses based on similar requests:
+```python
+# Simple cache implementation
+cache = {}
+
+def get_cache_key(data):
+    # Create a deterministic key from request data
+    return f"{data['action']}:{data['target']}:{data['floor']}"
+
+@app.route('/narrate', methods=['POST'])
+def narrate():
+    data = request.json
+    cache_key = get_cache_key(data)
+    
+    # Check cache first
+    if cache_key in cache:
+        return jsonify({"text": cache[cache_key], "cached": True})
+    
+    # Generate new response...
+    response = ollama.generate(model='llama3:8b', prompt=prompt)
+    result = response['response']
+    
+    # Store in cache and return
+    cache[cache_key] = result
+    return jsonify({"text": result, "cached": False})
+```
+
+### Resources
+- Flask Documentation: https://flask.palletsprojects.com/
+- Ollama Python Library: https://github.com/ollama/ollama-python
+- HTTP Requests in Python: https://docs.python-requests.org/
+- JSON Handling in Python: https://docs.python.org/3/library/json.html
+
+### Assignments
+
+**Task 1: Create Basic MCP Server**
+1. Create a new Python file called `mcp_server.py`
+2. Implement a Flask server with a `/narrate` endpoint
+3. Test the endpoint with curl:
+   ```bash
+   curl -X POST http://localhost:5000/narrate \
+     -H "Content-Type: application/json" \
+     -d '{"action":"attack","target":"goblin","floor":1}'
+   ```
+4. Verify you receive a narration response
+
+**Task 2: Add Caching to MCP Server**
+1. Implement an in-memory cache for responses
+2. Add a timestamp to cache entries to expire old entries
+3. Test by sending the same request twice and verifying the `cached` flag
+4. Implement a `/cache/clear` endpoint to clear the cache
+
+**Task 3: Create a Test Client**
+1. Write a simple Python script to test the MCP server
+2. Send various requests and display the responses
+3. Measure response times with and without caching
+4. Create a simple report showing performance improvements
+
+### Visual Elements
+
+```mermaid
+sequenceDiagram
+    participant Game as Game (C)
+    participant MCP as MCP Server (Python)
+    participant Cache as Response Cache
+    participant LLM as Ollama LLM
+    
+    Game->>MCP: POST /narrate {action, target, floor}
+    
+    MCP->>Cache: Check for cached response
+    
+    alt Response in cache
+        Cache-->>MCP: Return cached response
+        MCP-->>Game: {text, cached: true}
+    else Cache miss
+        Cache-->>MCP: No cache hit
+        MCP->>LLM: Generate text with prompt
+        LLM-->>MCP: Generated text
+        MCP->>Cache: Store response
+        MCP-->>Game: {text, cached: false}
+    end
+    
+    Note over Game,LLM: Response time: <100ms with cache, ~500ms with LLM
+```
+
+## Module 5: Understanding the Angband Game Engine
+
+### Learning Objectives
+- Navigate and comprehend Angband's codebase structure
+- Understand the turn-based game loop implementation
+- Analyze level generation and entity management
+- Identify key components for modification in Tower of Babel
+
+### Content Description
+
+Angband is a complex roguelike with a well-established codebase. Understanding its structure is essential before we can modify it for Tower of Babel.
+
+**Core Components:**
+- **Main Game Loop**: Found in `main.c`, handles turns and game state progression
+- **Level Generation**: In `generate.c`, creates dungeon levels procedurally
+- **Player Management**: In `player.c`, handles stats, movement, and actions
+- **Monster Management**: In `monster.c`, handles AI and behavior
+- **Item System**: In `object.c`, manages inventory and items
+- **UI Rendering**: In `ui-*.c` files, handles display and input
+
+**Game Loop Flow:**
+1. Player input is captured
+2. Move is validated and executed
+3. Game state is updated
+4. Monsters take turns
+5. UI is redrawn
+6. Repeat
+
+**Level Generation:**
+Angband generates levels using a room-and-corridor approach:
+1. Place rooms of various types randomly
+2. Connect rooms with corridors
+3. Place stairs, monsters, and items
+4. Apply theme-specific modifications
+
+For Tower of Babel, we'll modify this to create themed "ringdoms" with fixed landmarks.
+
+### Resources
+- Angband Source Code: https://github.com/angband/angband/
+- Angband Developer Documentation: https://angband.readthedocs.io/en/latest/hacking/
+- Roguelike Development Articles: http://roguebasin.com/index.php/Articles
+
+### Assignments
+
+**Task 1: Map the Angband Game Loop**
+1. Open the Angband source files, focusing on `main.c` and `game-world.c`
+2. Trace the flow of a player's turn through function calls
+3. Create a flowchart showing the sequence of operations
+4. Identify where we could insert Bard narration in this flow
+
+**Task 2: Analyze Level Generation**
+1. Study `generate.c` in the Angband source
+2. Run Angband and create several new games, taking screenshots of different levels
+3. Match the code to the visual output
+4. Create a simple document outlining how we could modify generation for ringdoms
+
+**Task 3: Build and Run Modified Angband**
+1. Make a small modification to `player.c` (e.g., change starting health)
+2. Rebuild the game
+3. Test your modification
+4. Revert your change and rebuild again
+
+### Visual Elements
+
+```mermaid
+flowchart TD
+    subgraph "Game Initialization"
+        Init["main()"]
+        LoadFiles["Load game files"]
+        InitUI["Initialize UI"]
+        CharCreation["Character creation"]
+    end
+    
+    subgraph "Game Loop"
+        Input["Get player input"]
+        ValidateMove["Validate move"]
+        ExecuteMove["Execute player action"]
+        UpdateWorld["Update game state"]
+        MonsterTurn["Process monster turns"]
+        UpdateUI["Redraw UI"]
+    end
+    
+    subgraph "Level Generation"
+        GenLevel["generate_dungeon()"]
+        PlaceRooms["Place rooms"]
+        BuildCorridors["Connect with corridors"]
+        PlaceStairs["Place stairs"]
+        PlaceMonsters["Place monsters"]
+        PlaceItems["Place items"]
+    end
+    
+    Init --> LoadFiles
+    LoadFiles --> InitUI
+    InitUI --> CharCreation
+    CharCreation --> Input
+    
+    Input --> ValidateMove
+    ValidateMove --> ExecuteMove
+    ExecuteMove --> UpdateWorld
+    UpdateWorld --> MonsterTurn
+    MonsterTurn --> UpdateUI
+    UpdateUI --> Input
+    
+    ValidateMove -- "New level" --> GenLevel
+    GenLevel --> PlaceRooms
+    PlaceRooms --> BuildCorridors
+    BuildCorridors --> PlaceStairs
+    PlaceStairs --> PlaceMonsters
+    PlaceMonsters --> PlaceItems
+    PlaceItems --> Input
+    
+    %% Potential Bard integration points
+    ExecuteMove -.- BardNarration1["Bard narration point"]
+    MonsterTurn -.- BardNarration2["Bard narration point"]
+    GenLevel -.- BardNarration3["Ringdom description point"]
+```
+
+## Module 6: Implementing the Bard System
+
+### Learning Objectives
+- Understand the Bard companion architecture
+- Implement the core Bard data structure
+- Create memory tracking for the Bard's experiences
+- Develop the courage and attribute systems
+
+### Content Description
+
+The Bard (Lute) is a central feature of Tower of Babel, serving as both a narrative device and gameplay mechanic. The Bard system consists of these key components:
+
+**Bard Structure:**
+```c
+typedef struct bard {
+    // Core attributes
+    int courage;               // 0-100, affects combat support
+    int perception;            // 1-20, affects item discovery
+    int lore;                  // 1-20, affects lore knowledge
+    
+    // Dynamic state
+    int mood;                  // -100 to 100, affects narration tone
+    int relationship;          // 0-100, player relationship
+    
+    // Memory system
+    EventMemory memories[MAX_MEMORIES];
+    int memory_count;
+    
+    // Narration
+    char current_narration[MAX_NARRATION_LENGTH];
+    
+    // Other properties...
+} Bard;
+
+typedef struct event_memory {
+    char type[32];         // "combat", "discovery", "dialogue", etc.
+    int floor;             // Floor where event occurred
+    char detail[128];      // Specific details
+    int importance;        // 1-10, affects recall priority
+    int timestamp;         // Game turns when recorded
+} EventMemory;
+```
+
+**Memory System:**
+The Bard remembers important events during gameplay. When similar situations occur, there's a chance the Bard will reference past events, creating narrative continuity.
+
+**Courage System:**
+- Courage increases when player defeats enemies, completes quests
+- Courage decreases when player takes damage, flees
+- High courage (≥75) enables special abilities like enemy distraction
+- Low courage (≤25) adds caution mechanics like warning of dangers
+
+**Integration with Player:**
+The Bard structure is linked to the player structure, updated each turn, and can be accessed during gameplay events.
+
+### Resources
+- Tower of Babel Bard Design Document: [project repository]/docs/bard_system.md
+- Angband Player Structure: https://github.com/angband/angband/blob/master/src/player.h
+- C Structure Best Practices: https://www.cs.yale.edu/homes/aspnes/classes/223/notes.html
+
+### Assignments
+
+**Task 1: Implement Basic Bard Structure**
+1. Create `bard.h` with the Bard and EventMemory structures
+2. Implement initialization function `bard_init()`
+3. Add cleanup function `bard_cleanup()`
+4. Create a simple test program that initializes and displays Bard stats
+
+**Task 2: Develop Memory System**
+1. Implement `bard_remember_event()` function to store memories
+2. Create `bard_recall_relevant_memory()` to find applicable past events
+3. Add a scoring system to determine which memories are most relevant
+4. Test with sample events being stored and recalled
+
+**Task 3: Courage System Implementation**
+1. Implement `bard_update_courage()` function
+2. Create formulas for courage changes based on events
+3. Add ability unlocking based on courage thresholds
+4. Test with simulated game events
+
+### Visual Elements
+
+```mermaid
+classDiagram
+    class Bard {
+        +int courage
+        +int perception
+        +int lore
+        +int mood
+        +int relationship
+        +int energy
+        +EventMemory memories[10]
+        +int memory_count
+        +char current_narration[256]
+        +bool abilities[6]
+        +init()
+        +cleanup()
+        +update(event_type, event_data)
+        +remember_event(type, floor, detail, importance)
+        +recall_memory(type, floor)
+        +update_courage(event_type, event_data)
+        +generate_narration(action, target, floor)
+    }
+    
+    class EventMemory {
+        +char type[32]
+        +int floor
+        +char detail[128]
+        +int importance
+        +int timestamp
+    }
+    
+    class Player {
+        +Bard* bard
+        +int x, y
+        +int hp, max_hp
+        +struct object* inventory
+    }
+    
+    class GameEvent {
+        <<enumeration>>
+        EVENT_PLAYER_KILL_ENEMY
+        EVENT_PLAYER_DAMAGED
+        EVENT_PLAYER_FLEE
+        EVENT_QUEST_COMPLETE
+        EVENT_PLAYER_DISCOVER_TREASURE
+        EVENT_FLOOR_CHANGE_UP
+    }
+    
+    Bard *-- EventMemory : contains
+    Player *-- Bard : has companion
+    GameEvent -- Bard : triggers update
+```
+
+## Module 7: MCP Client and Game Integration
+
+### Learning Objectives
+- Create a C client to communicate with the MCP server
+- Integrate HTTP requests using libcurl
+- Process JSON responses with Jansson
+- Connect the Bard system to MCP for narration
+
+### Content Description
+
+To connect our C game engine to the Python MCP server, we need a client library. We'll use libcurl for HTTP requests and Jansson for JSON handling.
+
+**MCP Client Structure:**
+```c
+// MCP client using libcurl and jansson
+#include <curl/curl.h>
+#include <jansson.h>
+
+// Structure to hold response data
+typedef struct {
+    char *data;
+    size_t size;
+} mcp_response;
+
+// Write callback for curl
+static size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp) {
+    size_t realsize = size * nmemb;
+    mcp_response *resp = (mcp_response *)userp;
+    
+    char *new_data = realloc(resp->data, resp->size + realsize + 1);
+    if (new_data == NULL) return 0;  // Out of memory
+    
+    resp->data = new_data;
+    memcpy(&(resp->data[resp->size]), contents, realsize);
+    resp->size += realsize;
+    resp->data[resp->size] = 0;
+    
+    return realsize;
+}
+
+// Function to send request to MCP server
+bool mcp_narrate(const char *action, const char *target, int floor, char *output, size_t output_size) {
+    CURL *curl;
+    CURLcode res;
+    mcp_response resp = {0};
+    
+    // Initialize response data
+    resp.data = malloc(1);
+    resp.size = 0;
+    
+    // Create JSON request
+    json_t *request = json_object();
+    json_object_set_new(request, "action", json_string(action));
+    json_object_set_new(request, "target", json_string(target));
+    json_object_set_new(request, "floor", json_integer(floor));
+    
+    char *json_data = json_dumps(request, 0);
+    
+    // Initialize curl
+    curl = curl_easy_init();
+    if (curl) {
+        // Set URL and POST data
+        curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:5000/narrate");
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_data);
+        
+        // Set headers
+        struct curl_slist *headers = NULL;
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        
+        // Set write callback
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&resp);
+        
+        // Perform request
+        res = curl_easy_perform(curl);
+        
+        // Check for errors
+        if (res != CURLE_OK) {
+            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+            free(resp.data);
+            free(json_data);
+            json_decref(request);
+            curl_slist_free_all(headers);
+            curl_easy_cleanup(curl);
+            return false;
+        }
+        
+        // Parse JSON response
+        json_error_t error;
+        json_t *root = json_loads(resp.data, 0, &error);
+        if (!root) {
+            fprintf(stderr, "JSON error: %s\n", error.text);
+            free(resp.data);
+            free(json_data);
+            json_decref(request);
+            curl_slist_free_all(headers);
+            curl_easy_cleanup(curl);
+            return false;
+        }
+        
+        // Extract text field
+        json_t *text = json_object_get(root, "text");
+        if (json_is_string(text)) {
+            const char *narration = json_string_value(text);
+            strncpy(output, narration, output_size - 1);
+            output[output_size - 1] = '\0';
+        }
+        
+        // Cleanup
+        json_decref(root);
+        free(resp.data);
+        free(json_data);
+        json_decref(request);
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+        
+        return true;
+    }
+    
+    return false;
+}
+```
+
+**Integration with Bard System:**
+```c
+bool bard_generate_narration(Bard *lute, const char *action, const char *target, 
+                           int floor, int health, char *output, size_t output_size) {
+    // Try to get from cache first
+    if (bard_get_cached_narration(lute, action, target, floor, output, output_size)) {
+        return true;
+    }
+    
+    // Get relevant memory if available
+    const EventMemory *memory = bard_recall_relevant_memory(lute, action, floor);
+    
+    // Call MCP service
+    bool success = mcp_narrate(action, target, floor, output, output_size);
+    
+    if (success) {
+        // Store in cache for future use
+        bard_cache_narration(lute, action, target, floor, output);
+        
+        // Store as current narration
+        strncpy(lute->current_narration, output, MAX_NARRATION_LENGTH - 1);
+        lute->current_narration[MAX_NARRATION_LENGTH - 1] = '\0';
+    } else {
+        // Fallback narration if MCP failed
+        snprintf(output, output_size, "You %s the %s with determination.", 
+                action, target);
+    }
+    
+    return true;
+}
+```
+
+### Resources
+- libcurl Documentation: https://curl.se/libcurl/c/
+- Jansson Documentation: https://digip.org/jansson/
+- HTTP Request/Response Tutorial: https://curl.se/libcurl/c/http-post.html
+- JSON in C Guide: https://digip.org/jansson/doc/2.7/apiref.html
+
+### Assignments
+
+**Task 1: Implement Basic MCP Client**
+1. Create `mcp.h` and `mcp.c` files with the MCP client functions
+2. Implement the `mcp_narrate()` function as shown above
+3. Create a simple test program that sends a request and displays the response
+4. Test with various inputs and handle error cases
+
+**Task 2: Integrate with Bard System**
+1. Update `bard.c` to use the MCP client for narration
+2. Implement caching to avoid repeated requests
+3. Add fallback narration for when MCP fails
+4. Test integration with simulated game events
+
+**Task 3: Error Handling and Resilience**
+1. Add timeout handling to prevent hanging if MCP server is slow
+2. Implement retry logic for failed requests
+3. Create more sophisticated fallback narrations based on context
+4. Test by deliberately causing failures (e.g., stopping the MCP server)
+
+### Visual Elements
+
+```mermaid
+sequenceDiagram
+    participant Game as Game Engine
+    participant Bard as Bard System
+    participant Cache as Narration Cache
+    participant MCP as MCP Client
+    participant Server as Python MCP Server
+    participant LLM as Ollama LLM
+    
+    Note over Game,LLM: Player attacks goblin
+    
+    Game->>Bard: bard_generate_narration("attack", "goblin", 3, 50)
+    
+    Bard->>Cache: Check for cached narration
+    
+    alt Cache hit
+        Cache-->>Bard: Return cached narration
+    else Cache miss
+        Cache-->>Bard: No cache hit
+        
+        Bard->>Bard: recall_relevant_memory()
+        
+        Bard->>MCP: mcp_narrate("attack", "goblin", 3)
+        
+        MCP->>MCP: Create JSON request
+        
+        MCP->>Server: HTTP POST to /narrate
+        
+        Server->>LLM: Send prompt to Ollama
+        
+        LLM-->>Server: Return generated text
+        
+        Server-->>MCP: JSON response with narration
+        
+        MCP->>MCP: Parse JSON response
+        
+        MCP-->>Bard: Return narration text
+        
+        Bard->>Cache: Store narration in cache
+    end
+    
+    Bard-->>Game: Display narration to player
+    
+    Note over Game,LLM: Fallback on server failure
+    
+    alt MCP Server Failure
+        MCP-->>Bard: Connection failed
+        Bard->>Bard: Generate fallback narration
+    end
+```
+
+## Module 8: Ringdom Generation
+
+### Learning Objectives
+- Understand Angband's level generation system
+- Modify generation code for Tower of Babel's ringdoms
+- Create themed floors with consistent landmarks
+- Implement floor-specific features and hazards
+
+### Content Description
+
+Tower of Babel replaces Angband's dungeons with "ringdoms" - themed circular floors of the tower. Each has unique features, NPCs, and landmarks that remain consistent across playthroughs.
+
+**Level Generation Changes:**
+1. Increase map size to 100x100 (larger than Angband default)
+2. Replace standard dungeon themes with ringdom themes
+3. Add static landmarks at fixed positions
+4. Create theme-specific room types and features
+
+**Generation Process:**
+```c
+bool build_ringdom_floor(struct chunk *c, int floor_num) {
+    // Initialize data structure
+    dun_data dun_body;
+    struct dun_data *dun = &dun_body;
+    dun->rooms = 0;
+    
+    // Select theme based on floor number
+    ringdom_theme theme = get_floor_theme(floor_num);
+    
+    // Build rooms based on theme
+    switch (theme) {
+        case THEME_MARKETPLACE:
+            build_marketplace_rooms(c, dun);
+            break;
+        case THEME_PARLOR:
+            build_parlor_rooms(c, dun);
+            break;
+        // Other themes...
+    }
+    
+    // Place static landmarks
+    place_airship_dock(c, 50, 50);
+    place_outer_wall_door(c, 0, 50);
+    place_docked_airship(c, 75, 25);
+    
+    // Connect rooms with corridors
+    connect_rooms(c, dun);
+    
+    // Place stairs to next floor
+    place_stairs(c, FEAT_MORE);
+    
+    // Place theme-specific objects and monsters
+    place_objects_by_theme(c, theme);
+    place_monsters_by_theme(c, theme);
+    
+    return true;
+}
+```
+
+**Themed Features:**
+For each ringdom theme (e.g., Marketplace, Parlor, Baths), we'll create:
+- Custom room types with specific dimensions and features
+- Theme-appropriate NPCs and monsters
+- Special interactive features
+- Hazards unique to that theme
+
+### Resources
+- Angband Level Generation: https://github.com/angband/angband/blob/master/src/generate.c
+- Procedural Generation in Roguelikes: http://roguebasin.com/index.php/Articles#Map
+- Tower of Babel Ringdom Specifications: [project repository]/docs/ringdoms.md
+
+### Assignments
+
+**Task 1: Study Angband Generation**
+1. Analyze `generate.c` in the Angband source
+2. Create a diagram of the generation process
+3. Identify key functions for modification
+4. Compile a list of room types and their implementation
+
+**Task 2: Implement Basic Ringdom**
+1. Create a new file `generate-ringdom.c`
+2. Implement the `build_ringdom_floor()` function
+3. Create a simple marketplace theme for testing
+4. Modify the game to use this generator for the first floor
+
+**Task 3: Add Static Landmarks**
+1. Implement the functions to place static landmarks
+2. Ensure they don't overlap with rooms and corridors
+3. Make landmarks interactive (e.g., examination text)
+4. Test by exploring the generated floor
+
+### Visual Elements
+
+```mermaid
+flowchart TD
+    Start[Build Ringdom Floor] --> Theme[Select Theme by Floor Number]
+    Theme --> Rooms[Generate Theme-Specific Rooms]
+    
+    subgraph Room Generation
+        Rooms --> Marketplace[Marketplace: Stalls & Gondolas]
+        Rooms --> Parlor[Parlor: Ballrooms & Lounges]
+        Rooms --> Baths[Baths: Pools & Steam Chambers]
+        Rooms --> Windlass[Windlass: Gear Chambers & Machinery]
+    end
+    
+    Rooms --> Landmarks[Place Static Landmarks]
+    
+    subgraph Static Landmarks
+        Landmarks --> Dock[Airship Dock at 50,50]
+        Landmarks --> Door[Outer Wall Door at 0,50]
+        Landmarks --> Ship[Docked Airship at 75,25]
+    end
+    
+    Landmarks --> Connect[Connect Rooms with Corridors]
+    Connect --> Stairs[Place Stairs to Next Floor]
+    Stairs --> Objects[Place Theme-Specific Objects]
+    Objects --> Monsters[Place Theme-Specific Monsters]
+    Monsters --> Finish[Return Completed Floor]
+    
+    style Marketplace fill:#f9f,stroke:#333
+    style Parlor fill:#bbf,stroke:#333
+    style Baths fill:#9cf,stroke:#333
+    style Windlass fill:#fd9,stroke:#333
+```
+
+## Module 9: Faction System Implementation
+
+### Learning Objectives
+- Understand faction mechanics and reputation systems
+- Implement the faction data structures and functions
+- Create quest generation integrated with MCP
+- Develop faction-specific NPCs and interactions
+
+### Content Description
+
+Factions add social dynamics to Tower of Babel, with player reputation affecting NPC behavior and available quests. There are persistent factions (present throughout the game) and procedural factions (unique to specific floors).
+
+**Faction Structure:**
+```c
+typedef struct faction {
+    char name[64];        // Faction name
+    int reputation;       // -100 to 100 (hostile to allied)
+    faction_type type;    // PERSISTENT or PROCEDURAL
+    
+    // Behavior flags
+    bool offers_quests;
+    bool attacks_on_sight;
+    bool provides_services;
+    
+    // References
+    struct quest *quests[MAX_FACTION_QUESTS];
+    int quest_count;
+    
+    // Theme data
+    char description[256];
+    int home_floor;       // Primary location
+} Faction;
+
+typedef struct quest {
+    char title[64];
+    char description[256];
+    char objective[128];
+    char reward[64];
+    int difficulty;       // 1-10
+    bool completed;
+    struct faction *faction;
+} Quest;
+```
+
+**Reputation System:**
+- Reputation ranges from -100 (hostile) to 100 (allied)
+- Actions impact reputation (e.g., completing quests: +15, attacking members: -30)
+- Thresholds determine behavior (≥ +50: ally, ≤ -50: hostile)
+- Services and quests require minimum reputation levels
+
+**Quest Generation:**
+Quests are generated procedurally using the MCP server, which crafts appropriate objectives and rewards based on faction theme and floor difficulty.
+
+### Resources
+- Faction Systems in RPGs: http://roguebasin.com/index.php/Factions
+- Tower of Babel Faction Specifications: [project repository]/docs/factions.md
+- Reputation Systems in Games: https://www.gamedeveloper.com/design/designing-reputation-systems-for-games
+
+### Assignments
+
+**Task 1: Implement Basic Faction System**
+1. Create `faction.h` and `faction.c` with the faction structures
+2. Implement initialization for the three persistent factions
+3. Add reputation tracking and update functions
+4. Create a simple test program that simulates reputation changes
+
+**Task 2: Develop Quest Generation**
+1. Create a new MCP endpoint for quest generation
+2. Implement faction-specific quest templates
+3. Create the C functions to request and process quests
+4. Test by generating sample quests for each faction
+
+**Task 3: Integrate with Game**
+1. Add faction references to NPCs
+2. Implement faction-based dialogue variations
+3. Create reputation-based reactions
+4. Test by interacting with faction NPCs at different reputation levels
+
+### Visual Elements
+
+```mermaid
+stateDiagram-v2
+    [*] --> Neutral: Start Game
+    
+    state Reputation {
+        Hostile: Reputation -100 to -50
+        Unfriendly: Reputation -49 to -1
+        Neutral: Reputation 0 to 24
+        Friendly: Reputation 25 to 49
+        Allied: Reputation 50 to 100
+    }
+    
+    Hostile --> Unfriendly: +50 rep
+    Unfriendly --> Neutral: +25 rep
+    Neutral --> Friendly: +25 rep
+    Friendly --> Allied: +25 rep
+    
+    Allied --> Friendly: -25 rep
+    Friendly --> Neutral: -25 rep
+    Neutral --> Unfriendly: -25 rep
+    Unfriendly --> Hostile: -25 rep
+    
+    state "Faction Behavior" as FB {
+        state "Attacks on Sight" as AOS
+        state "No Services" as NS
+        state "Basic Services" as BS
+        state "Full Services" as FS
+        state "Special Quests" as SQ
+        state "Allied NPCs" as AN
+    }
+    
+    Hostile --> AOS
+    Hostile --> NS
+    Unfriendly --> NS
+    Neutral --> BS
+    Friendly --> FS
+    Allied --> SQ
+    Allied --> AN
+    
+    note right of Allied
+        +15: Complete quest
+        +10: Aid faction member
+        +5: Trade with faction
+    end note
+    
+    note right of Hostile
+        -30: Attack faction member
+        -20: Steal from faction
+        -10: Refuse quest
+    end note
+```
+
+## Module 10: Testing and Debugging
+
+### Learning Objectives
+- Implement unit tests for key components
+- Create integration tests for the complete system
+- Master debugging techniques for roguelike development
+- Ensure cross-platform compatibility
+
+### Content Description
+
+Testing is crucial for a complex project like Tower of Babel. We'll implement tests at multiple levels to ensure reliability.
+
+**Unit Testing:**
+We'll use the Check framework for C unit tests:
+```c
+#include <check.h>
+
+// Test for bard memory system
+START_TEST(test_bard_memory) {
+    Bard lute;
+    bard_init(&lute);
+    
+    // Add a memory
+    bard_remember_event(&lute, "combat", 1, "defeated a goblin", 5);
+    
+    // Should have 1 memory
+    ck_assert_int_eq(lute.memory_count, 1);
+    
+    // Recall should find it for similar context
+    const EventMemory *memory = bard_recall_relevant_memory(&lute, "combat", 1);
+    ck_assert_ptr_ne(memory, NULL);
+    ck_assert_str_eq(memory->detail, "defeated a goblin");
+    
+    bard_cleanup(&lute);
+}
+END_TEST
+
+// Create test suite
+Suite * bard_suite(void) {
+    Suite *s;
+    TCase *tc_core;
+    
+    s = suite_create("Bard");
+    tc_core = tcase_create("Core");
+    
+    tcase_add_test(tc_core, test_bard_memory);
+    suite_add_tcase(s, tc_core);
+    
+    return s;
+}
+```
+
+**Integration Testing:**
+Testing the full system requires verifying:
+1. Game → MCP → Ollama pipeline functions end-to-end
+2. Level generation creates valid, playable floors
+3. Faction system correctly tracks reputation
+4. Save/load preserves game state including Bard
+
+**Debugging Techniques:**
+- Add debug logs to trace function calls
+- Create visualization tools for level generation
+- Implement state dumps for complex bugs
+- Use address sanitizers for memory issues
+
+### Resources
+- Check Unit Testing Framework: https://libcheck.github.io/check/
+- Debugging Techniques for C: https://www.cs.cornell.edu/courses/cs3110/2019sp/textbook/testing/debugging.html
+- Roguelike Testing Guide: http://roguebasin.com/index.php/Testing_Roguelikes
+
+### Assignments
+
+**Task 1: Implement Unit Tests**
+1. Create test files for bard, MCP, and faction systems
+2. Write at least 3 tests for each component
+3. Integrate with CMake to run tests during build
+4. Fix any issues found by tests
+
+**Task 2: Create Integration Tests**
+1. Implement a test program that simulates game events end-to-end
+2. Create test scenarios for the game → MCP → Ollama pipeline
+3. Verify that narration and quest generation work correctly
+4. Test with both successful and error conditions
+
+**Task 3: Debug Common Issues**
+1. Implement a logging system for the MCP client
+2. Create a visual debug mode for level generation
+3. Add memory tracking to find leaks
+4. Fix any issues found during testing
+
+### Visual Elements
+
+```mermaid
+flowchart TD
+    subgraph "Unit Testing"
+        BardTests["Bard System Tests"]
+        MCPTests["MCP Client Tests"]
+        FactionTests["Faction System Tests"]
+        RingdomTests["Ringdom Generation Tests"]
+    end
+    
+    subgraph "Integration Testing"
+        E2ETest["End-to-End Test"]
+        NarrationTest["Narration Pipeline Test"]
+        QuestTest["Quest Generation Test"]
+        FactionInt["Faction Interaction Test"]
+        SaveTest["Save/Load Test"]
+    end
+    
+    subgraph "Debug Tools"
+        Logger["Debug Logging System"]
+        VisualDebug["Level Visualization"]
+        MemTracker["Memory Leak Tracker"]
+        StateDump["Game State Dumper"]
+    end
+    
+    subgraph "Test Execution"
+        Manual["Manual Testing"]
+        CMake["CMake CTest"]
+        CI["GitHub Actions CI"]
+    end
+    
+    BardTests --> CMake
+    MCPTests --> CMake
+    FactionTests --> CMake
+    RingdomTests --> CMake
+    
+    E2ETest --> Manual
+    NarrationTest --> Manual
+    QuestTest --> Manual
+    FactionInt --> Manual
+    SaveTest --> Manual
+    
+    CMake --> CI
+    Manual -.-> CI
+    
+    Logger --> E2ETest
+    VisualDebug --> RingdomTests
+    MemTracker --> BardTests & MCPTests & FactionTests
+    StateDump --> SaveTest
+    
+    classDef unitTests fill:#f9f,stroke:#333
+    classDef intTests fill:#bbf,stroke:#333
+    classDef debugTools fill:#9cf,stroke:#333
+    classDef execution fill:#fd9,stroke:#333
+    
+    class BardTests,MCPTests,FactionTests,RingdomTests unitTests
+    class E2ETest,NarrationTest,QuestTest,FactionInt,SaveTest intTests
+    class Logger,VisualDebug,MemTracker,StateDump debugTools
+    class Manual,CMake,CI execution
+```
+
+## Module 11: Deployment and Performance Optimization
+
+### Learning Objectives
+- Prepare the project for distribution
+- Optimize performance of AI integration
+- Ensure cross-platform compatibility
+- Create a polished user experience
+
+### Content Description
+
+As we prepare Tower of Babel for release, we need to address performance, distribution, and user experience.
+
+**Performance Optimization:**
+- **Asynchronous MCP Requests**: Use a worker thread to prevent game stuttering
+- **Optimized Caching**: Implement multi-level caching (memory and disk)
+- **Pre-generation**: Generate common narrations during loading screens
+- **Offline Mode**: Create robust fallbacks for when Ollama is unavailable
+
+**Distribution Packaging:**
+- Create build configurations for Linux and Windows
+- Package Ollama dependencies and models
+- Create installers with necessary components
+- Document installation process
+
+**Cross-Platform Compatibility:**
+- Handle path differences between operating systems
+- Abstract platform-specific code
+- Test on multiple environments
+- Create consistent UI experience
+
+**User Experience Polish:**
+- Clear introduction to AI features
+- Tutorial for Bard interaction
+- Helpful error messages when AI fails
+- Smooth transitions between game and narration
+
+### Resources
+- C Performance Optimization: https://www.geeksforgeeks.org/c-programming-language-performance-improvement-tips/
+- Cross-Platform C Development: https://www.toptal.com/c-cpp/c-development-cross-platform-a-primer
+- Game Distribution Guide: https://www.gamedeveloper.com/business/how-to-prepare-your-game-for-distribution
+
+### Assignments
+
+**Task 1: Implement Asynchronous MCP**
+1. Create a worker thread for MCP requests
+2. Implement a request queue system
+3. Add callbacks for completed requests
+4. Test with rapid actions to ensure smooth gameplay
+
+**Task 2: Optimize Caching**
+1. Implement disk-based cache for persistent storage
+2. Create a pre-generation system for common narrations
+3. Add cache analytics to track hit rates
+4. Optimize cache key generation for better matching
+
+**Task 3: Create Distribution Package**
+1. Configure CMake for release builds
+2. Create a Linux package (deb or rpm)
+3. Create a Windows installer
+4. Test installation on a clean system
+
+### Visual Elements
+
+```mermaid
+flowchart TD
+    subgraph "Asynchronous Processing"
+        GameThread["Game Thread"]
+        WorkerThread["MCP Worker Thread"]
+        Queue["Request Queue"]
+        Callback["Callback System"]
+    end
+    
+    subgraph "Caching System"
+        MemCache["Memory Cache (Fast)"]
+        DiskCache["Disk Cache (Persistent)"]
+        PreGen["Pre-generated Content"]
+        Analytics["Cache Analytics"]
+    end
+    
+    subgraph "Distribution"
+        CMakeConf["CMake Configuration"]
+        LinuxPkg["Linux Package"]
+        WinPkg["Windows Installer"]
+        MacPkg["macOS Package (Future)"]
+    end
+    
+    subgraph "User Experience"
+        Tutorial["Interactive Tutorial"]
+        ErrorHandling["User-Friendly Errors"]
+        Documentation["Player Guide"]
+        Settings["AI Settings Panel"]
+    end
+    
+    GameThread -->|"Queue Request"| Queue
+    Queue -->|"Process"| WorkerThread
+    WorkerThread -->|"Complete"| Callback
+    Callback -->|"Update UI"| GameThread
+    
+    GameThread -->|"Check"| MemCache
+    MemCache -->|"Miss"| DiskCache
+    DiskCache -->|"Miss"| WorkerThread
+    WorkerThread -->|"Store"| MemCache
+    MemCache -.->|"Write Back"| DiskCache
+    
+    CMakeConf --> LinuxPkg & WinPkg & MacPkg
+    
+    Tutorial --> Documentation
+    ErrorHandling --> Settings
+    
+    classDef async fill:#f9f,stroke:#333
+    classDef cache fill:#bbf,stroke:#333
+    classDef dist fill:#9cf,stroke:#333
+    classDef ux fill:#fd9,stroke:#333
+    
+    class GameThread,WorkerThread,Queue,Callback async
+    class MemCache,DiskCache,PreGen,Analytics cache
+    class CMakeConf,LinuxPkg,WinPkg,MacPkg dist
+    class Tutorial,ErrorHandling,Documentation,Settings ux
+```
+
+## Conclusion
+
+This comprehensive training plan provides a step-by-step approach to developing the Tower of Babel project. By working through these modules sequentially, you'll gain not only the technical skills needed for this specific project but also valuable experience in game development, AI integration, and cross-platform C/Python programming.
+
+The hands-on approach with visual aids is designed to make complex concepts accessible and engaging. As you complete each module, you'll build confidence and competence, eventually mastering all aspects of this unique AI-augmented roguelike game.
+
+Remember to take breaks between modules, celebrate your progress, and don't hesitate to revisit earlier modules if you need to reinforce concepts. Good luck on your Tower of Babel development journey!
+
+---
+
+<div align="center">
+  <a href="#-getting-started">
+    <img src="https://img.shields.io/badge/🚀_Begin_Development-2ea44f?style=for-the-badge&logo=code&logoColor=white" alt="Begin Development" />
+  </a>
+</div>
+
+---
+
 ## About the Original Angband
 
 This project is based on Angband 4.2.5, a classic roguelike game. The original README is preserved below:
@@ -698,3 +2234,4 @@ This project is licensed under [GPL v3](LICENSE) - the same license as the origi
 <p align="center">
   <i>Tower of Babel: Where AI and Roguelike Adventure Converge</i>
 </p>
+```
