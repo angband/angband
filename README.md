@@ -1,7 +1,6 @@
 # Tower of Babel
 
-<p align="center">
-  <img src="docs/images/tower-of-babel-logo.png" width="500" alt="Tower of Babel Logo"/>
+<p align="center">![towerofbabel_boxart2](https://github.com/user-attachments/assets/41adc48e-903a-4eb1-afe6-f6bba6c04097)
 </p>
 
 > *Climb the Tower of Babel with your AI companion, Lute the Bard, in this unique roguelike adventure.*
