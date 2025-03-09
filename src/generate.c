@@ -887,35 +887,42 @@ static const struct cave_profile *choose_profile(struct player *p)
  */
 static void get_join_info(struct player *p, struct dun_data *dd)
 {
-	struct level *lev = NULL;
+	struct level *lev;
+	struct chunk *check;
 
 	/* Check level above */
 	lev = level_by_depth(p->depth - 1);
 	if (lev) {
-		struct chunk *check = chunk_find_name(lev->name);
-		if (check) {
-			struct connector *join = check->join;
-			while (join) {
-				if (join->feat == FEAT_MORE) {
-					struct connector *new = mem_zalloc(sizeof *new);
-					new->grid.y = join->grid.y;
-					new->grid.x = join->grid.x;
-					new->feat = FEAT_LESS;
-					new->next = dd->join;
-					dd->join = new;
-				}
-				join = join->next;
+		check = chunk_find_name(lev->name);
+	} else {
+		check = NULL;
+	}
+	if (check) {
+		struct connector *join = check->join;
+		while (join) {
+			if (join->feat == FEAT_MORE) {
+				struct connector *new = mem_zalloc(sizeof *new);
+				new->grid.y = join->grid.y;
+				new->grid.x = join->grid.x;
+				new->feat = FEAT_LESS;
+				new->next = dd->join;
+				dd->join = new;
 			}
+			join = join->next;
 		}
-	} else if ((lev = level_by_depth(p->depth - 2))) {
+	} else {
 		/*
 		 * When there isn't a level above but there is one two levels
 		 * up, remember where the down staircases are so up staircases
 		 * on this level won't conflict with them if the level above is
 		 * ever generated.
 		 */
-		struct chunk *check = chunk_find_name(lev->name);
-
+		lev = level_by_depth(p->depth - 2);
+		if (lev) {
+			check = chunk_find_name(lev->name);
+		} else {
+			check = NULL;
+		}
 		if (check) {
 			struct connector *join;
 
@@ -936,25 +943,31 @@ static void get_join_info(struct player *p, struct dun_data *dd)
 	/* Check level below */
 	lev = level_by_depth(p->depth + 1);
 	if (lev) {
-		struct chunk *check = chunk_find_name(lev->name);
-		if (check) {
-			struct connector *join = check->join;
-			while (join) {
-				if (join->feat == FEAT_LESS) {
-					struct connector *new = mem_zalloc(sizeof *new);
-					new->grid.y = join->grid.y;
-					new->grid.x = join->grid.x;
-					new->feat = FEAT_MORE;
-					new->next = dd->join;
-					dd->join = new;
-				}
-				join = join->next;
+		check = chunk_find_name(lev->name);
+	} else {
+		check = NULL;
+	}
+	if (check) {
+		struct connector *join = check->join;
+		while (join) {
+			if (join->feat == FEAT_LESS) {
+				struct connector *new = mem_zalloc(sizeof *new);
+				new->grid.y = join->grid.y;
+				new->grid.x = join->grid.x;
+				new->feat = FEAT_MORE;
+				new->next = dd->join;
+				dd->join = new;
 			}
+			join = join->next;
 		}
-	} else if ((lev = level_by_depth(p->depth + 2))) {
+	} else {
 		/* Same logic as above for looking one past the next level */
-		struct chunk *check = chunk_find_name(lev->name);
-
+		lev = level_by_depth(p->depth + 2);
+		if (lev) {
+			check = chunk_find_name(lev->name);
+		} else {
+			check = NULL;
+		}
 		if (check) {
 			struct connector *join;
 
