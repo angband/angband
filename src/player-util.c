@@ -101,6 +101,13 @@ bool player_get_recall_depth(struct player *p)
 	bool level_ok = false;
 	int new = 0;
 
+	/*
+	 * No choice when have not entered the dungeon or descent is forced,
+	 * so do not prompt.
+	 */
+	if (p->max_depth <= 0 || OPT(p, birth_force_descend)) {
+		return true;
+	}
 	while (!level_ok) {
 		const char *prompt =
 			"Which level do you wish to return to (0 to cancel)? ";
