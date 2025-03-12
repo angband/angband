@@ -744,6 +744,9 @@ static struct panel *get_panel_combat(void) {
 		dam += object_to_dam(obj->known);
 		hit += object_to_hit(obj->known);
 	}
+	if (player->known_state.bless_wield) {
+		hit += 2;
+	}
 
 	panel_space(p);
 	panel_line(p, COLOUR_L_BLUE, "Melee", "%dd%d,%+d", melee_dice, melee_sides, dam);
