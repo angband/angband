@@ -88,7 +88,8 @@ int breakage_chance(const struct object *obj, bool hit_target) {
 int chance_of_melee_hit_base(const struct player *p,
 		const struct object *weapon)
 {
-	int bonus = p->state.to_h + (weapon ? object_to_hit(weapon) : 0);
+	int bonus = p->state.to_h + (weapon ? object_to_hit(weapon) : 0)
+		+ (p->state.bless_wield ? 2 : 0);
 	return p->state.skills[SKILL_TO_HIT_MELEE] + bonus * BTH_PLUS_ADJ;
 }
 

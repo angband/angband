@@ -2309,7 +2309,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		if (pf_has(state->pflags, PF_BLESS_WEAPON)
 				&& (weapon->tval == TV_HAFTED
 				|| of_has(state->flags, OF_BLESSED))) {
-			state->to_h += 2;
 			state->to_d += 2;
 			state->bless_wield = true;
 		}
