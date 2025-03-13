@@ -60,52 +60,59 @@ bool borg_recall(void)
             || borg_spell_fail(WORD_OF_RECALL, 60)
             || borg_read_scroll(sv_scroll_word_of_recall)) {
 
-            int diff_max_from_desired_depth
-                = borg.trait[BI_MAXDEPTH] - borg_depth_hunted_unique;
-            int diff_cur_from_desired_depth
-                = borg.trait[BI_CDEPTH] - borg_depth_hunted_unique;
-
-            /* Reset max depth when current depth is way deeper (5) than the */
-            /* third deepest unique. */
+            /* do we need to answer "Set recall depth to current depth? [y/n]" */
             if (borg.trait[BI_CDEPTH] < borg.trait[BI_MAXDEPTH]
-                && diff_max_from_desired_depth > 5 
-                && diff_cur_from_desired_depth <= 5
-                && diff_cur_from_desired_depth > -5) {
-                /* Special check on deep levels */
-                if (borg.trait[BI_CDEPTH] >= 80 && borg.trait[BI_CDEPTH] < 100
-                    && /* Deep */
-                    borg_race_death[borg_sauron_id] != 0) /* Sauron is Dead */
-                {
-                    /* Do reset Depth */
-                    borg_note("# Resetting recall depth.");
-                    borg_keypress('y');
-                } else if (borg.goal.fleeing_munchkin == true) {
-                    /* Do reset Depth */
-                    borg_note("# Resetting recall depth during munchkin mode.");
-                    borg_keypress('y');
-                } else if (borg.trait[BI_CDEPTH] >= 100
-                           && !borg.trait[BI_KING]) {
-                    /* Do not reset Depth */
-                    borg_note("# Not Resetting recall depth.");
-                    borg_keypress('n');
-                } else if (borg.trait[BI_MAXDEPTH] == 99 
+                && borg.trait[BI_CDEPTH] != 0) {
+
+                int diff_max_from_desired_depth
+                    = borg.trait[BI_MAXDEPTH] - borg_depth_hunted_unique;
+                int diff_cur_from_desired_depth
+                    = borg.trait[BI_CDEPTH] - borg_depth_hunted_unique;
+
+                /* Reset max depth when current depth is way deeper (5) than the */
+                /* third deepest unique. */
+                if (diff_max_from_desired_depth > 5
+                    && diff_cur_from_desired_depth <= 5
+                    && diff_cur_from_desired_depth > -5) {
+                    /* Special check on deep levels */
+                    if (borg.trait[BI_CDEPTH] >= 80 && borg.trait[BI_CDEPTH] < 100
+                        && /* Deep */
+                        borg_race_death[borg_sauron_id] != 0) /* Sauron is Dead */
+                    {
+                        /* Do reset Depth */
+                        borg_note("# Resetting recall depth.");
+                        borg_keypress('y');
+                    }
+                    else if (borg.goal.fleeing_munchkin == true) {
+                        /* Do reset Depth */
+                        borg_note("# Resetting recall depth during munchkin mode.");
+                        borg_keypress('y');
+                    }
+                    else if (borg.trait[BI_CDEPTH] >= 100
+                        && !borg.trait[BI_KING]) {
+                        /* Do not reset Depth */
+                        borg_note("# Not Resetting recall depth.");
+                        borg_keypress('n');
+                    }
+                    else if (borg.trait[BI_MAXDEPTH] == 99
                         && borg_numb_live_unique < 5) {
-                    /* Do reset Depth, cleaning up last uniques to hit */
-                    /* Morgoth.  Want to keep using up the stock of potions */
-                    borg_note("# Not Resetting recall depth.");
-                    borg_keypress('n');
-                } else {
-                    /* Do reset Depth */
-                    borg_note("# Resetting recall depth.");
-                    borg_keypress('y');
+                        /* Do reset Depth, cleaning up last uniques to hit */
+                        /* Morgoth.  Want to keep using up the stock of potions */
+                        borg_note("# Not Resetting recall depth.");
+                        borg_keypress('n');
+                    }
+                    else {
+                        /* Do reset Depth */
+                        borg_note("# Resetting recall depth.");
+                        borg_keypress('y');
+                    }
                 }
-            }
-            /* reset recall depth in dungeon? */
-            else if (borg.trait[BI_CDEPTH] < borg.trait[BI_MAXDEPTH]
-                     && borg.trait[BI_CDEPTH] != 0) {
-                /* Do not reset Depth */
-                borg_note("# Not resetting recall depth.");
-                borg_keypress('n');
+                /* reset recall depth in dungeon? */
+                else {
+                    /* Do not reset Depth */
+                    borg_note("# Not resetting recall depth.");
+                    borg_keypress('n');
+                }
             }
 
             borg_keypress(ESCAPE);
