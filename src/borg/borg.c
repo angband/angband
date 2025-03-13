@@ -442,6 +442,17 @@ static struct keypress internal_borg_inkey(int flush_first)
         return key;
     }
 
+    /* prompt for recall depth */
+    if (borg_prompt && !inkey_flag && !borg_inkey(false) 
+        && (y == 0) && (x >= 12)
+        && prefix(buf, "Set recall depth")) {
+        if (borg_cfg[BORG_VERBOSE])
+            borg_note("# Use of unknown object with recall");
+        /* the first selection (a) is random */
+        key.code = 'n';
+        return key;
+    }
+
     /* make sure inventory is used for throwing */
     if (borg_prompt && !inkey_flag && (y == 1) && (x >= 12)
         && (prefix(buf, "Throw which item? (Throw"))) {
