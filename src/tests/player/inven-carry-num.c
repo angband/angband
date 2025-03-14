@@ -721,7 +721,7 @@ static int test_carry_num_full_pack_full_quiver(void *state) {
 
 /*
  * Check for the behavior that triggered this report from wobbly,
- * http://angband.oook.cz/forum/showpost.php?p=156916&postcount=153
+ * https://angband.live/forums/forum/angband/vanilla/10105-angband-4-2-3?p=224552#post224552
  * :  failure for a thrown item inscribed for the quiver to displace a full
  * stack of ammunition despite having an empty quiver slot.
  */

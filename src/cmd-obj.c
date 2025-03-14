@@ -49,6 +49,12 @@
 
 /**
  * Check to see if the player can use a rod/wand/staff/activatable object.
+ *
+ * \return a positive value if the given object can be used; return zero if
+ * the object cannot be used but might succeed on repetition (i.e. device's
+ * failure check did not pass but the failure rate is less than 100%); return
+ * a negative value if the object cannot be used and repetition won't help
+ * (no charges, requires recharge, or failure rate is 100% or more).
  */
 static int check_devices(struct object *obj)
 {
@@ -71,6 +77,13 @@ static int check_devices(struct object *obj)
 		activated = true;
 	}
 
+	/* Notice empty staffs */
+	if (what && obj->pval <= 0) {
+		event_signal(EVENT_INPUT_FLUSH);
+		msg("The %s has no charges left.", what);
+		return -1;
+	}
+
 	/* Figure out how hard the item is to use */
 	fail = get_use_device_chance(obj);
 
@@ -78,14 +91,7 @@ static int check_devices(struct object *obj)
 	if (randint1(1000) < fail) {
 		event_signal(EVENT_INPUT_FLUSH);
 		msg("You failed to %s properly.", action);
-		return false;
-	}
-
-	/* Notice empty staffs */
-	if (what && obj->pval <= 0) {
-		event_signal(EVENT_INPUT_FLUSH);
-		msg("The %s has no charges left.", what);
-		return false;
+		return (fail < 1001) ? 0 : -1;
 	}
 
 	/* Notice activations */
@@ -96,7 +102,7 @@ static int check_devices(struct object *obj)
 			obj->known->activation = obj->activation;
 	}
 
-	return true;
+	return 1;
 }
 
 
@@ -395,13 +401,15 @@ enum use {
 
 /**
  * Use an object the right way.
+ *
+ * Returns true if repeated commands may continue.
  */
-static void use_aux(struct command *cmd, struct object *obj, enum use use,
+static bool use_aux(struct command *cmd, struct object *obj, enum use use,
 					int snd)
 {
 	struct effect *effect = object_effect(obj);
 	bool from_floor = !object_is_carried(player, obj);
-	bool can_use = true;
+	int can_use = 1;
 	bool was_aware;
 	bool known_aim = false;
 	bool none_left = false;
@@ -425,7 +433,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		if (!known_aim) {
 			dir = ddd[randint0(8)];
 		} else if (cmd_get_target(cmd, "target", &dir) != CMD_OK) {
-			return;
+			return false;
 		}
 
 		/* Confusion wrecks aim */
@@ -444,7 +452,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	}
 
 	/* Execute the effect */
-	if (can_use) {
+	if (can_use > 0) {
 		int beam = beam_chance(obj->tval);
 		int boost, level, charges = 0;
 		uint16_t number;
@@ -615,7 +623,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 					assert(from_floor);
 					player->upkeep->redraw |= (PR_OBJECT);
 				}
-				return;
+				return false;
 			}
 		}
 
@@ -718,6 +726,8 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		if (square_object(cave, player->grid))
 			push_object(player->grid);
 	}
+
+	return can_use == 0;
 }
 
 
@@ -743,7 +753,7 @@ void do_cmd_read_scroll(struct command *cmd)
 			tval_is_scroll,
 			USE_INVEN | USE_FLOOR) != CMD_OK) return;
 
-	use_aux(cmd, obj, USE_SINGLE, MSG_GENERIC);
+	(void)use_aux(cmd, obj, USE_SINGLE, MSG_GENERIC);
 }
 
 /**
@@ -754,6 +764,7 @@ void do_cmd_use_staff(struct command *cmd)
 	struct object *obj;
 
 	if (!player_get_resume_normal_shape(player, cmd)) {
+		cmd_set_repeat(0);
 		return;
 	}
 
@@ -762,14 +773,21 @@ void do_cmd_use_staff(struct command *cmd)
 			"Use which staff? ",
 			"You have no staves to use.",
 			tval_is_staff,
-			USE_INVEN | USE_FLOOR | SHOW_FAIL) != CMD_OK) return;
-
-	if (!obj_has_charges(obj)) {
-		msg("That staff has no charges.");
+			USE_INVEN | USE_FLOOR | SHOW_FAIL) != CMD_OK) {
+		cmd_set_repeat(0);
 		return;
 	}
 
-	use_aux(cmd, obj, USE_CHARGE, MSG_USE_STAFF);
+	if (!obj_has_charges(obj)) {
+		msg("That staff has no charges.");
+		cmd_set_repeat(0);
+		return;
+	}
+
+	/* Disable autorepetition when successful. */
+	if (!use_aux(cmd, obj, USE_CHARGE, MSG_USE_STAFF)) {
+		cmd_set_repeat(0);
+	}
 }
 
 /**
@@ -780,6 +798,7 @@ void do_cmd_aim_wand(struct command *cmd)
 	struct object *obj;
 
 	if (!player_get_resume_normal_shape(player, cmd)) {
+		cmd_set_repeat(0);
 		return;
 	}
 
@@ -788,14 +807,21 @@ void do_cmd_aim_wand(struct command *cmd)
 			"Aim which wand? ",
 			"You have no wands to aim.",
 			tval_is_wand,
-			USE_INVEN | USE_FLOOR | SHOW_FAIL) != CMD_OK) return;
-
-	if (!obj_has_charges(obj)) {
-		msg("That wand has no charges.");
+			USE_INVEN | USE_FLOOR | SHOW_FAIL) != CMD_OK) {
+		cmd_set_repeat(0);
 		return;
 	}
 
-	use_aux(cmd, obj, USE_CHARGE, MSG_ZAP_ROD);
+	if (!obj_has_charges(obj)) {
+		msg("That wand has no charges.");
+		cmd_set_repeat(0);
+		return;
+	}
+
+	/* Disable autorepetition when successful. */
+	if (!use_aux(cmd, obj, USE_CHARGE, MSG_ZAP_ROD)) {
+		cmd_set_repeat(0);
+	}
 }
 
 /**
@@ -806,6 +832,7 @@ void do_cmd_zap_rod(struct command *cmd)
 	struct object *obj;
 
 	if (!player_get_resume_normal_shape(player, cmd)) {
+		cmd_set_repeat(0);
 		return;
 	}
 
@@ -814,14 +841,21 @@ void do_cmd_zap_rod(struct command *cmd)
 			"Zap which rod? ",
 			"You have no rods to zap.",
 			tval_is_rod,
-			USE_INVEN | USE_FLOOR | SHOW_FAIL) != CMD_OK) return;
-
-	if (!obj_can_zap(obj)) {
-		msg("That rod is still charging.");
+			USE_INVEN | USE_FLOOR | SHOW_FAIL) != CMD_OK) {
+		cmd_set_repeat(0);
 		return;
 	}
 
-	use_aux(cmd, obj, USE_TIMEOUT, MSG_ZAP_ROD);
+	if (!obj_can_zap(obj)) {
+		msg("That rod is still charging.");
+		cmd_set_repeat(0);
+		return;
+	}
+
+	/* Disable autorepetition when successful. */
+	if (!use_aux(cmd, obj, USE_TIMEOUT, MSG_ZAP_ROD)) {
+		cmd_set_repeat(0);
+	}
 }
 
 /**
@@ -832,6 +866,7 @@ void do_cmd_activate(struct command *cmd)
 	struct object *obj;
 
 	if (!player_get_resume_normal_shape(player, cmd)) {
+		cmd_set_repeat(0);
 		return;
 	}
 
@@ -840,14 +875,21 @@ void do_cmd_activate(struct command *cmd)
 			"Activate which item? ",
 			"You have no items to activate.",
 			obj_is_activatable,
-			USE_EQUIP | SHOW_FAIL) != CMD_OK) return;
-
-	if (!obj_can_activate(obj)) {
-		msg("That item is still charging.");
+			USE_EQUIP | SHOW_FAIL) != CMD_OK) {
+		cmd_set_repeat(0);
 		return;
 	}
 
-	use_aux(cmd, obj, USE_TIMEOUT, MSG_ACT_ARTIFACT);
+	if (!obj_can_activate(obj)) {
+		msg("That item is still charging.");
+		cmd_set_repeat(0);
+		return;
+	}
+
+	/* Disable autorepetition when successful. */
+	if (!use_aux(cmd, obj, USE_TIMEOUT, MSG_ACT_ARTIFACT)) {
+		cmd_set_repeat(0);
+	}
 }
 
 /**
@@ -864,7 +906,7 @@ void do_cmd_eat_food(struct command *cmd)
 			tval_is_edible,
 			USE_INVEN | USE_FLOOR) != CMD_OK) return;
 
-	use_aux(cmd, obj, USE_SINGLE, MSG_EAT);
+	(void)use_aux(cmd, obj, USE_SINGLE, MSG_EAT);
 }
 
 /**
@@ -885,7 +927,7 @@ void do_cmd_quaff_potion(struct command *cmd)
 			tval_is_potion,
 			USE_INVEN | USE_FLOOR) != CMD_OK) return;
 
-	use_aux(cmd, obj, USE_SINGLE, MSG_QUAFF);
+	(void)use_aux(cmd, obj, USE_SINGLE, MSG_QUAFF);
 }
 
 /**
@@ -896,6 +938,7 @@ void do_cmd_use(struct command *cmd)
 	struct object *obj;
 
 	if (!player_get_resume_normal_shape(player, cmd)) {
+		cmd_set_repeat(0);
 		return;
 	}
 
@@ -904,25 +947,49 @@ void do_cmd_use(struct command *cmd)
 			"Use which item? ",
 			"You have no items to use.",
 			obj_is_useable,
-			USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR | SHOW_FAIL | QUIVER_TAGS | SHOW_FAIL) != CMD_OK)
+			USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR | SHOW_FAIL | QUIVER_TAGS | SHOW_FAIL) != CMD_OK) {
+		cmd_set_repeat(0);
 		return;
+	}
 
-	if (tval_is_ammo(obj))				do_cmd_fire(cmd);
-	else if (tval_is_potion(obj))		do_cmd_quaff_potion(cmd);
-	else if (tval_is_edible(obj))		do_cmd_eat_food(cmd);
-	else if (tval_is_rod(obj))			do_cmd_zap_rod(cmd);
-	else if (tval_is_wand(obj))			do_cmd_aim_wand(cmd);
-	else if (tval_is_staff(obj))		do_cmd_use_staff(cmd);
-	else if (tval_is_scroll(obj))		do_cmd_read_scroll(cmd);
-	else if (obj_can_refill(obj))		do_cmd_refill(cmd);
-	else if (obj_is_activatable(obj)) {
+	/*
+	 * If this is not a staff, wand, rod, or activatable item, always
+	 * disable autorepetition.  The functions for handling a staff, wand
+	 * rod, or activatable item take care of autorepetition for those
+	 * objects.
+	 */
+	if (tval_is_ammo(obj)) {
+		do_cmd_fire(cmd);
+		cmd_set_repeat(0);
+	} else if (tval_is_potion(obj)) {
+		do_cmd_quaff_potion(cmd);
+		cmd_set_repeat(0);
+	} else if (tval_is_edible(obj)) {
+		do_cmd_eat_food(cmd);
+		cmd_set_repeat(0);
+	} else if (tval_is_rod(obj)) {
+		do_cmd_zap_rod(cmd);
+	} else if (tval_is_wand(obj)) {
+		do_cmd_aim_wand(cmd);
+	} else if (tval_is_staff(obj)) {
+		do_cmd_use_staff(cmd);
+	} else if (tval_is_scroll(obj)) {
+		do_cmd_read_scroll(cmd);
+		cmd_set_repeat(0);
+	} else if (obj_can_refill(obj)) {
+		do_cmd_refill(cmd);
+		cmd_set_repeat(0);
+	} else if (obj_is_activatable(obj)) {
 		if (object_is_equipped(player->body, obj)) {
 			do_cmd_activate(cmd);
 		} else {
 			msg("Equip the item to use it.");
+			cmd_set_repeat(0);
 		}
-	} else
+	} else {
 		msg("The item cannot be used at the moment");
+		cmd_set_repeat(0);
+	}
 }
 
 

@@ -919,7 +919,7 @@ bool obj_can_fail(const struct object *o)
 /**
  * Failure rate for magic devices.
  * This has been rewritten for 4.2.3 following the discussions in the thread
- * http://angband.oook.cz/forum/showthread.php?t=10594
+ * https://angband.live/forums/forum/angband/development/9911-please-help-md-negative-value
  * It uses a scaled, shifted version of the sigmoid function x/(1+|x|), namely
  * 380 - 370(x/(10+|x|)), where x is 2 * (device skill - device level) + 1,
  * to give fail rates out of 1000.
