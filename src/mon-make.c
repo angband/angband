@@ -376,9 +376,8 @@ void delete_monster_idx(struct chunk *c, int m_idx)
 			}
 		}
 		delist_object(c, obj);
-		if (c == cave) {
-			object_delete(cave, player->cave, &obj);
-		}
+		object_delete(c, (player && c == cave) ? player->cave : NULL,
+			&obj);
 		obj = next;
 	}
 

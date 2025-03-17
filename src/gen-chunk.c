@@ -435,11 +435,13 @@ bool chunk_copy(struct chunk *dest, struct player *p, struct chunk *source,
 			for (obj = source_mon->held_obj; obj; obj = obj->next) {
 				obj->held_m_idx = dest_mon->midx;
 			}
+			source_mon->held_obj = NULL;
 		}
 		if (source_mon->mimicked_obj) {
 			dest_mon->mimicked_obj = source_mon->mimicked_obj;
 			dest_mon->mimicked_obj->mimicking_m_idx =
 				dest_mon->midx;
+			source_mon->mimicked_obj = NULL;
 		}
 	}
 
