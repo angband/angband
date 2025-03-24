@@ -672,6 +672,10 @@ static bool borg_store_buys(borg_item *item, int who)
         case TV_FOOD:
         case TV_MUSHROOM:
         case TV_FLASK:
+        case TV_SHOT:
+        case TV_BOLT:
+        case TV_ARROW:
+        case TV_DIGGING:
             return true;
         }
         return false;
@@ -742,8 +746,6 @@ static bool borg_store_buys(borg_item *item, int who)
         switch (item->tval) {
         case TV_AMULET:
         case TV_RING:
-        case TV_SCROLL:
-        case TV_POTION:
         case TV_STAFF:
         case TV_WAND:
         case TV_ROD:
@@ -754,6 +756,11 @@ static bool borg_store_buys(borg_item *item, int who)
 
     /* Black Market */
     case 7:
+
+        /* if we don't get money on sales, allow anything to be */
+        /* sold to the black market */
+        if (OPT(player, birth_no_selling)) 
+            return true;
 
         /* Analyze the type */
         switch (item->tval) {
