@@ -733,7 +733,7 @@ static int32_t borg_power_equipment(void)
             activation_bonus += (500 + (96));
         else if (act_cold_ball100 == act)
             activation_bonus += (500 + (200));
-        else if (act_fire_bolt72 == act)
+        else if (act_fire_ball72 == act)
             activation_bonus += (500 + (72));
         else if (act_cold_bolt2 == act)
             activation_bonus += (500 + (12 * (8 + 1) / 2));

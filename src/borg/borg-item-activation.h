@@ -89,7 +89,7 @@ extern int act_cold_bolt;
 extern int act_fire_ball200;
 extern int act_fire_ball2;
 extern int act_fire_ball;
-extern int act_fire_bolt72;
+extern int act_fire_ball72;
 extern int act_fire_bolt3;
 extern int act_fire_bolt2;
 extern int act_fire_bolt;
