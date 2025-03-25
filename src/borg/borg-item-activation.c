@@ -90,7 +90,7 @@ int act_cold_bolt;
 int act_fire_ball200;
 int act_fire_ball2;
 int act_fire_ball;
-int act_fire_bolt72;
+int act_fire_ball72;
 int act_fire_bolt3;
 int act_fire_bolt2;
 int act_fire_bolt;
@@ -270,7 +270,7 @@ void borg_init_item_activation(void)
     act_fire_ball200      = borg_findact("FIRE_BALL200");
     act_fire_ball2        = borg_findact("FIRE_BALL2");
     act_fire_ball         = borg_findact("FIRE_BALL");
-    act_fire_bolt72       = borg_findact("FIRE_BOLT72");
+    act_fire_ball72       = borg_findact("FIRE_BALL72");
     act_fire_bolt3        = borg_findact("FIRE_BOLT3");
     act_fire_bolt2        = borg_findact("FIRE_BOLT2");
     act_fire_bolt         = borg_findact("FIRE_BOLT");

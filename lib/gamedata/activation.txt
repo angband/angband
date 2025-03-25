@@ -808,7 +808,7 @@ power:9
 effect:BOLT_OR_BEAM:FIRE
 dice:16d8
 
-name:FIRE_BOLT72
+name:FIRE_BALL72
 aim:1
 power:9
 msg:{name} rages in fire...

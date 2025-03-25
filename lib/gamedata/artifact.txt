@@ -435,7 +435,7 @@ slay:EVIL_2
 slay:TROLL_3
 slay:ORC_3
 slay:UNDEAD_3
-act:FIRE_BOLT72
+act:FIRE_BALL72
 time:40
 desc:The famed "Flame of the West", the Sword that was Broken and is forged
 desc: again.  It glows with the essence of fire, its wearer is mighty in combat,
@@ -764,7 +764,7 @@ attack:2d6:15:17
 armor:0:2
 values:RES_FIRE[3]
 brand:FIRE_3
-act:FIRE_BOLT72
+act:FIRE_BALL72
 time:20
 desc:A famed battle-lord of old with a head as ruddy as embers that can yet rise
 desc: up in wrath.

@@ -4397,12 +4397,12 @@ int borg_calculate_attack_effectiveness(int attack_type)
         return (borg_attack_aux_activation(
             act_fire_bolt, rad, dam, BORG_ATTACK_FIRE, true, -1));
 
-    /* Artifact -- Anduril & Firestar- fire bolt 72*/
-    case BF_ACT_FIRE_BOLT72:
-        rad = 0;
+    /* Artifact -- Anduril & Firestar- fire ball 72*/
+    case BF_ACT_FIRE_BALL72:
+        rad = 2;
         dam = 72;
         return (borg_attack_aux_activation(
-            act_fire_bolt72, rad, dam, BORG_ATTACK_FIRE, true, -1));
+            act_fire_ball72, rad, dam, BORG_ATTACK_FIRE, true, -1));
 
     /* Artifact -- Gothmog- FIRE BALL 144 */
     case BF_ACT_FIRE_BALL:
