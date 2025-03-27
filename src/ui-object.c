@@ -1059,6 +1059,84 @@ static void item_menu_browser(int oid, void *data, const region *local_area)
 }
 
 /**
+ * Display and handle user interaction with a context menu to switch the
+ * item list.
+ *
+ * \param current_menu is the standard (not contextual) menu displaying the
+ * item list.
+ * \param in is the event triggering the context menu.  in->type must be
+ * EVT_MOUSE.
+ * \param out is the event to be passed upstream (to internal handling in
+ * menu_select() or, potentially, menu_select()'s caller).
+ * \return true if the event was handled; otherwise, return false.
+ */
+static bool use_context_menu_list_switcher(struct menu *current_menu,
+		const ui_event *in, ui_event *out)
+{
+	struct menu *m;
+	char *labels;
+	bool allows_inven;
+	int selected;
+
+	assert(in->type == EVT_MOUSE);
+	if (in->mouse.y != 0) {
+		return false;
+	}
+
+	m = menu_dynamic_new();
+	if (!m) {
+		return false;
+	}
+	labels = string_make(lower_case);
+
+	m->selections = labels;
+	if (((item_mode & USE_INVEN) || allow_all)
+			&& player->upkeep->command_wrk != USE_INVEN) {
+		menu_dynamic_add_label(m, "Inventory", '/', USE_INVEN, labels);
+		allows_inven = true;
+	} else {
+		allows_inven = false;
+	}
+	if (((item_mode & USE_EQUIP) || allow_all)
+			&& player->upkeep->command_wrk != USE_EQUIP) {
+		menu_dynamic_add_label(m, "Equipment",
+			(allows_inven) ? 'e' : '/', USE_EQUIP, labels);
+	}
+	if ((q1 <= q2 || allow_all)
+			&& player->upkeep->command_wrk != USE_QUIVER) {
+		menu_dynamic_add_label(m, "Quiver", '|', USE_QUIVER, labels);
+	}
+	if ((f1 <= f2 || allow_all)
+			&& player->upkeep->command_wrk != USE_FLOOR) {
+		menu_dynamic_add_label(m, "Floor", '-', USE_FLOOR, labels);
+	}
+	menu_dynamic_add_label(m, "Escape", 'q', 0, labels);
+
+	screen_save();
+
+	menu_dynamic_calc_location(m, in->mouse.x, in->mouse.y);
+	region_erase_bordered(&m->boundary);
+
+	selected = menu_dynamic_select(m);
+
+	menu_dynamic_free(m);
+	string_free(labels);
+
+	screen_load();
+
+	if (selected == USE_INVEN || selected == USE_EQUIP
+			|| selected == USE_QUIVER || selected == USE_FLOOR) {
+		player->upkeep->command_wrk = selected;
+		newmenu = true;
+		out->type = EVT_SWITCH;
+	} else if (selected == 0) {
+		out->type = EVT_ESCAPE;
+	}
+
+	return true;
+}
+
+/**
  * Display list items to choose from
  */
 static struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
@@ -1078,6 +1156,7 @@ static struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 	else
 		m->selections = all_letters_nohjkl;
 	m->switch_keys = "/|-";
+	m->context_hook = use_context_menu_list_switcher;
 	m->flags = (MN_PVT_TAGS | MN_INSCRIP_TAGS);
 	m->browse_hook = item_menu_browser;
 
