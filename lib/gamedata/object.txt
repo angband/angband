@@ -2095,7 +2095,7 @@ values:SEARCH[1+M5] | LIGHT[1] | RES_LIGHT[1]
 name:Flames
 type:ring
 graphics:=:d
-level:50
+level:30
 weight:2
 cost:500
 alloc:20:20 to 100
@@ -2113,7 +2113,7 @@ time:50+d50
 name:Acid
 type:ring
 graphics:=:d
-level:50
+level:25
 weight:2
 cost:500
 alloc:20:20 to 100
@@ -2131,7 +2131,7 @@ time:50+d50
 name:Ice
 type:ring
 graphics:=:d
-level:50
+level:28
 weight:2
 cost:500
 alloc:20:20 to 100
@@ -2149,7 +2149,7 @@ time:50+d50
 name:Lightning
 type:ring
 graphics:=:d
-level:50
+level:32
 weight:2
 cost:500
 alloc:20:20 to 100
@@ -2237,7 +2237,7 @@ armor:0:-8+4d3
 name:Open Wounds
 type:ring
 graphics:=:d
-level:10
+level:5
 weight:2
 cost:700
 alloc:20:10 to 50
@@ -3774,7 +3774,7 @@ dice:100
 name:Fire Balls
 type:wand
 graphics:-:d
-level:50
+level:55
 weight:10
 cost:1800
 alloc:20:50 to 100
@@ -3807,7 +3807,7 @@ dice:120
 name:Slow Monster
 type:wand
 graphics:-:d
-level:5
+level:15
 weight:10
 cost:500
 alloc:20:5 to 100
@@ -3999,7 +3999,7 @@ expr:B:PLAYER_LEVEL:/ 5
 name:Dragon's Flame
 type:wand
 graphics:-:d
-level:50
+level:55
 weight:10
 cost:2400
 alloc:20:50 to 100
@@ -4211,7 +4211,7 @@ dice:5+1d5
 name:Slow Monsters
 type:staff
 graphics:_:d
-level:10
+level:20
 weight:50
 cost:800
 alloc:20:10 to 100
@@ -4511,7 +4511,7 @@ effect:RESTORE_MANA
 name:Treasure Location
 type:rod
 graphics:-:d
-level:5
+level:10
 weight:15
 cost:1000
 alloc:30:8 to 75
@@ -4550,7 +4550,7 @@ time:100
 name:Magic Mapping
 type:rod
 graphics:-:d
-level:65
+level:35
 weight:15
 cost:2000
 alloc:30:35 to 100
@@ -4564,7 +4564,7 @@ time:100
 name:Probing
 type:rod
 graphics:-:d
-level:35
+level:30
 weight:15
 cost:1000
 alloc:20:35 to 100
@@ -4580,7 +4580,7 @@ time:100
 name:Fire Bolts
 type:rod
 graphics:-:d
-level:30
+level:35
 weight:15
 cost:3000
 alloc:20:30 to 80
@@ -4699,7 +4699,7 @@ time:27
 name:Slow Monster
 type:rod
 graphics:-:d
-level:30
+level:40
 weight:15
 cost:1500
 alloc:20:30 to 100
@@ -4730,7 +4730,7 @@ time:40
 name:Curing
 type:rod
 graphics:-:d
-level:65
+level:40
 weight:15
 cost:1000
 alloc:20:10 to 80
@@ -4815,7 +4815,7 @@ time:23
 name:Teleport Other
 type:rod
 graphics:-:d
-level:45
+level:35
 weight:15
 cost:5000
 alloc:20:45 to 100
@@ -4887,7 +4887,7 @@ time:60
 name:Speed
 type:rod
 graphics:-:d
-level:95
+level:55
 weight:15
 cost:25000
 alloc:10:80 to 100
@@ -4971,7 +4971,7 @@ armor:0:0
 name:Black Dragon Scale Mail~
 type:dragon armor
 graphics:[:s
-level:50
+level:27
 weight:120
 cost:40000
 alloc:8:35 to 100
@@ -4988,7 +4988,7 @@ desc:A suit of utterly black scales, against which no metal or wood can rest.
 name:Blue Dragon Scale Mail~
 type:dragon armor
 graphics:[:b
-level:50
+level:30
 weight:100
 cost:40000
 alloc:8:25 to 100
@@ -5006,7 +5006,7 @@ desc: as you move about in it.
 name:White Dragon Scale Mail~
 type:dragon armor
 graphics:[:w
-level:50
+level:25
 weight:110
 cost:40000
 alloc:8:30 to 100
@@ -5024,7 +5024,7 @@ desc: through your spine even as you look at it.
 name:Red Dragon Scale Mail~
 type:dragon armor
 graphics:[:r
-level:50
+level:32
 weight:160
 cost:40000
 alloc:8:40 to 100
@@ -5042,7 +5042,7 @@ desc: tissue from an old burn aches as you put this armour on.
 name:Green Dragon Scale Mail~
 type:dragon armor
 graphics:[:g
-level:60
+level:30
 weight:140
 cost:60000
 alloc:8:60 to 100
@@ -5060,7 +5060,7 @@ desc: skeleton of a rat who touched it and died in agony.
 name:Multi-Hued Dragon Scale Mail~
 type:dragon armor
 graphics:[:v
-level:90
+level:50
 weight:260
 cost:150000
 alloc:5:75 to 100
@@ -5088,7 +5088,7 @@ desc: to master the Elements fighting an endless war trapped inside.
 name:Shining Dragon Scale Mail~
 type:dragon armor
 graphics:[:o
-level:65
+level:37
 weight:200
 cost:60000
 alloc:6:75 to 100
@@ -5110,7 +5110,7 @@ desc: the energy away from everything that glows into Dark insatiate.
 name:Law Dragon Scale Mail~
 type:dragon armor
 graphics:[:B
-level:80
+level:45
 weight:220
 cost:80000
 alloc:6:80 to 100
@@ -5132,7 +5132,7 @@ desc: as you touch it, like massed trumpets heard and cyclones felt from afar.
 name:Gold Dragon Scale Mail~
 type:dragon armor
 graphics:[:y
-level:50
+level:30
 weight:180
 cost:40000
 alloc:8:70 to 100
@@ -5151,7 +5151,7 @@ desc: cacophony.
 name:Chaos Dragon Scale Mail~
 type:dragon armor
 graphics:[:v
-level:80
+level:45
 weight:240
 cost:80000
 alloc:5:85 to 100
@@ -5173,7 +5173,7 @@ desc: imaginable as you stare in fascination.
 name:Balance Dragon Scale Mail~
 type:dragon armor
 graphics:[:v
-level:95
+level:52
 weight:280
 cost:100000
 alloc:3:95 to 100
@@ -5200,7 +5200,7 @@ desc: leashed energies bound as though by chains of adamant.
 name:Power Dragon Scale Mail~
 type:dragon armor
 graphics:[:v
-level:100
+level:57
 weight:300
 cost:300000
 alloc:1:100 to 100

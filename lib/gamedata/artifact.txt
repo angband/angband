@@ -400,7 +400,7 @@ desc: as the "Sickle of Harad", and a deadly foe to the undead.
 
 name:'Ringil'
 base-object:sword:Long Sword
-level:20
+level:40
 weight:130
 cost:300000
 alloc:1:20 to 127
@@ -422,7 +422,7 @@ desc: again.
 
 name:'Andúril'
 base-object:sword:Long Sword
-level:20
+level:35
 weight:130
 cost:80000
 alloc:3:20 to 127
@@ -838,7 +838,7 @@ desc: auras of protection and thought.
 
 name:'Eriril'
 base-object:hafted:Quarterstaff
-level:20
+level:15
 weight:150
 cost:20000
 alloc:5:20 to 100
@@ -854,7 +854,7 @@ desc: grants keen sight and clear knowledge of many hidden things.
 
 name:of Olórin
 base-object:hafted:Quarterstaff
-level:30
+level:20
 weight:150
 cost:130000
 alloc:1:30 to 100
@@ -943,7 +943,7 @@ desc:  Against it, all the foul corruptions of Sauron dashed in vain.
 
 name:of Oromë
 base-object:polearm:Spear
-level:15
+level:5
 weight:50
 cost:60000
 alloc:2:15 to 127
@@ -1012,7 +1012,7 @@ desc: evil and undead.
 
 name:of Ulmo
 base-object:polearm:Trident
-level:30
+level:27
 weight:70
 cost:120000
 alloc:1:30 to 127
@@ -1064,7 +1064,7 @@ desc: fire demons, who war forever, fettered by sorcerous binds.
 
 name:of Théoden
 base-object:polearm:Beaked Axe
-level:20
+level:30
 weight:180
 cost:40000
 alloc:7:20 to 100
@@ -1211,7 +1211,7 @@ desc: evil at a word, and grants Maia-like powers of body and mind.
 
 name:'Avavir'
 base-object:polearm:Scythe
-level:40
+level:20
 weight:180
 cost:18000
 alloc:12:45 to 100
@@ -1345,7 +1345,7 @@ desc: with flame unquenchable.
 
 name:of Umbar
 base-object:bow:Heavy Crossbow
-level:60
+level:45
 weight:200
 cost:35000
 alloc:5:60 to 127
@@ -1381,7 +1381,7 @@ desc: should the wielder ever tunnel through into a foe's stronghold.
 
 name:of Náin
 base-object:digger:Mattock
-level:60
+level:10
 weight:240
 cost:30000
 alloc:12:60 to 100
@@ -1404,7 +1404,7 @@ desc: although Náin himself fell before their lord Azog.
 
 name:of Fëanor
 base-object:boots:Pair of Leather Boots
-level:40
+level:20
 weight:20
 cost:300000
 alloc:1:40 to 127
@@ -1665,7 +1665,7 @@ desc: truly more than it appears.
 
 name:of Himring
 base-object:soft armour:Hard Leather Armour
-level:50
+level:30
 weight:100
 cost:35000
 alloc:20:25 to 90
@@ -1756,7 +1756,7 @@ desc: warding and stability deeply engraved into its surface.
 
 name:'Belegennon'
 base-object:hard armour:Mithril Chain Mail
-level:40
+level:20
 weight:150
 cost:105000
 alloc:30:55 to 127
@@ -1957,7 +1957,7 @@ desc:A set of gauntlets that smoulder with an unnatural heat.
 
 name:'Paurnimmen'
 base-object:gloves:Set of Gauntlets
-level:20
+level:1
 weight:25
 cost:13000
 alloc:5:50 to 127
@@ -2117,7 +2117,7 @@ desc: even Sauron could not corrupt.
 
 name:of Eärendil
 base-object:shield:Knight's Shield
-level:65
+level:32
 weight:160
 cost:90000
 alloc:6:65 to 127
@@ -2134,7 +2134,7 @@ desc: "scored with runes to keep all wounds and harm from him".
 # should be Shield of Deflection
 name:of Gil-galad
 base-object:shield:Mithril Shield
-level:70
+level:30
 weight:80
 cost:65000
 alloc:25:70 to 127
@@ -2166,7 +2166,7 @@ desc: form this ring, an ancient treasure of Isildur's house.
 name:of Tulkas
 base-object:ring:Band
 graphics:=:d
-level:70
+level:60
 weight:2
 cost:150000
 alloc:2:70 to 127
@@ -2179,7 +2179,7 @@ desc:The treasure of Tulkas, most fleet and wrathful of the Valar.
 name:'Narya'
 base-object:ring:Ring of Fire
 graphics:=:d
-level:70
+level:30
 weight:2
 cost:100000
 alloc:2:70 to 127
@@ -2198,7 +2198,7 @@ desc: hidden by the Elves from Sauron.
 name:'Nenya'
 base-object:ring:Ring of Adamant
 graphics:=:d
-level:80
+level:40
 weight:2
 cost:200000
 alloc:2:80 to 127
@@ -2219,7 +2219,7 @@ desc: Celebrimbor and hidden by the Elves from Sauron.
 name:'Vilya'
 base-object:ring:Ring of Firmament
 graphics:=:d
-level:90
+level:80
 weight:2
 cost:300000
 alloc:1:90 to 127
@@ -2241,7 +2241,7 @@ desc: and hidden by the Elves from Sauron.
 name:'The One Ring'
 base-object:ring:Ring of Power
 graphics:=:y
-level:100
+level:75
 weight:2
 cost:5000000
 alloc:1:100 to 127
@@ -2267,7 +2267,7 @@ desc: being who wears it.
 name:of Carlammas
 base-object:amulet:Amulet
 graphics:":d
-level:50
+level:30
 weight:3
 cost:60000
 alloc:10:50 to 100
@@ -2353,7 +2353,7 @@ desc: return to the Shire.
 
 name:'Razorback'
 base-object:dragon armour:Multi-Hued Dragon Scale Mail
-level:90
+level:60
 weight:200
 cost:400000
 alloc:11:90 to 127
@@ -2370,7 +2370,7 @@ desc: untamed Lightning as you put it on.
 
 name:'Mediator'
 base-object:dragon armour:Balance Dragon Scale Mail
-level:95
+level:60
 weight:250
 cost:400000
 alloc:8:95 to 127
@@ -2385,7 +2385,7 @@ desc: mightiest wyrms of Law and Chaos fear the judgement of its wearer.
 
 name:'Bladeturner'
 base-object:dragon armour:Power Dragon Scale Mail
-level:100
+level:55
 weight:250
 cost:500000
 alloc:6:100 to 127
