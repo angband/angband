@@ -485,6 +485,8 @@ static bool use_aux(struct command *cmd, struct object *obj, enum use use,
 		/* Get the level */
 		if (obj->artifact)
 			level = obj->artifact->level;
+		else if (obj->activation)
+			level = obj->activation->level;
 		else
 			level = obj->kind->level;
 
