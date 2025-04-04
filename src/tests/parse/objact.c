@@ -38,6 +38,8 @@ static int test_missing_record_header0(void *state) {
 	null(a);
 	r = parser_parse(p, "aim:0");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "level:23");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "power:102");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "effect:DAMAGE");
@@ -66,6 +68,7 @@ static int test_name0(void *state) {
 	notnull(a->name);
 	require(streq(a->name, "DO_NOTHING_SPECTACULAR"));
 	eq(a->aim, false);
+	eq(a->level, 0);
 	eq(a->power, 0);
 	null(a->effect);
 	null(a->message);
@@ -91,6 +94,18 @@ static int test_aim0(void *state) {
 	r = parser_parse(p, "aim:0");
 	eq(r, PARSE_ERROR_NONE);
 	eq(a->aim, false);
+	ok;
+}
+
+static int test_level0(void *state) {
+	struct parser *p = (struct parser*) state;
+	enum parser_error r = parser_parse(p, "level:23");
+	struct activation *a;
+
+	eq(r, PARSE_ERROR_NONE);
+	a = (struct activation*) parser_priv(p);
+	notnull(a);
+	eq(a->level, 23);
 	ok;
 }
 
@@ -295,6 +310,7 @@ static int test_combined0(void *state) {
 	const char *lines[] = {
 		"name:PRISMATIC_SPRAY",
 		"aim:1",
+		"level:5",
 		"power:4",
 		"effect:LINE:LIGHT_WEAK",
 		"effect:BOLT:FIRE",
@@ -322,6 +338,7 @@ static int test_combined0(void *state) {
 	notnull(a);
 	require(streq(a->name, "PRISMATIC_SPRAY"));
 	eq(a->aim, true);
+	eq(a->level, 5);
 	eq(a->power, 4);
 	notnull(a->effect);
 	e = a->effect;
@@ -453,6 +470,7 @@ struct test tests[] = {
 	{ "missing_record_header0", test_missing_record_header0 },
 	{ "name0", test_name0 },
 	{ "aim0", test_aim0 },
+	{ "level0", test_level0 },
 	{ "power0", test_power0 },
 	{ "effect0", test_effect0 },
 	{ "effect_bad0", test_effect_bad0 },
