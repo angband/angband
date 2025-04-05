@@ -4169,10 +4169,12 @@ static bool handle_controller_axis(struct my_app *a,
 		/* left-right */
 		if (event->value > 1000) ch = ARROW_RIGHT;
 		else if (event->value < -1000) ch = ARROW_LEFT;
+		else return false;
 	} else if (event->axis == 1) {
 		/* up-down */
 		if (event->value > 1000) ch = ARROW_UP;
 		else if (event->value < -1000) ch = ARROW_DOWN;
+		else return false;
 	} else {
 		return false;
 	}
