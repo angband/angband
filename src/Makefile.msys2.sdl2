@@ -90,13 +90,17 @@ SOUND_sdl2_cflags := \
 SOUND_sdl2_ldflags := \
 	$(shell sdl2-config --libs) \
 	-lSDL2_mixer \
-	-lmodplug \
+	-lflac \
 	-lmpg123 \
 	-lopusfile \
 	-lopus \
+	-lvorbisfile \
+	-lvorbis \
 	-logg \
 	-lshlwapi \
-	-lwinmm
+	-lwavpack \
+	-lwinmm \
+	-lxmp
 
 endif
 
