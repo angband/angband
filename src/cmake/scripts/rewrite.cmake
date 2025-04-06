@@ -5,7 +5,7 @@
 # CMAKE_ARGV<anything> are reserved for use by the rewrite.cmake and will
 # generate a fatal error if used.
 
-CMAKE_POLICY(VERSION 3.5)
+CMAKE_POLICY(VERSION 3.5...3.31)
 SET(_USAGE "usage: cmake [[-D <var>=<value>] ...] -P rewrite.cmake -- out in [target replacement] ...")
 SET(_X 0)
 WHILE(_X LESS CMAKE_ARGC)

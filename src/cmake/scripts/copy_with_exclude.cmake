@@ -2,7 +2,7 @@
 # Copy directory, <in>, to the directory <out> excluding any files that match
 # one of the optionally specified patterns, <exclude1> and so on.
 
-CMAKE_POLICY(VERSION 3.5)
+CMAKE_POLICY(VERSION 3.5...3.31)
 SET(_USAGE "usage: cmake [[-D <var>=<value>] ...] -P copy_with_exclude.cmake -- out in [exclude1 ...]")
 SET(_X 0)
 WHILE(_X LESS CMAKE_ARGC)

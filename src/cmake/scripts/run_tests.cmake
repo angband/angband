@@ -25,7 +25,7 @@
 #     [arg_for_test_case ...].  To pass arguments to the tool itself, have
 #     TOOL be a CMake-style list:  i.e. tool_path;tool_arg_1[;tool_arg_2...].
 
-CMAKE_POLICY(VERSION 3.5)
+CMAKE_POLICY(VERSION 3.5...3.31)
 
 # Set up defaults for the variables influenced by the environment or by
 # what the user has set.
