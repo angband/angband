@@ -76,10 +76,27 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
 {
     /* NOTE: This assumes the giving of one item at a time */
     int total = o_ptr->iqty + 1;
+    int i;
 
     /* Require identical object types */
     if (o_ptr->kind != j_ptr->kind)
         return 0;
+
+    /* Different flags don't stack */
+    if (!of_is_equal(o_ptr->flags, j_ptr->flags)) {
+        return false;
+    }
+
+    /* Different elements don't stack */
+    for (i = 0; i < ELEM_MAX; ++i) {
+        if (o_ptr->el_info[i].res_level != j_ptr->el_info[i].res_level) {
+            return false;
+        }
+        if ((o_ptr->el_info[i].flags & (EL_INFO_HATES | EL_INFO_IGNORE))
+                != (j_ptr->el_info[i].flags & (EL_INFO_HATES | EL_INFO_IGNORE))) {
+            return false;
+        }
+    }
 
     /* Analyze the items */
     switch (o_ptr->tval) {
@@ -164,9 +181,28 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
         if (o_ptr->to_a != j_ptr->to_a)
             return false;
 
-        /* Require identical "pval" code */
-        if (o_ptr->pval != j_ptr->pval)
+        /* Require identical modifiers */
+        for (i = 0; i < OBJ_MOD_MAX; ++i) {
+            if (o_ptr->modifiers[i] != j_ptr->modifiers[i]) {
+                return false;
+            }
+        }
+
+        /*
+         * Require identical curses; note that curse powers are not
+         * available so this is not the same as what object_similar() does
+         */
+        if (o_ptr->cursed != j_ptr->cursed
+                || o_ptr->uncursable != j_ptr->uncursable) {
             return false;
+        }
+        if (o_ptr->cursed) {
+            for (i = 0; i < BORG_CURSE_MAX; ++i) {
+                if (o_ptr->curses[i] != j_ptr->curses[i]) {
+                    return false;
+                }
+            }
+        }
 
         /* Require identical "artifact" names */
         if (o_ptr->art_idx != j_ptr->art_idx)
