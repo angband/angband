@@ -1733,7 +1733,7 @@ alloc:15:60 to 100
 attack:2d4:-3:0
 armor:66:0
 desc:A full suit of finely fitted metal armour consisting of steel plates
-desc: reinforced ridging.
+desc: with reinforced ridging.
 
 name:Mithril Chain Mail~
 type:hard armor

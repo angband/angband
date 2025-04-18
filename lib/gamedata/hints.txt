@@ -53,7 +53,7 @@ H:If you're in a bad situation, take a breather and "I"nspect all your gear.
 H:When a character dies, memories of monsters she has fought are passed on.
 H:Even the most powerful characters can be made useless by blindness.
 H:Even the most powerful characters can be made useless by confusion.
-H:Finding a way to resist blindness and confusion are critical to survival.
+H:Finding a way to resist blindness and confusion is critical to survival.
 H:Probing an enemy to learn its abilities is always useful.
 H:Buy at least one scroll of phase door before you enter the dungeon.
 H:Buy at least one potion of cure light wounds before you enter the dungeon.
