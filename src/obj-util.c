@@ -930,10 +930,8 @@ int get_use_device_chance(const struct object *obj)
 	int skill = player->state.skills[SKILL_DEVICE];
 
 	/* Extract the item level, which is the difficulty rating */
-	if (obj->artifact)
-		lev = obj->artifact->level;
-	else
-		lev = obj->kind->level;
+	lev = obj->artifact ? obj->artifact->level :
+		(obj->activation ? obj->activation->level : obj->kind->level);
 
 	/* Calculate x */
 	x = 2 * (skill - lev) + 1;
