@@ -264,8 +264,20 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 			sp = NULL;
 		} else if (t == PARSE_T_CHAR) {
 			tok = strtok(sp, "");
-			if (tok)
-				sp = tok + 2;
+			if (tok) {
+				sp = utf8_fskip(tok, 1, NULL);
+				if (sp) {
+					if (*sp == ':') {
+						++sp;
+					} else if (*sp) {
+						my_strcpy(p->errmsg, s->name,
+							sizeof(p->errmsg));
+						p->error = PARSE_ERROR_FIELD_TOO_LONG;
+						mem_free(cline);
+						return PARSE_ERROR_FIELD_TOO_LONG;
+					}
+				}
+			}
 		} else {
 			tok = strtok(sp, "");
 			sp = NULL;
