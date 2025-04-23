@@ -22,6 +22,7 @@
 #ifdef ALLOW_BORG
 
 #include "../cmds.h"
+#include "../ui-event.h"
 
 #include "borg-io.h"
 #include "borg-log.h"
