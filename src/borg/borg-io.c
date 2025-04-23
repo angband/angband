@@ -443,10 +443,11 @@ keycode_t borg_get_queued_direction(void)
 }
 
 /*
- * *HACK* this handles the é and á in some monster names but, gods it is
- * ugly convert to wide and back to match the processing of special characters
- * this routine will allocate any memory it needs and it is up to the caller 
- * to detect that memory was allocated and free it.
+ * *HACK* this handles the non-ASCII (examples are U+00E9, e + acute accent
+ * and U+00E1, a + acute accent) characters in some monster names but, gods it
+ * is ugly convert to wide and back to match the processing of special
+ * characters this routine will allocate any memory it needs and it is up to
+ * the caller to detect that memory was allocated and free it.
  */
 char *borg_massage_special_chars(char *name)
 {
