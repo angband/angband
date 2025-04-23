@@ -492,9 +492,9 @@ static bool source_can_light_wall(struct chunk *c, struct player *p,
 		 */
 		if (sn.y == pn.y) return true;
 		cn.x = sn.x;
-		cn.y = 0;
+		cn.y = wgrid.y;
 	} else if (sn.y == pn.y) {
-		cn.x = 0;
+		cn.x = wgrid.x;
 		cn.y = sn.y;
 	} else {
 		/*
