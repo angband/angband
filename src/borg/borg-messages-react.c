@@ -22,7 +22,6 @@
 #ifdef ALLOW_BORG
 
 #include "../cmds.h"
-#include "../ui-input.h"
 
 #include "borg-io.h"
 #include "borg-log.h"
