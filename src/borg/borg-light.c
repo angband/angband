@@ -145,7 +145,7 @@ bool borg_check_light_only(void)
          * 4 corners   3 corners    2 corners    1 corner    0 corners
          * ###         ##.  #..     ##.  #..     .#.         .#.  ... .#.
          * .@.         .@.  .@.     .@.  .@.     .@.         #@#  .@. .@.
-         * ###         ###  ###     ##.  #..     ##.         .#.  ... .#.
+         * ###         ###  ###     ##.  #..     ##.         .#.  ... .#.
          *
          * There's actually no way to tell which are rooms and which are
          * corridors from diagonals except 4 (always a corridor) and

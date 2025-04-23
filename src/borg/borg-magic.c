@@ -133,8 +133,8 @@ static borg_spell_rating borg_spell_ratings_PRIEST[] =
     { "Banish Evil", 85, BANISH_EVIL },
     { "Word of Destruction", 75, WORD_OF_DESTRUCTION },
     { "Holy Word", 85, HOLY_WORD },
-    { "Spear of Orom\xC3\xab", 85, SPEAR_OF_OROME }, /* "Spear of Oromë" */
-    { "Light of Manw\xC3\xab", 85, LIGHT_OF_MANWE } /* "Light of Manwë"*/
+    { "Spear of Orom\xC3\xab", 85, SPEAR_OF_OROME }, /* "Spear of Orom(e + diaresis)" */
+    { "Light of Manw\xC3\xab", 85, LIGHT_OF_MANWE } /* "Light of Manw(e + diaresis)"*/
 };
 static borg_spell_rating borg_spell_ratings_NECROMANCER[] =
 {
