@@ -2288,8 +2288,6 @@ static errr term_data_init(term_data *td, int i)
 	char cmd[40];
 	char font_name[256];
 
-	int line = 0;
-
 	/* Get default font for this term */
 	font = get_default_font(i);
 
@@ -2300,9 +2298,6 @@ static errr term_data_init(term_data *td, int i)
 	if (fff) {
 		/* Process the file */
 		while (file_getl(fff, buf, sizeof(buf))) {
-			/* Count lines */
-			line++;
-
 			/* Skip "empty" lines */
 			if (!buf[0]) continue;
 
@@ -2672,7 +2667,6 @@ errr init_x11(int argc, char **argv)
 	char buf[1024];
 	const char *str;
 	int val;
-	int line = 0;
 
 	/* Parse args */
 	for (i = 1; i < argc; i++) {
@@ -2712,9 +2706,6 @@ errr init_x11(int argc, char **argv)
 		if (fff) {
 			/* Process the file */
 			while (file_getl(fff, buf, sizeof(buf))) {
-				/* Count lines */
-				line++;
-	
 				/* Skip "empty" lines */
 				if (!buf[0]) continue;
 	
