@@ -145,7 +145,7 @@ static bool borg_good_buy(borg_item *item, int who, int ware)
                 && /* Have plenty of food */
                 item->cost <= 85000) /* Its not too expensive */
             {
-                if (adj_dex_safe[borg.trait[BI_DEX]] + borg.trait[BI_CLEVEL]
+                if (adj_dex_safe[borg.trait[BI_DEX_INDEX]] + borg.trait[BI_CLEVEL]
                     > 90) /* Good chance to thwart mugging */
                 {
                     /* Record the amount that I need to make purchase */
