@@ -22,6 +22,7 @@
  * must be included before ALLOW_BORG to avoid empty compilation unit
  */
 #include "../angband.h"
+#include "../ui-input.h"
 
 #ifdef ALLOW_BORG
 
@@ -31,6 +32,11 @@ extern bool borg_dont_react;
  * Handle various "important" messages
  */
 extern void borg_react(const char *msg, const char *buf);
+
+/*
+ * Handle various messages that need response
+ */
+extern bool borg_react_prompted(const char* buf, struct keypress* key, int x, int y);
 
 /*
  * Clear saved messsages
