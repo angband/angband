@@ -89,7 +89,7 @@ extern void      borg_queue_direction(keycode_t k);
 extern keycode_t borg_get_queued_direction(void);
 
 /*
- * Handle the é and á in some names
+ * Handle non-ASCII characters in some names
  */
 extern char *borg_massage_special_chars(char *name);
 
