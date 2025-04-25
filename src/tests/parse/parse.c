@@ -3,6 +3,10 @@
 #include "unit-test.h"
 
 #include "parser.h"
+#ifndef WINDOWS
+#include <locale.h>
+#include <langinfo.h>
+#endif
 
 int setup_tests(void **state) {
 	struct parser *p = parser_new();
@@ -488,6 +492,8 @@ static int test_char0(void *state) {
 	e = parser_parse(state, "test-char0:C");
 	eq(e, PARSE_ERROR_NONE);
 	eq(wasok, 1);
+	e = parser_parse(state, "test-char0:CC");
+	eq(e, PARSE_ERROR_FIELD_TOO_LONG);
 	ok;
 }
 
@@ -513,6 +519,45 @@ static int test_char1(void *state) {
 	e = parser_parse(state, "test-char1:::34:::lala");
 	eq(e, PARSE_ERROR_NONE);
 	eq(wasok, 1);
+	ok;
+}
+
+#ifndef WINDOWS
+static enum parser_error helper_char2(struct parser *p) {
+	wchar_t c = parser_getchar(p, "c");
+	int i = parser_getint(p, "i");
+	int *wasok = parser_priv(p);
+	wchar_t wcs[3];
+	size_t nc;
+
+	nc = text_mbstowcs(wcs, "£", (int) N_ELEMENTS(wcs));
+	if (nc != 1 || c != wcs[0] || i != 3)
+		return PARSE_ERROR_GENERIC;
+	*wasok = 1;
+	return PARSE_ERROR_NONE;
+}
+#endif
+
+static int test_char2(void *state) {
+#ifndef WINDOWS
+	/*
+	 * Check for glyph that is outside of the ASCII range.  Use the pound
+	 * sign, Unicode U+00A3 or CA A3 as UTF-8.
+	 */
+	if (setlocale(LC_CTYPE, "") && streq(nl_langinfo(CODESET), "UTF-8")) {
+		int wasok = 0;
+		errr r = parser_reg(state, "test-char2 char c int i",
+			helper_char2);
+		enum parser_error e;
+		eq(r, 0);
+		parser_setpriv(state, &wasok);
+		e = parser_parse(state, "test-char2:£:3");
+		eq(e, PARSE_ERROR_NONE);
+		eq(wasok, 1);
+		e = parser_parse(state, "test-char2:££:3");
+		eq(e, PARSE_ERROR_FIELD_TOO_LONG);
+	}
+#endif
 	ok;
 }
 
@@ -557,6 +602,7 @@ struct test tests[] = {
 
 	{ "char0", test_char0 },
 	{ "char1", test_char1 },
+	{ "char2", test_char2 },
 
 	{ "baddir", test_baddir },
 
