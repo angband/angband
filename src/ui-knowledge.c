@@ -710,7 +710,7 @@ static void display_group_member(struct menu *menu, int oid,
 		uint8_t a = *o_funcs->xattr(oid);
 		char buf[12];
 
-		strnfmt(buf, sizeof(buf), "%d/%d", a, c);
+		strnfmt(buf, sizeof(buf), "%d/%ld", a, (long int)c);
 		c_put_str(attr, buf, row, 64 - (int) strlen(buf));
 	}
 }
