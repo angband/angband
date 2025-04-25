@@ -207,8 +207,8 @@ void dump_objects(ang_file *fff)
 		if (!kind->name || !kind->tval) continue;
 
 		object_short_name(name, sizeof name, kind->name);
-		file_putf(fff, "object:%s:%s:%d:%d\n", tval_find_name(kind->tval),
-				name, kind_x_attr[i], kind_x_char[i]);
+		file_putf(fff, "object:%s:%s:%d:%ld\n", tval_find_name(kind->tval),
+				name, kind_x_attr[i], (long int)kind_x_char[i]);
 	}
 }
 
