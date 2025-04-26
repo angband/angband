@@ -553,8 +553,8 @@ effect:STRIKE:SOUND:3
 dice:$B
 expr:B:PLAYER_LEVEL:+ 5
 desc:Strikes a target from above with a lightning bolt, followed by a clap
-desc: of thunder.  Target grid must be targetable and known to the player;
-desc: no target grid will mean the player grid is hit.
+desc: of thunder.  If targeting a direction or the target is not a passable
+desc: grid in the line of sight, the player will be the target.
 
 spell:Earth Rising:14:5:40:12
 effect:SHORT_BEAM:SHARD:4:5

@@ -1001,21 +1001,21 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 bool effect_handler_STRIKE(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
+	/*
+	 * If the target is not a passable grid in the line of sight or is a
+	 * direction, target the player.
+	 */
 	struct loc target = player->grid;
+	/* Aim at the target.  Hurt items on floor. */
 	int flg = PROJECT_JUMP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
-	/* Ask for a target; if no direction given, the player is struck  */
-	if ((context->dir == DIR_TARGET) && target_okay()) {
+	if (context->dir == DIR_TARGET && target_okay()) {
 		target_get(&target);
+		if (!projectable(cave, player->grid, target, PROJECT_NONE)) {
+			target = player->grid;
+		}
 	}
 
-	/* Enforce line of sight */
-	if (!projectable(cave, player->grid, target, PROJECT_NONE) ||
-		!square_isknown(cave, target)) {
-		return false;
-	}
-
-	/* Aim at the target.  Hurt items on floor. */
 	if (project(source_player(), context->radius, target, dam, context->subtype,
 				flg, 0, 0, context->obj)) {
 		context->ident = true;
