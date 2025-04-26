@@ -1109,12 +1109,14 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
         dam = ((borg.trait[BI_CLEVEL] / 12) * ((50 + kill->injury) + 1)) / 2;
         break;
 
-    case BORG_ATTACK_ELEC_STRIKE:
-        if (rf_has(r_ptr->flags, RF_IM_ELEC))
-            dam = 0;
-        else if (borg_grids[kill->pos.y][kill->pos.x].feat == FEAT_NONE)
-            dam = 0;
-        break;
+	case BORG_ATTACK_ELEC_STRIKE:
+		if (rf_has(r_ptr->flags, RF_IM_ELEC))
+			dam = 0;
+        /* don't let lightning strike pass through unknown squares */
+		else if (!borg_projectable_pure(borg.c.y, borg.c.x, kill->pos.y, 
+            kill->pos.x))
+			dam = 0;
+		break;
     }
 
     /* use Missiles on certain types of monsters */
