@@ -623,9 +623,7 @@ void file_archive(const char *fname, const char *append)
 
 	/* Move the file */
 	path_build(old, sizeof(old), ANGBAND_DIR_USER, format("%s.txt", fname));
-	safe_setuid_grab();
 	file_move(old, arch);
-	safe_setuid_drop();
 }
 
 /**
@@ -659,9 +657,7 @@ void activate_randart_file(void)
 
 	/* Move it into place */
 	path_build(new, sizeof(new), ANGBAND_DIR_USER, "randart.txt");
-	safe_setuid_grab();
 	file_move(old, new);
-	safe_setuid_drop();
 }
 
 /**
