@@ -157,7 +157,7 @@ static void path_process(char *buf, size_t len, size_t *cur_len,
 
 		/* Copy across */
 		strnfcat(buf, len, cur_len, "%s%s", pw->pw_dir, PATH_SEP);
-		if (s) strnfcat(buf, len, cur_len, "%s", s);
+		if (s) strnfcat(buf, len, cur_len, "%s", s + strlen(PATH_SEP));
 	} else
 
 #endif /* defined(UNIX) */
