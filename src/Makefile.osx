@@ -71,23 +71,20 @@ OSX_OBJS = main-cocoa.o
 #
 
 
-$(EXE).o: $(OBJS)
-	@for A in $(ARCHS); do \
-		printf "%10s %-20s\n" LD $@.$$A; \
-		$(LD) -r -arch $$A -o $@.$$A $(OBJS); \
-		LIPO_ARGS="$$LIPO_ARGS -arch $$A $@.$$A"; \
-	done; \
-	lipo $$LIPO_ARGS -create -output $@
+$(PROGNAME).a: $(OBJS)
+	@libtool -static -o $@ $(OBJS)
 
-$(EXE): $(EXE).o $(OSX_OBJS)
-	$(DEPLOYMENT_TARGET) $(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(EXE).o $(OSX_OBJS) $(LIBS) 
+$(EXE): $(PROGNAME).a $(OSX_OBJS)
+	$(DEPLOYMENT_TARGET) $(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OSX_OBJS) $(PROGNAME).a $(LIBS)
 
 #
-# Clean up old junk
+# Clean up old junk; $(EXE).o and $(addprefix $(EXE).o,$(ARCHS)) are relics
+# and are only there to clean up intermediates left by previous versions of
+# this Makefile
 #
 
 clean:
-	-rm -f $(OBJS) $(EXE) $(addprefix $(EXE).o.,$(ARCHS)) $(EXE).o $(OSX_OBJS)
+	-$(RM) $(OBJS) $(OSX_OBJS) $(PROGNAME).a $(EXE) $(addprefix $(EXE).o.,$(ARCHS)) $(EXE).o
 
 
 #
@@ -218,7 +215,7 @@ dist: install
 	rm -rf disttemp*
 
 check: tests
-tests: $(EXE).o
+tests: $(PROGNAME).a
 	env CC="$(CC)" CFLAGS="$(CFLAGS) -I.. -DTEST_OVERRIDE_PATHS -Wno-write-strings" \
 		LDFLAGS="$(LDFLAGS)" LIBS="$(LIBS)" \
 		TEST_WORKING_DIRECTORY="../.." \

@@ -20,23 +20,33 @@ CFLAGS += -I. -fPIC -std=c99 -O0
 GCOBJS = $(OBJECTS:.o=.gcno) $(OBJECTS:.o=.gcda)
 GCOVS = $(OBJECTS:.o=.c.gcov)
 
-# buildsys's default clean will take care of any .o from SRCS.
-CLEAN = $(PROGNAME).o $(ALLMAINFILES) ${ALLMAINFILES:.o=.dep} version.h
+# buildsys's default clean will take care of any .o from SRCS; $(PROGNAME).o
+# is a relic and only there to clean up an intermediate from previous versions
+# of this Makefile.
+CLEAN = $(PROGNAME).a $(PROGNAME).o $(ALLMAINFILES) ${ALLMAINFILES:.o=.dep} version.h
 DISTCLEAN = autoconf.h tests/.deps
 
-$(PROG): $(PROGNAME).o $(MAINFILES)
-	$(CC) -o $@ $(PROGNAME).o $(MAINFILES) $(LDFLAGS) $(LDADD) $(LIBS)
+$(PROG): $(PROGNAME).a $(MAINFILES)
+	$(CC) -o $@ $(MAINFILES) $(PROGNAME).a $(LDFLAGS) $(LDADD) $(LIBS)
 	@printf "%10s %-20s\n" LINK $@
 
 win/$(PROGNAME).res: win/$(PROGNAME).rc
 	$(RC) $< -O coff -o $@
 
-$(PROGNAME).o: $(OBJECTS)
-	$(LD) $(LDFLAGS) -nostdlib -r -o $@ $(OBJECTS)
-	@printf "%10s %-20s\n" LINK $@
+$(PROGNAME).a: $(OBJECTS)
+	$(LINK_STATUS)
+	@if test ! -e $@ || $(RM) $@ ; then \
+		if $(AR) -rc $@ $(OBJECTS) && $(RANLIB) $@ ; then \
+			$(LINK_OK); \
+		else \
+			$(LINK_FAILED); \
+		fi; \
+	else \
+		$(LINK_FAILED); \
+	fi
 
 check: tests
-tests: $(PROGNAME).o
+tests: $(PROGNAME).a
 	env CC="$(CC)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" \
 		LDFLAGS="$(LDFLAGS)" LDADD="$(LDADD)" LIBS="$(TEST_LIBS)" \
 		CROSS_COMPILE="$(CROSS_COMPILE)" \
