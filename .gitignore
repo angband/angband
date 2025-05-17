@@ -57,6 +57,7 @@ src/*.d
 src/*.dep
 src/*.o
 src/*.o.*
+src/*.a
 src/.deps
 src/3ds-build
 src/angband
