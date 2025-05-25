@@ -370,8 +370,10 @@ SDL2
 With the SDL2 front end, the application has one window that can contain the
 main window and any of the subwindows.  The application may also have up to
 three additional windows which can contain any of the subwindows.  A subwindow
-may not appear in more than of those application windows.  Unused portions of
-an application window are tiled with repetitions of the game's logo.
+may not appear in more than one of those application windows:  adding a
+subwindow to a window automatically removes it from the other window, if any,
+that had it.  Unused portions of an application window are tiled with
+repetitions of the game's logo.
 
 Each of the application windows has a menu bar along the top.  The "Menu"
 entry at the left end of the menu bar has the main menu for controlling
