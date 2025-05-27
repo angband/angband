@@ -1040,8 +1040,8 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 	enum mon_messages hurt_msg = context->hurt_msg;
 	struct monster *mon = context->mon;
 
-	/* "Unique" monsters can only be "killed" by the player */
-	if (monster_is_unique(mon)) {
+	/* "Unique" or arena monsters can only be "killed" by the player */
+	if (monster_is_unique(mon) || player->upkeep->arena_level) {
 		/* Reduce monster hp to zero, but don't kill it. */
 		if (dam > mon->hp) dam = mon->hp;
 	}
@@ -1058,6 +1058,11 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 
 	/* Dead or damaged monster */
 	if (mon->hp < 0) {
+		/* Shapechanged monsters revert on death */
+		if (mon->original_race) {
+			monster_revert_shape(mon);
+		}
+
 		/* Give detailed messages if destroyed */
 		if (!seen) die_msg = MON_MSG_MORIA_DEATH;
 
@@ -1113,6 +1118,11 @@ static bool project_m_player_attack(project_monster_handler_context_t *context)
 	 * ensures it doesn't print any death message and allows correct ordering
 	 * of messages. */
 	if (dam > mon->hp) {
+		/* Shapechanged mnsters revert oon death */
+		if (mon->original_race) {
+			monster_revert_shape(mon);
+		}
+
 		if (!seen) die_msg = MON_MSG_MORIA_DEATH;
 		if (display_dam) {
 			add_monster_message_show_damage(mon, die_msg, false,
