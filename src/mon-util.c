@@ -1212,6 +1212,11 @@ bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
 
 	/* Dead or damaged monster */
 	if (t_mon->hp < 0) {
+		/* Shapechanged monsters revert on death */
+		if (t_mon->original_race) {
+			monster_revert_shape(t_mon);
+		}
+
 		/* Death message */
 		add_monster_message(t_mon, die_msg, false);
 
