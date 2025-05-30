@@ -79,17 +79,17 @@ jobs:
           make -f Makefile.blocksds
           popd
 
-  nds:
-    name: Nintendo DS
-    runs-on: ubuntu-latest
-    container: devkitpro/devkitarm
-    steps:
-      - name: Clone Project
-        uses: actions/checkout@v4
+#  nds:
+#    name: Nintendo DS
+#    runs-on: ubuntu-latest
+#    container: devkitpro/devkitarm
+#    steps:
+#      - name: Clone Project
+#        uses: actions/checkout@v4
 
-      - name: Build
-        shell: bash
-        run: |
-          pushd src/
-          make -f Makefile.nds
-          popd
+#      - name: Build
+#        shell: bash
+#        run: |
+#          pushd src/
+#          make -f Makefile.nds
+#          popd
