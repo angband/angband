@@ -343,7 +343,23 @@ const char help_gcu[] = "Text mode, subopts\n"
 	"              -B     Use brighter bold characters\n"
 	"              -D     Use terminal default background color\n"
 	"              -K     Keep terminal's color table when changing colors\n"
-	"              -nN    Use N terminals (up to 6)";
+	"              -nN    Use N terminals (up to 6, calculate size automatically. This option cannot be used with below options)\n"
+	"                   To manually set terminal sizes use below options\n"
+	"              -right (dimension)[,dimension]\n"
+	"              -left (dimension)[,dimension]\n"
+	"              -bottom (dimension)[,dimension]\n"
+	"              -top (dimension)[,dimension]\n"
+	"              -spacer (dimension)     space between terminals\n"
+	"                   Where dimension is = (columns)x(rows)\n"
+	"                   ex: 10x10\n"
+	"                   one of the value can also be ommited like 10x*\n"
+	"                   where * is automatically calculated if possible\n"
+	"                   if second dimension is specified then that side is split and second terminal is created.\n"
+	"                   incase of second dimension it can be automatically calculated by using *, ex: 10x10,*\n"
+	"                   second dimension is not allowed for top and bottom\n"
+	"                   NOTE: order of arguments matters\n"
+	"                   if top and bottom specified first then entire row is given to them, if they are specified after left, then margin is left for terminal and then the top and bottom terminal starts\n"
+	;
 
 /**
  * Usage:
