@@ -740,7 +740,7 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
  * \param num number to place
  * \param depth generation depth
  * \param origin item origin (if appropriate)
- * \return the number of entites that were not allocated.
+ * \return the number of entities that were not allocated.
  *
  * See alloc_object() for more information.
  */

@@ -2503,7 +2503,7 @@ static void remove_contradictory_activation(struct artifact *art)
 
 			default:
 				/*
-				 * effect_summarize_properties() gave use
+				 * effect_summarize_properties() gave us
 				 * something unexpected.  Assume the effect is
 				 * useful.
 				 */
