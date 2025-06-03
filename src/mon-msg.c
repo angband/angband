@@ -281,7 +281,7 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
 
 /**
  * Stack a codified message with a numerical damage notification for the
- * given monste race.
+ * given monster race.
  *
  * Return true on success.
  */
