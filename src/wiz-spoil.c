@@ -707,7 +707,7 @@ void spoil_mon_info(const char *fname)
 			mbbuf[n_mbbuf] = '\0';
 			textblock_append(tb, " '%s')\n", mbbuf);
 		} else {
-			textblock_append(tb, " (invalid character)\n");
+			textblock_append(tb, " (invalid character))\n");
 		}
 
 		/* Line 2: number, level, rarity, speed, HP, AC, exp */
