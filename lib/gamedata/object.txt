@@ -3032,7 +3032,7 @@ power:20000
 effect:RESTORE_STAT:STR
 effect:GAIN_STAT:STR
 
-name:Intelligence
+name:& Potion~ of Mental Acuity
 type:potion
 graphics:!:d
 level:30
