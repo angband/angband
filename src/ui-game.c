@@ -982,7 +982,9 @@ bool savefile_name_already_used(const char *fname, bool make_safe,
 	bool result;
 
 	savefile_set_name(fname, make_safe, strip_suffix);
+	safe_setuid_grab();
 	result = file_exists(savefile);
+	safe_setuid_drop();
 	my_strcpy(savefile, hold, sizeof(savefile));
 	string_free(hold);
 	return result;
