@@ -676,7 +676,7 @@ static int borg_perma_aux_see_inv(void)
         return (10);
     }
 
-    /* ah crap, I guess I wont be able to see them */
+    /* ah crap, I guess I won't be able to see them */
     return 0;
 }
 

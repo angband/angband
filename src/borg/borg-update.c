@@ -1279,7 +1279,7 @@ static int borg_fear_spell(int i)
         break;
     }
 
-    /* Things which hurt us alot need to be a concern */
+    /* Things which hurt us a lot need to be a concern */
     if (ouch >= borg.trait[BI_CURHP] / 2)
         ouch = ouch * 2;
 
@@ -1471,7 +1471,7 @@ static int intcomp(const void *a, const void *b)
  *
  * Uses the "panel" info (w_x, w_y) obtained earlier
  *
- * Note that all the "important" messages that occured after our last
+ * Note that all the "important" messages that occurred after our last
  * action have been "queued" in a usable form.  We must attempt to use
  * these messages to update our knowledge about the world, keeping in
  * mind that the world may have changed in drastic ways.
@@ -2927,7 +2927,7 @@ void borg_update(void)
 
     /* Update the fear_grid_monsters[][] with the monsters danger
      * This will provide a 'regional' fear from the accumulated
-     * group of monsters.  One Orc wont be too dangerous, but 20
+     * group of monsters.  One Orc won't be too dangerous, but 20
      * of them can be deadly.
      */
     for (i = 1; i < borg_kills_nxt; i++) {

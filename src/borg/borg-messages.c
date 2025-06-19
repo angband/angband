@@ -259,10 +259,10 @@ static void borg_parse_aux(char *msg, int len)
         /* it does not mean we can't target that location */
         successful_target = 0;
 
-        /* Incase we failed our emergency use of MM */
+        /* In case we failed our emergency use of MM */
         borg_confirm_target = false;
 
-        /* Incase it was a Resistance refresh */
+        /* In case it was a Resistance refresh */
         if (borg_attempting_refresh_resist) {
             if (borg.resistance > 1)
                 borg.resistance -= 25000;

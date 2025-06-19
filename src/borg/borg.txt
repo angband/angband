@@ -9,7 +9,7 @@
 # With the expressions below, you can influence the borg's behavior and
 # equipment selection choices.  The 'borg_worship_' variables will influence
 # his equipment selection by adding additional bonuses to items which
-# enhance that attribute.  For example:  if a borg recieves 2000 pts for
+# enhance that attribute.  For example:  if a borg receives 2000 pts for
 # a single point of armour class, an 'ac worshipping' borg would receive
 # 3000 pts.  This bonus would significantly influence equipment choices.
 
@@ -294,7 +294,7 @@ borg_verbose = FALSE
 
 # Munchkin Start
 
-# Munchink start will have the borg stair-scum at depth 5-6, looking for items
+# Munchkin start will have the borg stair-scum at depth 5-6, looking for items
 # which he will then sell in town.  He will continue this process until about
 # clevel 6 or 7.  The advantage is a sizable boost to his early income and
 # he can find some wands early on to assist with monster killing.

@@ -582,7 +582,7 @@ bool borg_backup_swap(int p)
         /* Where does it go */
         slot = borg_wield_slot(item);
 
-        /* safety check incase slot = -1 */
+        /* safety check in case slot = -1 */
         if (slot < 0)
             return false;
 
@@ -647,7 +647,7 @@ bool borg_backup_swap(int p)
         /* Where does it go */
         slot = borg_wield_slot(item);
 
-        /* safety check incase slot = -1 */
+        /* safety check in case slot = -1 */
         if (slot < 0)
             return false;
 

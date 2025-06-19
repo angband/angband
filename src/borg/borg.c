@@ -1993,7 +1993,7 @@ void do_cmd_borg(void)
             msg("Updating Shops... currently not allowed");
 #if false
             msg("Updating Shops...");
-            // need to change base code to make store_maint accessable .. trying not to change that too much right now.  
+            // need to change base code to make store_maint accessible .. trying not to change that too much right now.  
             // this functionality seems a bit bogus anyway !FIX !TODO !AJG
                             /* Maintain each shop (except home) */
             for (n = 0; n < MAX_STORES; n++) {
