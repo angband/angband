@@ -48,6 +48,7 @@ Angband is a very complex game, and it may be difficult to grasp everything at f
    hacking/debug
    hacking/how-it-works
    hacking/metadoc
+   hacking/borg
 
 
 Indices and tables
