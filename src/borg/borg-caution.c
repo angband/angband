@@ -414,7 +414,7 @@ static bool borg_heal(int danger)
     /* Generally continue to heal.  But if we are preparing for the end
      * game uniques, then bail out here in order to save our heal pots.
      * (unless morgoth is dead)
-     * Priests wont need to bail, they have good heal spells.
+     * Priests won't need to bail, they have good heal spells.
      */
     if (borg.trait[BI_MAXDEPTH] >= 98 && !borg.trait[BI_KING]
         && !borg_fighting_unique && borg.trait[BI_CLASS] != CLASS_PRIEST) {

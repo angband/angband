@@ -2562,7 +2562,7 @@ static void borg_notice_inventory(void)
      *  to cast it. (ie. teleport, phase)
      *  2.  An artifact may grant a power then he assumes he has infinite
      *  amounts.  He then sells off his scrolls with the duplicate power.
-     *  When it comes time to upgrade and swap out the artifact, he wont
+     *  When it comes time to upgrade and swap out the artifact, he won't
      *  because his power drops since he does not have the scrolls anymore.
      *  and he does not buy items first.
      *

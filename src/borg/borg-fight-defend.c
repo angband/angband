@@ -1770,7 +1770,7 @@ static int borg_defend_aux_mass_genocide(int p1)
     if (p2 < 0)
         p2 = 0;
 
-    /* if strain (plus a pad incase we did not know about some monsters)
+    /* if strain (plus a pad in case we did not know about some monsters)
      * is greater than hp, don't cast it
      */
     if ((hit * 12 / 10) >= borg.trait[BI_CURHP])
@@ -1833,7 +1833,7 @@ static int borg_defend_aux_mass_genocide(int p1)
 }
 
 /* This will simulate and cast the genocide spell.
- * There are two seperate functions happening here.
+ * There are two separate functions happening here.
  * 1. will genocide the race which is immediately threatening the borg.
  * 2. will genocide the race which is most dangerous on the level.  Though it
  * may not be threatening the borg right now.  It was considered to nuke the
@@ -1894,7 +1894,7 @@ static int borg_defend_aux_genocide(int p1)
         return 0;
 
     /* Normalize the p1 value.  It contains danger added from
-     * regional fear and monster fear.  Which wont be counted
+     * regional fear and monster fear.  Which won't be counted
      * in the post-genocide checks
      */
     if (borg_fear_region[borg.c.y / 11][borg.c.x / 11])
@@ -2028,7 +2028,7 @@ static int borg_defend_aux_genocide(int p1)
         if (b_threat[biggest_threat] < borg.trait[BI_MAXHP] * 3)
             biggest_threat = 0;
 
-        /* Too painful to cast it (padded to be safe incase of unknown monsters)
+        /* Too painful to cast it (padded to be safe in case of unknown monsters)
          */
         if ((b_kill_count[biggest_threat] * 4) * 12 / 10
             >= borg.trait[BI_CURHP])
@@ -2057,7 +2057,7 @@ static int borg_defend_aux_genocide(int p1)
 
     /* Consider the immediate threat genocide */
     if (biggest_danger) {
-        /* Too painful to cast it (padded to be safe incase of unknown monsters)
+        /* Too painful to cast it (padded to be safe in case of unknown monsters)
          */
         if ((b_kill_count[biggest_danger] * 4) * 12 / 10
             >= borg.trait[BI_CURHP])
@@ -2519,7 +2519,7 @@ static int borg_defend_aux_banishment(int p1)
     }
 
     /* Set P2 to be P1 and subtract the danger from each monster
-     * which will be booted.  Non booted monsters wont decrement
+     * which will be booted.  Non booted monsters won't decrement
      * the p2
      */
     p2 = p1;
@@ -2722,7 +2722,7 @@ static int borg_defend_aux_inviso(int p1)
         return (10);
     }
 
-    /* ah crap, I guess I wont be able to see them */
+    /* ah crap, I guess I won't be able to see them */
     return 0;
 }
 

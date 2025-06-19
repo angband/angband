@@ -290,7 +290,7 @@ static void borg_notice_home_dupe(borg_item *item, bool check_sval, int i)
     struct ego_item *e_ptr = &e_info[item->ego_idx];
 
     /* check for a duplicate.  */
-    /* be carefull about extra powers (elvenkind/magi) */
+    /* be careful about extra powers (elvenkind/magi) */
     if (borg_ego_has_random_power(e_ptr))
         return;
 

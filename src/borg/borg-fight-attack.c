@@ -1752,7 +1752,7 @@ int borg_launch_bolt(int rad, int dam, int typ, int max, int ammo_location)
                 if (n <= 0)
                     continue;
 
-                /* The game forbids targetting the outside walls */
+                /* The game forbids targeting the outside walls */
                 if (x == 0 || y == 0 || x == DUNGEON_WID - 1
                     || y == DUNGEON_HGT - 1)
                     continue;

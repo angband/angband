@@ -1570,7 +1570,7 @@ bool borg_think_dungeon(void)
         if (borg_recover())
             return true;
 
-        /* If full of items, we wont be able to buy stuff, crush stuff */
+        /* If full of items, we won't be able to buy stuff, crush stuff */
         if (borg_items[PACK_SLOTS - 1].iqty && borg_drop_hole(false))
             return true;
 

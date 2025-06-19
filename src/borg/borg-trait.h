@@ -450,7 +450,7 @@ struct borg_struct {
     int16_t when_detect_obj; /* When we last detected objects */
     int16_t when_last_kill_mult; /* When a multiplier was last killed */
 
-    int16_t no_rest_prep; /* borg wont rest for a few turns */
+    int16_t no_rest_prep; /* borg won't rest for a few turns */
 
     int16_t times_twitch; /* how often twitchy on this level */
     int16_t escapes; /* how often teleported on this level */

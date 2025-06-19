@@ -101,9 +101,9 @@ bool vault_on_level;
 int  borg_t_antisummon; /* Timestamp when in a AS spot */
 bool borg_as_position; /* Sitting in an anti-summon corridor */
 bool borg_digging; /* used in Anti-summon corridor */
-bool my_need_alter; /* incase i hit a wall or door */
+bool my_need_alter; /* in case i hit a wall or door */
 bool my_no_alter;
-bool my_need_redraw; /* incase i hit a wall or door */
+bool my_need_redraw; /* in case i hit a wall or door */
 
 int16_t avoidance = 0; /* Current danger thresh-hold */
 

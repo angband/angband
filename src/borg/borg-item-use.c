@@ -228,7 +228,7 @@ bool borg_read_unknown(void)
     borg_keypress('r');
     borg_keypress(all_letters_nohjkl[n]);
 
-    /* Incase it is ID scroll, ESCAPE out. */
+    /* In case it is ID scroll, ESCAPE out. */
     borg_keypress(ESCAPE);
 
     /* Hack -- Clear "shop" goals */
@@ -555,7 +555,7 @@ bool borg_use_unknown(void)
     borg_keypress('u');
     borg_keypress(all_letters_nohjkl[n]);
 
-    /* Incase it is ID staff, ESCAPE out. */
+    /* In case it is ID staff, ESCAPE out. */
     borg_keypress(ESCAPE);
 
     /* Success */
@@ -1053,7 +1053,7 @@ bool borg_use_things(void)
         return true;
     }
 
-    /* just drink the stat gains, at this dlevel we wont need cash */
+    /* just drink the stat gains, at this dlevel we won't need cash */
     if (borg_quaff_potion(sv_potion_inc_str)
         || borg_quaff_potion(sv_potion_inc_int)
         || borg_quaff_potion(sv_potion_inc_wis)

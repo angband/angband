@@ -1012,7 +1012,7 @@ bool borg_twitchy(void)
             if (dir == 5)
                 continue;
 
-            /* get the location of postion + direction */
+            /* get the location of position + direction */
             l.x = borg.c.x + ddx[dir];
             l.y = borg.c.y + ddy[dir];
 

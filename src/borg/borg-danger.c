@@ -2215,7 +2215,7 @@ static int borg_danger_spell(
     /* Average damage of all the spells & compare to most dangerous spell */
     av = total_dam / kill->ranged_attack;
 
-    /* If the most dangerous spell is alot bigger than the average,
+    /* If the most dangerous spell is a lot bigger than the average,
      * then return the dangerous one.
      *
      * There is a problem when dealing with defense maneuvers.
@@ -2414,13 +2414,13 @@ int borg_danger_one_kill(
         v1 = 0;
     }
 
-    /* multipliers yeild some trouble when I am weak */
+    /* multipliers yield some trouble when I am weak */
     if ((rf_has(r_ptr->flags, RF_MULTIPLY))
         && (borg.trait[BI_CLEVEL] < 20)) { /* extra 50% */
         v1 = v1 + (v1 * 15 / 10);
     }
 
-    /* Friends yeild some trouble when I am weak */
+    /* Friends yield some trouble when I am weak */
     if ((r_ptr->friends || r_ptr->friends_base)
         && (borg.trait[BI_CLEVEL] < 20)) {
         if (borg.trait[BI_CLEVEL] < 15) {
