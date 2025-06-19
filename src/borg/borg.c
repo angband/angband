@@ -781,7 +781,7 @@ void do_cmd_borg(void)
             break;
         }
 
-        /* Stop when the borg wins */
+        /* lunal mode */
         case 'l':
         case 'L': {
             borg_cfg[BORG_LUNAL_MODE] = !borg_cfg[BORG_LUNAL_MODE];
