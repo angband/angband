@@ -372,7 +372,7 @@ void borg_write_map(bool ask)
         }
         file_putf(borg_map_file, "\n\n");
     }
-    file_putf(borg_map_file, "   [Player State at Death] \n\n");
+    file_putf(borg_map_file, "  [Player State at Death] \n\n");
 
     /* Dump the player state */
     file_putf(borg_map_file, "Current speed: %d. \n", borg.trait[BI_SPEED]);
@@ -444,16 +444,16 @@ void borg_write_map(bool ask)
     file_putf(borg_map_file, "\n\n");
 
     /* Dump the Time Variables */
-    file_putf(borg_map_file, "Time on this panel; %d\n", borg.time_this_panel);
-    file_putf(borg_map_file, "Time on this level; %ld\n",
+    file_putf(borg_map_file, "Time on this panel: %d\n", borg.time_this_panel);
+    file_putf(borg_map_file, "Time on this level: %ld\n",
         (long int)(borg_t - borg_began));
-    file_putf(borg_map_file, "Time since left town; %ld\n",
+    file_putf(borg_map_file, "Time since left town: %ld\n",
         (long int)(borg_time_town + (borg_t - borg_began)));
-    file_putf(borg_map_file, "Food in town; %d\n", borg_food_onsale);
-    file_putf(borg_map_file, "Fuel in town; %d\n", borg_fuel_onsale);
-    file_putf(borg_map_file, "Borg_no_retreat; %d\n", borg.no_retreat);
-    file_putf(borg_map_file, "Breeder_level; %d\n", breeder_level);
-    file_putf(borg_map_file, "Unique_on_level; %d\n", unique_on_level);
+    file_putf(borg_map_file, "Food in town: %d\n", borg_food_onsale);
+    file_putf(borg_map_file, "Fuel in town: %d\n", borg_fuel_onsale);
+    file_putf(borg_map_file, "Borg_no_retreat: %d\n", borg.no_retreat);
+    file_putf(borg_map_file, "Breeder_level: %d\n", breeder_level);
+    file_putf(borg_map_file, "Unique_on_level: %d\n", unique_on_level);
     if ((turn % (10L * z_info->day_length)) < ((10L * z_info->day_length) / 2))
         file_putf(borg_map_file, "It is daytime in town.\n");
     else
@@ -461,22 +461,22 @@ void borg_write_map(bool ask)
     file_putf(borg_map_file, "\n\n");
 
     file_putf(
-        borg_map_file, "borg_uses_swaps; %d\n", borg_cfg[BORG_USES_SWAPS]);
-    file_putf(borg_map_file, "borg_worships_damage; %d\n",
+        borg_map_file, "borg_uses_swaps: %d\n", borg_cfg[BORG_USES_SWAPS]);
+    file_putf(borg_map_file, "borg_worships_damage: %d\n",
         borg_cfg[BORG_WORSHIPS_DAMAGE]);
-    file_putf(borg_map_file, "borg_worships_speed; %d\n",
+    file_putf(borg_map_file, "borg_worships_speed: %d\n",
         borg_cfg[BORG_WORSHIPS_SPEED]);
     file_putf(
-        borg_map_file, "borg_worships_hp; %d\n", borg_cfg[BORG_WORSHIPS_HP]);
-    file_putf(borg_map_file, "borg_worships_mana; %d\n",
+        borg_map_file, "borg_worships_hp: %d\n", borg_cfg[BORG_WORSHIPS_HP]);
+    file_putf(borg_map_file, "borg_worships_mana: %d\n",
         borg_cfg[BORG_WORSHIPS_MANA]);
     file_putf(
-        borg_map_file, "borg_worships_ac; %d\n", borg_cfg[BORG_WORSHIPS_AC]);
-    file_putf(borg_map_file, "borg_worships_gold; %d\n",
+        borg_map_file, "borg_worships_ac: %d\n", borg_cfg[BORG_WORSHIPS_AC]);
+    file_putf(borg_map_file, "borg_worships_gold: %d\n",
         borg_cfg[BORG_WORSHIPS_GOLD]);
     file_putf(
-        borg_map_file, "borg_plays_risky; %d\n", borg_cfg[BORG_PLAYS_RISKY]);
-    file_putf(borg_map_file, "prepping for big fight; %d\n\n", borg.trait[BI_PREP_BIG_FIGHT]);
+        borg_map_file, "borg_plays_risky: %d\n", borg_cfg[BORG_PLAYS_RISKY]);
+    file_putf(borg_map_file, "prepping for big fight: %d\n\n", borg.trait[BI_PREP_BIG_FIGHT]);
     file_putf(borg_map_file, "\n\n");
 
     /* Dump the spells */
