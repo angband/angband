@@ -138,7 +138,6 @@ static char borg_index_to_label(int i)
  * Write a file with the current dungeon info (Borg)
  * and his equipment, inventory and home (Player)
  * and his swap armor, weapon (Borg)
- * From Dennis Van Es,  With an addition of last messages from me (APW)
  * NOTE: this uses internal game data.  This is okay since we are just dumping 
  * the information rather than using it.
  */
@@ -772,8 +771,8 @@ void borg_display_item(struct object *item2, int n)
         borg_prt_binary(f[2], 19, j + 32);
 }
 
-/* DVE's function for displaying the status of various info */
-/* Display what the borg is thinking DvE*/
+/* Function for displaying the status of various info */
+/* Display what the borg is thinking */
 void borg_status(void)
 {
     int j;

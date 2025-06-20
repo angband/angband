@@ -86,7 +86,7 @@ extern int *borg_cfg;
 extern bool borg_active; /* Actually active */
 extern bool borg_cancel; /* Being cancelled */
 extern bool borg_save; /* do a save next time we get to press a key! */
-extern bool borg_graphics; /* rr9's graphics */
+extern bool borg_graphics; /* graphics mode */
 
 extern int16_t old_depth;
 extern int16_t borg_respawning;

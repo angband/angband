@@ -39,7 +39,7 @@ borg_magic *borg_magics = NULL;
 
 
 static borg_spell_rating *borg_spell_ratings;
-// !FIX !TODO !AJG for now put this in the code.  It should probably end up in borg.txt or a new borg.cfg
+// !FIX !TODO for now put this in the code.  It should probably end up in borg.txt or a new borg.cfg
 // I also gave low ratings to spells that are new since the borg doesn't know when to use them yet.
 static borg_spell_rating borg_spell_ratings_MAGE[] =
 {
@@ -77,7 +77,7 @@ static borg_spell_rating borg_spell_ratings_MAGE[] =
 static borg_spell_rating borg_spell_ratings_DRUID[] =
 {
     { "Detect Life", 95,  DETECT_LIFE },
-    { "Fox Form", 5, FOX_FORM }, // !FIX !TODO !AJG need to know when to cast any of the shapechanges
+    { "Fox Form", 5, FOX_FORM }, // !FIX !TODO need to know when to cast any of the shapechanges
     { "Remove Hunger", 85, REMOVE_HUNGER },
     { "Stinking Cloud", 95, STINKING_CLOUD },
     { "Confuse Monster", 55, CONFUSE_MONSTER },
@@ -90,9 +90,9 @@ static borg_spell_rating borg_spell_ratings_DRUID[] =
     { "Earth Rising", 70, EARTH_RISING },
     { "Trance", 55, TRANCE },
     { "Mass Sleep", 80, MASS_SLEEP },
-    { "Become Pukel-man", 5, BECOME_PUKEL_MAN }, // !FIX !TODO !AJG shapechange
-    { "Eagle's Flight", 5, EAGLES_FLIGHT }, // !FIX !TODO !AJG shapechange
-    { "Bear Form", 5, BEAR_FORM }, // !FIX !TODO !AJG shapechange
+    { "Become Pukel-man", 5, BECOME_PUKEL_MAN }, // !FIX !TODO shapechange
+    { "Eagle's Flight", 5, EAGLES_FLIGHT }, // !FIX !TODO shapechange
+    { "Bear Form", 5, BEAR_FORM }, // !FIX !TODO shapechange
     { "Tremor", 80, TREMOR },
     { "Haste Self", 90, HASTE_SELF },
     { "Revitalize", 95, REVITALIZE },
@@ -141,7 +141,7 @@ static borg_spell_rating borg_spell_ratings_NECROMANCER[] =
     { "Nether Bolt", 95, NETHER_BOLT },
     { "Sense Invisible", 85, SENSE_INVISIBLE },
     { "Create Darkness", 5, CREATE_DARKNESS }, 
-    { "Bat Form", 5, BAT_FORM }, // !FIX !TODO !AJG shapechange
+    { "Bat Form", 5, BAT_FORM }, // !FIX !TODO shapechange
     { "Read Minds", 85, READ_MINDS },
     { "Tap Unlife", 85, TAP_UNLIFE },
     { "Crush", 95, CRUSH },
@@ -152,7 +152,7 @@ static borg_spell_rating borg_spell_ratings_NECROMANCER[] =
     { "Vampire Strike", 75, VAMPIRE_STRIKE },
     { "Dispel Life", 65, DISPEL_LIFE },
     { "Dark Spear", 65, DARK_SPEAR },
-    { "Warg Form", 5, WARG_FORM }, // !FIX !TODO !AJG shapechange
+    { "Warg Form", 5, WARG_FORM }, // !FIX !TODO shapechange
     { "Banish Spirits", 65, BANISH_SPIRITS },
     { "Annihilate", 95, ANNIHILATE },
     { "Grond's Blow", 85, GRONDS_BLOW },
@@ -160,10 +160,10 @@ static borg_spell_rating borg_spell_ratings_NECROMANCER[] =
     { "Fume of Mordor", 75, FUME_OF_MORDOR },
     { "Storm of Darkness", 65, STORM_OF_DARKNESS },
     { "Power Sacrifice", 5, POWER_SACRIFICE },  /* not sure if this is borg happy. */
-    { "Zone of Unmagic", 5, ZONE_OF_UNMAGIC },  // !FIX !TODO !AJG defense?  not sure how to code. 
-    { "Vampire Form", 5, VAMPIRE_FORM }, // !FIX !TODO !AJG shapechange
+    { "Zone of Unmagic", 5, ZONE_OF_UNMAGIC },  // !FIX !TODO defense?  not sure how to code. 
+    { "Vampire Form", 5, VAMPIRE_FORM }, // !FIX !TODO shapechange
     { "Curse", 65, CURSE },
-    { "Command", 5, COMMAND } // !FIX !TODO !AJG defense?  not sure how to code. 
+    { "Command", 5, COMMAND } // !FIX !TODO defense?  not sure how to code. 
 };
 static borg_spell_rating borg_spell_ratings_PALADIN[] =
 {
@@ -182,7 +182,7 @@ static borg_spell_rating borg_spell_ratings_PALADIN[] =
     { "Demon Bane", 55, DEMON_BANE },
     { "Enchant Weapon", 75, ENCHANT_WEAPON },
     { "Enchant Armour", 85, ENCHANT_ARMOUR },
-    { "Single Combat", 95, SINGLE_COMBAT } // !FIX !TODO !AJG defense?  not sure how to code.
+    { "Single Combat", 95, SINGLE_COMBAT } // !FIX !TODO defense?  not sure how to code.
 };
 static borg_spell_rating borg_spell_ratings_ROGUE[] =
 {
@@ -193,7 +193,7 @@ static borg_spell_rating borg_spell_ratings_ROGUE[] =
     { "Recharging", 85, RECHARGING },
     { "Reveal Monsters", 85, REVEAL_MONSTERS },
     { "Teleport Self", 95, TELEPORT_SELF },
-    { "Hit and Run", 15, HIT_AND_RUN }, // !FIX !TODO !AJG not sure how to code this
+    { "Hit and Run", 15, HIT_AND_RUN }, // !FIX !TODO not sure how to code this
     { "Teleport Other", 85, TELEPORT_OTHER },
     { "Teleport Level", 75, TELEPORT_LEVEL }
 };
@@ -205,10 +205,10 @@ static borg_spell_rating borg_spell_ratings_RANGER[] =
     { "Resist Poison", 85, RESIST_POISON },
     { "Turn Stone to Mud", 85, TURN_STONE_TO_MUD },
     { "Sense Surroundings", 75, SENSE_SURROUNDINGS },
-    { "Cover Tracks", 25, COVER_TRACKS }, // !FIX !TODO !AJG prep?
-    { "Create Arrows", 85, CREATE_ARROWS }, // !FIX !TODO !AJG 
+    { "Cover Tracks", 25, COVER_TRACKS }, // !FIX !TODO prep?
+    { "Create Arrows", 85, CREATE_ARROWS }, // !FIX !TODO 
     { "Haste Self", 95, HASTE_SELF },
-    { "Decoy", 5, DECOY }, // !FIX !TODO !AJG not sure what to do with this
+    { "Decoy", 5, DECOY }, // !FIX !TODO not sure what to do with this
     { "Brand Ammunition", 95, BRAND_AMMUNITION }
 };
 static borg_spell_rating borg_spell_ratings_BLACKGUARD[] =
@@ -223,10 +223,10 @@ static borg_spell_rating borg_spell_ratings_BLACKGUARD[] =
     { "Howl of the Damned", 55, HOWL_OF_THE_DAMNED },
     { "Relentless Taunting", 5, RELENTLESS_TAUNTING }, /* seems to dangerous for borg right now */
     { "Venom", 55, VENOM },
-    { "Werewolf Form", 5, WEREWOLF_FORM }, // !FIX !TODO !AJG shapechange
+    { "Werewolf Form", 5, WEREWOLF_FORM }, // !FIX !TODO shapechange
     { "Bloodlust", 5, BLOODLUST }, /* seems to dangerous for borg right now */
     { "Unholy Reprieve", 95, UNHOLY_REPRIEVE },
-    { "Forceful Blow", 5, FORCEFUL_BLOW }, // !FIX !TODO !AJG need to code this 
+    { "Forceful Blow", 5, FORCEFUL_BLOW }, // !FIX !TODO need to code this 
     { "Quake", 95, QUAKE }
 };
 

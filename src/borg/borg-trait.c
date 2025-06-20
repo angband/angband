@@ -44,7 +44,7 @@
 
 /* MAJOR HACK copied in because it is static in the main code */
 /* I would just make them not static but trying not to change base code */
-/* for now !FIX !TODO !AJG */
+/* for now !FIX !TODO */
 static const int borg_adj_mag_mana[STAT_RANGE] = {
       0	/* 3 */,
      10	/* 4 */,

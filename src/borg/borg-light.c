@@ -810,7 +810,7 @@ bool borg_light_beam(bool simulation)
 
     /* Don't do it if on the edge of shifting the panel. */
     if (dir == 5 || spell_ok == false || blocked == true
-// !FIX !TODO !AJG make sure these panel edge checks are right.
+// !FIX !TODO make sure these panel edge checks are right.
         || (dir == 2
             && (borg.c.y == 18 
                 || borg.c.y == 19 

@@ -1348,7 +1348,7 @@ static int32_t borg_power_inventory(void)
     }
 
     /*** Healing ***/
-    /* !TODO !FIX !AJG make sure these numbers make sense for the new classes */
+    /* !TODO !FIX make sure these numbers make sense for the new classes */
     if (borg.trait[BI_CLASS] == CLASS_WARRIOR
         || borg.trait[BI_CLASS] == CLASS_ROGUE
         || borg.trait[BI_CLASS] == CLASS_BLACKGUARD) {

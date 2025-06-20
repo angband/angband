@@ -29,7 +29,7 @@
 
 /*
  * All of the various attacks or projections the borg can do.
- !FIX !TODO !AJG probably want to externalize this somehow.
+ !FIX !TODO probably want to externalize this somehow.
  */
 enum {
     BORG_ATTACK_MISSILE,
