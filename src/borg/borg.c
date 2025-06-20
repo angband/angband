@@ -89,7 +89,7 @@ int *borg_cfg;
 bool borg_active; /* Actually active */
 bool borg_cancel; /* Being cancelled */
 bool borg_save          = false; /* do a save next level */
-bool borg_graphics      = false; /* rr9's graphics */
+bool borg_graphics      = false; /* graphics mode */
 
 int16_t old_depth       = 128;
 int16_t borg_respawning = 0;

@@ -771,8 +771,8 @@ void borg_display_item(struct object *item2, int n)
         borg_prt_binary(f[2], 19, j + 32);
 }
 
-/* DVE's function for displaying the status of various info */
-/* Display what the borg is thinking DvE*/
+/* Function for displaying the status of various info */
+/* Display what the borg is thinking */
 void borg_status(void)
 {
     int j;

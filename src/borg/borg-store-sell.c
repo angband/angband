@@ -624,7 +624,7 @@ bool borg_think_home_sell_useful(int32_t *best_home_power)
         /* if this is not the item that was there,  */
         /* drop off the item that replaces it. */
         if (best_item[i] != i && best_item[i] != 255) {
-            /* hack don't sell DVE */
+            /* hack don't sell */
             if (!borg_items[best_item[i] - z_info->store_inven_max].iqty)
                 return false;
 

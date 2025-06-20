@@ -362,7 +362,7 @@ bool observe_take_move(int y, int x, int d, uint8_t a, wchar_t c)
         if (!borg.trait[BI_ISIMAGE] && c != k_ptr->d_char)
             continue;
 
-        /* Require matching attr if not hallucinating rr9*/
+        /* Require matching attr if not hallucinating */
         if (!borg.trait[BI_ISIMAGE] && a != k_ptr->d_attr
             && (k_ptr->d_attr != 11 && k_ptr->d_char == '!')
             /* There are serious bugs with Flasks of Oil not having the attr set
