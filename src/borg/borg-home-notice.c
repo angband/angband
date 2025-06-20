@@ -283,7 +283,7 @@ static void borg_notice_home_dupe(borg_item *item, bool check_sval, int i)
 {
     /* eventually check for power overlap... armor of resistance is same as weak
      * elvenkind.*/
-    /*  two armors of elvenkind that resist poison is a dupe.  AJG*/
+    /*  two armors of elvenkind that resist poison is a dupe. */
 
     int              dupe_count, x;
     borg_item       *item2;

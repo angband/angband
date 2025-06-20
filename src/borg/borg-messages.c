@@ -755,7 +755,7 @@ static void borg_parse_aux(char *msg, int len)
     if (prefix(msg, "Oops! It feels deathly cold!")) {
         /* this should only happen with STICKY items, The Crown of Morgoth or
          * The One Ring */
-        /* !FIX !TODO !AJG handle crown eventually */
+        /* !FIX !TODO handle crown eventually */
         return;
     }
 

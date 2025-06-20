@@ -67,17 +67,17 @@ static bool borg_can_play_spell(borg_magic *as)
     }
 
     if (as->effect_index == EF_BRAND_BOLTS)
-        return false; // !FIX !TODO !AJG check for a bolt
+        return false; // !FIX !TODO check for a bolt
     if (as->effect_index == EF_CREATE_ARROWS)
-        return false; // !FIX !TODO !AJG check for a staff
+        return false; // !FIX !TODO check for a staff
     if (as->effect_index == EF_BRAND_AMMO)
-        return false; // !FIX !TODO !AJG check for ammo
+        return false; // !FIX !TODO check for ammo
     if (as->effect_index == EF_ENCHANT)
-        return false; // !FIX !TODO !AJG check something to enchant
+        return false; // !FIX !TODO check something to enchant
     if (as->effect_index == EF_IDENTIFY)
-        return false; // !FIX !TODO !AJG check something to identify
+        return false; // !FIX !TODO check something to identify
     if (as->effect_index == EF_RECHARGE)
-        return false; // !FIX !TODO !AJG check for a wand or rod or staff
+        return false; // !FIX !TODO check for a wand or rod or staff
     return true;
 }
 

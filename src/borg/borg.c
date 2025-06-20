@@ -110,7 +110,7 @@ int16_t borg_t_morgoth = 0L; /* Last time I saw Morgoth */
  */
 uint16_t borg_step = 0;
 
-// !FIX !AJG double check this comment
+// !FIX double check this comment
 /*
  * This file implements the Borg, an "Automatic Angband Player".
  *
@@ -225,7 +225,7 @@ static struct keypress internal_borg_inkey(int flush_first)
     char buffer[1024];
     char *buf = buffer;
 
-    bool borg_prompt; /* ajg  For now we can just use this locally.
+    bool borg_prompt; /* For now we can just use this locally.
                           in the 283 borg he uses this to optimize knowing if
                           we are waiting at a prompt for info */
     /* Locate the cursor */
@@ -1994,7 +1994,7 @@ void do_cmd_borg(void)
 #if false
             msg("Updating Shops...");
             // need to change base code to make store_maint accessible .. trying not to change that too much right now.  
-            // this functionality seems a bit bogus anyway !FIX !TODO !AJG
+            // this functionality seems a bit bogus anyway !FIX !TODO
                             /* Maintain each shop (except home) */
             for (n = 0; n < MAX_STORES; n++) {
                 /* Skip the home */
