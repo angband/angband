@@ -15,7 +15,7 @@
 # cost : cost
 # attack : base damage : plus to-hit : plus to-dam
 # armor: base armor class : plus to-armor class
-# alloc: commonness : min " to " max
+# alloc: commonness : min_level to max_level
 # charges: charges
 # pile: chance of being generated in a pile : dice for number of items
 # power: power of the effect for object power evaluations
@@ -94,7 +94,10 @@
 # 'alloc' is for allocation - frequency and range of levels found. It is used to
 # ensure that certain vital items such as food and recall scrolls
 # are found throughout the dungeon. The "allocation" depth need not
-# match the level as specified in the "level:" line, but is likely similar.
+# match the object's level as specified in the "level:" line, but is likely similar.
+# - commonness: Relative probability weight (higher = more common)
+# - min_level: Earliest dungeon level where this object can appear
+# - max_level: Latest dungeon level where this object can appear
 
 # 'charges' is for charges (wands and staves only).  This field accepts
 # randomized values.
