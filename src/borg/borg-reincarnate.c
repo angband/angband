@@ -48,13 +48,9 @@
 #include "borg-trait.h"
 #include "borg.h"
 
-/*
-  * Name segments for random player names
-  * Copied Cth by DvE
-  * Copied from borgband by APW
-  */
+/* Name segments for random player names */
 
-  /* Dwarves */
+/* Dwarves */
 static const char *dwarf_syllable1[] =
 {
     "B", "D", "F", "G", "Gl", "H", "K", "L",
@@ -183,10 +179,6 @@ static const char *orc_syllable3[] =
 
 /*
  * Random Name Generator
- * based on a Javascript by Michael Hensley
- * "http://geocities.com/timessquare/castle/6274/"
- * Copied from Cth by DvE
- * Copied from borgband by APW
  */
 static void create_random_name(int race, char *name, size_t name_len)
 {

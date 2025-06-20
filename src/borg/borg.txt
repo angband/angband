@@ -1,5 +1,5 @@
 
-# This file will allow you to customize your APWBorg along certain themes.
+# This file will allow you to customize your borg along certain themes.
 # The borg is fairly successful, having won the game several times.
 # However, some players/observers of borgs would like to see it function
 # differently.  Some would like to see the borg play more aggressively, or

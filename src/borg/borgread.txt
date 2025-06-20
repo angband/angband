@@ -58,35 +58,18 @@ the next one rolled up.  You can make these selections from the borg.txt file.
 The Continual Play Mode is NOT turned on by default, you will need to
 select it.
 
-This borg is updated frequently.  You can get the lastest source
-as well as executables at http://innovapain.com/borg
-
-Have Fun,
-Dr. Andrew White
-
-
 
 ===========================
  Angband Borg Screen Saver
 ===========================
-
-by Robert Ruehlmann < rr9@angband.org >
-   Andrew White     < andrew@innovapain.com >
-   
-Uses Andrew P. White's APWBorg.
-(see http://innovapain.com/borg).
 
 
 Description:
 ------------
 
 A screensaver that runs the vanilla Angband Windows version with the
-APW Borg and automatically restarts the Borg when the character dies
+Borg and automatically restarts the Borg when the character dies
 (continuous play mode).
-
-The borg engine is updated frequently, so visit Dr. White's page and
-obtain the most recent version of the borg.  You may also down-load
-an up to date executable of the screensaver from that page.
 
 Note that the Angband display is not always dynamic and may not
 protect your monitor from burning-in of images.  While this is highly
@@ -152,7 +135,7 @@ The screensaver uses the angband.ini of the normal Angband
 installation to determine the screen-layout, as well as the graphics
 and sound settings.
 
-My "ALLOW_BORG_GRAPHICS" code that is included in the APW Borg has
+My "ALLOW_BORG_GRAPHICS" code that is included in the Borg has
 been turned on, so the Borg runs nicely with the various graphics
 and "view_foo_lite" lighting settings.
 
@@ -181,27 +164,10 @@ Known problems:
 - Selecting "Show scores" while the Borg is running will probably
   crash the Borg since it can't parse the score-screen.
 - The screensaver probably won't work correctly with other Borgs that
-  don't provide a continuous play mode compatible with the APW code.
+  don't provide a continuous play mode compatible with the borg code.
 - Running the same savefile twice at the same time (for example by
   running a normal game and the screensaver with the same savefile)
   might lead to problems.
 - The size of some info windows can increase when exiting the "pseudo-
   screensaver" mode started from the options menu.
-- The Borg is a very complicated piece of code and contains lots of bugs.
-  Expect slowdowns, loops, crashes, and other problems.  If you encounter
-  a suspect bug, first consult the APWBorg Webpage for a updated screen-
-  saver, and check the Daily Log of Changes to see if your bug has been
-  fixed.  If not, then send the bug and savefile to Dr. White at
-  andrew@innovapain.com
-
-
-Links:
-------
-
-APW-Borg homepage:
-http://innovapain.com/borg
-
-Angband homepage:
-http://rephial.org/
-
 
