@@ -37,9 +37,9 @@ Main Commands
 
 ====== ========================================
 ``$``  Reload Borg.txt
-``z``  Activate the Borg (start automation)
+``z``  Activate the Borg
 ``u``  Update the Borg
-``x``  Step the Borg (single step)
+``x``  Step the Borg
 ``f``  Toggle flags (enters flag mode)
 ``c``  Toggle cheat flags (enters cheat mode)
 ``s``  Search mode
@@ -65,7 +65,7 @@ Main Commands
 ``R``  Respawn Borg
 ``o``  Object Flags
 ``r``  Restock Stores
-``l``  Log file
+``l``  Create a snapshot log file
 ``;``  Display glyphs
 ``1``  Change max depth
 ``2``  Level prep info
