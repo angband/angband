@@ -36,24 +36,41 @@ Main Commands
 -------------
 
 ====== ========================================
+``$``  Reload Borg.txt
 ``z``  Activate the Borg (start automation)
 ``u``  Update the Borg
 ``x``  Step the Borg (single step)
+``f``  Toggle flags (enters flag mode)
+``c``  Toggle cheat flags (enters cheat mode)
 ``s``  Search mode
+``g``  Display grid feature
+``i``  Display grid info
+``a``  Display avoidances
 ``k``  Display monster info
 ``t``  Display object info
-``p``  Display borg power
-``d``  Display borg danger
-``i``  Display borg item values
-``a``  Display borg artifacts
-``w``  Display borg weapon information
-``r``  Display borg race information
-``c``  Modify cheat flags
-``f``  Toggle flags (enters flag mode)
-``l``  Log borg messages
-``m``  Display borg messages
-``n``  Display borg notes
-``q``  Quit borg interface
+``%``  Display targeting flow
+``#``  Display danger grid
+``_``  Regional Fear info
+``p``  Borg Power
+``!``  Time
+``@``  Borg LOS
+``w``  My Swap Weapon
+``q``  Auto stop on level
+``v``  Version stamp
+``d``  Dump spell info
+``h``  Borg_Has function
+``y``  Last 75 steps
+``m``  Money Scum
+``^``  Flow Pathway
+``R``  Respawn Borg
+``o``  Object Flags
+``r``  Restock Stores
+``l``  Log file
+``;``  Display glyphs
+``1``  Change max depth
+``2``  Level prep info
+``3``  Feature of grid
+``C``  List nasties
 ====== ========================================
 
 Flag Commands
@@ -62,18 +79,11 @@ Flag Commands
 After pressing ``f`` from the main borg interface you enter flag toggle mode.
 
 ====== ========================================
-``a``  Toggle flag: Allow borg to play
-``v``  Toggle flag: Verbose mode
-``d``  Toggle flag: Debug mode
-``s``  Toggle flag: Stop on stairs
-``g``  Toggle flag: Graphics mode
-``r``  Toggle flag: Respawn
-``c``  Toggle flag: Cheat death
-``n``  Toggle flag: No retreat
-``t``  Toggle flag: Testable
-``l``  Toggle flag: Light beam
-``u``  Toggle flag: Unique tracking
-``m``  Toggle flag: Munchkin mode
-``p``  Toggle flag: Prep mode
+``b``  Stop when alert bell rings
+``c``  Self scum
+``k``  Stop when the borg wins
+``l``  Lunal mode
+``s``  Dump savefile at each level (autosave)
+``v``  Verbose mode
 ====== ========================================
 
