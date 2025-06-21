@@ -118,7 +118,7 @@ TODO
 Borg Screensaver
 ================
 
-The Angband Borg can be configured to run as a Windows screensaver that
+The Borg can be configured to run as a Windows screensaver that
 automatically plays the game in continuous play mode, automatically
 restarting with new characters when the current character dies.
 
