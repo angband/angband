@@ -25,7 +25,7 @@ Borg Command Interface
 The Borg command interface is only available when Angband is compiled
 with borg support.
 
-To access the Borg command interface, press ``^z`` (Ctrl-Z) during normal
+To access the Borg command interface, press ``^z`` (Ctrl-Z) during
 gameplay. When you first run the command you'll be presented with a warning
 message you can continue through. The most common command is ``z`` which
 starts the Borg.
@@ -36,41 +36,41 @@ Main Commands
 -------------
 
 ====== ========================================
-``$``  Reload Borg.txt
-``z``  Activate the Borg
-``u``  Update the Borg
-``x``  Step the Borg
-``f``  Toggle flags
-``c``  Toggle cheat flags
-``s``  Search mode
-``g``  Display grid feature
-``i``  Display grid info
 ``a``  Display avoidances
-``k``  Display monster info
-``t``  Display object info
-``%``  Display targeting flow
-``#``  Display danger grid
-``_``  Regional Fear info
-``p``  Borg Power
-``!``  Time
-``@``  Borg LOS
-``w``  My Swap Weapon
-``q``  Auto stop on level
-``v``  Version stamp
+``c``  Toggle cheat flags
+``C``  List nasties
 ``d``  Dump spell info
+``f``  Toggle flags
+``g``  Display grid feature
 ``h``  Borg_Has function
-``y``  Last 75 steps
-``m``  Money Scum
-``^``  Flow Pathway
-``R``  Respawn Borg
-``o``  Object Flags
-``r``  Restock Stores
+``i``  Display grid info
+``k``  Display monster info
 ``l``  Create a snapshot log file
+``m``  Money Scum
+``o``  Object Flags
+``p``  Borg Power
+``q``  Auto stop on level
+``r``  Restock Stores
+``R``  Respawn Borg
+``s``  Search mode
+``t``  Display object info
+``u``  Update the Borg
+``v``  Version stamp
+``w``  My Swap Weapon
+``x``  Step the Borg
+``y``  Last 75 steps
+``z``  Activate the Borg
+``!``  Time
+``#``  Display danger grid
+``%``  Display targeting flow
+``$``  Reload Borg.txt
+``@``  Borg LOS
+``^``  Flow Pathway
+``_``  Regional Fear info
 ``;``  Display glyphs
 ``1``  Change max depth
 ``2``  Level prep info
 ``3``  Feature of grid
-``C``  List nasties
 ====== ========================================
 
 Flag Commands
