@@ -119,20 +119,15 @@ Borg Screensaver
 ================
 
 The Angband Borg can be configured to run as a Windows screensaver that
-automatically plays the game with continuous character creation when
-characters die.
+automatically plays the game in continuous play mode, automatically
+restarting with new characters when the current character dies.
 
-Description
------------
-
-The screensaver runs the Windows version of Angband with the Borg in
-continuous play mode, automatically restarting with new characters when
-the current character dies.
-
-**Warning:** The Angband display is not always dynamic and may not protect
-your monitor from burn-in. Configure energy saving settings to turn off
-your monitor after inactivity. The screensaver keeps the processor and
-hard disk busy, preventing power-saving features that depend on inactivity.
+**WARNING:** The Angband display is not always dynamic. While modern LCD
+monitors are not susceptible to burn-in, OLED displays may still experience
+image retention with prolonged static content. Configure energy saving
+settings to turn off your monitor after inactivity. The screensaver keeps
+the processor and hard disk busy, preventing power-saving features that
+depend on inactivity.
 
 Installation
 ------------
