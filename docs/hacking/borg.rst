@@ -178,7 +178,7 @@ Known Limitations
 
 - No preview in Windows Display Properties
 - Password protection not implemented
-- Configuration requires manual INI file editing
+- Configuration requires manual ``ini`` file editing
 - "Show scores" while Borg is running may cause crashes
 - Cannot run the same savefile simultaneously (e.g., normal game 
   and screensaver)
