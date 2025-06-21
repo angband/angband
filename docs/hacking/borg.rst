@@ -175,7 +175,7 @@ Create a detailed snapshot of the current game state for debugging:
 2. Press ``l`` to create a snapshot log file
 
 This generates a comprehensive ``.map`` file (e.g., ``player_name.map``) in
-your Angband archive directory containing:
+your Angband ``archive`` directory containing:
 
 - ASCII dungeon map: Current level layout showing terrain, monsters (``&``),
   items, and player (``@``) position
