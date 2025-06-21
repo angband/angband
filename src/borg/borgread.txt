@@ -64,23 +64,6 @@ select it.
 ===========================
 
 
-Description:
-------------
-
-A screensaver that runs the vanilla Angband Windows version with the
-Borg and automatically restarts the Borg when the character dies
-(continuous play mode).
-
-Note that the Angband display is not always dynamic and may not
-protect your monitor from burning-in of images.  While this is highly
-unlikely with modern monitors you might want to configure the energy
-saving settings for your monitor so that it turns itself off after
-some time of inactivity.  The screensaver will also keep the
-processor and hard-disk busy.  Power-saving features that depend on
-inactivity of these parts won't be effective while the screensaver
-is running.  You have been warned.
-
-
 Installation:
 -------------
 
