@@ -132,27 +132,30 @@ depend on inactivity.
 Installation
 ------------
 
-1. Copy ``angband.scr`` and the included ``angband.ini`` into your Windows directory
+1. Copy ``angband.scr`` and the included ``angband.ini`` into your Windows
+   directory
 
-2. Ensure you have the Windows version of Angband installed with all supporting 
+2. Ensure you have the Windows version of Angband installed with all supporting
    files in the Lib directory
 
 3. Edit ``angband.ini`` with a text editor:
    
-   - Set ``AngbandPath`` to point to your Angband installation directory 
+   - Set ``AngbandPath`` to point to your Angband installation directory
      (must end with a backslash ``\``)
    - Set ``SaverFile`` to the character name you want to use for the screensaver
+     (a random character will be automatically created if the character doesn't
+     exist)
 
    Example configuration::
    
        [Angband]
-       AngbandPath="c:\games\angband-3.0.9\"
+       AngbandPath="c:\games\angband-4.2.5\"
        SaverFile="Saver"
 
 4. Test the screensaver in Windows Display Properties
 
-It's recommended to create a normal character first using regular Angband, 
-set up your terminal windows as desired, save that file, and use that filename 
+It's recommended to create a normal character first using regular Angband,
+set up your terminal windows as desired, save that file, and use that filename
 as the ``SaverFile`` for your screensaver.
 
 Technical Details
