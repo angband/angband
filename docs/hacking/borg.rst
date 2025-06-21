@@ -118,4 +118,71 @@ TODO
 Borg Screensaver
 ================
 
-TODO
+The Angband Borg can be configured to run as a Windows screensaver that
+automatically plays the game with continuous character creation when
+characters die.
+
+Description
+-----------
+
+The screensaver runs the Windows version of Angband with the Borg in
+continuous play mode, automatically restarting with new characters when
+the current character dies.
+
+**Warning:** The Angband display is not always dynamic and may not protect
+your monitor from burn-in. Configure energy saving settings to turn off
+your monitor after inactivity. The screensaver keeps the processor and
+hard disk busy, preventing power-saving features that depend on inactivity.
+
+Installation
+------------
+
+1. Copy ``angband.scr`` and the included ``angband.ini`` into your Windows directory
+
+2. Ensure you have the Windows version of Angband installed with all supporting 
+   files in the Lib directory
+
+3. Edit ``angband.ini`` with a text editor:
+   
+   - Set ``AngbandPath`` to point to your Angband installation directory 
+     (must end with a backslash ``\``)
+   - Set ``SaverFile`` to the character name you want to use for the screensaver
+
+   Example configuration::
+   
+       [Angband]
+       AngbandPath="c:\games\angband-3.0.9\"
+       SaverFile="Saver"
+
+4. Test the screensaver in Windows Display Properties
+
+It's recommended to create a normal character first using regular Angband, 
+set up your terminal windows as desired, save that file, and use that filename 
+as the ``SaverFile`` for your screensaver.
+
+Technical Details
+-----------------
+
+- The screensaver is a renamed Windows Angband executable with modified
+  ``main-win.c``
+- Normal Borgs get highscore entries, but screensaver Borgs (continuous
+  play mode) do not
+- Uses low priority processing to avoid slowing down other processes
+
+  - Can be toggled via "Options/Low priority" menu when using as normal
+    executable for background Borg play
+- Uses the normal Angband installation's ``angband.ini`` for screen layout,
+  graphics, and sound settings
+- Can be used as a normal Angband executable by renaming to ``angband.exe``
+
+Known Limitations
+-----------------
+
+- No preview in Windows Display Properties
+- Password protection not implemented
+- Configuration requires manual INI file editing
+- "Show scores" while Borg is running may cause crashes
+- Cannot run the same savefile simultaneously (e.g., normal game 
+  and screensaver)
+- Info window sizes may increase when exiting pseudo-screensaver mode from
+  options menu
