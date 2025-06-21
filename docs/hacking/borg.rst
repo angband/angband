@@ -30,7 +30,7 @@ gameplay. When you first run the command you'll be presented with a warning
 message you can continue through. The most common command is ``z`` which
 starts the Borg.
 
-Pressing ``^z`` while the Borg is running will stop the Borg.
+Pressing any key while the Borg is running will stop the Borg.
 
 Main Commands
 -------------
