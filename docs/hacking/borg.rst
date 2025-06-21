@@ -23,8 +23,14 @@ It is not recommended to run the Borg on a live game, as it could
 cause unexpected behavior or even crashes. It is best to run the Borg
 on its own save file, or on a copy of your save file.
 
-Historical information on how to run the Borg can be found in
-``borgread.txt``.
+To run the Borg:
+
+1. Ensure Angband is compiled with borg support
+2. Start or load a game
+3. Press ``^z`` (Ctrl-Z) to access the Borg command interface
+4. Press ``z`` to activate the Borg
+5. Watch the Borg play automatically
+6. Press any key to stop the Borg when desired
 
 Borg Command Interface
 ======================
@@ -103,3 +109,12 @@ After pressing ``c`` from the main borg interface you enter cheat toggle mode.
 ``d``  Toggle cheat death
 ====== ========================================
 
+Customizing The Borg
+====================
+
+TODO
+
+Borg Screensaver
+================
+
+TODO
