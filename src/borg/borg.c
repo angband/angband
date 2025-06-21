@@ -573,9 +573,9 @@ void do_cmd_borg(void)
         Term_putstr(42, i++, -1, COLOUR_WHITE, "Command 'u' updates the Borg.");
         Term_putstr(2, i++, -1, COLOUR_WHITE, "Command 'x' steps the Borg.");
         Term_putstr(
-            42, i, -1, COLOUR_WHITE, "Command 'f' modifies the normal flags.");
+            42, i, -1, COLOUR_WHITE, "Command 'f' toggle flags.");
         Term_putstr(
-            2, i++, -1, COLOUR_WHITE, "Command 'c' modifies the cheat flags.");
+            2, i++, -1, COLOUR_WHITE, "Command 'c' toggle cheat flags.");
         Term_putstr(
             42, i, -1, COLOUR_WHITE, "Command 'l' creates a snapshot log file.");
         Term_putstr(

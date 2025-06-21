@@ -40,8 +40,8 @@ Main Commands
 ``z``  Activate the Borg
 ``u``  Update the Borg
 ``x``  Step the Borg
-``f``  Toggle flags (enters flag mode)
-``c``  Toggle cheat flags (enters cheat mode)
+``f``  Toggle flags
+``c``  Toggle cheat flags
 ``s``  Search mode
 ``g``  Display grid feature
 ``i``  Display grid info
@@ -85,5 +85,14 @@ After pressing ``f`` from the main borg interface you enter flag toggle mode.
 ``l``  Lunal mode
 ``s``  Dump savefile at each level (autosave)
 ``v``  Verbose mode
+====== ========================================
+
+Cheat Commands
+--------------
+
+After pressing ``c`` from the main borg interface you enter cheat toggle mode.
+
+====== ========================================
+``d``  Toggle cheat death
 ====== ========================================
 
