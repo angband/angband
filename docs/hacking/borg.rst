@@ -9,6 +9,13 @@ distributed. It was pulled into the game in around 3.3. It was removed
 in 4.0 as there was too much conflict with the big changes made then.
 It was reincorporated in around 4.2.3.
 
+The name comes from "The Borg" in Star Trek which, in turn, comes from
+cyborg.
+
+The primary use of the Borg is entertainment. It is fun to watch the
+Borg play the game, and it can be amusing to see how it handles
+situations. It has been used to test the game and find bugs.
+
 Running The Borg
 ================
 
