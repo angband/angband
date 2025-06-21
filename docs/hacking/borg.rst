@@ -73,6 +73,7 @@ Main Commands
 ``x``  Step the Borg
 ``y``  Last 75 steps
 ``z``  Activate the Borg
+``?``  List Borg commands
 ``!``  Time
 ``#``  Display danger grid
 ``%``  Display targeting flow
