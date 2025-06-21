@@ -159,6 +159,8 @@ Inscribing an item with ``^``, followed by a command letter:
 	very annoying!
 
 
+.. _showing-extra-info-in-subwindows:
+
 Showing extra info in subwindows
 ================================
 
