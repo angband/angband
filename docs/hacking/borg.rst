@@ -136,7 +136,7 @@ Installation
    directory
 
 2. Ensure you have the Windows version of Angband installed with all supporting
-   files in the Lib directory
+   files in the ``lib`` directory
 
 3. Edit ``angband.ini`` with a text editor:
    
