@@ -573,11 +573,11 @@ void do_cmd_borg(void)
         Term_putstr(42, i++, -1, COLOUR_WHITE, "Command 'u' updates the Borg.");
         Term_putstr(2, i++, -1, COLOUR_WHITE, "Command 'x' steps the Borg.");
         Term_putstr(
-            42, i, -1, COLOUR_WHITE, "Command 'f' modifies the normal flags.");
+            42, i, -1, COLOUR_WHITE, "Command 'f' toggle flags.");
         Term_putstr(
-            2, i++, -1, COLOUR_WHITE, "Command 'c' modifies the cheat flags.");
+            2, i++, -1, COLOUR_WHITE, "Command 'c' toggle cheat flags.");
         Term_putstr(
-            42, i, -1, COLOUR_WHITE, "Command 'l' activates a log file.");
+            42, i, -1, COLOUR_WHITE, "Command 'l' creates a snapshot log file.");
         Term_putstr(
             2, i++, -1, COLOUR_WHITE, "Command 's' activates search mode.");
         Term_putstr(42, i, -1, COLOUR_WHITE, "Command 'i' displays grid info.");
@@ -614,6 +614,8 @@ void do_cmd_borg(void)
         Term_putstr(2, i++, -1, COLOUR_WHITE, "Command 'R' Respawn Borg.");
         Term_putstr(42, i, -1, COLOUR_WHITE, "Command 'o' Object Flags.");
         Term_putstr(2, i++, -1, COLOUR_WHITE, "Command 'r' Restock Stores.");
+        Term_putstr(42, i, -1, COLOUR_WHITE, "Command 'C' List nasties.");
+        Term_putstr(2, i++, -1, COLOUR_WHITE, "Command ';' Display glyphs.");
 
         /* Prompt for key */
         msg("Commands: ");
