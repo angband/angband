@@ -26,7 +26,7 @@ on its own save file, or on a copy of your save file.
 To run the Borg:
 
 1. Ensure Angband is compiled with borg support (this is controlled by
-   ``ALLOW_BORG``).
+   ``ALLOW_BORG``)
 2. Start or load a game
 3. Press ``^z`` (Ctrl-Z) to access the Borg command interface
 4. Press ``z`` to activate the Borg
