@@ -197,7 +197,7 @@ characters to appear in the high score list. This is disabled by default.
 
 Refer to the compilation instructions for your specific platform for details.
 After compiling with Borg support, place your ``borg.txt`` file in the correct
-directory.
+location as described above.
 
 Borg Logging
 ============
