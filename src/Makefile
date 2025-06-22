@@ -92,7 +92,12 @@ splint:
 
 clean-coverage:
 	rm -f tests/ran-already
-	rm -f $(GCOVS) $(GCOBJS)
+	rm -f $(GCOVS) $(GCOBJS) borg*.c.gcov
+	env CC="$(CC)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" \
+		LDFLAGS="$(LDFLAGS)" LDADD="$(LDADD)" LIBS="$(TEST_LIBS)" \
+		CROSS_COMPILE="$(CROSS_COMPILE)" \
+		TEST_WORKING_DIRECTORY="$(TEST_WORKING_DIRECTORY)" \
+		$(MAKE) -C tests clean-coverage
 
 coverage: CFLAGS+=-fprofile-arcs -ftest-coverage
 coverage: LDFLAGS+=-lgcov
