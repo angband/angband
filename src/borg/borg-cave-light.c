@@ -86,7 +86,7 @@ void borg_update_light(void)
     /* None left */
     borg_light_n = 0;
 
-    /* Hack -- Player has no lite */
+    /* Player has no lite */
     if (borg_items[INVEN_LIGHT].iqty <= 0)
         return;
 

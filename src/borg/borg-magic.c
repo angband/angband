@@ -233,7 +233,7 @@ static borg_spell_rating borg_spell_ratings_BLACKGUARD[] =
 /*
  * get the stat used for casting spells
  *
- * *HACK* assumes the first spell determins the realm thus stat for all spells
+ * Assumes the first spell determines the realm thus stat for all spells
  */
 int borg_spell_stat(void)
 {
@@ -257,7 +257,7 @@ bool borg_can_cast(void)
 
 /*
  * Does this player mostly cast spells
- * *HACK* rather than hard code classes, assume any class with 
+ * Rather than hard code classes, assume any class with
  * more than three books is primarily casting
  */
 bool borg_primarily_caster(void)
@@ -461,7 +461,7 @@ bool borg_spell_okay(const enum borg_spells spell)
     if (!borg_spell_legal(spell))
         return false;
 
-    /* Hack -- blind/confused/amnesia */
+    /* Blind/confused/amnesia */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
         return false;
 

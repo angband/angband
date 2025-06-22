@@ -482,7 +482,7 @@ void reincarnate_borg(void)
     /* Start in town */
     player->depth = 0;
 
-    /* Hack -- seed for flavors */
+    /* Seed for flavors */
     seed_flavor = randint0(0x10000000);
 
     /* Embody */

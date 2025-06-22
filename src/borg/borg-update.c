@@ -53,7 +53,7 @@
 #include "borg.h"
 
 /*
- * Hack -- monster/object tracking grids
+ * Monster/object tracking grids
  */
 typedef struct borg_wank borg_wank;
 
@@ -69,7 +69,7 @@ struct borg_wank {
 };
 
 /*
- * Hack -- object/monster tracking array
+ * Object/monster tracking array
  */
 static int        borg_wank_num = 0;
 static borg_wank *borg_wanks;
@@ -77,7 +77,7 @@ static borg_wank *borg_wanks;
 bool borg_failure; /* Notice failure */
 
 /*
- * Hack -- the detection arrays
+ * The detection arrays
  */
 bool borg_detect_wall[6][18];
 bool borg_detect_trap[6][18];
@@ -143,7 +143,7 @@ static void borg_forget_map(void)
             /* Forget the contents */
             ag->feat = FEAT_NONE;
 
-            /* Hack -- prepare the town */
+            /* Prepare the town */
             if (!borg.trait[BI_CDEPTH])
                 ag->feat = FEAT_FLOOR;
         }

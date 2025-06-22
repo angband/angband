@@ -127,7 +127,7 @@ bool borg_recall(void)
 }
 
 /*
- * Hack -- evaluate the likelihood of the borg getting surrounded
+ * Evaluate the likelihood of the borg getting surrounded
  * by a bunch of monsters.  This is called from borg_danger() when
  * he looking for a strategic retreat.  It is hopeful that the borg
  * will see that several monsters are approaching him and he may
@@ -287,7 +287,7 @@ int borg_freedom(int y, int x)
 {
     int d, f = 0;
 
-    /* Hack -- chase down stairs in town */
+    /* Chase down stairs in town */
     if (!borg.trait[BI_CDEPTH] && track_more.num) {
         /* Love the stairs! */
         d = double_distance(y, x, track_more.y[0], track_more.x[0]);
@@ -300,7 +300,7 @@ int borg_freedom(int y, int x)
             f += (2000 - (d * 500));
     }
 
-    /* Hack -- chase Up Stairs in dungeon */
+    /* Chase Up Stairs in dungeon */
     if (borg.trait[BI_CDEPTH] && track_less.num) {
         /* Love the stairs! */
         d = double_distance(y, x, track_less.y[0], track_less.x[0]);

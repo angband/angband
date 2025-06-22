@@ -106,7 +106,7 @@ bool borg_happy_grid_bold(int y, int x)
     if (ag->feat == FEAT_LAVA && !borg.trait[BI_IFIRE])
         return false;
 
-    /* Hack -- weak/dark is very unhappy */
+    /* Weak/dark is very unhappy */
     if (borg.trait[BI_ISWEAK] || borg.trait[BI_LIGHT] == 0)
         return false;
 
@@ -434,7 +434,7 @@ bool borg_flow_vein(bool viewable, int nearness)
 }
 
 /*
- * Hack -- spastic searching
+ * Spastic searching
  */
 
 static uint8_t spastic_x;
@@ -457,15 +457,15 @@ bool borg_flow_spastic(bool bored)
 
     borg_grid *ag;
 
-    /* Hack -- not in town */
+    /* Not in town */
     if (!borg.trait[BI_CDEPTH])
         return false;
 
-    /* Hack -- Not if starving */
+    /* Not if starving */
     if (borg.trait[BI_ISWEAK])
         return false;
 
-    /* Hack -- Not if hopeless unless twitchy */
+    /* Not if hopeless unless twitchy */
     if (borg_t - borg_began > 3000 && avoidance <= borg.trait[BI_CURHP])
         return false;
 
@@ -714,7 +714,7 @@ bool borg_flow_spastic(bool bored)
     /* Clear the flow codes */
     borg_flow_clear();
 
-    /* Hack -- Nothing found */
+    /* Nothing found */
     if (b_v < 0)
         return false;
 
@@ -760,11 +760,11 @@ bool borg_flow_shop_entry(int i)
     x = track_shop_x[i];
     y = track_shop_y[i];
 
-    /* Hack -- Must be known */
+    /* Must be known */
     if (!x || !y)
         return false;
 
-    /* Hack -- re-enter a shop if needed */
+    /* Re-enter a shop if needed */
     if ((x == borg.c.x) && (y == borg.c.y)) {
         /* Note */
         borg_note("# Re-entering a shop");
@@ -986,7 +986,7 @@ bool borg_twitchy(void)
 
         count--;
 
-        /* Hack -- set goal */
+        /* Set goal */
         borg.goal.g.x = borg.c.x + ddx[dir];
         borg.goal.g.y = borg.c.y + ddy[dir];
 

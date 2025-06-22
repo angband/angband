@@ -490,7 +490,7 @@ static int borg_defend_aux_resist_fecap(int p1)
     borg.temp.res_acid = save_acid;
     borg.temp.res_pois = save_poison;
 
-    /* Hack -
+    /*
      * If the borg is fighting a particular unique enhance the
      * benefit of the spell.
      */

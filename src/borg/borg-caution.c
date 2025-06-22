@@ -137,7 +137,7 @@ static bool borg_heal(int danger)
         && borg.trait[BI_ISFIXINT])
         stats_needing_fix += 5;
 
-    /*  Hack -- heal when confused. This is deadly.*/
+    /* Heal when confused. This is deadly. */
     /* This is checked twice, once, here, to see if he is in low danger
      * and again at the end of borg_caution, when all other avenues have failed
      */
@@ -199,7 +199,7 @@ static bool borg_heal(int danger)
             }
         }
     }
-    /*  Hack -- heal when blind. This is deadly.*/
+    /* Heal when blind. This is deadly. */
     if (borg.trait[BI_ISBLIND] && (randint0(100) < 85)) {
         /* if in extreme danger, use teleport then fix the
          * blindness later.
@@ -320,7 +320,7 @@ static bool borg_heal(int danger)
         return false;
     }
 
-    /* Hack -- heal when wounded a percent of the time */
+    /* Heal when wounded a percent of the time */
     chance = randint0(100);
 
     /* if we are fighting a unique increase the odds of healing */
@@ -785,7 +785,7 @@ static bool borg_heal(int danger)
  * to a happy grid (meaning we have los and it does not), we should target
  * one space away from the bad guy then blast away with ball spells.
  *
- * Hack -- Special checks for dealing with Morgoth.
+ * Special checks for dealing with Morgoth.
  * The borg would like to stay put on level 100 and use
  * spells to attack Morgoth then use Teleport Other as he
  * gets too close.

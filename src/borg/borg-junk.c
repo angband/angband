@@ -252,7 +252,7 @@ bool borg_drop_junk(void)
     int32_t p, b_p = borg.power;
     int32_t value;
 
-    /* Hack -- no need */
+    /* No need */
     if (!borg_do_crush_junk)
         return false;
 
@@ -421,12 +421,11 @@ bool borg_drop_junk(void)
             if (borg.trait[BI_CDEPTH] < 127 && value > 5600)
                 continue;
 
-            /* Hack -- skip good un-id'd "artifacts" */
+            /* Skip good un-id'd "artifacts" */
             if (borg_item_note_needs_id(item))
                 continue;
 
-            /* hack --  with random artifacts some are good and bad */
-            /*         so check them all */
+            /* With random artifacts some are good and bad so check them all */
             if (OPT(player, birth_randarts) && item->art_idx && !item->ident)
                 continue;
 
@@ -485,7 +484,7 @@ bool borg_drop_junk(void)
     if (fix)
         borg_notice(true);
 
-    /* Hack -- no need */
+    /* No need */
     borg_do_crush_junk = false;
 
     /* Nothing to destroy */
