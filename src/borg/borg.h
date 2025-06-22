@@ -92,7 +92,7 @@ extern int16_t old_depth;
 extern int16_t borg_respawning;
 
 /*
- * Hack -- Time variables
+ * Time variables
  */
 extern int16_t borg_t; /* Current "time" */
 extern int32_t borg_began; /* When this level began */
