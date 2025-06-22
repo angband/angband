@@ -98,7 +98,7 @@ int w_x; /* Current panel offset (X) */
 int w_y; /* Current panel offset (Y) */
 
 /*
- * Hack -- Time variables
+ * Time variables
  */
 int16_t borg_t = 0L; /* Current "time" */
 int32_t borg_began; /* When this level began */
@@ -256,7 +256,7 @@ static struct keypress internal_borg_inkey(int flush_first)
         }
 
         /* Done */
-        /* HACK need to flush the key buffer to change modes */
+        /* Need to flush the key buffer to change modes */
         key.type = EVT_KBRD;
         key.code = ESCAPE;
         return key;
@@ -433,7 +433,7 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* Check for user abort */
     (void)Term_inkey(&ch_evt, false, true);
 
-    /* Hack to keep him active in town. */
+    /* Keep him active in town */
     if (borg.trait[BI_CDEPTH] >= 1)
         borg.in_shop = false;
 
@@ -450,7 +450,7 @@ static struct keypress internal_borg_inkey(int flush_first)
         borg_note(format("# Key type was <%d><%c>", ch_evt.type, ch_evt.type));
         borg_oops("user abort");
 
-        /* Hack -- Escape */
+        /* Escape */
         key.code = ESCAPE;
         return key;
     }
@@ -493,7 +493,7 @@ static struct keypress internal_borg_inkey(int flush_first)
     Rand_quick = borg_rand_quick;
     Rand_value = borg_rand_value;
 
-    /* Hack -- allow stepping to induce a clean cancel */
+    /* Allow stepping to induce a clean cancel */
     if (borg_step && (!--borg_step))
         borg_cancel = true;
 
@@ -509,7 +509,7 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* Oops */
     borg_oops("normal abort");
 
-    /* Hack -- Escape */
+    /* Escape */
     key.code = ESCAPE;
     return key;
 }
@@ -526,7 +526,7 @@ static struct keypress borg_inkey_hack(int flush_first)
 
 
 /*
- * Hack -- interact with the Borg.
+ * Interact with the Borg
  */
 void do_cmd_borg(void)
 {
@@ -555,7 +555,7 @@ void do_cmd_borg(void)
 
 #endif /* BABLOS */
 
-    /* *HACK* set the player location */
+    /* Set the player location */
     borg.c = player->grid;
 
     /* Simple help */
@@ -629,7 +629,7 @@ void do_cmd_borg(void)
     }
 
     /*
-     * Hack -- force initialization or reinitialize if the game was closed
+     * Force initialization or reinitialize if the game was closed
      * and restarted without exiting since the last initialization
      */
     if (!borg_initialized || game_closed) {
@@ -650,7 +650,7 @@ void do_cmd_borg(void)
     switch (cmd) {
         /* Command: Nothing */
     case '$': {
-        /*** Hack -- initialize borg.ini options ***/
+        /*** Initialize borg.ini options ***/
         borg_init_txt_file();
         break;
     }
@@ -1686,7 +1686,7 @@ void do_cmd_borg(void)
 
         break;
     }
-    /* Command:  HACK debug -- preparation for level */
+    /* Command: preparation for level */
     case '2': {
         int i = 0;
 
