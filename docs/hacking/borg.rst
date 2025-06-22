@@ -25,7 +25,8 @@ on its own save file, or on a copy of your save file.
 
 To run the Borg:
 
-1. Ensure Angband is compiled with borg support
+1. Ensure Angband is compiled with borg support (this is controlled by
+   ``ALLOW_BORG``).
 2. Start or load a game
 3. Press ``^z`` (Ctrl-Z) to access the Borg command interface
 4. Press ``z`` to activate the Borg
@@ -77,7 +78,7 @@ Main Commands
 ``!``  Time
 ``#``  Display danger grid
 ``%``  Display targeting flow
-``$``  Reload Borg.txt
+``$``  Reload borg.txt
 ``@``  Borg LOS
 ``^``  Flow Pathway
 ``_``  Regional Fear info
@@ -113,17 +114,90 @@ After pressing ``c`` from the main borg interface you enter cheat toggle mode.
 Customizing The Borg
 ====================
 
-borg.txt Configuration
-----------------------
+The Borg's behavior is primarily configured through the ``borg.txt`` file.
+This allows for extensive customization of the Borg's decision-making without
+needing to recompile the game.
 
-The Borg can be configured through the ``borg.txt`` file. To reload
-configuration changes:
+A sample ``borg.txt`` file is provided in the ``src/borg`` directory of the
+source code. To use it, copy this file to the user preferences directory for
+your operating system, and then customize it.
 
-1. Press ``^z`` to access the Borg command interface
-2. Press ``$`` to reload the ``borg.txt`` file
+- Windows: Copy ``src/borg/borg.txt`` to ``lib/user/borg.txt``
+- macOS/Linux: Copy ``src/borg/borg.txt`` to ``~/.angband/Angband/borg.txt``
 
-TODO: Explain borg.txt configuration options, where to put file, and
-compiling yourself vs official builds.
+Once copied, you can edit ``borg.txt`` to change the Borg's behavior. To apply
+changes while the game is running, use the ``$`` command from the Borg command
+interface (``^z``).
+
+Configuration Options
+---------------------
+
+The ``borg.txt`` file offers a wide range of options to customize the Borg's
+behavior. Below is a summary of the key settings. For a complete list and
+detailed explanations, refer to the comments within the ``borg.txt`` file
+itself.
+
+Worships
+********
+These settings (e.g., ``borg_worships_damage``, ``borg_worships_gold``)
+influence the Borg's priorities and decision-making by assigning value to
+different actions and items. For example, they can make the Borg favor
+powerful weapons, seek out treasure, or prioritize speed.
+
+Play Style
+**********
+- ``borg_plays_risky``: Makes the Borg dive deeper faster and be more
+  aggressive in combat
+- ``borg_kills_uniques``: Forces the Borg to defeat uniques before
+  proceeding deeper into the dungeon
+
+Item Management
+***************
+- ``borg_uses_swaps``: Allows the Borg to carry and use swap items for
+  situational resistances and abilities
+- ``borg_worships_gold``: Causes the Borg to return to town frequently to
+  sell items for gold, especially at lower levels
+
+Respawn and Continuous Play
+***************************
+- ``borg_cheat_death``: If enabled, the Borg will not die and will
+  continue playing, enabling continuous play. This can be set in
+  ``borg.txt`` or toggled via the Borg command interface (``^z``, then
+  ``c``, then ``d``)
+- ``borg_respawn_race`` and ``borg_respawn_class``: Specify the race and
+  class for the next character when the Borg respawns
+- ``borg_respawn_winners``: If enabled, the Borg will create a new
+  character after defeating Morgoth
+
+How you customize the Borg depends on whether you are using a pre-compiled
+build or compiling from source.
+
+Using Official Builds
+---------------------
+
+In most official builds, Borg support is already included and enabled. You just
+need to copy and configure the ``borg.txt`` file in the correct location as
+described above.
+
+Compiling Yourself
+------------------
+
+When compiling from source, the Borg is enabled by default on most platforms.
+For starter instructions on how to compile, see the :doc:`compiling` guide.
+
+If you find the Borg is disabled in your build configuration, you can typically
+enable it by:
+
+- Uncommenting an ``allow_borg`` line in a configuration file (like
+  ``config.h``)
+- Passing a ``-DALLOW_BORG`` flag to the compiler
+
+When compiling, you can also enable the ``SCORE_BORGS`` flag to allow Borg
+characters to appear in the high score list. This is disabled by default.
+
+Refer to the compilation instructions for your specific platform for details.
+After compiling with Borg support, place your ``borg.txt`` file in the correct
+directory.
 
 Borg Logging
 ============
