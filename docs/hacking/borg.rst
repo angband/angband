@@ -113,7 +113,81 @@ After pressing ``c`` from the main borg interface you enter cheat toggle mode.
 Customizing The Borg
 ====================
 
-TODO
+borg.txt Configuration
+----------------------
+
+The Borg can be configured through the ``borg.txt`` file. To reload
+configuration changes:
+
+1. Press ``^z`` to access the Borg command interface
+2. Press ``$`` to reload the ``borg.txt`` file
+
+TODO: Explain borg.txt configuration options, where to put file, and
+compiling yourself vs official builds.
+
+Borg Logging
+============
+
+The Borg suppresses most messages by default. To see what the Borg is doing,
+you'll want to use multi-window support to display additional information
+windows.
+
+Window Configuration
+--------------------
+
+For optimal Borg monitoring, open additional terminal windows to display:
+
+- Equipment: See what the Borg is wearing and wielding
+- Messages: View game messages and Borg status updates
+- Monster Recall: See information about monsters the Borg encounters
+- Inventory: Monitor what items the Borg is carrying
+
+Set these up through the :ref:`window menu <showing-extra-info-in-subwindows>`
+before activating the Borg. Borg-specific messages will appear in the
+Messages window when verbose mode is enabled.
+
+Verbose Mode
+------------
+
+Enable verbose mode to get detailed output about the Borg's decision-making
+process, including calculations, target selection, danger assessment, and
+action decisions.
+
+Via Flag Command
+****************
+
+1. Press ``^z`` to access the Borg command interface
+2. Press ``f`` to enter flag toggle mode
+3. Press ``v`` to toggle verbose mode on/off
+
+Via Configuration
+*****************
+
+Set ``borg_verbose = TRUE`` in the ``borg.txt`` configuration file, then
+reload with ``^z`` ``$``.
+
+Log Snapshot
+------------
+
+Create a detailed snapshot of the current game state for debugging:
+
+1. Press ``^z`` to access the Borg command interface
+2. Press ``l`` to create a snapshot log file
+
+This generates a comprehensive ``.map`` file (e.g., ``player_name.map``) in
+your Angband ``archive`` directory containing:
+
+- ASCII dungeon map: Current level layout showing terrain, monsters (``&``),
+  items, and player (``@``) position
+- Recent game messages: Last actions, movements, and events
+- Complete character state: Equipment, inventory, quiver, and home contents
+- Borg configuration: Current swap items and borg settings
+- Detailed statistics: All internal borg trait values, resistances, and
+  assessments
+
+The snapshot provides a complete picture of both the game state and the
+Borg's internal knowledge at that moment, useful for understanding its
+behavior or debugging issues.
 
 Borg Screensaver
 ================
