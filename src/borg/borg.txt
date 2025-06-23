@@ -5,29 +5,29 @@
 # This file will allow you to customize your borg along certain themes.
 # The borg is fairly successful, having won the game several times.
 # However, some players/observers of borgs would like to see it function
-# differently.  Some would like to see the borg play more aggressively, or
-# more conservatively.  While others would like to value armour class more.
+# differently. Some would like to see the borg play more aggressively, or
+# more conservatively. While others would like to value armour class more.
 # Still others would like to see it collect more speed items.
 
 # With the expressions below, you can influence the borg's behavior and
-# equipment selection choices.  The 'borg_worship_' variables will influence
+# equipment selection choices. The 'borg_worship_' variables will influence
 # his equipment selection by adding additional bonuses to items which
-# enhance that attribute.  For example:  if a borg receives 2000 pts for
+# enhance that attribute. For example: if a borg receives 2000 pts for
 # a single point of armour class, an 'ac worshipping' borg would receive
-# 3000 pts.  This bonus would significantly influence equipment choices.
+# 3000 pts. This bonus would significantly influence equipment choices.
 
 # borg_worships_gold explained:
 # The borg_worships_gold option will greatly impact how the borg treats items
-# which he finds in the dungeon.  With this opion on, he will return to town
-# whenever he fills up with items then sell those items.  This can cause
+# which he finds in the dungeon. With this option on, he will return to town
+# whenever he fills up with items then sell those items. This can cause
 # the borg to lose some artifacts, since he will sell them even if not ID'd.
 # Generally speaking the borg will not sell an item unless it is at least
-# psuedo ID'd.  The benefit of this option is that the borg will significantly
-# increase his income at the low clevels.  This will increase his survivablity
-# by allowing him to invest in armour and arrows.  With this on,
+# pseudo ID'd. The benefit of this option is that the borg will significantly
+# increase his income at the low clevels. This will increase his survivability
+# by allowing him to invest in armour and arrows. With this on,
 # he will not recall to town to sell stuff but climb the stairs instead.
 # He will also not recall into the dungeon until dlevel 8 (instead of 5).
-# This option has no effect after clevel 20.  One other downside of this is
+# This option has no effect after clevel 20. One other downside of this is
 # that the borg will spend more time in town and may have to evade Vets more.
 
 # To modify, simply set it to TRUE or FALSE.
@@ -42,9 +42,9 @@ borg_worships_ac = FALSE
 borg_worships_gold = FALSE
 
 
-# use the FORMULA SECTION below.  If false the borg will
-# use the calcs in the C code.  Which is recommended since I hone those
-# more frequently than I do the dynamic calcs.  Most borg users will 
+# use the FORMULA SECTION below. If false the borg will
+# use the calcs in the C code. Which is recommended since those are honed
+# more frequently than the dynamic calcs. Most borg users will
 # have more successful borgs by leaving this option as FALSE.
 # note: the dynamic calcs are slower than the internal calcs
 
@@ -54,64 +54,64 @@ borg_uses_dynamic_calcs = FALSE
 # Risky
 
 # A risky borg is one who is not confined by character level requirements
-# in order to dive deeper.  It is also more likely to stay in a battle than
-# to teleport out.  A risky borg will dive faster but is more likely to die.
+# in order to dive deeper. It is also more likely to stay in a battle than
+# to teleport out. A risky borg will dive faster but is more likely to die.
 # A risky borg is not concerned with killing uniques before diving deeper.
 #
 # A borg who scums for uniques will set the auto_scum flag in order to generate
 # more exciting levels and hopefully encounter a unique
 # 
 # borgs who kill_uniques will wait for uniques to die before diving deeper
-# into the dungeon.  Usually, he will not dive deeper then three uniques.  
-# Example, Unique Monsters who normally reside on levels 12, 15, and 18 are 
+# into the dungeon. Usually, he will not dive deeper than three uniques.
+# Example, Unique Monsters who normally reside on levels 12, 15, and 18 are
 # still alive so the borg will not dive deeper than level 18 until at least one
-# of those uniques are dead.  Setting this to FALSE will allow the borg to dive
-# deeper, faster, not being held up by the uniques.  But, he does run the risk
-# of finding 3 or 4 uniques on one level.  That can be a bit scary.
+# of those uniques are dead. Setting this to FALSE will allow the borg to dive
+# deeper, faster, not being held up by the uniques. But, he does run the risk
+# of finding 3 or 4 uniques on one level. That can be a bit scary.
 
 borg_plays_risky = FALSE
 borg_kills_uniques = FALSE
 
 # Swap Items
 
-# The borg is designed to use Swap Items in the inventory.  A swap item
-# is an equipment item (like a sword or armour item) which posseses a
-# desireable resistance or trait.  If the borg is in danger, then he will
-# consider exchanging his current item for the swap item.  A prime example of
-# this is at dungeon level 60.  He is required to have several resists in
-# place.  If he does not have them then he will not dive deeper.  However,
+# The borg is designed to use Swap Items in the inventory. A swap item
+# is an equipment item (like a sword or armour item) which possesses a
+# desirable resistance or trait. If the borg is in danger, then he will
+# consider exchanging his current item for the swap item. A prime example of
+# this is at dungeon level 60. He is required to have several resists in
+# place. If he does not have them then he will not dive deeper. However,
 # with Swaps enabled he will select an item to cover the open resist then
-# dive down.  Having Swaps enabled allows the borg to dive deeper, faster.
+# dive down. Having Swaps enabled allows the borg to dive deeper, faster.
 # The draw back is the Swap Items take up two inventory slots.
 
 borg_uses_swaps = TRUE
 
-# some birth options don't allow the borg to run well.  If you want to allow
-# the borg to run anyways, set this to true and run at your own risk.
-borg_allow_strange_opts = false
+# some birth options don't allow the borg to run well. If you want to allow
+# the borg to run anyways, set this to TRUE and run at your own risk.
+borg_allow_strange_opts = FALSE
 
 
 # Respawn
 
-# if borg_cheat_death is set, the option to cheat death will be set and, when 
-# the borg dies, he will cheat death and keep going.  If this is false and the 
+# if borg_cheat_death is set, the option to cheat death will be set and, when
+# the borg dies, he will cheat death and keep going. If this is false and the
 # option to cheat death in the game is true the borg will reincarnate (respawn)
-# as a player using the options below to pick the new player.  If the option 
+# as a player using the options below to pick the new player. If the option
 # to cheat death is false and this is false, the borg will stop on death.
 borg_cheat_death = FALSE
 
 # If the borg is in continual play mode (as with the screen saver),
-# he will respawn a randomly generated character at death.  This section
+# he will respawn a randomly generated character at death. This section
 # allows the user to make certain bias for the type of character generated.
 # You may select the race and or class and or minimal stats for the Borg.
 # You may also select the minimal character level needed before the
 # character dump is created in the game directory.
 
 # With regards to race, the borg is programmed to accept the variety of
-# user defined races which may be in the p_info.txt file.  So the values
-# given in table below are for the default races.  But if you are bright
+# user defined races which may be in the p_info.txt file. So the values
+# given in table below are for the default races. But if you are bright
 # enough to modify the p_info.txt file then you are bright enough to figure
-# out that race 0 does not necessarily equal Human.  It's just the first
+# out that race 0 does not necessarily equal Human. It's just the first
 # race listed in your p_info.txt file.
 #
 # RACE:-1 Random Race          CLASS:  -1 Random Class
@@ -127,16 +127,16 @@ borg_cheat_death = FALSE
 #       9 High Elf
 #	   10 Kobold
 #
-# With regards to the stats.  The minimal stats are rolled by the
-# borg.  CON will be 16, the secondary stat (usually DEX) will be 17,
-# The primary stat will be 17.  These are the maximal values which
+# With regards to the stats. The minimal stats are rolled by the
+# borg. CON will be 16, the secondary stat (usually DEX) will be 17,
+# The primary stat will be 17. These are the maximal values which
 # can be rolled (racial and class bonuses added after).
 # If the borg can not reach the stats after 500,000 tries the game
 # will just assign you a random stat.
 #
 # After killing Morgoth, generally, the borg will stop and allow you
-# to inspect the victory.  If you set the respawn_winners then after
-# killing Morgoth,the borg will generate a new character.  A map file
+# to inspect the victory. If you set the respawn_winners then after
+# killing Morgoth,the borg will generate a new character. A map file
 # is created so you can see what the final battle looked like.
 
 borg_respawn_race = -1
@@ -147,11 +147,11 @@ borg_respawn_winners = FALSE
 # Dumps
 
 # This variable will determine the minimal character level at which the borg
-# will create a character dump file.  That file contains some vital information
-# concerning the status of the borg at the time of his demise.  It is placed
+# will create a character dump file. That file contains some vital information
+# concerning the status of the borg at the time of his demise. It is placed
 # in the archive directory.
-# The borg_save_death variable will tell the borg to save the game in the 
-# archive directory so that it can be examined more closely.  The clevel of the
+# The borg_save_death variable will tell the borg to save the game in the
+# archive directory so that it can be examined more closely. The clevel of the
 # borg must at least equal the borg_dump_level in order for the game to save.
 
 borg_dump_level = 1
@@ -159,15 +159,15 @@ borg_save_death = 1
 
 # Autosave 
 # this causes the borg to do a (redundant) save at the start of every level and
-@ create a backup of that save to the archive directory
+# create a backup of that save to the archive directory
 borg_autosave = FALSE
 
 # Auto Stops
 
 # The borg is able to stop when it reaches a certain dungeon depth or character
-# level.  He will also stop when he wins the game.  If you want him to keep
+# level. He will also stop when he wins the game. If you want him to keep
 # playing, even after Morgoth is dead, then change the borg_stop_king to FALSE.
-# Set the other values to the level at which you want the borg to stop.  Set
+# Set the other values to the level at which you want the borg to stop. Set
 # them out of bounds if you do not want him to stop.
 
 borg_stop_dlevel = 128
@@ -176,36 +176,32 @@ borg_no_deeper = 127
 borg_stop_king = TRUE
 
 # If stop on bell is set, the borg will stop when the game plays the bell, 
-# which generally only happens on an error.  This is to help debug issues. The
+# which generally only happens on an error. This is to help debug issues. The
 # message log will contain a list of up to 50 of the latest keypresses.
 
-borg_stop_on_bell = false
+borg_stop_on_bell = FALSE
 
 
 # Chest Tolerance
 
-# The borg is able to search, disarm, and open chests.  There is a inherant
-# risk when dealing with chests.  The risk of setting off the trap vs the
-# benefit of the loot within the chest.  The game uses a straight forward 
-# formula for calculating the success of a chest.  It is:
-# randint(100) < the skill of the player minus the dificulty of the chest.
-# Difficulties run from 1 to 63.  I would recommend a tolerance of about 7
-# for vanilla chests (since they suck) and about 15 for DrAngband.
+# The borg is able to search, disarm, and open chests. There is an inherent
+# risk when dealing with chests. The risk of setting off the trap vs the
+# benefit of the loot within the chest. The game uses a straight forward 
+# formula for calculating the success of a chest. It is:
+# randint(100) < the skill of the player minus the difficulty of the chest.
+# Difficulties run from 1 to 63.
 
 borg_chest_fail_tolerance = 7
 
 
 # Speed of the Borg
 
-# You can slow the borg down several different ways.  One way is to set the
-# base game delay factor in the options menu.  This will slow down the borg
-# and the visual effects (like missiles shooting, explosions).  If using the
+# You can slow the borg down a couple of ways. One way is to set the
+# base game delay factor in the options menu. This will slow down the borg
+# and the visual effects (like missiles shooting, explosions). If using the
 # screensaver, you will need to load angband.exe load the savefile, make the
-# modifications, then save and exit.  Another way to slow the borg down is
-# to add more term windows.  The more it has to do, the slower it will be.
-# I recommend using Inventory, Equipment, Messages, Monster Recall, Borg
-# Status windows. Then you can really see what the borg is up to.  Lastly,
-# to slow the borg down use the following variable.  The formula is:
+# modifications, then save and exit. Another way to slow the borg down is
+# to use the following variable. The formula is:
 # base_game_delay_factor^2 + borg_delay_factor^2.
 
 borg_delay_factor = 0
@@ -213,21 +209,21 @@ borg_delay_factor = 0
 
 # Money Scumming
 
-# This started as more of a joke but it does have a useful purpose.  If you 
+# This started as more of a joke but it does have a useful purpose. If you 
 # find yourself shopping in the BM and you really want that item and its just 
 # out of your price range, then you can set a dollar amount into this variable 
 # and the borg will run around town killing monsters and collecting items for 
-# cash.  Once he has reached his monetary goal, it will unhook and stop moving.  
-# The borg will wait on the level, to build up more towns people, kill them, 
-# buy food when it needs to.  But it won't leave the level until the goal
-# is reached.  To disengage the money scum, leave this variable at 0 (zero).
+# cash. Once he has reached his monetary goal, it will unhook and stop moving. 
+# The borg will wait on the level, to build up more townspeople, kill them, 
+# buy food when it needs to. But it won't leave the level until the goal
+# is reached. To disengage the money scum, leave this variable at 0 (zero).
 # This will also simulate the borg_worships_gold and allow the borg to sell 
-# non-ID'd items which will be dropped in town.  The borg will flee from town 
-# from Scary Guys.  So keep this in mind with borgs under clevel 6. The borg 
+# non-ID'd items which will be dropped in town. The borg will flee from town 
+# from Scary Guys. So keep this in mind with borgs under clevel 6. The borg 
 # will not scum unless he has a perma light source (phial, or some glowing 
 # artifact). The borg will stop if the General Store runs out of food to buy.
 # It is not recommended for borgs with Regeneration and no Slow 
-# Digestion, since they will spend all their money on food.  But if you have a
+# Digestion, since they will spend all their money on food. But if you have a
 # borg with Satisfy Hunger spell, they can stay in town forever.
 # NOTE: if a human wants the borg to scum to a particular amount, turn the 
 # borg_self_scum to FALSE or else he will buy his own gear with that money.
@@ -237,10 +233,10 @@ borg_money_scum_amount = 0
 
 # Borg Scumming
 
-# This is a companion to the Money Scum above.  The borg will scum town if
-# a stat potion is in the BM.  If the borg finds an item in town that he would
-# really like to have, then he will stay in town until he can gathered enough
-# money to buy it.  The borg will behave like the borg_money_scum_amount above.
+# This is a companion to the Money Scum above. The borg will scum town if
+# a stat potion is in the BM. If the borg finds an item in town that he would
+# really like to have, then he will stay in town until he has gathered enough
+# money to buy it. The borg will behave like the borg_money_scum_amount above.
 # If this is TRUE, then the borg is allowed to scum for items that he wants.
 # To forbid this behavior (which can take a very long time) set it FALSE.
 # NOTE: if a human wants the borg to scum to a particular amount, turn the 
@@ -255,30 +251,30 @@ borg_self_scum = TRUE
 
 # The borg will dive deep in the dungeon, even while he is still
 # low level, bouncing between levels to take nearby down stairs.
-# Once deep, he will gather items, then recall to town.  He will not recall
-# back down into the dungeon, but walk all the way down again.  If you want
-# a fast win, this is not the option for you.  If you want the borg to have
+# Once deep, he will gather items, then recall to town. He will not recall
+# back down into the dungeon, but walk all the way down again. If you want
+# a fast win, this is not the option for you. If you want the borg to have
 # maxed stats early on at the expense of game turns, then give this a try.
 # The best way to use this is to have a borg that can cast Satisfy Hunger.
 # This is a one way trip for the borg and he will be getting hungry.
-# The borg should also have a perma light source (like the phial).  Again,
-# one way trip.  He won't be stopping to restock his fuel source.  However,
-# if he has food or fuel, he will use them when appropriate.  Having extra
-# speed will help the borg too.  Often he will come down the stairs, and 
-# find himself right next to a monster.  Sometimes, that monster can get
-# the first hit on a borg, killing him instantly.  Even +3 speed would help
+# The borg should also have a perma light source (like the phial). Again,
+# one way trip. He won't be stopping to restock his fuel source. However,
+# if he has food or fuel, he will use them when appropriate. Having extra
+# speed will help the borg too. Often he will come down the stairs, and 
+# find himself right next to a monster. Sometimes, that monster can get
+# the first hit on a borg, killing him instantly. Even +3 speed would help
 # to avoid this type of instadeath.
 #
 # Self Lunal Mode will allow the borg to use the stair scumming in order to
-# dive deep in the dungeon for his own goals.  For example, if the borg has
+# dive deep in the dungeon for his own goals. For example, if the borg has
 # been down to depth 99, and now has no more potions of healing, he will
-# only be prepared for depth 45.  He will remain shallow in the dungeon,
-# from depth 1-10 waiting for the shops to cycle.  Then he will attempt to 
-# buy a healing potion from the town shops.  If none is available, he will
-# return to the shallow dungeon depths and wait for the shops to cycle.  He 
-# will repeat this pattern until he gets a potion of healing.  If the borg 
+# only be prepared for depth 45. He will remain shallow in the dungeon,
+# from depth 1-10 waiting for the shops to cycle. Then he will attempt to 
+# buy a healing potion from the town shops. If none is available, he will
+# return to the shallow dungeon depths and wait for the shops to cycle. He 
+# will repeat this pattern until he gets a potion of healing. If the borg 
 # is allowed to self-lunal, then it will bounce the stairs down to a depth
-# where it feels comfortable.  In the case above, it will do this until
+# where it feels comfortable. In the case above, it will do this until
 # about depth 40.
 
 borg_lunal_mode = FALSE
@@ -287,8 +283,8 @@ borg_self_lunal = FALSE
 
 # Borg Verbose
 
-# Verbose is default off.  It makes the borg give more reports on his actions
-# and thoughts.  He still gives reports when verbose is FALSE, but when TRUE, 
+# Verbose is default off. It makes the borg give more reports on his actions
+# and thoughts. He still gives reports when verbose is FALSE, but when TRUE, 
 # he really chats up a storm.
 
 borg_verbose = FALSE
@@ -298,8 +294,8 @@ borg_verbose = FALSE
 # Munchkin Start
 
 # Munchkin start will have the borg stair-scum at depth 5-6, looking for items
-# which he will then sell in town.  He will continue this process until about
-# clevel 6 or 7.  The advantage is a sizable boost to his early income and
+# which he will then sell in town. He will continue this process until about
+# clevel 6 or 7. The advantage is a sizable boost to his early income and
 # he can find some wands early on to assist with monster killing.
 
 borg_munchkin_start = FALSE
@@ -309,10 +305,10 @@ borg_munchkin_depth = 16
 # Enchant Limit
 
 # The borg knows how to enchant his equipment using scrolls and spells.
-# For ammo, he will stop enchanting about +10 or so.  If he has access 
-# to the *enchant* spell, he can go up to +15.  But the borg will spend
+# For ammo, he will stop enchanting about +10 or so. If he has access 
+# to the *enchant* spell, he can go up to +15. But the borg will spend
 # a lot of time casting and resting in order to get his item up to +15.
-# The borg has plenty of time, to waste doing this.  If you want a fast
+# The borg has plenty of time, to waste doing this. If you want a fast
 # win, then choose a lower number like +11.
 
 borg_enchant_limit = 12
@@ -323,35 +319,35 @@ borg_enchant_limit = 12
 #	Power   - used to calculate the "power" of the borg
 #	Depth   - used to determine what depth a borg feels prepared for (don't go deeper than)
 #	Restock - used to determine if the borg feels it needs to go shopping
-#				this is a subset of being prepeared but is also used on its own.
+#				this is a subset of being prepared but is also used on its own.
 #
 # special formula:  
-#	depth( n ) - the depth to check for.  if condition true, don't go below this depth.
+#	depth( n ) - the depth to check for. if condition true, don't go below this depth.
 #	range(from, to) - loop from until to and add value to power each time
 #	value( type, name ) - returns a value dependent on the types
 #		type list:
 #		ACTIVATION: returns the number of items the borg is wearing that use that activation
-#		TRAIT: value from the borg.trait list.  This can be dumped by ^zh
+#		TRAIT: value from the borg.trait list. This can be dumped by ^zh
 #		CONFIG: value from the configuration as read from borg.txt
 #		CLASS: true/false (1/0) if the borgs current class matches the name
 #		RANGE: index into the range(from, to) above,  returns -1 if no range is given
 #				also used for depth checks as the depth being checked.
-#		type from object.txt with name matching the name from that file.  Count of that object that the borg is carrying or wearing.
+#		type from object.txt with name matching the name from that file. Count of that object that the borg is carrying or wearing.
 #			ex: value(potion, Cure Critical Wounds) is the number of CCW potions
 #				** worth noting value(trait, amt potion ccw) will be a calculated amount of ccw, which might include other healing
 #				such as spells that cure that amount so may not have the same value as value(potion, Cure Critical Wounds)
 #	reward: calculation of what power increase for each, if you have range, or just for having, if you don't
-#	condition: if calculates to zero you don't get the reward.  For ranges, is calculated once before the range is processed
+#	condition: if calculates to zero you don't get the reward. For ranges, is calculated once before the range is processed
 #
-# note on calculations: some order of operations are handled, some are not.  When in doubt, parens are your friend
+# note on calculations: some order of operations are handled, some are not. When in doubt, parentheses are your friend
 
 #### future enhancement value_home( type, name) - same as above but in the home, HomePower ... 
 
 # there are some values still done in the code (approximate values given)
-# 1) getting to zero fail on spell casting gives 30,000.  fail rate gives 100 per percent success on best spell
+# 1) getting to zero fail on spell casting gives 30,000. fail rate gives 100 per percent success on best spell
 # 2) Reward the borg for carrying a NON-ID items that have random powers (999999)
 # 3) Penalize armor weight (250 per item that is too heavy)
-# 4) Penalize heavy armor for redusing spell points (~400 per point lost)
+# 4) Penalize heavy armor for reducing spell points (~400 per point lost)
 # 5) Reward carrying a shovel if low level (5000)
 # 6) books - 15000/spell you can cast from a book (50000 if it is a dungeon book)
 # 7) encumbrance loses ((weight - max carry/2) / max carry / 10) * 10000
@@ -359,7 +355,7 @@ borg_enchant_limit = 12
 Power
 [
 # weapon stuff	
-# weilding unIDs weapon
+# wielding un-ID'd weapon
 	condition((value(trait, depth) < 10) and (value(trait, max clevel) < 15) and !value(trait, wep id)): reward(1000000);
 # "damage" and increased blows per round
 	reward(value(trait, wep damage dice) * value(trait, wep damage sides) * 20 * (value(trait, blows) + 1));
@@ -413,7 +409,7 @@ Power
 	condition(((value(trait, bow to damage) <= 8) and (value(trait, clevel) >= 25)) and !value(config, worships_damage)): reward((value(trait, ammo sides) + 8) * value(trait, ammo power) * value(trait, shots) * 9);
 # extra bonus for low levels, they need a ranged weapon 
 	condition((value(trait, bow to damage) > 8 or value(trait, clevel) < 25) and value(trait, clevel) < 15): reward((value(trait, ammo sides) + value(trait, bow to damage)) * value(trait, ammo power) * value(trait, shots) * 200);
-# slings force you to carry heavy ammo.  Penalty for that unless you have lots of str 
+# slings force you to carry heavy ammo. Penalty for that unless you have lots of str 
 	condition(value(trait, bow is sling) and !value(trait, bow artifact) and (value(trait, str) < 9)): reward(-5000);
 	condition(value(trait, bow is sling) and (value(trait, clevel) = 1) and (value(trait, str) >= 9)): reward(5000);
 # "bonus to hit"
@@ -822,7 +818,7 @@ Power
 	value(potion, healing): range(1, 3): condition(value(class, paladin)): reward(5000);
 	value(rod, healing): range(1, 4): condition(value(class, ranger) or value(class, paladin) or value(class, necromancer) or value(class, mage)): reward(20000);
 
-# Level 1 priests are given a Potion of Healing.  It is better for them to sell that potion and buy equipment or several Cure Crits with it.
+# Level 1 priests are given a Potion of Healing. It is better for them to sell that potion and buy equipment or several Cure Crits with it.
 	value(potion, healing): range(1, 10): condition((value(class, druid) or value(class, priest)) and value(trait, clevel) = 1): reward(-2000);
 	value(potion, healing): range(1, 5): condition(value(class, druid) or value(class, priest)): reward(2000);
 
