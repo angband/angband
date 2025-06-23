@@ -129,6 +129,9 @@ Once copied, you can edit ``borg.txt`` to change the Borg's behavior. To apply
 changes while the game is running, use the ``$`` command from the Borg command
 interface (``^z``).
 
+How you customize the Borg depends on whether you are using a pre-compiled
+build or compiling from source.
+
 Configuration Options
 ---------------------
 
@@ -169,8 +172,19 @@ Respawn and Continuous Play
 - ``borg_respawn_winners``: If enabled, the Borg will create a new
   character after defeating Morgoth
 
-How you customize the Borg depends on whether you are using a pre-compiled
-build or compiling from source.
+Dynamic Formulas
+****************
+
+The Borg can use either its internal hard-coded logic for decision-making
+or a more flexible system of dynamic formulas defined in ``borg.txt``. To
+enable the formula-based system, set the following in your ``borg.txt``:
+
+.. code-block:: ini
+
+  borg_uses_dynamic_calcs = TRUE
+
+The dynamic calculations are more customizable but may be slower and
+are not always as up-to-date as the internal code logic.
 
 Using Official Builds
 ---------------------
