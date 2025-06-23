@@ -129,6 +129,9 @@ Once copied, you can edit ``borg.txt`` to change the Borg's behavior. To apply
 changes while the game is running, use the ``$`` command from the Borg command
 interface (``^z``).
 
+How you customize the Borg depends on whether you are using a pre-compiled
+build or compiling from source.
+
 Configuration Options
 ---------------------
 
@@ -136,6 +139,21 @@ The ``borg.txt`` file offers a wide range of options to customize the Borg's
 behavior. Below is a summary of the key settings. For a complete list and
 detailed explanations, refer to the comments within the ``borg.txt`` file
 itself.
+
+Adjusting Borg Speed
+********************
+
+When you first run the Borg it may move very slowly. This is often due to the
+game's ``base delay factor``, a general setting that affects all animations. To
+speed up the Borg you can decrease this value:
+
+1. Press ``=`` to open the main options menu
+2. Press ``d`` to change the ``delay factor``
+3. Decrease the value
+
+Conversely, if the Borg is moving too quickly to follow, you can increase this
+value. You can also add a Borg-specific delay by setting ``borg_delay_factor``
+in ``borg.txt``.
 
 Worships
 ********
@@ -169,8 +187,19 @@ Respawn and Continuous Play
 - ``borg_respawn_winners``: If enabled, the Borg will create a new
   character after defeating Morgoth
 
-How you customize the Borg depends on whether you are using a pre-compiled
-build or compiling from source.
+Dynamic Formulas
+****************
+
+The Borg can use either its internal hard-coded logic for decision-making
+or a more flexible system of dynamic formulas defined in ``borg.txt``. To
+enable the formula-based system, set the following in ``borg.txt``:
+
+.. code-block:: ini
+
+  borg_uses_dynamic_calcs = TRUE
+
+The dynamic calculations are more customizable but may be slower and
+are not always as up-to-date as the internal code logic.
 
 Using Official Builds
 ---------------------
