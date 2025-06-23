@@ -192,7 +192,7 @@ Dynamic Formulas
 
 The Borg can use either its internal hard-coded logic for decision-making
 or a more flexible system of dynamic formulas defined in ``borg.txt``. To
-enable the formula-based system, set the following in your ``borg.txt``:
+enable the formula-based system, set the following in ``borg.txt``:
 
 .. code-block:: ini
 
