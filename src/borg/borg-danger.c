@@ -35,12 +35,12 @@
 #include "borg.h"
 
 /*
- * Hack -- extra fear per "region"
+ * Extra fear per "region"
  */
 uint16_t borg_fear_region[(AUTO_MAX_Y / 11) + 1][(AUTO_MAX_X / 11) + 1];
 
 /*
- * Hack -- extra fear per "region" induced from extra monsters.
+ * Extra fear per "region" induced from extra monsters.
  */
 uint16_t borg_fear_monsters[AUTO_MAX_Y + 1][AUTO_MAX_X + 1];
 
@@ -76,7 +76,7 @@ static int borg_danger_physical(int i, bool full_damage)
         ac += 50;
 
     /*  PFE gives a protection.  */
-    /* Hack -- Apply PROTECTION_FROM_EVIL */
+    /* Apply PROTECTION_FROM_EVIL */
     if ((borg.temp.prot_from_evil) && (rf_has(r_ptr->flags, RF_EVIL))
         && ((borg.trait[BI_CLEVEL]) >= r_ptr->level)) {
         pfe = 1;
@@ -419,7 +419,7 @@ static int borg_danger_physical(int i, bool full_damage)
         case MONBLOW_LOSE_ALL:
             z     = (d_dice * d_side);
             power = 2;
-            /* only morgoth. HACK to make it easier to fight him */
+            /* only morgoth to make it easier to fight him */
             break;
 
         case MONBLOW_SHATTER:
@@ -570,7 +570,7 @@ static int borg_danger_spell(
     struct monster_race *r_ptr = &r_info[kill->r_idx];
 
     /*  PFE gives a protection.  */
-    /* Hack -- Apply PROTECTION_FROM_EVIL */
+    /* Apply PROTECTION_FROM_EVIL */
     if ((borg.temp.prot_from_evil) && (rf_has(r_ptr->flags, RF_EVIL))
         && ((borg.trait[BI_CLEVEL]) >= r_ptr->level)) {
         pfe = 1;
@@ -2397,7 +2397,7 @@ int borg_danger_one_kill(
     /* Physical attacks */
     v1 = borg_danger_physical(i, full_damage);
 
-    /* Hack -- Under Stressful Situation.
+    /* Under Stressful Situation.
      */
     if (borg.time_this_panel > 1200 || borg_t > 25000) {
         /* he might be stuck and could overflow */
@@ -2505,7 +2505,7 @@ int borg_danger_one_kill(
         v1 = 0;
     }
 
-    /* Hack -- Physical attacks require proximity
+    /* Physical attacks require proximity
      *
      * Note that we do try to consider a fast monster moving and attacking
      * in the same round.  We should consider monsters that have a speed 2 or 3
@@ -2592,19 +2592,19 @@ int borg_danger_one_kill(
         v2 = 0;
     }
 
-    /* Hack -- verify distance */
+    /* Verify distance */
     if (borg_distance(y9, x9, y, x) > z_info->max_range) {
         v2 = 0;
     }
 
-    /* Hack -- verify line of sight (both ways) for monsters who can only move 1
+    /* Verify line of sight (both ways) for monsters who can only move 1
      * grid. */
     if (q <= 10 && !borg_projectable(y9, x9, y, x)
         && !borg_projectable(y, x, y9, x9)) {
         v2 = 0;
     }
 
-    /* Hack -- verify line of sight (both ways) for monsters who can only move >
+    /* Verify line of sight (both ways) for monsters who can only move >
      *1 grid. Some fast monsters can take a move action and range attack in the
      *same round. Basically, we see how many grids the monster can move and
      *check LOS from each of those grids to determine the relative danger.  We
@@ -2681,7 +2681,7 @@ int borg_danger_one_kill(
         v2 = b_v2;
     }
 
-    /* Hack -- Under Stressful Situation.
+    /* Under Stressful Situation.
      */
     if (borg.time_this_panel > 1200 || borg_t > 25000) {
         /* he might be stuck and could overflow */
@@ -2787,7 +2787,7 @@ int borg_danger_one_kill(
 }
 
 /*
- * Hack -- Calculate the "danger" of the given grid.
+ * Calculate the "danger" of the given grid.
  *
  * Currently based on the physical power of nearby monsters, as well
  * as the spell power of monsters which can target the given grid.

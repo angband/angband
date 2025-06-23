@@ -62,12 +62,12 @@ enum BORG_MONBLOW {
 };
 
 /*
- * Hack -- extra fear per "region"
+ * Extra fear per "region"
  */
 extern uint16_t borg_fear_region[(AUTO_MAX_Y / 11) + 1][(AUTO_MAX_X / 11) + 1];
 
 /*
- * Hack -- extra fear per "region" induced from extra monsters.
+ * Extra fear per "region" induced from extra monsters.
  */
 extern uint16_t borg_fear_monsters[AUTO_MAX_Y + 1][AUTO_MAX_X + 1];
 
@@ -83,7 +83,7 @@ extern int borg_danger_one_kill(
     int y, int x, int c, int i, bool average, bool full_damage);
 
 /*
- * Hack -- Calculate the "danger" of the given grid.
+ * Calculate the "danger" of the given grid.
  */
 extern int borg_danger(int y, int x, int c, bool average, bool full_damage);
 

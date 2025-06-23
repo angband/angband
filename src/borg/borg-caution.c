@@ -137,7 +137,7 @@ static bool borg_heal(int danger)
         && borg.trait[BI_ISFIXINT])
         stats_needing_fix += 5;
 
-    /*  Hack -- heal when confused. This is deadly.*/
+    /* Heal when confused. This is deadly. */
     /* This is checked twice, once, here, to see if he is in low danger
      * and again at the end of borg_caution, when all other avenues have failed
      */
@@ -199,7 +199,7 @@ static bool borg_heal(int danger)
             }
         }
     }
-    /*  Hack -- heal when blind. This is deadly.*/
+    /* Heal when blind. This is deadly. */
     if (borg.trait[BI_ISBLIND] && (randint0(100) < 85)) {
         /* if in extreme danger, use teleport then fix the
          * blindness later.
@@ -320,7 +320,7 @@ static bool borg_heal(int danger)
         return false;
     }
 
-    /* Hack -- heal when wounded a percent of the time */
+    /* Heal when wounded a percent of the time */
     chance = randint0(100);
 
     /* if we are fighting a unique increase the odds of healing */
@@ -503,7 +503,7 @@ static bool borg_heal(int danger)
     if (danger > avoidance * 2 / 10)
         return false;
 
-    /* Hack -- cure poison when poisoned
+    /* Cure poison when poisoned
      * This was moved from borg_caution.
      */
     if (borg.trait[BI_ISPOISONED]
@@ -539,7 +539,7 @@ static bool borg_heal(int danger)
         }
     }
 
-    /* Hack -- cure poison when poisoned CRITICAL CHECK
+    /* Cure poison when poisoned CRITICAL CHECK
      */
     if (borg.trait[BI_ISPOISONED]
         && (borg.trait[BI_CURHP] < 2
@@ -595,7 +595,7 @@ static bool borg_heal(int danger)
             return true;
     }
 
-    /* Hack -- cure wounds when bleeding, also critical check */
+    /* Cure wounds when bleeding, also critical check */
     if (borg.trait[BI_ISCUT]
         && (borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 3
             || randint0(100) < 20)) {
@@ -785,7 +785,7 @@ static bool borg_heal(int danger)
  * to a happy grid (meaning we have los and it does not), we should target
  * one space away from the bad guy then blast away with ball spells.
  *
- * Hack -- Special checks for dealing with Morgoth.
+ * Special checks for dealing with Morgoth.
  * The borg would like to stay put on level 100 and use
  * spells to attack Morgoth then use Teleport Other as he
  * gets too close.
@@ -1207,7 +1207,7 @@ bool borg_caution(void)
 
     /*** Deal with critical situations ***/
 
-    /* Hack -- require light */
+    /* Require light */
     if (!borg.trait[BI_LIGHT]) /* No Lite, AND Not Glowing */
     {
         enum borg_need need = borg_maintain_light();
@@ -1226,7 +1226,7 @@ bool borg_caution(void)
         }
     }
 
-    /* Hack -- prevent starvation */
+    /* Prevent starvation */
     if (borg.trait[BI_ISWEAK]) {
         /* Attempt to satisfy hunger */
         if (borg_eat_food_any() || borg_spell(REMOVE_HUNGER)
@@ -1627,7 +1627,7 @@ bool borg_caution(void)
             /* Save direction */
             b_d = borg_goto_dir(borg.c.y, borg.c.x, b_y, b_x);
 
-            /* Hack -- set goal */
+            /* Set goal */
             borg.goal.g.x = borg.c.x + ddx[b_d];
             borg.goal.g.y = borg.c.y + ddy[b_d];
 
@@ -1827,7 +1827,7 @@ bool borg_caution(void)
 
         /* Back away */
         if (b_i >= 0) {
-            /* Hack -- set goal */
+            /* Set goal */
             borg.goal.g.x = borg.c.x + ddx_ddd[b_i];
             borg.goal.g.y = borg.c.y + ddy_ddd[b_i];
 
@@ -1867,7 +1867,7 @@ bool borg_caution(void)
         }
     }
 
-    /* Hack -- cure fear when afraid */
+    /* Cure fear when afraid */
     if ((borg.trait[BI_ISAFRAID] && !borg.trait[BI_CRSFEAR])
         && (randint0(100) < 70
             || (borg.trait[BI_CLASS] == CLASS_WARRIOR
@@ -1964,7 +1964,7 @@ bool borg_caution(void)
         return true;
     }
 
-    /* Hack -- use "recall" to flee if possible */
+    /* Use "recall" to flee if possible */
     if (borg.goal.fleeing && !borg.goal.fleeing_munchkin
         && !borg.goal.fleeing_to_town && borg.trait[BI_CDEPTH] >= 1
         && (borg_recall())) {

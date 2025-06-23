@@ -34,7 +34,7 @@ struct borg_setting
 
 extern bool borg_init_failure;
 
-extern bool borg_initialized; /* Hack -- Initialized */
+extern bool borg_initialized; /* Initialized */
 extern bool game_closed; /* Has the game been closed */
 extern struct borg_setting borg_settings[];
 
@@ -50,7 +50,7 @@ extern bool borg_init_txt_file(void);
 extern void borg_reinit_options(void);
 
 /*
- * Hack -- prepare some stuff based on the player race and class
+ * Prepare some stuff based on the player race and class
  */
 extern void borg_prepare_race_class_info(void);
 

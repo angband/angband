@@ -125,7 +125,7 @@ static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
     vis1 = (v1 && (g1_ag->info & BORG_XTRA));
     vis2 = (v2 && (g2_ag->info & BORG_XTRA));
 
-    /* Hack -- "easy" plus "easy" yields "easy" */
+    /* "easy" plus "easy" yields "easy" */
     if (vis1 && vis2) {
         ag->info |= BORG_XTRA;
 
@@ -134,14 +134,14 @@ static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
         return wall;
     }
 
-    /* Hack -- primary "easy" yields "viewed" */
+    /* Primary "easy" yields "viewed" */
     if (vis1) {
         borg_cave_view_hack(ag, y, x);
 
         return wall;
     }
 
-    /* Hack -- "view" plus "view" yields "view" */
+    /* "view" plus "view" yields "view" */
     if (v1 && v2) {
         /* ag->info |= BORG_XTRA; */
 
@@ -157,7 +157,7 @@ static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
         return wall;
     }
 
-    /* Hack -- check line of sight */
+    /* Check line of sight */
     if (borg_los(borg.c.y, borg.c.x, y, x)) {
         borg_cave_view_hack(ag, y, x);
 
@@ -228,7 +228,7 @@ void borg_update_view(void)
 
     /*** Step 2 -- Major Diagonals ***/
 
-    /* Hack -- Limit */
+    /* Limit */
     z = full * 2 / 3;
 
     /* Scan south-east */
