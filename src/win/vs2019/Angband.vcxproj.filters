@@ -492,6 +492,9 @@
     <ClCompile Include="src\score.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\score-util.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\sound-core.c">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -239,6 +239,7 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/save-charoutput.c
         src/savefile.c
         src/score.c
+        src/score-util.c
         src/sound-core.c
         src/source.c
         src/store.c
@@ -855,6 +856,7 @@ SET(ANGBAND_TEST_CASE_SOURCES
     player/inven-wield.c
     player/pathfind.c
     player/playerstat.c
+    player/pscore.c
     player/timed.c
     player/util.c
     trivial/trivial.c
