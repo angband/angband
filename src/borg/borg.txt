@@ -15,12 +15,12 @@
 
 # borg_worships_gold explained:
 # The borg_worships_gold option will greatly impact how the borg treats items
-# which he finds in the dungeon.  With this opion on, he will return to town
+# which he finds in the dungeon.  With this option on, he will return to town
 # whenever he fills up with items then sell those items.  This can cause
 # the borg to lose some artifacts, since he will sell them even if not ID'd.
 # Generally speaking the borg will not sell an item unless it is at least
-# psuedo ID'd.  The benefit of this option is that the borg will significantly
-# increase his income at the low clevels.  This will increase his survivablity
+# pseudo ID'd.  The benefit of this option is that the borg will significantly
+# increase his income at the low clevels.  This will increase his survivability
 # by allowing him to invest in armour and arrows.  With this on,
 # he will not recall to town to sell stuff but climb the stairs instead.
 # He will also not recall into the dungeon until dlevel 8 (instead of 5).
@@ -72,8 +72,8 @@ borg_kills_uniques = FALSE
 # Swap Items
 
 # The borg is designed to use Swap Items in the inventory.  A swap item
-# is an equipment item (like a sword or armour item) which posseses a
-# desireable resistance or trait.  If the borg is in danger, then he will
+# is an equipment item (like a sword or armour item) which possesses a
+# desirable resistance or trait.  If the borg is in danger, then he will
 # consider exchanging his current item for the swap item.  A prime example of
 # this is at dungeon level 60.  He is required to have several resists in
 # place.  If he does not have them then he will not dive deeper.  However,
