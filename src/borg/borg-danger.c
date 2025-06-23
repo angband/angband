@@ -2473,7 +2473,7 @@ int borg_danger_one_kill(
         }
     }
     if (borg_crush_spell) {
-        /* Either it dies or it doesn't.  */
+        /* HACK for now, either it dies or it doesn't.  */
         /* If we discover it isn't using this spell much, we can modify */
         if ((kill->power * kill->injury) / 100 < borg.trait[BI_CLEVEL] * 4)
             v1 = 0;
@@ -2605,7 +2605,7 @@ int borg_danger_one_kill(
     }
 
     /* Verify line of sight (both ways) for monsters who can only move >
-     * 1 grid. Some fast monsters can take a move action and range attack in the
+     *1 grid. Some fast monsters can take a move action and range attack in the
      *same round. Basically, we see how many grids the monster can move and
      *check LOS from each of those grids to determine the relative danger.  We
      *need to make sure that the monster is not passing through walls unless he
@@ -2726,7 +2726,7 @@ int borg_danger_one_kill(
     }
 
     if (borg_crush_spell) {
-        /* Either it dies or it doesn't.  */
+        /* HACK for now, either it dies or it doesn't.  */
         /* If we discover it isn't using this spell much, we can modify */
         if ((kill->power * kill->injury) / 100 < borg.trait[BI_CLEVEL] * 4)
             v2 = 0;
