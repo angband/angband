@@ -140,6 +140,21 @@ behavior. Below is a summary of the key settings. For a complete list and
 detailed explanations, refer to the comments within the ``borg.txt`` file
 itself.
 
+Adjusting Borg Speed
+********************
+
+When you first run the Borg it may move very slowly. This is often due to the
+game's ``base delay factor``, a general setting that affects all animations. To
+speed up the Borg, you can reduce this value.
+
+1. Press ``=`` to open the main options menu
+2. Press ``d`` to change the ``delay factor``
+3. Decrease the value
+
+Conversely, if the Borg is moving too quickly to follow, you can increase this
+value. You can also add a Borg-specific delay by setting ``borg_delay_factor``
+in ``borg.txt``.
+
 Worships
 ********
 These settings (e.g., ``borg_worships_damage``, ``borg_worships_gold``)
