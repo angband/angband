@@ -419,7 +419,7 @@ static int borg_danger_physical(int i, bool full_damage)
         case MONBLOW_LOSE_ALL:
             z     = (d_dice * d_side);
             power = 2;
-            /* only morgoth. HACK to make it easier to fight him */
+            /* only morgoth to make it easier to fight him */
             break;
 
         case MONBLOW_SHATTER:
@@ -570,7 +570,7 @@ static int borg_danger_spell(
     struct monster_race *r_ptr = &r_info[kill->r_idx];
 
     /*  PFE gives a protection.  */
-    /* Hack -- Apply PROTECTION_FROM_EVIL */
+    /* Apply PROTECTION_FROM_EVIL */
     if ((borg.temp.prot_from_evil) && (rf_has(r_ptr->flags, RF_EVIL))
         && ((borg.trait[BI_CLEVEL]) >= r_ptr->level)) {
         pfe = 1;
@@ -2397,7 +2397,7 @@ int borg_danger_one_kill(
     /* Physical attacks */
     v1 = borg_danger_physical(i, full_damage);
 
-    /* Hack -- Under Stressful Situation.
+    /* Under Stressful Situation.
      */
     if (borg.time_this_panel > 1200 || borg_t > 25000) {
         /* he might be stuck and could overflow */
@@ -2473,7 +2473,7 @@ int borg_danger_one_kill(
         }
     }
     if (borg_crush_spell) {
-        /* HACK for now, either it dies or it doesn't.  */
+        /* Either it dies or it doesn't.  */
         /* If we discover it isn't using this spell much, we can modify */
         if ((kill->power * kill->injury) / 100 < borg.trait[BI_CLEVEL] * 4)
             v1 = 0;
@@ -2681,7 +2681,7 @@ int borg_danger_one_kill(
         v2 = b_v2;
     }
 
-    /* Hack -- Under Stressful Situation.
+    /* Under Stressful Situation.
      */
     if (borg.time_this_panel > 1200 || borg_t > 25000) {
         /* he might be stuck and could overflow */
@@ -2726,7 +2726,7 @@ int borg_danger_one_kill(
     }
 
     if (borg_crush_spell) {
-        /* HACK for now, either it dies or it doesn't.  */
+        /* Either it dies or it doesn't.  */
         /* If we discover it isn't using this spell much, we can modify */
         if ((kill->power * kill->injury) / 100 < borg.trait[BI_CLEVEL] * 4)
             v2 = 0;
@@ -2787,7 +2787,7 @@ int borg_danger_one_kill(
 }
 
 /*
- * Hack -- Calculate the "danger" of the given grid.
+ * Calculate the "danger" of the given grid.
  *
  * Currently based on the physical power of nearby monsters, as well
  * as the spell power of monsters which can target the given grid.

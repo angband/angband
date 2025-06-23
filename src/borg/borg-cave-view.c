@@ -75,7 +75,7 @@ void borg_forget_view(void)
  * have already been placed into the "view" array, and we are never
  * called when the "view" array is full.
  */
-#define borg_cave_view_add(A, y, X) \
+#define borg_cave_view_hack(A, y, X) \
     (A)->info |= BORG_VIEW;          \
     borg_view_y[borg_view_n] = (y);  \
     borg_view_x[borg_view_n] = (X);  \
@@ -129,14 +129,14 @@ static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
     if (vis1 && vis2) {
         ag->info |= BORG_XTRA;
 
-        borg_cave_view_add(ag, y, x);
+        borg_cave_view_hack(ag, y, x);
 
         return wall;
     }
 
     /* Primary "easy" yields "viewed" */
     if (vis1) {
-        borg_cave_view_add(ag, y, x);
+        borg_cave_view_hack(ag, y, x);
 
         return wall;
     }
@@ -145,21 +145,21 @@ static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
     if (v1 && v2) {
         /* ag->info |= BORG_XTRA; */
 
-        borg_cave_view_add(ag, y, x);
+        borg_cave_view_hack(ag, y, x);
 
         return wall;
     }
 
     /* Mega-Hack -- the "borg_los()" function works poorly on walls */
     if (wall) {
-        borg_cave_view_add(ag, y, x);
+        borg_cave_view_hack(ag, y, x);
 
         return wall;
     }
 
     /* Check line of sight */
     if (borg_los(borg.c.y, borg.c.x, y, x)) {
-        borg_cave_view_add(ag, y, x);
+        borg_cave_view_hack(ag, y, x);
 
         return wall;
     }
@@ -224,7 +224,7 @@ void borg_update_view(void)
     ag->info |= BORG_XTRA;
 
     /* Assume the player grid is viewable */
-    borg_cave_view_add(ag, y, x);
+    borg_cave_view_hack(ag, y, x);
 
     /*** Step 2 -- Major Diagonals ***/
 
@@ -238,7 +238,7 @@ void borg_update_view(void)
 
         ag = &borg_grids[y + d][x + d];
         ag->info |= BORG_XTRA;
-        borg_cave_view_add(ag, y + d, x + d);
+        borg_cave_view_hack(ag, y + d, x + d);
         if (!borg_cave_floor_grid(ag))
             break;
     }
@@ -251,7 +251,7 @@ void borg_update_view(void)
 
         ag = &borg_grids[y + d][x - d];
         ag->info |= BORG_XTRA;
-        borg_cave_view_add(ag, y + d, x - d);
+        borg_cave_view_hack(ag, y + d, x - d);
         if (!borg_cave_floor_grid(ag))
             break;
     }
@@ -264,7 +264,7 @@ void borg_update_view(void)
 
         ag = &borg_grids[y - d][x + d];
         ag->info |= BORG_XTRA;
-        borg_cave_view_add(ag, y - d, x + d);
+        borg_cave_view_hack(ag, y - d, x + d);
         if (!borg_cave_floor_grid(ag))
             break;
     }
@@ -277,7 +277,7 @@ void borg_update_view(void)
 
         ag = &borg_grids[y - d][x - d];
         ag->info |= BORG_XTRA;
-        borg_cave_view_add(ag, y - d, x - d);
+        borg_cave_view_hack(ag, y - d, x - d);
         if (!borg_cave_floor_grid(ag))
             break;
     }
@@ -291,7 +291,7 @@ void borg_update_view(void)
             continue;
         ag = &borg_grids[y + d][x];
         ag->info |= BORG_XTRA;
-        borg_cave_view_add(ag, y + d, x);
+        borg_cave_view_hack(ag, y + d, x);
         if (!borg_cave_floor_grid(ag))
             break;
     }
@@ -307,7 +307,7 @@ void borg_update_view(void)
 
         ag = &borg_grids[y - d][x];
         ag->info |= BORG_XTRA;
-        borg_cave_view_add(ag, y - d, x);
+        borg_cave_view_hack(ag, y - d, x);
         if (!borg_cave_floor_grid(ag))
             break;
     }
@@ -322,7 +322,7 @@ void borg_update_view(void)
             continue;
         ag = &borg_grids[y][x + d];
         ag->info |= BORG_XTRA;
-        borg_cave_view_add(ag, y, x + d);
+        borg_cave_view_hack(ag, y, x + d);
         if (!borg_cave_floor_grid(ag))
             break;
     }
@@ -338,7 +338,7 @@ void borg_update_view(void)
 
         ag = &borg_grids[y][x - d];
         ag->info |= BORG_XTRA;
-        borg_cave_view_add(ag, y, x - d);
+        borg_cave_view_hack(ag, y, x - d);
         if (!borg_cave_floor_grid(ag))
             break;
     }

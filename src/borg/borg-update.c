@@ -1333,7 +1333,7 @@ static void borg_handle_self(char *str)
             }
         }
 
-        /* Hack -- convert torch-lit grids to perma-lit grids */
+        /* Convert torch-lit grids to perma-lit grids */
         for (i = 0; i < borg_light_n; i++) {
             x = borg_light_x[i];
             y = borg_light_y[i];
@@ -1624,7 +1624,7 @@ void borg_update(void)
         /* Get the arguments */
         what = strchr(msg, ':') + 1;
 
-        /* Hack -- Handle "SELF" info */
+        /* Handle "SELF" info */
         if (prefix(msg, "SELF:")) {
             borg_handle_self(what);
             borg_msg_use[i] = 1;
@@ -1929,7 +1929,7 @@ void borg_update(void)
             }
         }
 
-        /* Hack -- Handle "spell" */
+        /* Handle "spell" */
         else if (prefix(msg, "SPELL_")) {
             /* Attempt to find the monster */
             if ((k = borg_locate_kill(what, old_c, 20)) > 0) {
@@ -1940,7 +1940,7 @@ void borg_update(void)
                 created_traps = true;
         }
 
-        /* Hack -- Handle "cackles evilly" */
+        /* Handle "cackles evilly" */
         if (created_traps) {
             /* Remove the flag which tells borg that
              * Trap Detection was done here
@@ -2005,7 +2005,7 @@ void borg_update(void)
 
     /*** Handle new levels ***/
 
-    /* Hack -- note new levels */
+    /* Note new levels */
     if (old_depth != borg.trait[BI_CDEPTH]) {
         /* if we are not leaving town increment time since town clock */
         if (!old_depth)
@@ -2013,7 +2013,7 @@ void borg_update(void)
         else
             borg_time_town += borg_t - borg_began;
 
-        /* Hack -- Restart the clock */
+        /* Restart the clock */
         borg_t            = 1000;
         borg_t_morgoth    = 1;
         borg_t_antisummon = 0;
@@ -2095,7 +2095,7 @@ void borg_update(void)
         /* Mega-Hack -- Clear "detect obj" stamp */
         borg.when_detect_obj = 0;
 
-        /* Hack -- Clear "panel" flags */
+        /* Clear "panel" flags */
         for (y = 0; y < 6; y++) {
             for (x = 0; x < 18; x++) {
                 borg_detect_wall[y][x] = false;
@@ -2105,7 +2105,7 @@ void borg_update(void)
             }
         }
 
-        /* Hack -- Clear "fear" */
+        /* Clear "fear" */
         for (y = 0; y < 6; y++) {
             for (x = 0; x < 18; x++) {
                 borg_fear_region[y][x] = 0;
@@ -2119,13 +2119,13 @@ void borg_update(void)
             }
         }
 #if 0
-        /* Hack -- Clear "shop visit" stamps */
+        /* Clear "shop visit" stamps */
         for (i = 0; i < MAX_STORES; i++) borg_shops[i].when = 0;
 #endif
         /* No goal yet */
         borg.goal.type = 0;
 
-        /* Hack -- Clear "shop" goals */
+        /* Clear "shop" goals */
         borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
         /* Reset food&fuel in store */
@@ -2135,7 +2135,7 @@ void borg_update(void)
         /* Do not use any stairs */
         borg.stair_less = borg.stair_more = false;
 
-        /* Hack -- cannot rise past town */
+        /* Cannot rise past town */
         if (!borg.trait[BI_CDEPTH])
             borg.goal.rising = false;
 
@@ -2221,10 +2221,10 @@ void borg_update(void)
         /* Forget old monsters */
         memset(borg_kills, 0, 256 * sizeof(borg_kill));
 
-        /* Hack -- Forget race counters */
+        /* Forget race counters */
         memset(borg_race_count, 0, z_info->r_max * sizeof(int16_t));
 
-        /* Hack -- Rarely, a Unique can die off screen and the borg will miss
+        /* Rarely, a Unique can die off screen and the borg will miss
          * it. This check will cheat to see if uniques are dead.
          */
 
@@ -2469,7 +2469,7 @@ void borg_update(void)
     track_step.y[track_step.num] = borg.c.y;
     track_step.num++;
 
-    /* Hack - Clean the steps every so often */
+    /* Clean the steps every so often */
     if (track_step.num >= 75) {
         for (i = 0; i <= 75; i++) {
             /* Move each step down one position */
@@ -2666,7 +2666,7 @@ void borg_update(void)
         if (wank->is_kill
             && observe_kill_move(
                 wank->y, wank->x, 0, wank->t_a, wank->t_c, false)) {
-            /* Hack -- excise the entry */
+            /* Excise the entry */
             wank->is_kill = false;
             if (!wank->is_take && !wank->is_kill)
                 borg_wanks[i] = borg_wanks[--borg_wank_num];
@@ -2679,7 +2679,7 @@ void borg_update(void)
         /* Track stationary objects */
         if (wank->is_take
             && observe_take_move(wank->y, wank->x, 0, wank->t_a, wank->t_c)) {
-            /* Hack -- excise the entry */
+            /* Excise the entry */
             wank->is_take = false;
             if (!wank->is_take && !wank->is_kill)
                 borg_wanks[i] = borg_wanks[--borg_wank_num];
@@ -2693,7 +2693,7 @@ void borg_update(void)
         if (wank->is_kill
             && observe_kill_move(
                 wank->y, wank->x, 1, wank->t_a, wank->t_c, false)) {
-            /* Hack -- excise the entry */
+            /* Excise the entry */
             wank->is_kill = false;
             if (!wank->is_take && !wank->is_kill)
                 borg_wanks[i] = borg_wanks[--borg_wank_num];
@@ -2707,7 +2707,7 @@ void borg_update(void)
         if (wank->is_kill
             && observe_kill_move(
                 wank->y, wank->x, 2, wank->t_a, wank->t_c, false)) {
-            /* Hack -- excise the entry */
+            /* Excise the entry */
             wank->is_kill = false;
             if (!wank->is_take && !wank->is_kill)
                 borg_wanks[i] = borg_wanks[--borg_wank_num];
@@ -2721,7 +2721,7 @@ void borg_update(void)
         if (wank->is_kill
             && observe_kill_move(
                 wank->y, wank->x, 3, wank->t_a, wank->t_c, false)) {
-            /* Hack -- excise the entry */
+            /* Excise the entry */
             wank->is_kill = false;
             if (!wank->is_take && !wank->is_kill)
                 borg_wanks[i] = borg_wanks[--borg_wank_num];
@@ -2735,7 +2735,7 @@ void borg_update(void)
         if (wank->is_kill
             && observe_kill_move(
                 wank->y, wank->x, 7, wank->t_a, wank->t_c, true)) {
-            /* Hack -- excise the entry */
+            /* Excise the entry */
             wank->is_kill = false;
             if (!wank->is_take && !wank->is_kill)
                 borg_wanks[i] = borg_wanks[--borg_wank_num];
@@ -2748,7 +2748,7 @@ void borg_update(void)
         /* Track new objects */
         if (wank->is_take
             && observe_take_diff(wank->y, wank->x, wank->t_a, wank->t_c)) {
-            /* Hack -- excise the entry (unless it is also a monster) */
+            /* Excise the entry (unless it is also a monster) */
             wank->is_take = false;
             if (!wank->is_take && !wank->is_kill)
                 borg_wanks[i] = borg_wanks[--borg_wank_num];
@@ -2761,7 +2761,7 @@ void borg_update(void)
         /* Track new monsters */
         if (wank->is_kill
             && observe_kill_diff(wank->y, wank->x, wank->t_a, wank->t_c)) {
-            /* Hack -- excise the entry */
+            /* Excise the entry */
             wank->is_kill = false;
             if (!wank->is_take && !wank->is_kill)
                 borg_wanks[i] = borg_wanks[--borg_wank_num];
@@ -2850,7 +2850,7 @@ void borg_update(void)
             }
         }
 
-        /* Hack -- Handle "spell" */
+        /* Handle "spell" */
         else if (prefix(msg, "SPELL_")) {
             /* Attempt to find the monster */
             if ((k = borg_locate_kill(what, borg.c, 20)) > 0) {
@@ -2884,7 +2884,7 @@ void borg_update(void)
             borg_msg_use[i] = 5;
         }
 
-        /* Hack -- Handle "spell" */
+        /* Handle "spell" */
         else if (prefix(msg, "SPELL_")) {
             borg_fear_regional(what, borg.c.y, borg.c.x,
                 borg_fear_spell(atoi(msg + 6)), false);
@@ -2917,7 +2917,7 @@ void borg_update(void)
         if (kill->seen)
             continue;
 
-        /* Hack -- blind or hallucinating */
+        /* Blind or hallucinating */
         if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISIMAGE])
             continue;
 
@@ -3005,7 +3005,7 @@ void borg_update(void)
         if (take->when >= borg_t - 2)
             continue;
 
-        /* Hack -- blind or hallucinating */
+        /* Blind or hallucinating */
         if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISIMAGE])
             continue;
 

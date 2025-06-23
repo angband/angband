@@ -628,7 +628,7 @@ bool borg_spell(const enum borg_spells spell)
 }
 
 /*
- * Hack -- Cheat the "spell" info for a single book
+ * Cheat the "spell" info for a single book
  */
 static void borg_cheat_spell(int book_num)
 {
@@ -670,7 +670,7 @@ static void borg_cheat_spell(int book_num)
 }
 
 /*
- * Hack -- Cheat the "spell" info
+ * Cheat the "spell" info
  */
 void borg_cheat_spells(void)
 {

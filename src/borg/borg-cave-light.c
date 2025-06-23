@@ -204,7 +204,7 @@ void borg_update_light(void)
                 if ((dy <= 2) && (dx <= 2))
                     continue;
 
-                /* Hack -- approximate the distance */
+                /* Approximate the distance */
                 d = (dy > dx) ? (dy + (dx >> 1)) : (dx + (dy >> 1));
 
                 /* Skip distant grids */

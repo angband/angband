@@ -550,7 +550,7 @@ bool borg_drop_hole(bool desperate)
         if (!item->iqty)
             continue;
 
-        /* Hack -- skip "artifacts" */
+        /* Skip "artifacts" */
         if (item->art_idx)
             continue;
 
@@ -585,7 +585,7 @@ bool borg_drop_hole(bool desperate)
                 continue;
         }
 
-        /* Hack -- skip "artifacts" */
+        /* Skip "artifacts" */
         if (item->art_idx && !item->ident)
             continue;
 
@@ -691,7 +691,7 @@ bool borg_drop_hole(bool desperate)
             value += 5000L;
         }
 
-        /* Hack  show preference for destroying things we will not use */
+        /* Show preference for destroying things we will not use */
         /* if we are high enough level not to worry about gold. */
         if (borg.trait[BI_CLEVEL] > 35 && item->aware) {
             switch (item->tval) {
@@ -794,11 +794,11 @@ bool borg_drop_hole(bool desperate)
             value = (item->iqty * value);
         }
 
-        /* Hack -- try not to destroy "unaware" items
+        /* Try not to destroy "unaware" items
          * unless deep
          */
         if (!item->aware && (value > 0)) {
-            /* Hack -- Reward "unaware" items */
+            /* Reward "unaware" items */
             switch (item->tval) {
             case TV_RING:
             case TV_AMULET:
@@ -825,7 +825,7 @@ bool borg_drop_hole(bool desperate)
             }
         }
 
-        /* Hack -- try not to destroy "unknown" items */
+        /* Try not to destroy "unknown" items */
         if (!item->ident && (value > 0) && borg_item_worth_id(item)) {
             /* Reward "unknown" items */
             switch (item->tval) {
@@ -973,7 +973,7 @@ bool borg_drop_slow(void)
         > borg.trait[BI_CURHP] / 20)
         return false;
 
-    /* Hack -- never in town */
+    /* Never in town */
     if (borg.trait[BI_CDEPTH] == 0)
         return false;
 
@@ -1025,7 +1025,7 @@ bool borg_drop_slow(void)
         if (item->tval == TV_BOOTS && !item->ident)
             continue;
 
-        /* Hack -- Skip artifacts */
+        /* Skip artifacts */
         if (OPT(player, birth_randarts) && item->art_idx && !item->ident)
             continue;
         if (borg_item_note_needs_id(item))
@@ -1063,7 +1063,7 @@ bool borg_drop_slow(void)
         /* Obtain the base price */
         temp = ((item->value < 30000L) ? item->value : 30000L);
 
-        /* Hack -- ignore very cheap items */
+        /* Ignore very cheap items */
         if (temp < greed)
             temp = 0L;
 
@@ -1159,7 +1159,7 @@ bool borg_dump_quiver(void)
 
     borg_item *item;
 
-    /* hack to prevent the swap till you drop loop */
+    /* Prevent the swap till you drop loop */
     if (borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK])
         return false;
 
@@ -1270,7 +1270,7 @@ bool borg_remove_stuff(void)
     if (hole == -1)
         return false;
 
-    /*  hack to prevent the swap till you drop loop */
+    /* Prevent the swap till you drop loop */
     if (borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK])
         return false;
 

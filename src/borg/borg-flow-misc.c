@@ -274,7 +274,7 @@ bool borg_flow_recover(bool viewable, int dist)
                 continue;
 
             /* Can't rest on a wall grid. */
-            /* HACK depends on FEAT order, kinda evil */
+            /* Depends on FEAT order, kinda evil */
             if (borg_grids[y][x].feat >= FEAT_SECRET
                 && borg_grids[y][x].feat != FEAT_PASS_RUBBLE)
                 continue;

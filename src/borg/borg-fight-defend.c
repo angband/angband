@@ -303,18 +303,18 @@ static int borg_defend_aux_speed(int p1)
 
     /* if scaryguy around cast it. */
     if (scaryguy_on_level) {
-        /* HACK pretend that it was scary and will be safer */
+        /* Pretend that it was scary and will be safer */
         p2 = p2 * 3 / 10;
     }
 
     /* if we are fighting a unique cast it. */
     if (good_speed && borg_fighting_unique) {
-        /* HACK pretend that it was scary and will be safer */
+        /* Pretend that it was scary and will be safer */
         p2 = p2 * 7 / 10;
     }
     /* if we are fighting a unique and a summoner cast it. */
     if (borg_fighting_summoner && borg_fighting_unique) {
-        /* HACK pretend that it was scary and will be safer */
+        /* Pretend that it was scary and will be safer */
         p2 = p2 * 7 / 10;
     }
     /* if the unique is Sauron cast it */
@@ -498,7 +498,7 @@ static int borg_defend_aux_resist_fecap(int p1)
         && (streq(r_info[unique_on_level].name, "The Tarrasque")))
         p2 = p2 * 8 / 10;
 
-    /* Hack -
+    /*
      * If borg is high enough level, he does not need to worry
      * about mana consumption.  Cast the good spell.
      */
@@ -581,7 +581,7 @@ static int borg_defend_aux_resist_f(int p1)
     p2                 = borg_danger(borg.c.y, borg.c.x, 1, false, false);
     borg.temp.res_fire = save_fire;
 
-    /* Hack -
+    /*
      * If the borg is fighting a particular unique enhance the
      * benefit of the spell.
      */
@@ -671,7 +671,7 @@ static int borg_defend_aux_resist_c(int p1)
     p2                 = borg_danger(borg.c.y, borg.c.x, 1, false, false);
     borg.temp.res_cold = save_cold;
 
-    /* Hack -
+    /*
      * If the borg is fighting a particular unique enhance the
      * benefit of the spell.
      */
@@ -2880,7 +2880,7 @@ static int borg_defend_aux_panel_shift(void)
     /* check to make sure its appropriate */
     {
 
-        /* Hack Not if I just did one */
+        /* Not if I just did one */
         if (borg.when_shift_panel
             && (borg_t - borg.when_shift_panel <= 10
                 || borg_t - borg_t_morgoth <= 10)) {

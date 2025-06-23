@@ -513,7 +513,7 @@ bool borg_caution_teleport(int emergency, int turns)
 }
 
 /*
- * Hack -- If the borg is standing on a stair and is in some danger, just leave
+ * If the borg is standing on a stair and is in some danger, just leave
  * the level. No need to hang around on that level, try conserving the teleport
  * scrolls
  */
@@ -702,7 +702,7 @@ bool borg_escape(int b_q)
             return false;
     }
 
-    /* Hack -- If the borg is weak (no food, starving) on depth 1 and he has no
+    /* If the borg is weak (no food, starving) on depth 1 and he has no
      * idea where the stairs may be, run the risk of diving deeper against the
      * benefit of rising to town.
      */
