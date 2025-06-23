@@ -286,7 +286,7 @@ void death_knowledge(struct player *p)
 	/* Retire in the town in a good state */
 	if (p->total_winner) {
 		p->depth = 0;
-		my_strcpy(p->died_from, "Ripe Old Age", sizeof(p->died_from));
+		my_strcpy(p->died_from, WINNING_HOW, sizeof(p->died_from));
 		p->exp = p->max_exp;
 		p->lev = p->max_lev;
 		p->au += 10000000L;

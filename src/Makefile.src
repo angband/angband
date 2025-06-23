@@ -244,10 +244,11 @@ ANGFILES0 = \
 	project-mon.o \
 	project-obj.o \
 	project-player.o \
-	score.o \
 	save.o \
 	savefile.o \
 	save-charoutput.o \
+	score.o \
+	score-util.o \
 	sound-core.o \
 	source.o \
 	store.o \

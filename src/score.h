@@ -19,6 +19,10 @@
 #ifndef INCLUDED_SCORE_H
 #define INCLUDED_SCORE_H
 
+#include <stdbool.h>
+#include <stddef.h>
+#include <time.h>
+
 struct player;
 
 /**
@@ -26,6 +30,11 @@ struct player;
  */
 #define MAX_HISCORES    100
 
+/**
+ * What the how field of a score record or died_from field of struct player
+ * contains for a winner
+ */
+#define WINNING_HOW "Ripe Old Age"
 
 /**
  * Semi-Portable High Score List Entry (128 bytes)
@@ -57,12 +66,16 @@ struct high_score {
 
 
 size_t highscore_read(struct high_score scores[], size_t sz);
-size_t highscore_where(const struct high_score *entry,
-					   const struct high_score scores[], size_t sz);
 size_t highscore_add(const struct high_score *entry, struct high_score scores[],
 					 size_t sz);
 void build_score(struct high_score *entry, const struct player *p,
 		const char *died_from, const time_t *death_time);
 void enter_score(const struct player *p, const time_t *death_time);
+
+/* From score-util.c */
+size_t highscore_where(const struct high_score *entry,
+		const struct high_score scores[], size_t sz);
+bool highscore_valid(const struct high_score *s);
+bool highscore_regularize(struct high_score scores[], size_t sz);
 
 #endif /* INCLUDED_SCORE_H */

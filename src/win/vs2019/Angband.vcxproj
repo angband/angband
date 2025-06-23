@@ -312,6 +312,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\save.c" />
     <ClCompile Include="src\savefile.c" />
     <ClCompile Include="src\score.c" />
+    <ClCompile Include="src\score-util.c" />
     <ClCompile Include="src\sound-core.c" />
     <ClCompile Include="src\source.c" />
     <ClCompile Include="src\store.c" />
