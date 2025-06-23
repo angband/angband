@@ -145,7 +145,7 @@ Adjusting Borg Speed
 
 When you first run the Borg it may move very slowly. This is often due to the
 game's ``base delay factor``, a general setting that affects all animations. To
-speed up the Borg, you can reduce this value.
+speed up the Borg you can decrease this value:
 
 1. Press ``=`` to open the main options menu
 2. Press ``d`` to change the ``delay factor``
