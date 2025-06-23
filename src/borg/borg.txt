@@ -40,8 +40,8 @@ borg_worships_gold = FALSE
 
 
 # use the FORMULA SECTION below. If false the borg will
-# use the calcs in the C code. Which is recommended since I hone those
-# more frequently than I do the dynamic calcs. Most borg users will
+# use the calcs in the C code. Which is recommended since those are honed
+# more frequently than the dynamic calcs. Most borg users will
 # have more successful borgs by leaving this option as FALSE.
 # note: the dynamic calcs are slower than the internal calcs
 
@@ -186,23 +186,19 @@ borg_stop_on_bell = FALSE
 # benefit of the loot within the chest. The game uses a straight forward 
 # formula for calculating the success of a chest. It is:
 # randint(100) < the skill of the player minus the difficulty of the chest.
-# Difficulties run from 1 to 63. I would recommend a tolerance of about 7
-# for vanilla chests (since they suck) and about 15 for DrAngband.
+# Difficulties run from 1 to 63.
 
 borg_chest_fail_tolerance = 7
 
 
 # Speed of the Borg
 
-# You can slow the borg down several different ways. One way is to set the
+# You can slow the borg down a couple of ways. One way is to set the
 # base game delay factor in the options menu. This will slow down the borg
 # and the visual effects (like missiles shooting, explosions). If using the
 # screensaver, you will need to load angband.exe load the savefile, make the
 # modifications, then save and exit. Another way to slow the borg down is
-# to add more term windows. The more it has to do, the slower it will be.
-# I recommend using Inventory, Equipment, Messages, Monster Recall, Borg
-# Status windows. Then you can really see what the borg is up to. Lastly,
-# to slow the borg down use the following variable. The formula is:
+# to use the following variable. The formula is:
 # base_game_delay_factor^2 + borg_delay_factor^2.
 
 borg_delay_factor = 0
