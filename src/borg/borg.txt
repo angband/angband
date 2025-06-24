@@ -14,11 +14,11 @@
 
 ### Worships ###
 
-# The 'borg_worship_' variables will influence
-# his equipment selection by adding additional bonuses to items which
-# enhance that attribute. For example: if a borg receives 2000 pts for
-# a single point of armour class, an 'ac worshipping' borg would receive
-# 3000 pts. This bonus would significantly influence equipment choices.
+# The 'borg_worship_' variables will influence his equipment selection by
+# adding additional bonuses to items which enhance that attribute. For example:
+# if a borg receives 2000 pts for a single point of armour class, an 'ac
+# worshipping' borg would receive 3000 pts. This bonus would significantly
+# influence equipment choices.
 #
 # borg_worships_gold explained:
 # The borg_worships_gold option will greatly impact how the borg treats items
