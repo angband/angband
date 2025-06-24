@@ -7,15 +7,19 @@
 # However, some players/observers of borgs would like to see it function
 # differently. Some would like to see the borg play more aggressively, or
 # more conservatively. While others would like to value armour class more.
-# Still others would like to see it collect more speed items.
+# Still others would like to see it collect more speed items. With the
+# expressions below, you can influence the borg's behavior and
+# equipment selection choices. To modify, simply set values to TRUE or FALSE.
 
-# With the expressions below, you can influence the borg's behavior and
-# equipment selection choices. The 'borg_worship_' variables will influence
+
+### Worships ###
+
+# The 'borg_worship_' variables will influence
 # his equipment selection by adding additional bonuses to items which
 # enhance that attribute. For example: if a borg receives 2000 pts for
 # a single point of armour class, an 'ac worshipping' borg would receive
 # 3000 pts. This bonus would significantly influence equipment choices.
-
+#
 # borg_worships_gold explained:
 # The borg_worships_gold option will greatly impact how the borg treats items
 # which he finds in the dungeon. With this option on, he will return to town
@@ -30,19 +34,15 @@
 # This option has no effect after clevel 20. One other downside of this is
 # that the borg will spend more time in town and may have to evade Vets more.
 
-# To modify, simply set it to TRUE or FALSE.
-
-# Worships
-
-borg_worships_damage= FALSE
-borg_worships_speed =FALSE
-borg_worships_hp=FALSE
+borg_worships_damage = FALSE
+borg_worships_speed = FALSE
+borg_worships_hp = FALSE
 borg_worships_mana = FALSE
 borg_worships_ac = FALSE
 borg_worships_gold = FALSE
 
 
-# Risky
+### Risky ###
 
 # A risky borg is one who is not confined by character level requirements
 # in order to dive deeper. It is also more likely to stay in a battle than
@@ -63,7 +63,8 @@ borg_worships_gold = FALSE
 borg_plays_risky = FALSE
 borg_kills_uniques = FALSE
 
-# Swap Items
+
+### Swap Items ###
 
 # The borg is designed to use Swap Items in the inventory. A swap item
 # is an equipment item (like a sword or armour item) which possesses a
@@ -77,19 +78,27 @@ borg_kills_uniques = FALSE
 
 borg_uses_swaps = TRUE
 
+
+### Strange Opts ###
+
 # some birth options don't allow the borg to run well. If you want to allow
 # the borg to run anyways, set this to TRUE and run at your own risk.
+
 borg_allow_strange_opts = FALSE
 
 
-# Respawn
+### Cheat Death ###
 
 # if borg_cheat_death is set, the option to cheat death will be set and, when
 # the borg dies, he will cheat death and keep going. If this is false and the
 # option to cheat death in the game is true the borg will reincarnate (respawn)
 # as a player using the options below to pick the new player. If the option
 # to cheat death is false and this is false, the borg will stop on death.
+
 borg_cheat_death = FALSE
+
+
+### Respawn ###
 
 # If the borg is in continual play mode (as with the screen saver),
 # he will respawn a randomly generated character at death. This section
@@ -97,7 +106,7 @@ borg_cheat_death = FALSE
 # You may select the race and or class and or minimal stats for the Borg.
 # You may also select the minimal character level needed before the
 # character dump is created in the game directory.
-
+#
 # With regards to race, the borg is programmed to accept the variety of
 # user defined races which may be in the p_info.txt file. So the values
 # given in table below are for the default races. But if you are bright
@@ -135,7 +144,7 @@ borg_respawn_class = -1
 borg_respawn_winners = FALSE
 
 
-# Dumps
+### Dumps ###
 
 # This variable will determine the minimal character level at which the borg
 # will create a character dump file. That file contains some vital information
@@ -148,12 +157,16 @@ borg_respawn_winners = FALSE
 borg_dump_level = 1
 borg_save_death = 1
 
-# Autosave 
+
+### Autosave ###
+
 # this causes the borg to do a (redundant) save at the start of every level and
 # create a backup of that save to the archive directory
+
 borg_autosave = FALSE
 
-# Auto Stops
+
+### Auto Stops ###
 
 # The borg is able to stop when it reaches a certain dungeon depth or character
 # level. He will also stop when he wins the game. If you want him to keep
@@ -166,6 +179,9 @@ borg_stop_clevel = 51
 borg_no_deeper = 127
 borg_stop_king = TRUE
 
+
+### Stop On Bell ###
+
 # If stop on bell is set, the borg will stop when the game plays the bell, 
 # which generally only happens on an error. This is to help debug issues. The
 # message log will contain a list of up to 50 of the latest keypresses.
@@ -173,7 +189,7 @@ borg_stop_king = TRUE
 borg_stop_on_bell = FALSE
 
 
-# Chest Tolerance
+### Chest Tolerance ###
 
 # The borg is able to search, disarm, and open chests. There is an inherent
 # risk when dealing with chests. The risk of setting off the trap vs the
@@ -185,7 +201,7 @@ borg_stop_on_bell = FALSE
 borg_chest_fail_tolerance = 7
 
 
-# Speed of the Borg
+### Speed Of The Borg ###
 
 # You can slow the borg down a couple of ways. One way is to set the
 # base game delay factor in the options menu. This will slow down the borg
@@ -198,7 +214,7 @@ borg_chest_fail_tolerance = 7
 borg_delay_factor = 0
 
 
-# Money Scumming
+### Money Scumming ###
 
 # This started as more of a joke but it does have a useful purpose. If you 
 # find yourself shopping in the BM and you really want that item and its just 
@@ -222,7 +238,7 @@ borg_delay_factor = 0
 borg_money_scum_amount = 0
 
 
-# Borg Scumming
+### Borg Scumming ###
 
 # This is a companion to the Money Scum above. The borg will scum town if
 # a stat potion is in the BM. If the borg finds an item in town that he would
@@ -238,7 +254,7 @@ borg_money_scum_amount = 0
 borg_self_scum = TRUE
 
 
-# Lunal Borg
+### Lunal Borg ###
 
 # The borg will dive deep in the dungeon, even while he is still
 # low level, bouncing between levels to take nearby down stairs.
@@ -272,7 +288,7 @@ borg_lunal_mode = FALSE
 borg_self_lunal = FALSE
 
 
-# Borg Verbose
+### Borg Verbose ###
 
 # Verbose is default off. It makes the borg give more reports on his actions
 # and thoughts. He still gives reports when verbose is FALSE, but when TRUE, 
@@ -281,8 +297,7 @@ borg_self_lunal = FALSE
 borg_verbose = FALSE
 
 
-
-# Munchkin Start
+### Munchkin Start ###
 
 # Munchkin start will have the borg stair-scum at depth 5-6, looking for items
 # which he will then sell in town. He will continue this process until about
@@ -293,7 +308,8 @@ borg_munchkin_start = FALSE
 borg_munchkin_level = 12
 borg_munchkin_depth = 16
 
-# Enchant Limit
+
+### Enchant Limit ###
 
 # The borg knows how to enchant his equipment using scrolls and spells.
 # For ammo, he will stop enchanting about +10 or so. If he has access 
