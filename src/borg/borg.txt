@@ -42,15 +42,6 @@ borg_worships_ac = FALSE
 borg_worships_gold = FALSE
 
 
-# use the FORMULA SECTION below. If false the borg will
-# use the calcs in the C code. Which is recommended since those are honed
-# more frequently than the dynamic calcs. Most borg users will
-# have more successful borgs by leaving this option as FALSE.
-# note: the dynamic calcs are slower than the internal calcs
-
-borg_uses_dynamic_calcs = FALSE
-
-
 # Risky
 
 # A risky borg is one who is not confined by character level requirements
@@ -312,6 +303,18 @@ borg_munchkin_depth = 16
 # win, then choose a lower number like +11.
 
 borg_enchant_limit = 12
+
+
+### Dynamic Calculations ###
+
+# use the FORMULA SECTION below. If false the borg will
+# use the calcs in the C code. Which is recommended since those are honed
+# more frequently than the dynamic calcs. Most borg users will
+# have more successful borgs by leaving this option as FALSE.
+# note: the dynamic calcs are slower than the internal calcs
+
+borg_uses_dynamic_calcs = FALSE
+
 
 [BEGIN FORMULA SECTION]
 
