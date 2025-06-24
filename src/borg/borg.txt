@@ -9,7 +9,8 @@
 # more conservatively. While others would like to value armour class more.
 # Still others would like to see it collect more speed items. With the
 # expressions below, you can influence the borg's behavior and
-# equipment selection choices. To modify, simply set values to TRUE or FALSE.
+# equipment selection choices. To modify, simply set values to TRUE or FALSE,
+# with the exception of a few integers.
 
 
 ### Worships ###
@@ -89,7 +90,7 @@ borg_allow_strange_opts = FALSE
 
 ### Cheat Death ###
 
-# if borg_cheat_death is set, the option to cheat death will be set and, when
+# If borg_cheat_death is set, the option to cheat death will be set and, when
 # the borg dies, he will cheat death and keep going. If this is false and the
 # option to cheat death in the game is true the borg will reincarnate (respawn)
 # as a player using the options below to pick the new player. If the option
@@ -160,7 +161,7 @@ borg_save_death = 1
 
 ### Autosave ###
 
-# this causes the borg to do a (redundant) save at the start of every level and
+# This causes the borg to do a (redundant) save at the start of every level and
 # create a backup of that save to the archive directory
 
 borg_autosave = FALSE
@@ -323,7 +324,7 @@ borg_enchant_limit = 12
 
 ### Dynamic Calculations ###
 
-# use the FORMULA SECTION below. If false the borg will
+# Use the FORMULA SECTION below. If false the borg will
 # use the calcs in the C code. Which is recommended since those are honed
 # more frequently than the dynamic calcs. Most borg users will
 # have more successful borgs by leaving this option as FALSE.
