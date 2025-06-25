@@ -2445,9 +2445,9 @@ static void update_bonuses(struct player *p)
 		if (p->state.cumber_armor != state.cumber_armor) {
 			/* Message */
 			if (state.cumber_armor)
-				msg("The weight of your armor encumbers your movement.");
+				msg("The weight of your armor reduces your maximum SP.");
 			else
-				msg("You feel able to move more freely.");
+				msg("Your maximum SP is no longer reduced by armor weight.");
 		}
 	}
 
