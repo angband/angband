@@ -83,7 +83,7 @@ if (html_theme == "".join(["@", "DOC_HTML_THEME", "@"]) or html_theme == ""):
             "headtextcolor": "rgb(253, 229, 164)",
         }
 
-html_title = "<img> The Angband Manual"
+html_title = "The Angband Manual"
 html_short_title = "Home"
 html_sidebars = {
     "**": ["localtoc.html", "searchbox.html"],
