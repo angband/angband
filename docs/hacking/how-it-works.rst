@@ -43,7 +43,7 @@ The Player
 
 The player is a global object containing information about, well, the player.
 All the information in the player is level-independent. This structure contains
-stats, any current effects, hunger status, sex/race/class, the player's
+stats, any current effects, hunger status, race/class, the player's
 inventory, and a grab-bag of other information. Although there is a global
 player object, many functions instead take a player object explicitly to make
 them easier to test.
