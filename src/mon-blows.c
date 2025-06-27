@@ -1017,7 +1017,7 @@ static void melee_effect_handler_TERRIFY(melee_effect_handler_context_t *context
  */
 static void melee_effect_handler_PARALYZE(melee_effect_handler_context_t *context)
 {
-	/* Hack -- Prevent perma-paralysis via damage */
+	/* Prevent perma-paralysis via damage */
 	if (context->p && context->p->timed[TMD_PARALYZED] && (context->damage < 1))
 		context->damage = 1;
 
@@ -1089,7 +1089,7 @@ static void melee_effect_handler_SHATTER(melee_effect_handler_context_t *context
 	/* Obvious */
 	context->obvious = true;
 
-	/* Hack -- Reduce damage based on the player armor class */
+	/* Reduce damage based on the player armor class */
 	context->damage = adjust_dam_armor(context->damage, context->ac);
 
 	/* Take damage */

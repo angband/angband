@@ -1081,7 +1081,7 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 		if ((hurt_msg != MON_MSG_NONE) && seen)
 			add_monster_message(mon, hurt_msg, false);
 
-		/* Hack -- Pain message */
+		/* Pain message */
 		else if (dam > 0)
 			message_pain(mon, dam);
 	}
@@ -1318,7 +1318,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
  * Note that this function determines if the player can see anything that
  * happens by taking into account: blindness, line-of-sight, and illumination.
  *
- * Hack -- effects on grids which are memorized but not in view are also seen.
+ * Effects on grids which are memorized but not in view are also seen.
  */
 void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 			   int flg, bool *did_hit, bool *was_obvious)

@@ -676,7 +676,7 @@ void wr_artifacts(void)
 	int i;
 	uint16_t tmp16u;
 
-	/* Hack -- Dump the artifacts */
+	/* Dump the artifacts */
 	tmp16u = z_info->a_max;
 	wr_u16b(tmp16u);
 	for (i = 0; i < tmp16u; i++) {

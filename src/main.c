@@ -148,7 +148,7 @@ static void init_stuff(void)
 	libpath[511] = '\0';
 	datapath[511] = '\0';
 
-	/* Hack -- Add a path separator (only if needed) */
+	/* Add a path separator (only if needed) */
 	if (!suffix(configpath, PATH_SEP)) my_strcat(configpath, PATH_SEP,
 												 sizeof(configpath));
 	if (!suffix(libpath, PATH_SEP)) my_strcat(libpath, PATH_SEP,
@@ -467,7 +467,7 @@ int main(int argc, char *argv[])
 		if (*arg) goto usage;
 	}
 
-	/* Hack -- Forget standard args */
+	/* Forget standard args */
 	if (args) {
 		argc = 1;
 		argv[1] = NULL;

@@ -1967,7 +1967,7 @@ static BOOL graphics_will_be_enabled(void)
 }
 
 /**
- * Hack -- game in progress
+ * Game in progress
  */
 static BOOL game_in_progress = NO;
 
@@ -4506,12 +4506,12 @@ static errr Term_xtra_cocoa(int n, int v)
 
 	    /* Flush all pending events (if any) */
         case TERM_XTRA_FLUSH:
-	    /* Hack -- flush all events */
+	    /* Flush all events */
 	    while (check_events(CHECK_EVENTS_DRAIN)) /* loop */;
 
 	    break;
 
-	    /* Hack -- Change the "soft level" */
+	    /* Change the "soft level" */
         case TERM_XTRA_LEVEL:
 	    /*
 	     * Here we could activate (if requested), but I don't think
@@ -4969,7 +4969,7 @@ static void quit_calmly(void)
     /* Save the game and Quit (if it's safe) */
     if (inkey_flag)
     {
-        /* Hack -- Forget messages and term */
+        /* Forget messages and term */
         msg_flag = false;
         Term->mapped_flag = false;
 
@@ -5824,7 +5824,7 @@ static void cocoa_reinit(void)
 
 - (IBAction)saveGame:sender
 {
-    /* Hack -- Forget messages */
+    /* Forget messages */
     msg_flag = false;
     
     /* Save the game */

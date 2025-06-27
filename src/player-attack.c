@@ -1094,7 +1094,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 		pierce = p->state.ammo_mult;
 	}
 
-	/* Hack -- Handle stuff */
+	/* Handle stuff */
 	handle_stuff(p);
 
 	/* Project along the path */

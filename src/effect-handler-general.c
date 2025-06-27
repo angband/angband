@@ -2358,7 +2358,7 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 		/* Paranoia -- Skip dead monsters */
 		if (!mon->race) continue;
 
-		/* Hack -- Skip Unique Monsters */
+		/* Skip Unique Monsters */
 		if (monster_is_unique(mon)) continue;
 
 		/*
@@ -2418,7 +2418,7 @@ bool effect_handler_MASS_BANISH(effect_handler_context_t *context)
 		/* Paranoia -- Skip dead monsters */
 		if (!mon->race) continue;
 
-		/* Hack -- Skip unique monsters */
+		/* Skip unique monsters */
 		if (monster_is_unique(mon)) continue;
 
 		/* Skip distant monsters */

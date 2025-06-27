@@ -418,7 +418,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			if (player->upkeep->health_who == mon)
 				player->upkeep->redraw |= (PR_HEALTH);
 
-			/* Hack -- Count "fresh" sightings */
+			/* Count "fresh" sightings */
 			if (lore->sights < SHRT_MAX)
 				lore->sights++;
 
@@ -1246,7 +1246,7 @@ bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
 /**
  * Decreases a monster's hit points by `dam` and handle monster death.
  *
- * Hack -- we "delay" fear messages by passing around a "fear" flag.
+ * We "delay" fear messages by passing around a "fear" flag.
  *
  * We announce monster death (using an optional "death message" (`note`)
  * if given, and a otherwise a generic killed/destroyed message).

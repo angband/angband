@@ -593,7 +593,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			/* Always disturbing */
 			disturb(p);
 
-			/* Hack -- Apply "protection from evil" */
+			/* Apply "protection from evil" */
 			if (p->timed[TMD_PROTEVIL] > 0) {
 				/* Learn about the evil flag */
 				if (monster_is_visible(mon))
@@ -604,7 +604,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 					/* Message */
 					msg("%s is repelled.", m_name);
 
-					/* Hack -- Next attack */
+					/* Next attack */
 					continue;
 				}
 			}
@@ -612,7 +612,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			do_cut = method->cut;
 			do_stun = method->stun;
 
-			/* Hack -- assume all attacks are obvious */
+			/* Assume all attacks are obvious */
 			obvious = true;
 
 			/* Roll dice */
@@ -656,7 +656,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 				do_stun = false;
 			}
 
-			/* Hack -- only one of cut or stun */
+			/* Only one of cut or stun */
 			if (do_cut && do_stun) {
 				/* Cancel cut */
 				if (randint0(100) < 50)
@@ -803,7 +803,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 
 			do_stun = method->stun;
 
-			/* Hack -- assume all attacks are obvious */
+			/* Assume all attacks are obvious */
 			obvious = true;
 
 			/* Roll dice */

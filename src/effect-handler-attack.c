@@ -1495,7 +1495,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 							/* Skip non-empty grids */
 							if (!square_isempty(cave, safe)) continue;
 
-							/* Hack -- no safety on glyph of warding */
+							/* No safety on glyph of warding */
 							if (square_iswarded(cave, safe)) continue;
 
 							/* Important -- Skip quake grids */

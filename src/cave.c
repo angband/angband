@@ -80,7 +80,7 @@ const struct loc clockwise_grid[9] =
 {{0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, 0}};
 
 /**
- * Hack -- Precompute a bunch of calls to distance().
+ * Precompute a bunch of calls to distance().
  *
  * The pair of arrays dist_offsets_y[n] and dist_offsets_x[n] contain the
  * offsets of all the locations with a distance of n from a central point,

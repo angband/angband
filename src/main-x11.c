@@ -166,7 +166,7 @@
 
 
 /**
- * Hack -- avoid some compiler warnings
+ * Avoid some compiler warnings
  */
 #define IGNORE_UNUSED_FUNCTIONS
 
@@ -492,7 +492,7 @@ static int gamma_val = 0;
 
 
 /**
- * Hack -- Convert an RGB value to an X11 Pixel, or die.
+ * Convert an RGB value to an X11 Pixel, or die.
  */
 static uint32_t create_pixel(Display *dpy, uint8_t red, uint8_t green,
 		uint8_t blue)
@@ -511,7 +511,7 @@ static uint32_t create_pixel(Display *dpy, uint8_t red, uint8_t green,
 		if (gamma_val) build_gamma_table(gamma_val);
 	}
 
-	/* Hack -- Gamma Correction */
+	/* Gamma Correction */
 	if (gamma_val > 0) {
 		red = gamma_table[red];
 		green = gamma_table[green];
@@ -1266,7 +1266,7 @@ static errr Infoclr_init_data(Pixell fg, Pixell bg, int op, int stip)
 	/* Assign the proper GC foreground */
 	gcv.foreground = fg;
 
-	/* Hack -- Handle XOR (xor is code 6) by hacking bg and fg */
+	/* Handle XOR (xor is code 6) by hacking bg and fg */
 	if (op == 6) gcv.background = 0;
 	if (op == 6) gcv.foreground = (bg ^ fg);
 
@@ -1586,7 +1586,7 @@ static errr Infofnt_text_non(int x, int y, const wchar_t *str, int len)
 
 
 /**
- * Hack -- cursor color
+ * Cursor color
  */
 static infoclr *xor;
 
@@ -1802,10 +1802,10 @@ static errr CheckEvent(bool wait)
 	/* Unknown window */
 	if (!td || !iwin) return (0);
 
-	/* Hack -- activate the Term */
+	/* Activate the Term */
 	Term_activate(&td->t);
 
-	/* Hack -- activate the window */
+	/* Activate the window */
 	Infowin_set(iwin);
 
 	/* Switch on the Type */
@@ -1850,7 +1850,7 @@ static errr CheckEvent(bool wait)
 
 		case KeyPress:
 		{
-			/* Hack -- use "old" term */
+			/* Use "old" term */
 			Term_activate(&old_td->t);
 
 			/* Process the key */
@@ -1908,7 +1908,7 @@ static errr CheckEvent(bool wait)
 			cols = ((Infowin->w - (ox + ox)) / td->tile_wid);
 			rows = ((Infowin->h - (oy + oy)) / td->tile_hgt);
 
-			/* Hack -- minimal size */
+			/* Minimal size */
 			if (cols < 1) cols = 1;
 			if (rows < 1) rows = 1;
 
@@ -1943,10 +1943,10 @@ static errr CheckEvent(bool wait)
 		}
 	}
 
-	/* Hack -- Activate the old term */
+	/* Activate the old term */
 	Term_activate(&old_td->t);
 
-	/* Hack -- Activate the proper window */
+	/* Activate the proper window */
 	Infowin_set(old_td->win);
 
 	/* Success */
@@ -2205,7 +2205,7 @@ static void save_prefs(void)
 		 * This doesn't seem to work under various WMs
 		 * since the decoration messes the position up
 		 *
-		 * Hack -- Use saved window positions.
+		 * Use saved window positions.
 		 * This means that we won't remember ingame repositioned
 		 * windows, but also means that WMs won't screw predefined
 		 * positions up. -CJN-
@@ -2466,7 +2466,7 @@ static errr term_data_init(term_data *td, int i)
 	/* Don't allow bigtile mode - one day maybe NRM */
 	td->tile_wid2 = td->tile_wid;
 
-	/* Hack -- key buffer size */
+	/* Key buffer size */
 	num = ((i == 0) ? 1024 : 16);
 
 	/* Assume full size windows */
