@@ -146,7 +146,7 @@ static void flavor_reset_fixed(void)
  * can happen is when the current title has 6 letters and the new word
  * has 8 letters, which would result in a 6 letter scroll title.
  *
- * Hack -- make sure everything stays the same for each saved game
+ * Make sure everything stays the same for each saved game
  * This is accomplished by the use of a saved "random seed", as in
  * "town_gen()".  Since no other functions are called while the special
  * seed is in effect, so this function is pretty "safe".
@@ -155,10 +155,10 @@ void flavor_init(void)
 {
 	int i, j;
 
-	/* Hack -- Use the "simple" RNG */
+	/* Use the "simple" RNG */
 	Rand_quick = true;
 
-	/* Hack -- Induce consistant flavors */
+	/* Induce consistant flavors */
 	Rand_value = seed_flavor;
 
 	/* Scrub all flavors and re-parse for new players */
@@ -224,7 +224,7 @@ void flavor_init(void)
 	}
 	flavor_assign_random(TV_SCROLL);
 
-	/* Hack -- Use the "complex" RNG */
+	/* Use the "complex" RNG */
 	Rand_quick = false;
 
 	/* Analyze every object */
@@ -957,7 +957,7 @@ void distribute_charges(struct object *source, struct object *dest, int amt)
 	int charge_time = randcalc(source->time, 0, AVERAGE), max_time;
 
 	/*
-	 * Hack -- If rods, staves, or wands are dropped, the total maximum
+	 * If rods, staves, or wands are dropped, the total maximum
 	 * timeout or charges need to be allocated between the two stacks.
 	 * If all the items are being dropped, it makes for a neater message
 	 * to leave the original stack's pval alone. -LM-
@@ -970,7 +970,7 @@ void distribute_charges(struct object *source, struct object *dest, int amt)
 	}
 
 	/*
-	 * Hack -- Rods also need to have their timeouts distributed.
+	 * Rods also need to have their timeouts distributed.
 	 *
 	 * The dropped stack will accept all time remaining to charge up to
 	 * its maximum.

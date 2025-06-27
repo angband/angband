@@ -4561,7 +4561,7 @@ static errr sdl_HandleEvent(SDL_Event *event)
 
 			/* We are playing a game with an active character */
 			if (character_generated && inkey_flag) {
-				/* Hack -- Forget messages */
+				/* Forget messages */
 				msg_flag = false;
 				
 				/* Save the game */
@@ -5702,7 +5702,7 @@ static void init_paths(void)
 	char buf[1024], path[1024];
 	ang_dir *dir;
 
-	/* Hack -- Validate the basic font */
+	/* Validate the basic font */
 	if (default_term_font.preset) {
 		/* Build the filename */
 		path_build(path, sizeof(path), ANGBAND_DIR_FONTS,

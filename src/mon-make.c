@@ -320,7 +320,7 @@ void delete_monster_idx(struct chunk *c, int m_idx)
 	assert(square_in_bounds(c, mon->grid));
 	grid = mon->grid;
 
-	/* Hack -- Reduce the racial counter */
+	/* Reduce the racial counter */
 	if (mon->original_race) mon->original_race->cur_num--;
 	else mon->race->cur_num--;
 
@@ -333,15 +333,15 @@ void delete_monster_idx(struct chunk *c, int m_idx)
 	if (mon->race->light != 0)
 		player->upkeep->update |= PU_UPDATE_VIEW | PU_MONSTERS;
 
-	/* Hack -- remove target monster */
+	/* Remove target monster */
 	if (target_get_monster() == mon)
 		target_set_monster(NULL);
 
-	/* Hack -- remove tracked monster */
+	/* Remove tracked monster */
 	if (player->upkeep->health_who == mon)
 		health_track(player->upkeep, NULL);
 
-	/* Hack -- remove any command status */
+	/* Remove any command status */
 	if (mon->m_timed[MON_TMD_COMMAND]) {
 		(void) player_clear_timed(player, TMD_COMMAND, true, true);
 	}
@@ -623,10 +623,10 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 	/* Reset "reproducer" count */
 	c->num_repro = 0;
 
-	/* Hack -- no more target */
+	/* No more target */
 	target_set_monster(0);
 
-	/* Hack -- no more tracking */
+	/* No more tracking */
 	health_track(p->upkeep, 0);
 }
 
@@ -1157,7 +1157,7 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 	/* Extract the monster base speed */
 	mon->mspeed = race->speed;
 
-	/* Hack -- small racial variety */
+	/* Small racial variety */
 	if (!rf_has(race->flags, RF_UNIQUE)) {
 		/* Allow some small variation per monster */
 		i = turn_energy(race->speed) / 10;

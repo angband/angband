@@ -1006,7 +1006,7 @@ int apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
 /*** Generate a random object ***/
 
 /**
- * Hack -- determine if a template is "good".
+ * Determine if a template is "good".
  *
  * Note that this test only applies to the object *kind*, so it is
  * possible to choose a kind which is "good", and then later cause

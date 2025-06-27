@@ -107,7 +107,7 @@ static bool square_is_granite_with_flag(struct chunk *c, struct loc grid,
  */
 static void build_streamer(struct chunk *c, int feat, int chance)
 {
-	/* Hack -- Choose starting point */
+	/* Choose starting point */
 	struct loc grid = rand_loc(loc(c->width / 2, c->height / 2), 15, 10);
 
 	/* Choose a random direction */
@@ -725,7 +725,7 @@ static void build_tunnel(struct chunk *c, struct loc grid1, struct loc grid2)
 				door_flag = true;
 			}
 
-			/* Hack -- allow pre-emptive tunnel termination */
+			/* Allow pre-emptive tunnel termination */
 			if (randint0(100) >= dun->profile->tun.con) {
 				/* Offset between grid1 and start */
 				tmp_grid = loc_diff(grid1, start);

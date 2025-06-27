@@ -971,7 +971,7 @@ void set_pit_type(int depth, int type)
 	int i;
 	int pit_idx = 0;
 
-	/* Hack -- set initial distance large */
+	/* Set initial distance large */
 	int pit_dist = 999;
 
 	for (i = 0; i < z_info->pit_max; i++) {
@@ -1520,7 +1520,7 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 			assert(grid.x >= x1 && grid.x <= x2 &&
 				grid.y >= y1 && grid.y <= y2);
 
-			/* Hack -- skip "non-grids" */
+			/* Skip "non-grids" */
 			if (*t == ' ') continue;
 
 			/* Most alphabetic characters signify monster races. */

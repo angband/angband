@@ -116,12 +116,12 @@
 # include <conio.h>
 
 /*
- * Hack -- write directly to video card
+ * Write directly to video card
  */
 extern int directvideo = 1;
 
 /*
- * Hack -- no virtual screen
+ * No virtual screen
  */
 # undef USE_VIRTUAL
 
@@ -211,7 +211,7 @@ static uint8_t *VirtualScreen;
 
 
 /*
- * Hack -- the cursor "visibility"
+ * The cursor "visibility"
  */
 static int saved_cur_v;
 static int saved_cur_high;
@@ -492,7 +492,7 @@ static int Term_xtra_ibm_react(void)
 
 
 /*
- * Hack -- set the cursor "visibility"
+ * Set the cursor "visibility"
  */
 static void curs_set(int v)
 {
@@ -602,7 +602,7 @@ static errr Term_xtra_ibm_event(int v)
 
 	uint8_t mods = 0;
 
-	/* Hack -- Check for a keypress */
+	/* Check for a keypress */
 	if (!v && !bioskey(1)) return (1);
 
 	/* Wait for a keypress */
@@ -635,7 +635,7 @@ static errr Term_xtra_ibm_event(int v)
 
 	switch (s) {
 	case 0x56:
-		/* Hack -- Some foreign keyboards have a special key on the
+		/* Some foreign keyboards have a special key on the
 		 * keyboard, which is used to generate the "<", ">", and
                  * "|" keys (alone, shifted, alt-ed).
 		 */
@@ -1399,7 +1399,7 @@ const char help_ibm[] = "IBM Visual Display Support";
 /*
  * Initialize the IBM "visual module"
  *
- * Hack -- we assume that "blank space" should be "white space"
+ * We assume that "blank space" should be "white space"
  * (and not "black space" which might make more sense).
  *
  * Note the use of "((x << 2) | (x >> 4))" to "expand" a 6 bit value

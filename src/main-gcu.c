@@ -70,8 +70,8 @@
 
 
 /**
- * Hack -- Windows Console mode uses PDCURSES and cannot do any terminal stuff
- * Hack -- Windows needs Sleep(), and I really don't want to pull in all
+ * Windows Console mode uses PDCURSES and cannot do any terminal stuff
+ * Windows needs Sleep(), and I really don't want to pull in all
  *         the Win32 headers for this one function
  */
 #if defined(WIN32_CONSOLE_MODE)
@@ -167,7 +167,7 @@ static int active = 0;
 #ifdef A_COLOR
 
 /**
- * Hack -- define "A_BRIGHT" to be "A_BOLD", because on many
+ * Define "A_BRIGHT" to be "A_BOLD", because on many
  * machines, "A_BRIGHT" produces ugly "inverse" video.
  */
 #ifndef A_BRIGHT
@@ -268,7 +268,7 @@ static void keymap_game_prepare(void) {
 	game_termios.c_cc[VSUSP] = (char)26;
 
 #ifdef VDSUSP
-	/* Hack -- disable "Ctrl-Y" on *BSD */
+	/* Disable "Ctrl-Y" on *BSD */
 	game_termios.c_cc[VDSUSP] = (char)-1;
 #endif
 
@@ -305,7 +305,7 @@ static errr Term_xtra_gcu_alive(int v) {
 		echo();
 		nl();
 
-		/* Hack -- make sure the cursor is visible */
+		/* Make sure the cursor is visible */
 		Term_xtra(TERM_XTRA_SHAPE, 1);
 
 		/* Flush the curses buffer */
@@ -645,7 +645,7 @@ static void Term_nuke_gcu(term *t) {
 	/* Count nuke's, handle last */
 	if (--active != 0) return;
 
-	/* Hack -- make sure the cursor is visible */
+	/* Make sure the cursor is visible */
 	Term_xtra(TERM_XTRA_SHAPE, 1);
 
 #ifdef A_COLOR
@@ -1119,7 +1119,7 @@ static errr Term_curs_gcu(int x, int y) {
 
 /**
  * Erase a grid of space
- * Hack -- try to be "semi-efficient".
+ * Try to be "semi-efficient".
  */
 static errr Term_wipe_gcu(int x, int y, int n) {
 	term_data *td = (term_data *)(Term->data);

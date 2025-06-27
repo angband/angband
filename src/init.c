@@ -78,7 +78,7 @@ bool play_again = false;
 struct angband_constants *z_info;
 
 /*
- * Hack -- The special Angband "System Suffix"
+ * The special Angband "System Suffix"
  * This variable is used to choose an appropriate "pref-xxx" file
  */
 const char *ANGBAND_SYS = "xxx";
@@ -302,7 +302,7 @@ static enum parser_error write_book_kind(struct class_book *book,
  * by the user) will NOT end in the "PATH_SEP" string, see the special
  * "path_build()" function in "util.c" for more information.
  *
- * Hack -- first we free all the strings, since this is known
+ * First we free all the strings, since this is known
  * to succeed even if the strings have not been allocated yet,
  * as long as the variables start out as "NULL".  This allows
  * this function to be called multiple times, for example, to

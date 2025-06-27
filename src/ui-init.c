@@ -62,7 +62,7 @@ void textui_init(void)
 		/* Initialize visual prefs */
 		textui_prefs_init();
 
-		/* Hack -- Increase "icky" depth */
+		/* Increase "icky" depth */
 		screen_save_depth++;
 
 		/* Verify main term */
@@ -76,7 +76,7 @@ void textui_init(void)
 		if ((Term->hgt < 24) || (Term->wid < 80))
 			plog("Main window is too small - please make it bigger.");
 
-		/* Hack -- Turn off the cursor */
+		/* Turn off the cursor */
 		(void)Term_set_cursor(false);
 
 		/* Update terminals for preference changes. */

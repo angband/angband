@@ -409,7 +409,7 @@ bool object_similar(const struct object *obj1, const struct object *obj2,
 	if (mode & OSTACK_LIST && obj1->kind != obj1->known->kind) return false;
 	if (mode & OSTACK_LIST && obj2->kind != obj2->known->kind) return false;
 
-	/* Hack -- identical items cannot be stacked */
+	/* Identical items cannot be stacked */
 	if (obj1 == obj2) return false;
 
 	/* Require identical object kinds */

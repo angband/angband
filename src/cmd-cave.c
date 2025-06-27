@@ -119,7 +119,7 @@ void do_cmd_go_down(struct command *cmd)
 			return;
 	}
 
-	/* Hack -- take a turn */
+	/* Take a turn */
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Success */

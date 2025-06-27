@@ -1275,13 +1275,13 @@ static void calc_spells(struct player *p)
 
 	int16_t old_spells;
 
-	/* Hack -- must be literate */
+	/* Must be literate */
 	if (!p->class->magic.total_spells) return;
 
-	/* Hack -- wait for creation */
+	/* Wait for creation */
 	if (!character_generated) return;
 
-	/* Hack -- handle partial mode */
+	/* Handle partial mode */
 	if (p->upkeep->only_partial) return;
 
 	/* Save the new_spells value */
@@ -1290,7 +1290,7 @@ static void calc_spells(struct player *p)
 	/* Determine the number of spells allowed */
 	levels = p->lev - p->class->magic.spell_first + 1;
 
-	/* Hack -- no negative spells */
+	/* No negative spells */
 	if (levels < 0) levels = 0;
 
 	/* Number of 1/100 spells per level (or something - needs clarifying) */
@@ -2376,12 +2376,12 @@ static void update_bonuses(struct player *p)
 	}
 
 
-	/* Hack -- Telepathy Change */
+	/* Telepathy Change */
 	if (of_has(state.flags, OF_TELEPATHY) !=
 		of_has(p->state.flags, OF_TELEPATHY))
 		/* Update monster visibility */
 		p->upkeep->update |= (PU_MONSTERS);
-	/* Hack -- See Invis Change */
+	/* See Invis Change */
 	if (of_has(state.flags, OF_SEE_INVIS) !=
 		of_has(p->state.flags, OF_SEE_INVIS))
 		/* Update monster visibility */
@@ -2407,7 +2407,7 @@ static void update_bonuses(struct player *p)
 		p->upkeep->redraw |= (PR_INVEN);
 	}
 
-	/* Hack -- handle partial mode */
+	/* Handle partial mode */
 	if (!p->upkeep->only_partial) {
 		/* Take note when "heavy bow" changes */
 		if (p->state.heavy_shoot != state.heavy_shoot) {
