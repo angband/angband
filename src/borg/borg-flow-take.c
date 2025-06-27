@@ -213,12 +213,12 @@ static int borg_new_take(struct object_kind *kind, int y, int x)
         n = borg_takes_nxt++;
     }
 
-    /* Hack -- steal an old object */
+    /* Steal an old object */
     if (n < 0) {
         /* Note */
         borg_note("# Too many objects");
 
-        /* Hack -- Pick a random object */
+        /* Pick a random object */
         n = randint0(borg_takes_nxt - 1) + 1;
 
         /* Delete it */
@@ -279,7 +279,7 @@ static int borg_new_take(struct object_kind *kind, int y, int x)
     if (borg.trait[BI_LIGHT])
         borg.goal.type = 0;
 
-    /* Hack -- Force the object to sit on a floor grid */
+    /* Force the object to sit on a floor grid */
     ag->feat = FEAT_FLOOR;
 
     /* Result */

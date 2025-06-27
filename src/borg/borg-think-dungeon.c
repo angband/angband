@@ -176,7 +176,7 @@ static bool borg_think_dungeon_lunal(void)
 
     /** First deal with staying alive **/
 
-    /* Hack -- require light */
+    /* Require light */
     need = borg_maintain_light();
     if (need == BORG_MET_NEED)
         return true;
@@ -517,7 +517,7 @@ static bool borg_think_dungeon_munchkin(void)
 
     /** First deal with staying alive **/
 
-    /* Hack -- require light */
+    /* Require light */
     need = borg_maintain_light();
     if (need == BORG_MET_NEED)
         return true;
@@ -922,7 +922,7 @@ static bool borg_think_dungeon_munchkin(void)
 }
 
 /*
- * Hack -- perform an action in the dungeon under boosted bravery
+ * Perform an action in the dungeon under boosted bravery
  *
  * This function is a sub-set of the standard dungeon goals, and is
  * only executed when all of the standard dungeon goals fail, because
@@ -978,7 +978,7 @@ static bool borg_think_dungeon_brave(void)
 
     /* Flee the level */
     if (borg.goal.fleeing || borg.goal.leaving || scaryguy_on_level) {
-        /* Hack -- Take the next stairs */
+        /* Take the next stairs */
         borg.stair_less = borg.goal.fleeing;
 
         if (borg.ready_morgoth == 0)
@@ -1175,7 +1175,7 @@ bool borg_think_dungeon(void)
         borg_oops("Money Scum complete.");
     }
 
-    /* Hack -- Stop the borg if money scumming and the shops are out of food. */
+    /* Stop the borg if money scumming and the shops are out of food. */
     if (!borg.trait[BI_CDEPTH] && borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0
         && (borg_food_onsale == 0 && borg.trait[BI_FOOD] < 5)) {
         /* Town out of food.  If player initiated borg, stop here */
@@ -1190,7 +1190,7 @@ bool borg_think_dungeon(void)
         }
     }
 
-    /* Hack -- prevent clock wrapping Step 1*/
+    /* Prevent clock wrapping Step 1 */
     if ((borg_t >= 12000 && borg_t <= 12025)
         || (borg_t >= 25000 && borg_t <= 25025)) {
         /* Clear Possible errors */
@@ -1217,7 +1217,7 @@ bool borg_think_dungeon(void)
     if (borg_destroy_floor())
         return true;
  
-    /* Hack -- prevent clock wrapping Step 2*/
+    /* Prevent clock wrapping Step 2 */
     if (borg_t >= 30000) {
         /* Panic */
         borg_oops("clock overflow");
@@ -1384,7 +1384,7 @@ bool borg_think_dungeon(void)
         breeder_level = true;
     }
 
-    /* Hack -- caution from breeders*/
+    /* Caution from breeders */
     if ((j >= MIN(borg.trait[BI_CLEVEL] + 2, 5))
         && (borg.trait[BI_RECALL] <= 0 || borg.trait[BI_CLEVEL] < 35)) {
         /* Ignore monsters from caution */
@@ -1764,7 +1764,7 @@ bool borg_think_dungeon(void)
 
     /* Flee the level */
     if (borg.goal.fleeing && !borg.goal.recalling) {
-        /* Hack -- Take the next stairs */
+        /* Take the next stairs */
         borg.stair_less = borg.stair_more = true;
         if (OPT(player, birth_force_descend))
             borg.stair_less = false;
@@ -2037,7 +2037,7 @@ bool borg_think_dungeon(void)
 
     /*** Deal with shops ***/
 
-    /* Hack -- Visit the shops */
+    /* Visit the shops */
     if (borg_choose_shop()) {
         /* Try and visit a shop, if so desired */
         if (borg_flow_shop_entry(borg.goal.shop))
@@ -2135,7 +2135,7 @@ bool borg_think_dungeon(void)
         borg_note(format("# Boosting bravery (1) from %d to %d!", avoidance,
             borg.trait[BI_CURHP] * 2));
 
-        /* Hack -- ignore some danger */
+        /* Ignore some danger */
         avoidance = (borg.trait[BI_CURHP] * 2);
 
         /* Forget the danger fields */
@@ -2189,7 +2189,7 @@ bool borg_think_dungeon(void)
         borg_note(format("# Boosting bravery (2) from %d to %d!", avoidance,
             borg.trait[BI_MAXHP] * 4));
 
-        /* Hack -- ignore some danger */
+        /* Ignore some danger */
         avoidance = (borg.trait[BI_MAXHP] * 4);
 
         /* Forget the danger fields */
@@ -2221,7 +2221,7 @@ bool borg_think_dungeon(void)
         borg_note(
             format("# Boosting bravery (3) from %d to %d!", avoidance, 30000));
 
-        /* Hack -- ignore some danger */
+        /* Ignore some danger */
         avoidance = 30000;
 
         /* Forget the danger fields */
@@ -2237,7 +2237,7 @@ bool borg_think_dungeon(void)
         /* Forget goals */
         borg.goal.type = 0;
 
-        /* Hack -- cannot rise past town */
+        /* Cannot rise past town */
         if (!borg.trait[BI_CDEPTH])
             borg.goal.rising = false;
 

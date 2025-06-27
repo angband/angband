@@ -496,7 +496,7 @@ static int32_t borg_power_home_aux2(void)
         for (k = 0; k < 5 && k < num_fix_exp; k++)
             value += 1000L - k * 10L;
 
-    /*** Hack -- books ***/
+    /*** books ***/
 
     /* Reward books */
     for (book = 0; book < 9; book++) {
@@ -505,7 +505,7 @@ static int32_t borg_power_home_aux2(void)
         if (borg.trait[BI_CLEVEL] < 15) {
             /* Collect up to 5 copies of each normal book */
             for (k = 0; k < 5 && k < num_book[book]; k++) {
-                /* Hack -- only stockpile useful books */
+                /* Only stockpile useful books */
                 if (num_book[book])
                     value += 5000L - k * 10L;
             }

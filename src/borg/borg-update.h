@@ -31,7 +31,7 @@
 extern bool borg_failure;
 
 /*
- * Hack -- the detection arrays
+ * The detection arrays
  */
 extern bool borg_detect_wall[6][18];
 extern bool borg_detect_trap[6][18];

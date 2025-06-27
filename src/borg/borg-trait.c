@@ -1155,7 +1155,7 @@ static void borg_notice_ammo(int slot)
 
     /* check for ammo to enchant */
 
-    /* Hack -- ignore worthless missiles */
+    /* Ignore worthless missiles */
     if (item->value <= 0)
         return;
 
@@ -1727,7 +1727,7 @@ static void borg_notice_equipment(void)
         if (bonuses > 2)
             borg.trait[BI_MULTIPLE_BONUSES] += bonuses;
 
-        /* Hack -- Net-zero The borg will miss read acid damaged items such as
+        /* Net-zero The borg will miss read acid damaged items such as
          * Leather Gloves [2,-2] and falsely assume they help his power.
          * this hack rewrites the bonus to an extremely negative value
          * thus encouraging him to remove the non-helpful-non-harmful but
@@ -1744,11 +1744,11 @@ static void borg_notice_equipment(void)
         /* Apply the bonuses to armor class */
         borg.trait[BI_ARMOR] += item->to_a;
 
-        /* Hack -- do not apply "weapon" bonuses */
+        /* Do not apply "weapon" bonuses */
         if (i == INVEN_WIELD)
             continue;
 
-        /* Hack -- do not apply "bow" bonuses */
+        /* Do not apply "bow" bonuses */
         if (i == INVEN_BOW)
             continue;
 
@@ -1919,7 +1919,7 @@ static void borg_notice_equipment(void)
         /* Add in extra power */
         borg.trait[BI_AMMO_POWER] += extra_might;
 
-        /* Hack -- Reward High Level Rangers using Bows */
+        /* Reward High Level Rangers using Bows */
         if (player_has(player, PF_FAST_SHOT)) {
             if (borg.trait[BI_AMMO_TVAL] == TV_ARROW)
                 /* Extra shot at level 20 */
@@ -1979,7 +1979,7 @@ static void borg_notice_equipment(void)
         borg.trait[BI_DIG] += (item->weight / 10);
     }
 
-    /* Hack -- Reward High Level Warriors with Res Fear */
+    /* Reward High Level Warriors with Res Fear */
     if (player_has(player, PF_BRAVERY_30)) {
         /* Resist fear at level 30 */
         if (borg.trait[BI_CLEVEL] >= 30)
@@ -2063,7 +2063,7 @@ static void borg_notice_equipment(void)
 
     /*** Count needed enchantment ***/
 
-    /* Hack -- enchant all the equipment (weapons) */
+    /* Enchant all the equipment (weapons) */
     for (i = INVEN_WIELD; i <= INVEN_BOW; i++) {
         item = &borg_items[i];
 
@@ -2115,7 +2115,7 @@ static void borg_notice_equipment(void)
         }
     }
 
-    /* Hack -- enchant all the equipment (armor) */
+    /* Enchant all the equipment (armor) */
     for (i = INVEN_BODY; i <= INVEN_FEET; i++) {
         item = &borg_items[i];
 
@@ -2170,7 +2170,7 @@ static void borg_notice_equipment(void)
 
     /*** Quiver needs to be evaluated ***/
 
-    /* Hack -- ignore invalid missiles */
+    /* Ignore invalid missiles */
     for (i = QUIVER_START; i < QUIVER_END; i++)
         borg_notice_ammo(i);
 }
@@ -2230,7 +2230,7 @@ static void borg_notice_inventory(void)
                 borg.trait[BI_FIRST_CURSED] = i + 1;
         }
 
-        /* Hack -- skip un-aware items */
+        /* Skip un-aware items */
         if (!item->aware)
             continue;
 
@@ -2529,7 +2529,7 @@ static void borg_notice_inventory(void)
         /* Shovels and such */
         case TV_DIGGING:
 
-            /* Hack -- ignore worthless ones (including cursed) */
+            /* Ignore worthless ones (including cursed) */
             if (item->value <= 0)
                 break;
             if (item->cursed)
@@ -2956,7 +2956,7 @@ void borg_notice_player(void)
 {
     int i;
 
-    /*** Hack -- Extract class ***/
+    /*** Extract class ***/
     borg.trait[BI_CLASS] = player->class->cidx;
 
     /* Assume level is fine */
@@ -3122,13 +3122,13 @@ void borg_notice_player(void)
         borg.trait[BI_CSTR + i] = player->stat_cur[STAT_STR + i];
     }
 
-    /* Hack -- Access max depth */
+    /* Access max depth */
     borg.trait[BI_CDEPTH] = player->depth;
 
-    /* Hack -- Access max depth */
+    /* Access max depth */
     borg.trait[BI_MAXDEPTH] = player->max_depth;
 
-    /* Hack -- track if Sauron is dead */
+    /* Track if Sauron is dead */
     borg.trait[BI_SAURON_DEAD] = borg_race_death[borg_sauron_id];
 }
 
