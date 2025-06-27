@@ -49,7 +49,7 @@ struct borg_track {
 typedef struct borg_data borg_data;
 
 /*
- * Hack -- one byte of info per grid
+ * One byte of info per grid
  *
  * We use a structure to encapsulate the data into a "typed" form.
  */
@@ -70,7 +70,7 @@ extern uint8_t borg_flow_y[AUTO_FLOW_MAX];
 extern uint8_t borg_flow_x[AUTO_FLOW_MAX];
 
 /*
- * Hack -- use "flow" array as a queue
+ * Use "flow" array as a queue
  */
 
 extern int flow_head;

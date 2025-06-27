@@ -50,7 +50,7 @@
 #include "borg.h"
 
 /*
- * Hack -- importance of the various "level feelings"
+ * Importance of the various "level feelings"
  * Try to explore the level for at least this many turns
  */
 static int borg_stuff_feeling[]
@@ -117,7 +117,7 @@ bool borg_money_scum(void)
         while (dir == -1 || dir == 5 || dir == 0) {
             dir = randint0(10);
 
-            /* Hack -- set goal */
+            /* Set goal */
             borg.goal.g.x = borg.c.x + ddx[dir];
             borg.goal.g.y = borg.c.y + ddy[dir];
 
@@ -418,7 +418,7 @@ bool borg_think_stair_scum(bool from_town)
 
     /** First deal with staying alive **/
 
-    /* Hack -- require light */
+    /* Require light */
     need = borg_maintain_light();
     if (need == BORG_MET_NEED)
         return true;
@@ -599,7 +599,7 @@ bool borg_leave_level(bool bored)
 
     bool need_restock       = false;
 
-    /* Hack -- waiting for "recall" other than depth 1 */
+    /* Waiting for "recall" other than depth 1 */
     if (borg.goal.recalling && borg.trait[BI_CDEPTH] != 1)
         return false;
 
@@ -657,7 +657,7 @@ bool borg_leave_level(bool bored)
             }
         }
 
-        /* Hack -- Recall into dungeon */
+        /* Recall into dungeon */
         if ((borg.trait[BI_MAXDEPTH] >= (borg_cfg[BORG_WORSHIPS_GOLD] ? 10 : 8))
             && (borg.trait[BI_RECALL] >= 3)
             && (((char *)NULL
@@ -758,7 +758,7 @@ bool borg_leave_level(bool bored)
         borg_note("# power dive, head deep.");
     }
 
-    /* Hack -- Power-climb upwards when needed */
+    /* Power-climb upwards when needed */
     if (NULL != prep_cur_depth) {
         /* Certain checks are bypassed if Unique monster on level */
         if (!unique_on_level) {
@@ -790,7 +790,7 @@ bool borg_leave_level(bool bored)
         }
     }
 
-    /* Hack -- if I am playing way too shallow return to town */
+    /* If I am playing way too shallow return to town */
     if (NULL == borg_prepared(borg.trait[BI_CDEPTH] + 20)
         && NULL == borg_prepared(borg.trait[BI_MAXDEPTH] * 6 / 10)
         && borg.trait[BI_MAXDEPTH] > borg.trait[BI_CDEPTH] + 20
@@ -852,7 +852,7 @@ bool borg_leave_level(bool bored)
         borg.goal.rising = true;
     }
 
-    /* Hack -- It is much safer to scum for items on 98
+    /* It is much safer to scum for items on 98
      * Check to see if depth 99, if Sauron is dead and Im not read to fight
      * the final battle
      */
@@ -917,14 +917,14 @@ bool borg_leave_level(bool bored)
         /* don't recall to town from 100 if we are prepared for 99 */
         if (borg.trait[BI_CDEPTH] < 100 || !borg_prepared(99)) {
 
-            /* Hack -- recall if going to town */
+            /* Recall if going to town */
             if (borg.goal.rising && ((borg_time_town + (borg_t - borg_began)) > 200)
                 && (borg.trait[BI_CDEPTH] >= 5) && borg_recall()) {
                 borg_note("# Recalling to town (goal rising)");
                 return true;
             }
 
-            /* Hack -- Recall if needing to Restock */
+            /* Recall if needing to Restock */
             if (need_restock && borg.trait[BI_CDEPTH] >= 5 && borg_recall()) {
                 borg_note("# Recalling to town (need to restock)");
             }

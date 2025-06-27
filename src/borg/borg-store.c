@@ -197,7 +197,7 @@ void borg_cheat_store(void)
                     borg_fuel_onsale = b_item->iqty;
             }
 
-            /* Hack -- Save the declared cost */
+            /* Save the declared cost */
             b_item->cost = borg_price_item(o_ptr, false, 1, store_num);
         }
 

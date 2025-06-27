@@ -272,7 +272,7 @@ bool borg_think_shop_buy_useful(void)
                 && (k != borg_money_scum_who || n != borg_money_scum_ware))
                 continue;
 
-            /* Hack -- Require "sufficient" cash */
+            /* Require "sufficient" cash */
             if (borg.trait[BI_GOLD] < item->cost)
                 continue;
 
@@ -750,7 +750,7 @@ bool borg_think_shop_grab_interesting(void)
                 continue;
 
             /* Don't buy easy spell books late in the game */
-            /* Hack -- Require some "extra" cash */
+            /* Require some "extra" cash */
             if (borg.trait[BI_GOLD] < 1000L + item->cost * 5)
                 continue;
 

@@ -182,7 +182,7 @@ void borg_notice_weapon_swap(void)
         if (!item->iqty)
             continue;
 
-        /* Hack -- skip un-aware items */
+        /* Skip un-aware items */
         if (!item->aware)
             continue;
 
@@ -262,7 +262,7 @@ void borg_notice_weapon_swap(void)
                 /* Don't notice digger if we can turn stone to mud,
                  * or I am using one.
                  */
-                /* Hack -- ignore worthless ones (including cursed) */
+                /* Ignore worthless ones (including cursed) */
                 if (item->value <= 0)
                     break;
                 if (item->cursed)
@@ -774,7 +774,7 @@ void borg_notice_armour_swap(void)
         if (!item->iqty)
             continue;
 
-        /* Hack -- skip un-aware items */
+        /* Skip un-aware items */
         if (!item->aware)
             continue;
 
@@ -1283,7 +1283,7 @@ void borg_notice_armour_swap(void)
     if (item->tval >= TV_LIGHT)
         return;
 
-    /* Hack -- enchant the swap equipment (armor) */
+    /* Enchant the swap equipment (armor) */
     /* Note need for enchantment */
     if (borg_spell_legal_fail(ENCHANT_ARMOUR, 65)
         || borg.trait[BI_AENCH_SARM] >= 1) {

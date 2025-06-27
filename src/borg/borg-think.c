@@ -40,7 +40,7 @@
 #include "borg.h"
 
 /*
- * Hack -- location of the "Lv Mana Fail" prompt
+ * Location of the "Lv Mana Fail" prompt
  */
 #define ROW_SPELL 1
 #define COL_SPELL 20 + 35
@@ -311,7 +311,7 @@ bool borg_think(void)
         }
     }
 
-    /* Hack -- always revert shapechanged players to normal form */
+    /* Always revert shapechanged players to normal form */
     if (player_is_shapechanged(player)) {
         /* it looks like throw is a good command that checks */
         /* your form without a prerequisite check */
@@ -322,7 +322,7 @@ bool borg_think(void)
 
     /*** Handle stores ***/
 
-    /* Hack -- Check for being in a store CHEAT*/
+    /* Check for being in a store CHEAT*/
     if ((0 == borg_what_text(1, 3, 4, &t_a, buf))
         && (streq(buf, "Stor") || streq(buf, "Home"))) {
         /* Cheat the store number */
@@ -331,11 +331,11 @@ bool borg_think(void)
         /* Clear the goal (the goal was probably going to a shop number) */
         borg.goal.type = 0;
 
-        /* Hack -- Reset food counter for money scumming */
+        /* Reset food counter for money scumming */
         if (shop_num == 0)
             borg_food_onsale = 0;
 
-        /* Hack -- Reset fuel counter for money scumming */
+        /* Reset fuel counter for money scumming */
         if (shop_num == 0)
             borg_fuel_onsale = 0;
 
@@ -360,7 +360,7 @@ bool borg_think(void)
         /* Evaluate the current world */
         borg.power = borg_power();
 
-        /* Hack -- allow user abort */
+        /* Allow user abort */
         if (borg_cancel)
             return true;
 
@@ -373,17 +373,17 @@ bool borg_think(void)
 
     /*** Determine panel ***/
 
-    /* Hack -- cheat */
+    /* Cheat */
     w_y = Term->offset_y;
     w_x = Term->offset_x;
 
     /* Done */
     borg_do_panel = false;
 
-    /* Hack -- Check for "sector" mode */
+    /* Check for "sector" mode */
     if ((0 == borg_what_text(0, 0, 16, &t_a, buf))
         && (prefix(buf, "Map sector "))) {
-        /* Hack -- get the panel info */
+        /* Get the panel info */
         w_y = (buf[12] - '0') * (SCREEN_HGT / 2);
         w_x = (buf[14] - '0') * (SCREEN_WID / 2);
 
@@ -460,7 +460,7 @@ bool borg_think(void)
     /* Evaluate the current world */
     borg.power = borg_power();
 
-    /* Hack -- allow user abort */
+    /* Allow user abort */
     if (borg_cancel)
         return true;
 

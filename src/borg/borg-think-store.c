@@ -79,7 +79,7 @@
  * The "greed" value should exceed 100 when the player is "buying" the
  * object, and should be less than 100 when the player is "selling" it.
  *
- * Hack -- the black market always charges twice as much as it should.
+ * The black market always charges twice as much as it should.
  */
 /*
  * Choose a shop to visit
@@ -285,7 +285,7 @@ bool borg_choose_shop(void)
  */
 bool borg_think_store(void)
 {
-    /* Hack -- prevent clock wrapping */
+    /* Prevent clock wrapping */
     if (borg_t >= 20000 && borg_t <= 20010) {
         /* Clear Possible errors */
         borg_keypress(ESCAPE);

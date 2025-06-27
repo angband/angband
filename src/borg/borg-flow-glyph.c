@@ -32,7 +32,7 @@
 #include "borg-trait.h"
 
 /*
- * Hack -- Glyph creating
+ * Glyph creating
  */
 
 static uint8_t glyph_x;
@@ -299,7 +299,7 @@ bool borg_flow_glyph(int why)
     /* Clear the flow codes */
     borg_flow_clear();
 
-    /* Hack -- Nothing found */
+    /* Nothing found */
     if (b_v < 0)
         return false;
 
