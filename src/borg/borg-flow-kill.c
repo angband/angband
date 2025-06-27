@@ -56,25 +56,25 @@ int16_t borg_kills_nxt;
 borg_kill *borg_kills;
 
 /*
- * Hack -- count racial appearances per level
+ * Count racial appearances per level
  */
 int16_t *borg_race_count;
 
 /*
- * Hack -- count racial kills (for uniques)
+ * Count racial kills (for uniques)
  */
 
 int16_t *borg_race_death;
 
 /*
- * Hack -- help identify "unique" monster names
+ * Help identify "unique" monster names
  */
 static int           borg_unique_size; /* Number of uniques */
 static unsigned int *borg_unique_what; /* Indexes of uniques */
 static const char  **borg_unique_text; /* Names of uniques */
 
 /*
- * Hack -- help identify "normal" monster names
+ * Help identify "normal" monster names
  */
 static int           borg_normal_size; /* Number of normals */
 static unsigned int *borg_normal_what; /* Indexes of normals */
@@ -127,7 +127,7 @@ const char *borg_race_name(int r_idx)
 }
 
 /*
- * Hack -- Update a "new" monster
+ * Update a "new" monster
  */
 static void borg_update_kill_new(int i)
 {
@@ -241,14 +241,14 @@ static void borg_update_kill_new(int i)
         morgy_panel_x = j;
     }
 
-    /* Hack -- Force the monster to be sitting on a floor
+    /* Force the monster to be sitting on a floor
      * grid unless that monster can pass through walls
      */
     if (!rf_has(r_ptr->flags, RF_PASS_WALL)) {
         borg_grids[kill->pos.y][kill->pos.x].feat = FEAT_FLOOR;
     }
 
-    /* Hack -- Force the ghostly monster to be in a wall
+    /* Force the ghostly monster to be in a wall
      * grid until the grid is proven to be something else
      */
     if (borg_grids[kill->pos.y][kill->pos.x].feat != FEAT_FLOOR
@@ -258,7 +258,7 @@ static void borg_update_kill_new(int i)
 }
 
 /*
- * Hack -- Update a "old" monster
+ * Update a "old" monster
  *
  * We round the player speed down, and the monster speed up,
  * and we assume maximum racial speed for each monster.
@@ -389,14 +389,14 @@ static void borg_update_kill_old(int i)
         morgy_panel_x = j;
     }
 
-    /* Hack -- Force the monster to be sitting on a floor
+    /* Force the monster to be sitting on a floor
      * grid unless that monster can pass through walls
      */
     if (!rf_has(r_ptr->flags, RF_PASS_WALL)) {
         borg_grids[kill->pos.y][kill->pos.x].feat = FEAT_FLOOR;
     }
 
-    /* Hack -- Force the ghostly monster to be in a wall
+    /* Force the ghostly monster to be in a wall
      * grid until the grid is proven to be something else
      */
     if (borg_grids[kill->pos.y][kill->pos.x].feat != FEAT_FLOOR
@@ -747,12 +747,12 @@ static int borg_new_kill(unsigned int r_idx, int y, int x)
         n = borg_kills_nxt++;
     }
 
-    /* Hack -- steal an old monster */
+    /* Steal an old monster */
     if (n < 0) {
         /* Note */
         borg_note("# Too many monsters");
 
-        /* Hack -- Pick a random monster */
+        /* Pick a random monster */
         n = randint1(borg_kills_nxt - 1) + 1;
 
         /* Kill it */
@@ -843,14 +843,14 @@ static int borg_new_kill(unsigned int r_idx, int y, int x)
         && borg_los(kill->pos.y, kill->pos.x, borg.c.y, borg.c.x))
         borg.goal.type = 0;
 
-    /* Hack -- Force the monster to be sitting on a floor
+    /* Force the monster to be sitting on a floor
      * grid unless that monster can pass through walls
      */
     if (!(rf_has(r_ptr->flags, RF_PASS_WALL))) {
         ag->feat = FEAT_FLOOR;
     }
 
-    /* Hack -- Force the ghostly monster to be in a wall
+    /* Force the ghostly monster to be in a wall
      * grid until the grid is proven to be something else
      */
     if (rf_has(r_ptr->flags, RF_PASS_WALL)) {
@@ -906,7 +906,7 @@ static int borg_new_kill(unsigned int r_idx, int y, int x)
  *
  * The actual rewards and penalties probably need some tweaking.
  *
- * Hack -- try not to choose "unique" monsters, or we will flee a lot.
+ * Try not to choose "unique" monsters, or we will flee a lot.
  */
 static unsigned int borg_guess_race(
     uint8_t a, wchar_t c, bool multi, int y, int x)
@@ -1185,7 +1185,7 @@ static unsigned int borg_guess_race_name(char *who)
         return (borg_unique_what[m]);
     }
 
-    /* Hack -- handle "offscreen" */
+    /* Handle "offscreen" */
     if (suffix(who, " (offscreen)")) {
         /* Remove the suffix */
         my_strcpy(partial, who, sizeof(partial));

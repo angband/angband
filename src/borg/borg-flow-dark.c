@@ -428,7 +428,7 @@ static void borg_flow_direct(int y, int x)
 }
 
 /*
- * Hack -- mark off the edges of a rectangle as "avoid" or "clear"
+ * Mark off the edges of a rectangle as "avoid" or "clear"
  */
 static void borg_flow_border(int y1, int x1, int y2, int x2, bool stop)
 {
@@ -467,7 +467,7 @@ static bool borg_flow_dark_1(int b_stair)
     int i;
     int x, y;
 
-    /* Hack -- not in town */
+    /* Not in town */
     if (!borg.trait[BI_CDEPTH])
         return false;
 
@@ -544,7 +544,7 @@ static bool borg_flow_dark_2(int b_stair)
 
     borg_grid *ag;
 
-    /* Hack -- not in town */
+    /* Not in town */
     if (!borg.trait[BI_CDEPTH])
         return false;
 
@@ -641,7 +641,7 @@ static bool borg_flow_dark_3(int b_stair)
 
     int x1, y1, x2, y2;
 
-    /* Hack -- not in town */
+    /* Not in town */
     if (!borg.trait[BI_CDEPTH])
         return false;
 
@@ -742,11 +742,11 @@ static bool borg_flow_dark_4(int b_stair)
     int x1, y1, x2, y2;
     int leash = 250;
 
-    /* Hack -- not in town */
+    /* Not in town */
     if (!borg.trait[BI_CDEPTH])
         return false;
 
-    /* Hack -- Not if a vault is on the level */
+    /* Not if a vault is on the level */
     if (vault_on_level)
         return false;
 
@@ -857,7 +857,7 @@ static bool borg_flow_dark_5(int b_stair)
     int i, x, y;
     int leash = 250;
 
-    /* Hack -- not in town */
+    /* Not in town */
     if (!borg.trait[BI_CDEPTH])
         return false;
 
@@ -890,7 +890,7 @@ static bool borg_flow_dark_5(int b_stair)
 
             /* Paranoia -- Check for overflow */
             if (borg_temp_n == AUTO_TEMP_MAX) {
-                /* Hack -- Double break */
+                /* Double break */
                 y = AUTO_MAX_Y;
                 x = AUTO_MAX_X;
                 break;

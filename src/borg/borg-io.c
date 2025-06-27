@@ -76,7 +76,7 @@ errr borg_what_text(int x, int y, int n, uint8_t *a, char *s)
     /* Obtain the size */
     (void)Term_get_size(&w, &h);
 
-    /* Hack -- Do not run off the screen */
+    /* Do not run off the screen */
     if (x + m > w)
         m = w - x;
 
@@ -308,7 +308,7 @@ static keycode_t borg_queued_direction = 0;
  */
 errr borg_keypress(keycode_t k)
 {
-    /* Hack -- Refuse to enqueue "nul" */
+    /* Refuse to enqueue "nul" */
     if (!k) {
         borg_note(" & Key * *BAD KEY * *");
         return (-1);
@@ -321,11 +321,11 @@ errr borg_keypress(keycode_t k)
     if (borg_key_head == KEY_SIZE)
         borg_key_head = 0;
 
-    /* Hack -- Catch overflow (forget oldest) */
+    /* Catch overflow (forget oldest) */
     if (borg_key_head == borg_key_tail)
         borg_oops("overflow");
 
-    /* Hack -- Overflow may induce circular queue */
+    /* Overflow may induce circular queue */
     if (borg_key_tail == KEY_SIZE)
         borg_key_tail = 0;
 

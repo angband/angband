@@ -859,7 +859,7 @@ int32_t borg_power_dynamic(void)
     /* Determine the weight allowance */
     int max_wgt = player->class->magic.spell_weight;
 
-    /* Hack -- heavy armor hurts magic */
+    /* Heavy armor hurts magic */
     if (borg_can_cast() && ((cur_wgt - max_wgt) / 10) > 0) {
         /* max sp must be calculated in case it changed with the armor */
         int max_sp = borg.trait[BI_SP_ADJ] / 100 + 1;
@@ -885,7 +885,7 @@ int32_t borg_power_dynamic(void)
         && borg.trait[BI_ADIGGER] == 1)
         total += 5000L;
 
-    /*** Hack -- books ***/
+    /*** Books ***/
     /*   Reward books    */
     for (int book = 0; book < 9; book++) {
         /* No copies */
@@ -933,7 +933,7 @@ int32_t borg_power_dynamic(void)
                 /* if (as->power < mana) mana = as->power; */
             }
 
-            /* Hack -- Ignore "difficult" normal books */
+            /* Ignore "difficult" normal books */
             if ((when > 5) && (when >= borg.trait[BI_MAXCLEVEL] + 2))
                 continue;
             /* if (mana > borg.trait[BI_MAXSP]) continue; */
@@ -948,7 +948,7 @@ int32_t borg_power_dynamic(void)
         }
     }
 
-    /*  Hack -- Apply "encumbrance" from weight */
+    /* Apply "encumbrance" from weight */
 
     /* XXX XXX XXX Apply "encumbrance" from weight */
     if (borg.trait[BI_WEIGHT] > borg.trait[BI_CARRY] / 2) {

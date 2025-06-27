@@ -214,7 +214,7 @@ static int borg_thrust_damage_one(int i)
     if ((rf_has(r_ptr->flags, RF_UNIQUE)) && borg.trait[BI_CDEPTH] >= 1)
         dam += (dam * 5);
 
-    /* Hack -- ignore Maggot until later.  Player will chase Maggot
+    /* Ignore Maggot until later.  Player will chase Maggot
      * down all across the screen waking up all the monsters.  Then
      * he is stuck in a compromised situation.
      */
@@ -305,7 +305,7 @@ static int borg_attack_aux_thrust(void)
         if (kill->r_idx >= z_info->r_max - 1)
             continue;
 
-        /* Hack -- avoid waking most "hard" sleeping monsters */
+        /* Avoid waking most "hard" sleeping monsters */
         if (!kill->awake && (d <= kill->power) && !borg.munchkin_mode) {
             /* Calculate danger */
             p = borg_danger_one_kill(y, x, 1, ag->kill, true, true);
@@ -314,7 +314,7 @@ static int borg_attack_aux_thrust(void)
                 continue;
         }
 
-        /* Hack -- ignore sleeping town monsters */
+        /* Ignore sleeping town monsters */
         if (!borg.trait[BI_CDEPTH] && !kill->awake)
             continue;
 
@@ -1148,7 +1148,7 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
     if ((rf_has(r_ptr->flags, RF_UNIQUE)) && borg.trait[BI_CDEPTH] >= 1)
         dam = (dam * 3);
 
-    /* Hack -- ignore Maggot until later.  Player will chase Maggot
+    /* Ignore Maggot until later.  Player will chase Maggot
      * down all across the screen waking up all the monsters.  Then
      * he is stuck in a compromised situation.
      */
@@ -1302,18 +1302,18 @@ static int borg_launch_bolt_aux_hack(int i, int dam, int typ, int ammo_location)
     /* Calculate danger */
     p2 = borg_danger_one_kill(y, x, 1, i, true, false);
 
-    /* Hack -- avoid waking most "hard" sleeping monsters */
+    /* Avoid waking most "hard" sleeping monsters */
     if (!kill->awake && (p2 > avoidance / 2) && (d < kill->power)
         && !borg.munchkin_mode) {
         return (-999);
     }
 
-    /* Hack -- ignore sleeping town monsters */
+    /* Ignore sleeping town monsters */
     if (!borg.trait[BI_CDEPTH] && !kill->awake) {
         return 0;
     }
 
-    /* Hack -- ignore nonthreatening town monsters when low level */
+    /* Ignore nonthreatening town monsters when low level */
     if (!borg.trait[BI_CDEPTH] && borg.trait[BI_CLEVEL] < 3
         /* && monster_is_nonthreatening_test */) {
         /* Nothing yet */
@@ -2286,11 +2286,11 @@ static int borg_attack_aux_object(void)
         if (d <= 0)
             continue;
 
-        /* Hack -- Save Heals and cool stuff */
+        /* Save Heals and cool stuff */
         if (item->tval == TV_POTION)
             continue;
 
-        /* Hack -- Save last flasks for fuel, if needed */
+        /* Save last flasks for fuel, if needed */
         if (item->tval == TV_FLASK
             && (borg.trait[BI_AFUEL] <= 1 && !borg_fighting_unique))
             continue;
@@ -2313,7 +2313,7 @@ static int borg_attack_aux_object(void)
         /* Enforce a minimum "weight" of one pound */
         div = ((item->weight > 10) ? item->weight : 10);
 
-        /* Hack -- Distance -- Reward strength, penalize weight */
+        /* Distance -- Reward strength, penalize weight */
         b_r = (adj_str_blow[borg.trait[BI_STR_INDEX]] + 20) * mul / div;
 
         /* Max distance of 10 */
@@ -3198,7 +3198,7 @@ static int borg_attack_aux_whirlwind_attack(void)
         /* Obtain the monster */
         kill = &borg_kills[ag->kill];
 
-        /* Hack -- avoid waking most "hard" sleeping monsters */
+        /* Avoid waking most "hard" sleeping monsters */
         if (!kill->awake && (d <= kill->power) && !borg.munchkin_mode) {
             /* Calculate danger */
             p = borg_danger_one_kill(y, x, 1, ag->kill, true, true);
@@ -3207,7 +3207,7 @@ static int borg_attack_aux_whirlwind_attack(void)
                 continue;
         }
 
-        /* Hack -- ignore sleeping town monsters */
+        /* Ignore sleeping town monsters */
         if (!borg.trait[BI_CDEPTH] && !kill->awake)
             continue;
 
@@ -3296,7 +3296,7 @@ static int borg_attack_aux_leap_into_battle(void)
         if (kill->r_idx >= z_info->r_max - 1)
             continue;
 
-        /* Hack -- avoid waking most "hard" sleeping monsters */
+        /* Avoid waking most "hard" sleeping monsters */
         if (!kill->awake && (d <= kill->power) && !borg.munchkin_mode) {
             /* Calculate danger */
             p = borg_danger_one_kill(y, x, 1, ag->kill, true, true);
@@ -3305,7 +3305,7 @@ static int borg_attack_aux_leap_into_battle(void)
                 continue;
         }
 
-        /* Hack -- ignore sleeping town monsters */
+        /* Ignore sleeping town monsters */
         if (!borg.trait[BI_CDEPTH] && !kill->awake)
             continue;
 
@@ -3416,7 +3416,7 @@ static int borg_attack_aux_maim_foe(void)
         if (kill->r_idx >= z_info->r_max - 1)
             continue;
 
-        /* Hack -- avoid waking most "hard" sleeping monsters */
+        /* Avoid waking most "hard" sleeping monsters */
         if (!kill->awake && (d <= kill->power) && !borg.munchkin_mode) {
             /* Calculate danger */
             p = borg_danger_one_kill(y, x, 1, ag->kill, true, true);
@@ -3425,7 +3425,7 @@ static int borg_attack_aux_maim_foe(void)
                 continue;
         }
 
-        /* Hack -- ignore sleeping town monsters */
+        /* Ignore sleeping town monsters */
         if (!borg.trait[BI_CDEPTH] && !kill->awake)
             continue;
 
@@ -3566,7 +3566,7 @@ static int borg_attack_aux_vampire_strike(void)
         || rf_has(r_ptr->flags, RF_UNDEAD))
         return 0;
 
-    /* Hack -- avoid waking most "hard" sleeping monsters */
+    /* Avoid waking most "hard" sleeping monsters */
     if (!kill->awake && (d <= kill->power) && !borg.munchkin_mode) {
         /* Calculate danger */
         p = borg_danger_one_kill(y, x, 1, ag->kill, true, true);
@@ -4910,7 +4910,7 @@ int borg_calculate_attack_effectiveness(int attack_type)
         return (borg_attack_aux_ring(
             sv_ring_lightning, rad, dam, BORG_ATTACK_ELEC));
 
-    /* Hack -- Dragon Scale Mail can be activated as well */
+    /* Dragon Scale Mail can be activated as well */
     case BF_DRAGON_BLUE:
         rad = 20;
         dam = 150;

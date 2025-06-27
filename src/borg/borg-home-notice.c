@@ -373,7 +373,7 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
         }
 
 
-        /* Hack -- skip un-aware items */
+        /* Skip un-aware items */
         if (!item->aware)
             continue;
 
@@ -770,11 +770,11 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
         case TV_ARROW:
         case TV_BOLT:
 
-            /* Hack -- ignore invalid missiles */
+            /* Ignore invalid missiles */
             if (item->tval != borg.trait[BI_AMMO_TVAL])
                 break;
 
-            /* Hack -- ignore worthless missiles */
+            /* Ignore worthless missiles */
             if (item->value <= 0)
                 break;
 
@@ -837,7 +837,7 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
 
     /*** Process the Needs ***/
 
-    /* Hack -- No need for stat repair */
+    /* No need for stat repair */
     if (borg.trait[BI_SSTR])
         num_fix_stat[STAT_STR] += 1000;
     if (borg.trait[BI_SINT])

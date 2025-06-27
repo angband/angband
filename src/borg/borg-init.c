@@ -43,7 +43,7 @@
 #include "borg-update.h"
 #include "borg.h"
 
-bool borg_initialized; /* Hack -- Initialized */
+bool borg_initialized; /* Initialized */
 bool game_closed; /* Has the game been closed since the borg was
                       initialized */
 
@@ -295,7 +295,7 @@ bool borg_init_txt_file(void)
                 "performance loss (~20 percent).");
         }
 
-        /* Hack -- flush it */
+        /* Flush it */
         Term_fresh();
     }
 
@@ -389,7 +389,7 @@ static void borg_leave_game(
 }
 
 /*
- * Hack -- prepare some stuff based on the player race and class
+ * Prepare some stuff based on the player race and class
  */
 void borg_prepare_race_class_info(void)
 {
@@ -405,7 +405,7 @@ void borg_init(void)
     uint8_t *memory_test;
     bool    warning_given;
 
-    /*** Hack -- verify system ***/
+    /*** Verify system ***/
     /* Redraw everything */
     do_cmd_redraw();
 
@@ -413,7 +413,7 @@ void borg_init(void)
     borg_note("Initializing the Borg... (memory)");
     borg_init_failure = false;
 
-    /* Hack -- flush it */
+    /* Flush it */
     Term_fresh();
 
     /* Mega-Hack -- verify memory */
@@ -427,18 +427,18 @@ void borg_init(void)
 
     borg.player = player; /* HACK work around msvc issue */
 
-    /*** Hack -- initialize borg.ini options ***/
+    /*** Initialize borg.ini options ***/
 
     /* Message */
     borg_note("Initializing the Borg... (borg.txt)");
     warning_given = borg_init_txt_file();
 
-    /*** Hack -- initialize game options ***/
+    /*** Initialize game options ***/
 
     /* Message */
     borg_note("Initializing the Borg... (options)");
 
-    /* Hack -- flush it */
+    /* Flush it */
     Term_fresh();
 
     /* Make sure it rolls up a new guy at death */
@@ -492,7 +492,7 @@ void borg_init(void)
     /* Message */
     borg_note("Initializing the Borg... (various)");
 
-    /* Hack -- flush it */
+    /* Flush it */
     Term_fresh();
 
     /*** Cheat / Panic ***/
@@ -526,7 +526,7 @@ void borg_init(void)
     /*** Object/Monster tracking ***/
     borg_init_update();
 
-    /*** Hack -- react to race and class ***/
+    /*** React to race and class ***/
 
     /* Notice the new race and class */
     borg_prepare_race_class_info();
