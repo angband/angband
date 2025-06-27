@@ -1347,7 +1347,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
             borg_race_name(r_idx), r, c.y, c.x));
     }
 
-    /* Hack -- count racial appearances */
+    /* Count racial appearances */
     if (borg_race_count[r_idx] < SHRT_MAX)
         borg_race_count[r_idx]++;
 
@@ -1357,7 +1357,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
         borg_note("# Bizarre monster nearby");
     }
 
-    /*** Hack -- Find a similar object ***/
+    /*** Find a similar object ***/
 
     /* Nothing yet */
     b_i = -1;
@@ -1443,7 +1443,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
         return b_i;
     }
 
-    /*** Hack -- Find a similar monster ***/
+    /*** Find a similar monster ***/
 
     /* Nothing yet */
     b_i = -1;
@@ -1525,7 +1525,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
         return b_i;
     }
 
-    /*** Hack -- Find an existing monster ***/
+    /*** Find an existing monster ***/
 
     /* Nothing yet */
     b_i = -1;
@@ -1563,7 +1563,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
         b_d = d;
     }
 
-    /*** Hack -- Find an existing monster Last Chance ***/
+    /*** Find an existing monster Last Chance ***/
     /* Note:
      * There can be some problems with monsters that use melee
      * attack.  The range (r) will be 1.  But the known monster
@@ -1652,7 +1652,7 @@ void borg_count_death(int i)
     borg_kill *kill = &borg_kills[i];
 
     if (kill->r_idx) {
-        /* Hack -- count racial deaths */
+        /* Count racial deaths */
         if (borg_race_death[kill->r_idx] < SHRT_MAX)
             borg_race_death[kill->r_idx]++;
 
@@ -1786,7 +1786,7 @@ bool borg_flow_kill(bool viewable, int nearness)
             && (rf_has(r_info[kill->r_idx].flags, RF_MULTIPLY)))
             continue;
 
-        /* Hack -- ignore Maggot until later.  Player will chase Maggot
+        /* Ignore Maggot until later.  Player will chase Maggot
          * down all across the screen waking up all the monsters.  Then
          * he is stuck in a compromised situation.
          */
@@ -1808,7 +1808,7 @@ bool borg_flow_kill(bool viewable, int nearness)
         /* Calculate danger */
         p = borg_danger(y, x, 1, true, false);
 
-        /* Hack -- Skip "deadly" monsters unless uniques*/
+        /* Skip "deadly" monsters unless uniques*/
         if (borg.trait[BI_CLEVEL] > 25 && (!rf_has(r_info->flags, RF_UNIQUE))
             && p > avoidance / 2)
             continue;
@@ -1826,7 +1826,7 @@ bool borg_flow_kill(bool viewable, int nearness)
                 continue;
         }
 
-        /* Hack -- Avoid getting surrounded */
+        /* Avoid getting surrounded */
         if (borg_in_hall && (rf_has(r_info[kill->r_idx].flags, RF_GROUP_AI))) {
             /* check to see if monster is in a hall, */
             for (hall_x = -1; hall_x <= 1; hall_x++) {
@@ -3255,7 +3255,7 @@ void borg_init_flow_kill(void)
 
     /*** XXX XXX XXX Hack -- Cheat ***/
 
-    /* Hack -- Extract dead uniques */
+    /* Extract dead uniques */
     for (int i = 1; i < z_info->r_max - 1; i++) {
         struct monster_race *r_ptr = &r_info[i];
 
