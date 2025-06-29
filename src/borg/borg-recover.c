@@ -93,7 +93,7 @@ bool borg_recover(void)
 
     /*** Use "cheap" cures ***/
 
-    /* Hack -- cure stun */
+    /* Cure stun */
     if (borg.trait[BI_ISSTUN] && (q < 75)) {
         if (borg_activate_item(act_cure_body)
             || borg_activate_item(act_cure_critical)
@@ -112,7 +112,7 @@ bool borg_recover(void)
         }
     }
 
-    /* Hack -- cure stun */
+    /* Cure stun */
     if (borg.trait[BI_ISHEAVYSTUN]) {
         if (borg_eat(TV_MUSHROOM, sv_mush_fast_recovery)
             || borg_activate_item(act_cure_body)
@@ -130,7 +130,7 @@ bool borg_recover(void)
         }
     }
 
-    /* Hack -- cure cuts */
+    /* Cure cuts */
     if (borg.trait[BI_ISCUT] && (q < 75)) {
         if (borg_activate_item(act_cure_light) || borg_spell(MINOR_HEALING)
             || borg_spell(HEALING) || borg_spell(HERBAL_CURING)
@@ -142,7 +142,7 @@ bool borg_recover(void)
         }
     }
 
-    /* Hack -- cure poison */
+    /* Cure poison */
     if (borg.trait[BI_ISPOISONED] && (q < 75)) {
         if (borg_eat(TV_MUSHROOM, sv_mush_fast_recovery)
             || borg_activate_item(act_rem_fear_pois)
@@ -154,7 +154,7 @@ bool borg_recover(void)
         }
     }
 
-    /* Hack -- cure fear */
+    /* Cure fear */
     if (borg.trait[BI_ISAFRAID] && !borg.trait[BI_CRSFEAR] && (q < 75)) {
         if (borg_eat(TV_MUSHROOM, sv_mush_cure_mind)
             || borg_activate_item(act_rem_fear_pois) || borg_spell(HEROISM)
@@ -166,21 +166,21 @@ bool borg_recover(void)
         }
     }
 
-    /* Hack -- satisfy hunger */
+    /* Satisfy hunger */
     if ((borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK]) && (q < 75)) {
         if (borg_spell(REMOVE_HUNGER) || borg_spell(HERBAL_CURING)) {
             return true;
         }
     }
 
-    /* Hack -- hallucination */
+    /* Hallucination */
     if (borg.trait[BI_ISIMAGE] && (q < 75)) {
         if (borg_eat(TV_MUSHROOM, sv_mush_cure_mind)) {
             return true;
         }
     }
 
-    /* Hack -- heal damage */
+    /* Heal damage */
     if ((borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 2) && (q < 75) && p == 0
         && (borg.trait[BI_CURSP] > borg.trait[BI_MAXSP] / 4)) {
         if (borg_activate_item(act_heal1) || borg_activate_item(act_heal2)
@@ -221,7 +221,7 @@ bool borg_recover(void)
 
     /*** Use "expensive" cures ***/
 
-    /* Hack -- cure stun */
+    /* Cure stun */
     if (borg.trait[BI_ISSTUN] && (q < 25)) {
         if (borg_use_staff_fail(sv_staff_curing) || borg_zap_rod(sv_rod_curing)
             || borg_zap_rod(sv_rod_healing) || borg_activate_item(act_heal1)
@@ -230,7 +230,7 @@ bool borg_recover(void)
         }
     }
 
-    /* Hack -- cure heavy stun */
+    /* Cure heavy stun */
     if (borg.trait[BI_ISHEAVYSTUN] && (q < 95)) {
         if (borg_quaff_crit(true) || borg_use_staff_fail(sv_staff_curing)
             || borg_zap_rod(sv_rod_curing) || borg_zap_rod(sv_rod_healing)
@@ -239,7 +239,7 @@ bool borg_recover(void)
         }
     }
 
-    /* Hack -- cure cuts */
+    /* Cure cuts */
     if (borg.trait[BI_ISCUT] && (q < 25)) {
         if (borg_use_staff_fail(sv_staff_curing) || borg_zap_rod(sv_rod_curing)
             || borg_zap_rod(sv_rod_healing) || borg_activate_item(act_heal1)
@@ -249,7 +249,7 @@ bool borg_recover(void)
         }
     }
 
-    /* Hack -- cure poison */
+    /* Cure poison */
     if (borg.trait[BI_ISPOISONED] && (q < 25)) {
         if (borg_eat(TV_MUSHROOM, sv_mush_fast_recovery)
             || borg_quaff_potion(sv_potion_cure_poison)
@@ -264,7 +264,7 @@ bool borg_recover(void)
         }
     }
 
-    /* Hack -- cure blindness */
+    /* Cure blindness */
     if (borg.trait[BI_ISBLIND] && (q < 25)) {
         if (borg_eat(TV_MUSHROOM, sv_mush_fast_recovery)
             || borg_eat(TV_FOOD, sv_food_waybread)
@@ -277,7 +277,7 @@ bool borg_recover(void)
         }
     }
 
-    /* Hack -- cure confusion */
+    /* Cure confusion */
     if (borg.trait[BI_ISCONFUSED] && (q < 25)) {
         if (borg_eat(TV_MUSHROOM, sv_mush_cure_mind)
             || borg_quaff_potion(sv_potion_cure_serious)
@@ -288,7 +288,7 @@ bool borg_recover(void)
         }
     }
 
-    /* Hack -- cure fear */
+    /* Cure fear */
     if (borg.trait[BI_ISAFRAID] && !borg.trait[BI_CRSFEAR] && (q < 25)) {
         if (borg_eat(TV_MUSHROOM, sv_mush_cure_mind)
             || borg_quaff_potion(sv_potion_boldness)
@@ -299,7 +299,7 @@ bool borg_recover(void)
         }
     }
 
-    /* Hack -- satisfy hunger */
+    /* Satisfy hunger */
     if ((borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK]) && (q < 25)) {
         if (borg_read_scroll(sv_scroll_satisfy_hunger)
             || borg_activate_item(act_satisfy)) {
@@ -307,7 +307,7 @@ bool borg_recover(void)
         }
     }
 
-    /* Hack -- heal damage */
+    /* Heal damage */
     if ((borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 2) && (q < 25)) {
         if (borg_zap_rod(sv_rod_healing)
             || borg_quaff_potion(sv_potion_cure_serious)
@@ -316,7 +316,7 @@ bool borg_recover(void)
         }
     }
 
-    /* Hack -- Rest to recharge Rods of Healing or Recall*/
+    /* Rest to recharge Rods of Healing or Recall*/
     if (borg.has[kv_rod_recall] || borg.has[kv_rod_healing]) {
         /* Step 1.  Recharge just 1 rod. */
         if ((borg.has[kv_rod_healing]
@@ -354,7 +354,7 @@ bool borg_recover(void)
 
     /*** Just Rest ***/
 
-    /* Hack -- rest until healed */
+    /* Rest until healed */
     if (!borg.trait[BI_ISBLIND] && !borg.trait[BI_ISPOISONED]
         && !borg.trait[BI_ISCUT] && !borg.trait[BI_ISWEAK]
         && !borg.trait[BI_ISHUNGRY]
