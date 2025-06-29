@@ -99,7 +99,7 @@ The command queue
 
 The command queue is a first-in, first-out queue that holds and processes commands
 from the player. It is implemented in ``cmd-core.c``. The UI frontends add commands
-to this queue and the commands are read and processed in the main game loop in
+to this queue, which are then read and processed by the main game loop in
 `game-world.c - process_player()`_. This decouples the game engine from the user
 interface, making it easier to support different frontends, :ref:`keymaps <keymaps>`
 , :ref:`repeat actions <command-counts>`, and automate certain behaviors (e.g., run
