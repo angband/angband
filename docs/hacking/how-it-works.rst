@@ -97,9 +97,15 @@ the state of the game changed.
 The command queue
 -----------------
 
-The command queue is a simple first-in, first-out queue that holds commands from the player. The UI frontends add commands to this queue, and the main game loop in `game-world.c` reads from it. This decouples the game engine from the user interface, making it easier to test the game logic and to support different frontends.
-
-Commands are processed by the `process_command()` function in `cmd-core.c`, which looks up the command in the `game_cmds` table and executes the corresponding function.
+The command queue is a first-in, first-out queue that holds and processes commands
+from the player. It is implemented in ``cmd-core.c``. The UI frontends add commands
+to this queue, and the commands are read and processed in the main game loop in
+`game-world.c - process_player()`_. This decouples the game engine from the user
+interface, making it easier to support different frontends, support :ref:`keymaps
+<keymaps>`, :ref:`repeat actions <command-counts>`, and automate certain behaviors
+(e.g., run or rest to full). The command queue stops processing when the player is
+interrupted by monsters or other significant events via the ``disturb()`` function,
+ensuring the player always has a chance to respond to danger.
 
 Events
 ------

@@ -754,7 +754,9 @@ the command. The '[y/n]' prompts may be answered with ``y`` or ``n``, or
 the displayed message) by pressing 'ESCAPE', 'SPACE', 'RETURN',
 'LINEFEED', or by any keypress, if the "quick_messages" option is turned
 on.
- 
+
+.. _command-counts:
+
 Command Counts
 ==============
 
