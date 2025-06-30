@@ -129,7 +129,16 @@ arrays (see `The Static Data`_).
 
 Pref Files
 ----------
-TBD
+
+Pref files (preference files) are simple text files used to customize the user
+interface and gameplay experience. Pref files are loaded at startup from both
+system and user locations, with user files overriding defaults. The loading of
+individual pref files is handled in ``ui-prefs.c``. The specific order in
+which global and character-specific files are applied is determined by the
+sequence of ``process_pref_file()`` calls in various parts of the code, such as
+``ui-init.c`` and ``ui-display.c``. For details on what can be customized, file
+locations on different platforms, and how to edit or create pref files, see
+:ref:`User Pref Files <user-pref-files>`.
 
 Savefiles
 ----------

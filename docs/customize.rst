@@ -19,10 +19,13 @@ you can save your preferences for these into files, which are called
 while playing.
 
 
+.. _user-pref-files:
+
 User Pref Files
 ===============
 
-User pref files are Angband's way of saving and loading certain settings.  They can store:
+User pref files are Angband's way of saving and loading certain settings.
+They can store:
 
 * Altered visual appearances for game entities
 * Inscriptions to automatically apply to items
@@ -32,9 +35,12 @@ User pref files are Angband's way of saving and loading certain settings.  They 
 * Colours for different types of messages
 * What audio files to play for different types of messages
 
-They are simple text files with an easy to modify format, and the game has a set of pre-existing pref files in the lib/customize/ folder.  It's recommended you don't modify these.
+They are simple text files with an easy to modify format, and the game has
+a set of pre-existing pref files in the ``lib/customize/`` folder. It's
+recommended you don't modify these.
 
-Several options menu (``=``) items allow you to load existing user pref files, create new user pref files, or save to a user pref file.
+Several options menu (``=``) items allow you to load existing user pref files,
+create new user pref files, or save to a user pref file.
 
 Where to find them
 ~~~~~~~~~~~~~~~~~~
@@ -48,21 +54,30 @@ On Windows you can find them in ``lib/user/``.
 How do they get loaded?
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-When the game starts up, after you have loaded or created a character, some user pref files are loaded automatically.  These are the ones mentioned above in the ``lib/customize/`` folder, namely ``pref.prf`` followed by ``font.prf``.  If you have graphics turned on, then the game will also load some settings from ``lib/tiles/``.
+When the game starts up, after you have loaded or created a character, some user
+pref files are loaded automatically. These are the ones mentioned above in the
+``lib/customize/`` folder, namely ``pref.prf`` followed by ``font.prf``.  If you
+have graphics turned on, then the game will also load some settings from
+``lib/tiles/``.
 
 After these are complete, the game will try to load (in order):
 
-* window.prf - loaded for all characters
-* *race*.prf - where *race* is your character's race, so something like ``Dwarf.prf``
-* *class*.prf - where *class* is your character's class, so something like ``Paladin.prf``
-* *name*.prf - where *name* is your character's name, so something like ``Balin.prf``
+* ``window.prf`` - loaded for all characters
+* *race*.prf - where *race* is your character's race, so something like
+  ``Dwarf.prf``
+* *class*.prf - where *class* is your character's class, so something like
+  ``Paladin.prf``
+* *name*.prf - where *name* is your character's name, so something like
+  ``Balin.prf``
 
-So, you can save some settings - for example, keymaps - to the ``Mage.prf`` file if you only want them to be loaded for mages.
+You can save some settings - for example, keymaps - to the ``Mage.prf`` file
+if you only want them to be loaded for mages.
 
-You may also enter single user pref commands directly, using the special "Enter a user pref command" command, activated by pressing ``"``.
+You may also enter single user pref commands directly, using the special "Enter a
+user pref command" command, activated by pressing ``"``.
 
-You may have to use the redraw command (``^r``) after changing certain of the aspects of the game to allow Angband to adapt to your changes.
-
+You may have to use the redraw command (``^r``) after changing certain of the
+aspects of the game to allow Angband to adapt to your changes.
 
 Ignoring items
 ==============
