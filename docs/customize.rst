@@ -19,6 +19,8 @@ you can save your preferences for these into files, which are called
 while playing.
 
 
+.. _user-pref-files:
+
 User Pref Files
 ===============
 
