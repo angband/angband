@@ -215,7 +215,7 @@ or one step of the simulator. During each turn:
 * End-of-turn housekeeping is done
 
 mon-move.c - process_monsters()
-*********************************
+*******************************
 
 In Angband, creatures act in order of "energy", which roughly determines how
 many actions they can take per step through the simulation. The
@@ -319,8 +319,24 @@ using cavern_chunk() or labyrinth_chunk(), respectively, in gen-cave.c.
 Monster AI
 ----------
 
-TBD
+Monster AI determines how monsters act each turn. The logic is primarily
+implemented in ``mon-move.c``, ``mon-attack.c``, and ``cave-map.c``.
+`mon-move.c - process_monsters()`_ is called in the main game loop.
 
+On its turn, a monster will:
+
+1. Regenerate HP and recover from timed effects
+2. Attempt to multiply (if possible)
+3. Attempt to cast a spell or use a ranged attack
+4. Try to move towards the player
+
+Pathfinding uses a "flow" system implemented in ``cave-map.c``. Each grid
+stores a ``noise`` value (distance from the player) and a ``scent`` value
+(recentness of information). Monsters follow the lowest noise value towards
+the player, using scent to break ties. One set of flow information is used for
+all monsters. It is efficient but means that monsters that can't open or bash
+down doors, or otherwise deal with obstacles, will find it impossible to flow
+around them and find a different way to the player.
 
 Stats
 -----
