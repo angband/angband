@@ -450,7 +450,6 @@ static struct keypress internal_borg_inkey(int flush_first)
         borg_note(format("# Key type was <%d><%c>", ch_evt.type, ch_evt.type));
         borg_oops("user abort");
 
-        /* Escape */
         key.code = ESCAPE;
         return key;
     }
@@ -509,7 +508,6 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* Oops */
     borg_oops("normal abort");
 
-    /* Escape */
     key.code = ESCAPE;
     return key;
 }
