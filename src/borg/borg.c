@@ -554,7 +554,7 @@ void do_cmd_borg(void)
 #endif /* BABLOS */
 
     /*
-     * Set the Borg's internal player location using the game's internal state.
+     * Set the Borg's player location using the game's internal state.
      *
      * Normally, the Borg is only supposed to "know" what is visible on the screen.
      * But at this point the screen has not yet been scanned, so we cannot rely on
