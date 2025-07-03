@@ -206,7 +206,8 @@ void borg_update_light(void)
 
                 /* 
                  * Approximate the distance "as the bird flies" (straight-line).
-                 * Ignores obstacles and does not follow walkable paths like pathfinding code elsewhere.
+                 * Ignores obstacles and does not follow walkable paths like
+                 * pathfinding code elsewhere.
                  */
                 d = (dy > dx) ? (dy + (dx >> 1)) : (dx + (dy >> 1));
 
