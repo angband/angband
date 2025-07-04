@@ -204,8 +204,7 @@ void borg_update_light(void)
                 if ((dy <= 2) && (dx <= 2))
                     continue;
 
-                /* 
-                 * Approximate the distance "as the bird flies" (straight-line).
+                /* Approximate the distance "as the bird flies" (straight-line).
                  * Ignores obstacles and does not follow walkable paths like
                  * pathfinding code elsewhere.
                  */

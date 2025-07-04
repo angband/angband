@@ -303,8 +303,7 @@ static int borg_defend_aux_speed(int p1)
 
     /* if scaryguy around cast it. */
     if (scaryguy_on_level) {
-        /*
-         * Further reduce danger to encourage speed use against scary or
+        /* Further reduce danger to encourage speed use against scary or
          * unique monsters.
          */
         p2 = p2 * 3 / 10;
@@ -312,16 +311,14 @@ static int borg_defend_aux_speed(int p1)
 
     /* if we are fighting a unique cast it. */
     if (good_speed && borg_fighting_unique) {
-        /*
-         * Further reduce danger to encourage speed use against scary or
+        /* Further reduce danger to encourage speed use against scary or
          * unique monsters.
          */
         p2 = p2 * 7 / 10;
     }
     /* if we are fighting a unique and a summoner cast it. */
     if (borg_fighting_summoner && borg_fighting_unique) {
-        /*
-         * Further reduce danger to encourage speed use against scary or
+        /* Further reduce danger to encourage speed use against scary or
          * unique monsters.
          */
         p2 = p2 * 7 / 10;

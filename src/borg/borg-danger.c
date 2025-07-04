@@ -2397,8 +2397,7 @@ int borg_danger_one_kill(
     /* Physical attacks */
     v1 = borg_danger_physical(i, full_damage);
 
-    /*
-     * If the Borg has been stuck on this panel for a long time, or if the
+    /* If the Borg has been stuck on this panel for a long time, or if the
      * total turn count is very high, reduce the danger value. This helps
      * prevent the Borg from getting stuck due to overestimating danger and
      * refusing to move in both this area of the dungeon and over the course
@@ -2685,8 +2684,7 @@ int borg_danger_one_kill(
         v2 = b_v2;
     }
 
-    /*
-     * If the Borg has been stuck on this panel for a long time, or if the
+    /* If the Borg has been stuck on this panel for a long time, or if the
      * total turn count is very high, reduce the danger value. This helps
      * prevent the Borg from getting stuck due to overestimating danger and
      * refusing to move in both this area of the dungeon and over the course
