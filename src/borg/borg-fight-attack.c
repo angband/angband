@@ -217,6 +217,7 @@ static int borg_thrust_damage_one(int i)
     /* Ignore Maggot until later.  Player will chase Maggot
      * down all across the screen waking up all the monsters.  Then
      * he is stuck in a compromised situation.
+     * !FIX !TODO: Handle all uniques generically.
      */
     if ((rf_has(r_ptr->flags, RF_UNIQUE)) && borg.trait[BI_CDEPTH] == 0) {
         dam = dam * 2 / 3;
@@ -1151,6 +1152,7 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
     /* Ignore Maggot until later.  Player will chase Maggot
      * down all across the screen waking up all the monsters.  Then
      * he is stuck in a compromised situation.
+     * !FIX !TODO: Handle all uniques generically.
      */
     if ((rf_has(r_ptr->flags, RF_UNIQUE)) && borg.trait[BI_CDEPTH] == 0) {
         dam = dam * 2 / 3;

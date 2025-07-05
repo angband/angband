@@ -1789,6 +1789,7 @@ bool borg_flow_kill(bool viewable, int nearness)
         /* Ignore Maggot until later.  Player will chase Maggot
          * down all across the screen waking up all the monsters.  Then
          * he is stuck in a compromised situation.
+         * !FIX !TODO: Handle all uniques generically.
          */
         if ((rf_has(r_info[kill->r_idx].flags, RF_UNIQUE))
             && borg.trait[BI_CDEPTH] == 0 && borg.trait[BI_CLEVEL] < 5)
