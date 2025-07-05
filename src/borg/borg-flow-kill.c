@@ -906,7 +906,7 @@ static int borg_new_kill(unsigned int r_idx, int y, int x)
  *
  * The actual rewards and penalties probably need some tweaking.
  *
- * Try not to choose "unique" monsters, or we will flee a lot.
+ * HACK: Try not to choose "unique" monsters, or we will flee a lot.
  */
 static unsigned int borg_guess_race(
     uint8_t a, wchar_t c, bool multi, int y, int x)
