@@ -311,7 +311,10 @@ bool borg_think(void)
         }
     }
 
-    /* Always revert shapechanged players to normal form */
+    /* Always revert shapechanged players to normal form.
+     * !FIX !TODO: borg needs to know when to shapechange and how
+     * to deal with being in a different form.
+     */
     if (player_is_shapechanged(player)) {
         /* it looks like throw is a good command that checks */
         /* your form without a prerequisite check */
