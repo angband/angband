@@ -1304,7 +1304,9 @@ static int borg_launch_bolt_aux_hack(int i, int dam, int typ, int ammo_location)
     /* Calculate danger */
     p2 = borg_danger_one_kill(y, x, 1, i, true, false);
 
-    /* Avoid waking most "hard" sleeping monsters */
+    /* Avoid waking most "hard" sleeping monsters
+     * !FIX !TODO: Combine similar checks in one place
+     */
     if (!kill->awake && (p2 > avoidance / 2) && (d < kill->power)
         && !borg.munchkin_mode) {
         return (-999);
