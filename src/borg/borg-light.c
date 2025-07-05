@@ -306,10 +306,6 @@ bool borg_check_light(void)
     if (!borg_detect_door[q_y + 1][q_x + 1])
         do_door = true;
 
-    /* Check doors every few turns anyway */
-    /* if (!when_detect_doors || (borg_t - when_detect_doors >= 731)) do_door =
-     * true; */
-
     /* Start */
     do_wall = false;
 
