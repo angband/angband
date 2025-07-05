@@ -144,6 +144,7 @@ static bool borg_message_contains(
  * Spontaneous level feelings (order important).
  *
  * See "do_cmd_feeling()" for details.
+ * !FIX !TODO: Make this more robust to changes in level feeling messages.
  */
 static const char *prefix_feeling_danger[] = {
     "You are still uncertain about this place",
