@@ -1727,7 +1727,7 @@ static void borg_notice_equipment(void)
         if (bonuses > 2)
             borg.trait[BI_MULTIPLE_BONUSES] += bonuses;
 
-        /* Net-zero The borg will miss read acid damaged items such as
+        /* HACK: Net-zero The borg will miss read acid damaged items such as
          * Leather Gloves [2,-2] and falsely assume they help his power.
          * this hack rewrites the bonus to an extremely negative value
          * thus encouraging him to remove the non-helpful-non-harmful but
