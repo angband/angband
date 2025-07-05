@@ -1175,7 +1175,7 @@ bool borg_think_dungeon(void)
         borg_oops("Money Scum complete.");
     }
 
-    /* Prevent clock wrapping Step 1 */
+    /* HACK: Prevent clock wrapping Step 1 */
     if ((borg_t >= 12000 && borg_t <= 12025)
         || (borg_t >= 25000 && borg_t <= 25025)) {
         /* Clear Possible errors */
