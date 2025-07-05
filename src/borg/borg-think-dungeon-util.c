@@ -50,8 +50,9 @@
 #include "borg.h"
 
 /*
- * Importance of the various "level feelings"
- * Try to explore the level for at least this many turns
+ * Importance of the various "level feelings".
+ * These values are arbitrary estimates.
+ * Try to explore the level for at least this many turns.
  */
 static int borg_stuff_feeling[]
     = { 50000, /* 0 is no feeling yet given, stick around to get one */
