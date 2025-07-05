@@ -1320,7 +1320,7 @@ static int borg_launch_bolt_aux_hack(int i, int dam, int typ, int ammo_location)
     /* Ignore nonthreatening town monsters when low level */
     if (!borg.trait[BI_CDEPTH] && borg.trait[BI_CLEVEL] < 3
         /* && monster_is_nonthreatening_test */) {
-        /* Nothing yet */
+        /* Nothing yet !FIX !TODO */
     }
 
     /* Calculate "danger" to player */
