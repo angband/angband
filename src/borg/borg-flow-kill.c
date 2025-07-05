@@ -389,7 +389,7 @@ static void borg_update_kill_old(int i)
         morgy_panel_x = j;
     }
 
-    /* Force the monster to be sitting on a floor
+    /* HACK/CHEAT: Force the monster to be sitting on a floor
      * grid unless that monster can pass through walls
      */
     if (!rf_has(r_ptr->flags, RF_PASS_WALL)) {
