@@ -791,7 +791,7 @@ bool borg_leave_level(bool bored)
         }
     }
 
-    /* If I am playing way too shallow return to town */
+    /* If playing way too shallow return to town to recall deeper. */
     if (NULL == borg_prepared(borg.trait[BI_CDEPTH] + 20)
         && NULL == borg_prepared(borg.trait[BI_MAXDEPTH] * 6 / 10)
         && borg.trait[BI_MAXDEPTH] > borg.trait[BI_CDEPTH] + 20
