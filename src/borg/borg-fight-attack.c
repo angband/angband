@@ -315,7 +315,7 @@ static int borg_attack_aux_thrust(void)
                 continue;
         }
 
-        /* Ignore sleeping town monsters */
+        /* HACK: Ignore sleeping town monsters */
         if (!borg.trait[BI_CDEPTH] && !kill->awake)
             continue;
 
