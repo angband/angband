@@ -163,11 +163,6 @@ static int32_t borg_power_equipment(void)
     if (borg.trait[BI_HEAVYWEPON])
         value -= 500000L;
 
-    /* Borg worships num_blow, even on broken swords. */
-    /* kind 47 is a broken sword usually 1d2 in damage */
-    /* if (item->kind == 47 || item->kind == 30 ||item->kind == 390 ) value
-     * -=90000L; */
-
     /* We want low level borgs to have high blows (dagger, whips) */
     if (borg.trait[BI_CLEVEL] <= 10)
         value += borg.trait[BI_BLOWS] * 45000L;
