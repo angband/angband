@@ -53,7 +53,7 @@ static int32_t borg_object_value_known(borg_item *item)
     /* Extract the base value */
     value = k_ptr->cost;
 
-    /* Use artifact base costs */
+    /* Use artifact base costs Cheat */
     if (item->art_idx) {
         struct artifact *a_ptr = &a_info[item->art_idx];
 
