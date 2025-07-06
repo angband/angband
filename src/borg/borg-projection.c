@@ -237,7 +237,7 @@ bool borg_los(int y1, int x1, int y2, int x2)
 /*
  * Check the projection from (x1,y1) to (x2,y2).
  * Assume that there is no monster in the way.
- * We refuse to assume that unknown grids are floors
+ * HACK: We refuse to assume that unknown grids are floors
  * Adapted from "projectable()" in "spells1.c".
  */
 bool borg_projectable(int y1, int x1, int y2, int x2)
