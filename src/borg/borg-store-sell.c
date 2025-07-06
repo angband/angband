@@ -212,7 +212,7 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
         if (o_ptr->ego_idx != j_ptr->ego_idx)
             return false;
 
-        /* Never stack "powerful" items */
+        /* HACK: Never stack "powerful" items */
         if (!of_is_empty(o_ptr->flags) || !of_is_empty(j_ptr->flags))
             return false;
 
