@@ -91,7 +91,7 @@ bool borg_quaff_potion(int sval)
     borg_keypress('q');
     borg_keypress(all_letters_nohjkl[i]);
 
-    /* Clear "shop" goals */
+    /* Clear "shop" goals. Inventory changed so goals need to be redone. */
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
@@ -136,7 +136,7 @@ bool borg_quaff_unknown(void)
     borg_keypress('q');
     borg_keypress(all_letters_nohjkl[n]);
 
-    /* Clear "shop" goals */
+    /* Clear "shop" goals. Inventory changed so goals need to be redone. */
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
