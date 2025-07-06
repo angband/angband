@@ -61,11 +61,11 @@ static int32_t borg_object_value_known(borg_item *item)
         if (!a_ptr->cost)
             return (0L);
 
-        /* Use the artifact cost */
+        /* Use the artifact cost Cheat */
         value = a_ptr->cost;
     }
 
-    /* Add in ego-item bonus cost */
+    /* Add in ego-item bonus cost Cheat */
     if (item->ego_idx) {
         struct ego_item *e_ptr = &e_info[item->ego_idx];
 
@@ -73,7 +73,7 @@ static int32_t borg_object_value_known(borg_item *item)
         if (!e_ptr->cost)
             return (0L);
 
-        /* Reward the ego-item cost */
+        /* Reward the ego-item cost Cheat */
         value += e_ptr->cost;
     }
 
