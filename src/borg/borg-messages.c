@@ -39,7 +39,7 @@
 #include "borg.h"
 
 /*
- * Hack -- message memory
+ * Message memory
  */
 int16_t  borg_msg_len;
 int16_t  borg_msg_siz;
@@ -57,7 +57,7 @@ static char **suffix_pain;
 char borg_match[128] = "plain gold ring";
 
 /*
- * Hack -- methods of killing a monster (order not important).
+ * Methods of killing a monster (order not important).
  *
  * See "mon_take_hit()" for details.
  */
@@ -68,7 +68,7 @@ static const char *prefix_kill[]
         NULL };
 
 /*
- * Hack -- methods of monster death (order not important).
+ * Methods of monster death (order not important).
  *
  * See "project_m()", "do_cmd_fire()", "mon_take_hit()" for details.
  * !FIX this should use MON_MSG* 
@@ -141,9 +141,10 @@ static bool borg_message_contains(
 }
 
 /*
- * Hack -- Spontaneous level feelings (order important).
+ * Spontaneous level feelings (order important).
  *
  * See "do_cmd_feeling()" for details.
+ * !FIX !TODO: Make this more robust to changes in level feeling messages.
  */
 static const char *prefix_feeling_danger[] = {
     "You are still uncertain about this place",
@@ -174,7 +175,7 @@ static const char *suffix_feeling_stuff[] = {
     NULL };
 
 /*
- * Hack -- Parse a message from the world
+ * Parse a message from the world
  *
  * Note that detecting "death" is EXTREMELY important, to prevent
  * all sorts of errors arising from attempting to parse the "tomb"
@@ -227,7 +228,7 @@ static void borg_parse_aux(char *msg, int len)
     if (borg_cfg[BORG_VERBOSE])
         borg_note(format("# Parse Msg bite <%s>", msg));
 
-    /* Hack -- Notice death */
+    /* Notice death */
     if (prefix(msg, "You die.")) {
         /* Abort (unless cheating) */
         if (!(player->wizard || OPT(player, cheat_live) || borg_cheat_death)) {
@@ -244,9 +245,9 @@ static void borg_parse_aux(char *msg, int len)
         return;
     }
 
-    /* Hack -- Notice "failure" */
+    /* Notice "failure" */
     if (prefix(msg, "You failed ")) {
-        /* Hack -- store the keypress */
+        /* Store the keypress */
         borg_note("# Normal failure.");
 
         /* Set the failure flag */
@@ -739,14 +740,14 @@ static void borg_parse_aux(char *msg, int len)
 
     /* Word of Recall -- Cancelled */
     if (prefix(msg, "A tension leaves ")) {
-        /* Hack -- Oops */
+        /* Oops */
         borg.goal.recalling = 0;
         return;
     }
 
     /* Deep Descent -- Cancelled (only happens on death) */
     if (prefix(msg, "The air around you stops ")) {
-        /* Hack -- Oops */
+        /* Oops */
         borg.goal.descending = 0;
         return;
     }
@@ -868,7 +869,7 @@ static void borg_parse_aux(char *msg, int len)
 
             /* if the guy is too close then delete him. */
             if (d < 4) {
-                /* Hack -- kill em */
+                /* Kill em */
                 borg_delete_kill(i);
             }
         }
@@ -904,7 +905,7 @@ static void borg_parse_aux(char *msg, int len)
 
     /* Hack to protect against clock overflows and errors */
     if (prefix(msg, "Illegal ")) {
-        /* Hack -- Oops */
+        /* Oops */
         borg_respawning = 7;
         borg_keypress(ESCAPE);
         borg_keypress(ESCAPE);
@@ -914,7 +915,7 @@ static void borg_parse_aux(char *msg, int len)
 
     /* Hack to protect against clock overflows and errors */
     if (prefix(msg, "You have nothing to identify")) {
-        /* Hack -- Oops */
+        /* Oops */
         borg_keypress(ESCAPE);
         borg_keypress(ESCAPE);
         borg.time_this_panel += 100;
@@ -950,7 +951,7 @@ static void borg_parse_aux(char *msg, int len)
         borg_item *item = &borg_items[INVEN_LIGHT];
         item->ident     = true;
 
-        /* Hack -- Oops */
+        /* Oops */
         borg_keypress(ESCAPE);
         borg_keypress(ESCAPE);
         borg.time_this_panel += 100;
@@ -1128,7 +1129,7 @@ static void borg_parse_aux(char *msg, int len)
             if (d > 12)
                 continue;
 
-            /* Hack -- kill em */
+            /* Kill em */
             borg_delete_kill(i);
         }
 

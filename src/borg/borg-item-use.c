@@ -91,7 +91,7 @@ bool borg_quaff_potion(int sval)
     borg_keypress('q');
     borg_keypress(all_letters_nohjkl[i]);
 
-    /* Hack -- Clear "shop" goals */
+    /* Clear "shop" goals. Inventory changed so goals need to be redone. */
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
@@ -136,7 +136,7 @@ bool borg_quaff_unknown(void)
     borg_keypress('q');
     borg_keypress(all_letters_nohjkl[n]);
 
-    /* Hack -- Clear "shop" goals */
+    /* Clear "shop" goals. Inventory changed so goals need to be redone. */
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
@@ -144,7 +144,7 @@ bool borg_quaff_unknown(void)
 }
 
 /*
- * Hack -- attempt to read the given scroll (by sval)
+ * Attempt to read the given scroll (by sval)
  */
 bool borg_read_scroll(int sval)
 {
@@ -175,7 +175,7 @@ bool borg_read_scroll(int sval)
     borg_keypress('r');
     borg_keypress(all_letters_nohjkl[i]);
 
-    /* Hack -- Clear "shop" goals */
+    /* Clear "shop" goals */
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
@@ -183,7 +183,7 @@ bool borg_read_scroll(int sval)
 }
 
 /*
- * Hack -- attempt to read an unknown scroll
+ * Attempt to read an unknown scroll
  */
 bool borg_read_unknown(void)
 {
@@ -231,7 +231,7 @@ bool borg_read_unknown(void)
     /* In case it is ID scroll, ESCAPE out. */
     borg_keypress(ESCAPE);
 
-    /* Hack -- Clear "shop" goals */
+    /* Clear "shop" goals */
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
@@ -239,7 +239,7 @@ bool borg_read_unknown(void)
 }
 
 /*
- * Hack -- attempt to eat the given food or mushroom
+ * Attempt to eat the given food or mushroom
  */
 bool borg_eat(int tval, int sval)
 {
@@ -259,7 +259,7 @@ bool borg_eat(int tval, int sval)
     borg_keypress('E');
     borg_keypress(all_letters_nohjkl[i]);
 
-    /* Hack -- Clear "shop" goals */
+    /* Clear "shop" goals */
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
@@ -267,7 +267,7 @@ bool borg_eat(int tval, int sval)
 }
 
 /*
- * Hack -- attempt to eat an unknown food/mushroom.
+ * Attempt to eat an unknown food/mushroom.
  * This is done in emergencies.
  */
 bool borg_eat_unknown(void)
@@ -305,7 +305,7 @@ bool borg_eat_unknown(void)
     borg_keypress('E');
     borg_keypress(all_letters_nohjkl[n]);
 
-    /* Hack -- Clear "shop" goals */
+    /* Clear "shop" goals */
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
@@ -399,7 +399,7 @@ bool borg_eat_food_any(void)
     return false;
 }
 /*
- * Hack -- checks rod (by sval) and
+ * Checks rod (by sval) and
  * make a fail check on it.
  */
 bool borg_equips_rod(int sval)
@@ -440,7 +440,7 @@ bool borg_equips_rod(int sval)
 }
 
 /*
- * Hack -- attempt to zap the given (charged) rod (by sval)
+ * Attempt to zap the given (charged) rod (by sval)
  */
 bool borg_zap_rod(int sval)
 {
@@ -454,7 +454,7 @@ bool borg_zap_rod(int sval)
     if (i < 0)
         return false;
 
-    /* Hack -- Still charging */
+    /* Still charging */
     if (!borg_items[i].pval)
         return false;
 
@@ -489,7 +489,7 @@ bool borg_zap_rod(int sval)
 }
 
 /*
- * Hack -- attempt to use the given (charged) staff (by sval)
+ * Attempt to use the given (charged) staff (by sval)
  */
 bool borg_use_staff(int sval)
 {
@@ -518,7 +518,7 @@ bool borg_use_staff(int sval)
 }
 
 /*
- * Hack -- attempt to use an unknown staff.  This is done in emergencies.
+ * Attempt to use an unknown staff.  This is done in emergencies.
  */
 bool borg_use_unknown(void)
 {
@@ -563,7 +563,7 @@ bool borg_use_unknown(void)
 }
 
 /*
- * Hack -- attempt to use the given (charged) staff (by sval) and
+ * Attempt to use the given (charged) staff (by sval) and
  * make a fail check on it.
  */
 bool borg_use_staff_fail(int sval)
@@ -623,7 +623,7 @@ bool borg_use_staff_fail(int sval)
 }
 
 /*
- * Hack -- checks staff (by sval) and
+ * Checks staff (by sval) and
  * make a fail check on it.
  */
 bool borg_equips_staff_fail(int sval)
@@ -682,7 +682,7 @@ bool borg_equips_staff_fail(int sval)
 }
 
 /*
- * Hack -- attempt to aim the given (charged) wand (by sval)
+ * Attempt to aim the given (charged) wand (by sval)
  */
 bool borg_aim_wand(int sval)
 {
@@ -711,7 +711,7 @@ bool borg_aim_wand(int sval)
 }
 
 /*
- * Hack -- check and see if borg is wielding a ring and if
+ * Check and see if borg is wielding a ring and if
  * he will pass a fail check.
  */
 bool borg_equips_ring(int ring_sval)
@@ -767,7 +767,7 @@ bool borg_equips_ring(int ring_sval)
 }
 
 /*
- *  Hack -- attempt to use the given ring
+ * Attempt to use the given ring
  */
 bool borg_activate_ring(int ring_sval)
 {
@@ -810,7 +810,7 @@ bool borg_activate_ring(int ring_sval)
 }
 
 /*
- * Hack -- check and see if borg is wielding a dragon armor and if
+ * Check and see if borg is wielding a dragon armor and if
  * he will pass a fail check.
  */
 bool borg_equips_dragon(int drag_sval)
@@ -878,7 +878,7 @@ bool borg_equips_dragon(int drag_sval)
 }
 
 /*
- *  Hack -- attempt to use the given dragon armour
+ * Attempt to use the given dragon armour
  */
 bool borg_activate_dragon(int drag_sval)
 {
@@ -956,7 +956,7 @@ bool borg_activate_item(int activation)
 }
 
 /*
- * Hack -- check and see if borg is wielding an item with this activation
+ * Check and see if borg is wielding an item with this activation
  */
 bool borg_equips_item(int activation, bool check_charge)
 {
@@ -1119,7 +1119,7 @@ bool borg_use_things(void)
             break;
         }
         case TV_SCROLL: {
-            /* Hack -- check Blind/Confused */
+            /* Check Blind/Confused */
             if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
                 break;
 

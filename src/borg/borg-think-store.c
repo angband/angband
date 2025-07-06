@@ -285,7 +285,7 @@ bool borg_choose_shop(void)
  */
 bool borg_think_store(void)
 {
-    /* Prevent clock wrapping */
+    /* HACK: Prevent clock wrapping */
     if (borg_t >= 20000 && borg_t <= 20010) {
         /* Clear Possible errors */
         borg_keypress(ESCAPE);
