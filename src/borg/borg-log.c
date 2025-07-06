@@ -647,7 +647,7 @@ void borg_write_map(bool ask)
     borg_sort(who, &why, n);
 
 
-    /* Build the artifact name */
+    /* Build the unique name */
     file_putf(borg_map_file, "   [Unique Info] \n\n");
 
     /* Print the monsters */
