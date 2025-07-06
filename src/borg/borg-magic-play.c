@@ -90,6 +90,7 @@ bool borg_play_magic(bool bored)
     int spell_num, b_spell_num;
 
     /* Must use magic or prayers */
+    /* !FIX !TODO add to borg struct and check that */
     if (!player->class->magic.total_spells)
         return false;
 
