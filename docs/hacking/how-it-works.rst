@@ -110,7 +110,12 @@ player always has a chance to respond to danger.
 Events
 ------
 
-TBD
+Events notify the UI and message systems about changes in game state. The event
+system, in ``game-event.c`` and ``game-event.h``, lets the UI and other parts of the
+program register handlers for different event types and react when those events occur.
+This keeps the display and messages in sync with the game, and helps separate game
+logic from the UI. Some direct UI and sound calls are still used alongside the event
+system. The intent is to expand the event system in the future.
 
 Files
 =====
