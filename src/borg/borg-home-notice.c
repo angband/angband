@@ -838,7 +838,7 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
 
     /*** Process the Needs ***/
 
-    /* No need for stat repair */
+    /* HACK: No need for stat repair */
     if (borg.trait[BI_SSTR])
         num_fix_stat[STAT_STR] += 1000;
     if (borg.trait[BI_SINT])
