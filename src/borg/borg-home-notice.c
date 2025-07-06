@@ -771,6 +771,7 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
         case TV_BOLT:
 
             /* Ignore invalid missiles */
+            /* !FIX !TODO: be willing to switch to a better weapon. */
             if (item->tval != borg.trait[BI_AMMO_TVAL])
                 break;
 
