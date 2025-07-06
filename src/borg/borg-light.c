@@ -290,6 +290,7 @@ bool borg_check_light(void)
         do_trap = true;
 
     /* Check traps every few turns anyway */
+    /* !FIX !TODO: Uncomment and fix magic number or delete */
     /* if (!when_detect_traps || (borg_t - when_detect_traps >= 183)) do_trap =
      * true; */
 
@@ -320,6 +321,7 @@ bool borg_check_light(void)
         do_wall = true;
 
     /* Check walls every few turns anyway */
+    /* !FIX !TODO: Uncomment and fix magic number or delete */
     /* if (!when_detect_walls || (borg_t - when_detect_walls >= 937)) do_wall =
      * true; */
 
@@ -350,6 +352,7 @@ bool borg_check_light(void)
         do_obj = true;
 
     /* Check evil every few turns anyway- more fq if low level */
+    /* !FIX !TODO: Uncomment and fix magic number or delete */
     /* if (!when_detect_evil ||
        (borg_t - when_detect_evil  >= 183 - (80 - borg.trait[BI_MAXCLEVEL])))
        do_evil = true; */
