@@ -41,6 +41,7 @@ docs/manual.pdf
 docs/manual.tex
 docs/manual.toc
 docs/_build
+src/doc/_doxygen/
 lib/user/CharOutput.txt
 lib/user/lore.txt
 lib/user/save/*
