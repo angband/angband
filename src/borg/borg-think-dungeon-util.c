@@ -50,8 +50,9 @@
 #include "borg.h"
 
 /*
- * Importance of the various "level feelings"
- * Try to explore the level for at least this many turns
+ * Importance of the various "level feelings".
+ * These values are arbitrary estimates.
+ * Try to explore the level for at least this many turns.
  */
 static int borg_stuff_feeling[]
     = { 50000, /* 0 is no feeling yet given, stick around to get one */
@@ -790,7 +791,7 @@ bool borg_leave_level(bool bored)
         }
     }
 
-    /* If I am playing way too shallow return to town */
+    /* If playing way too shallow return to town to recall deeper. */
     if (NULL == borg_prepared(borg.trait[BI_CDEPTH] + 20)
         && NULL == borg_prepared(borg.trait[BI_MAXDEPTH] * 6 / 10)
         && borg.trait[BI_MAXDEPTH] > borg.trait[BI_CDEPTH] + 20

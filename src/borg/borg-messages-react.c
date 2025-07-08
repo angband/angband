@@ -176,7 +176,6 @@ bool borg_react_prompted(const char* buf, struct keypress *key, int x, int y)
             borg_note(format("** line starting <%s> ***", buf));
             borg_dump_recent_keys(20);
             borg_oops("unexpected request for direction");
-            /* Hack -- Escape */
             key->code = ESCAPE;
             return true;
         }

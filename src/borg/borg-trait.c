@@ -1727,7 +1727,7 @@ static void borg_notice_equipment(void)
         if (bonuses > 2)
             borg.trait[BI_MULTIPLE_BONUSES] += bonuses;
 
-        /* Net-zero The borg will miss read acid damaged items such as
+        /* HACK: Net-zero The borg will miss read acid damaged items such as
          * Leather Gloves [2,-2] and falsely assume they help his power.
          * this hack rewrites the bonus to an extremely negative value
          * thus encouraging him to remove the non-helpful-non-harmful but
@@ -2956,7 +2956,7 @@ void borg_notice_player(void)
 {
     int i;
 
-    /*** Extract class ***/
+    /*** Extract class Cheat ***/
     borg.trait[BI_CLASS] = player->class->cidx;
 
     /* Assume level is fine */
@@ -3122,13 +3122,13 @@ void borg_notice_player(void)
         borg.trait[BI_CSTR + i] = player->stat_cur[STAT_STR + i];
     }
 
-    /* Access max depth */
+    /* Access depth Cheat */
     borg.trait[BI_CDEPTH] = player->depth;
 
-    /* Access max depth */
+    /* Access max depth Cheat */
     borg.trait[BI_MAXDEPTH] = player->max_depth;
 
-    /* Track if Sauron is dead */
+    /* Track if Sauron is dead Cheat */
     borg.trait[BI_SAURON_DEAD] = borg_race_death[borg_sauron_id];
 }
 
