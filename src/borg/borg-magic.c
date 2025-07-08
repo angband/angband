@@ -259,6 +259,7 @@ bool borg_can_cast(void)
  * Does this player mostly cast spells
  * HACK: Rather than hard code classes, assume any class with
  * more than three books is primarily casting
+ * !FIX !TODO consider adding is_primary_caster to class struct
  */
 bool borg_primarily_caster(void)
 {
