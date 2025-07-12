@@ -39,7 +39,7 @@
 #include "borg.h"
 
 /*
- * Hack -- use "flow" array as a queue
+ * Use "flow" array as a queue
  */
 
 int flow_head = 0;
@@ -670,7 +670,7 @@ static bool borg_play_step(int y2, int x2)
             x = borg.c.x + ddx[dir];
             y = borg.c.y + ddy[dir];
 
-            /* Hack -- set goal */
+            /* Set goal */
             borg.goal.g.x = x;
             borg.goal.g.y = y;
 
@@ -730,7 +730,7 @@ static bool borg_play_step(int y2, int x2)
     /* Access the grid we are stepping on */
     ag = &borg_grids[y][x];
 
-    /* Hack -- set goal */
+    /* Set goal */
     borg.goal.g.x = x;
     borg.goal.g.y = y;
 
@@ -746,7 +746,7 @@ static bool borg_play_step(int y2, int x2)
         if (borg.trait[BI_ISAFRAID] || borg.trait[BI_CRSFEAR])
             return false;
 
-        /* Hack -- ignore Maggot until later.  */
+        /* Ignore Maggot until later. */
         if ((rf_has(r_info[kill->r_idx].flags, RF_UNIQUE))
             && borg.trait[BI_CDEPTH] == 0 && borg.trait[BI_CLEVEL] < 5)
             return false;

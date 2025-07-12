@@ -159,14 +159,9 @@ static int32_t borg_power_equipment(void)
     if (borg.trait[BI_W_IMPACT])
         value += 50L;
 
-    /* Hack -- It is hard to hold a heavy weapon */
+    /* It is hard to hold a heavy weapon */
     if (borg.trait[BI_HEAVYWEPON])
         value -= 500000L;
-
-    /* HACK -- Borg worships num_blow, even on broken swords. */
-    /* kind 47 is a broken sword usually 1d2 in damage */
-    /* if (item->kind == 47 || item->kind == 30 ||item->kind == 390 ) value
-     * -=90000L; */
 
     /* We want low level borgs to have high blows (dagger, whips) */
     if (borg.trait[BI_CLEVEL] <= 10)
@@ -229,13 +224,13 @@ static int32_t borg_power_equipment(void)
         && borg.trait[BI_AMMO_TVAL] == TV_ARROW)
         value += 30000L;
 
-    /* Hack -- It is hard to hold a heavy weapon */
+    /* It is hard to hold a heavy weapon */
     if (hold < item->weight / 10)
         value -= 500000L;
 
     /*** Reward various things ***/
 
-    /* Hack -- Reward light radius */
+    /* Reward light radius */
     /* necromancers like the dark */
     if (borg.trait[BI_CLASS] == CLASS_NECROMANCER)
         value -= ((borg.trait[BI_LIGHT] - 1) * 10000L);
@@ -247,7 +242,7 @@ static int32_t borg_power_equipment(void)
     value += borg.trait[BI_MOD_MOVES] * (3000L);
     value += borg.trait[BI_DAM_RED] * (10000L);
 
-    /* Hack -- Reward speed
+    /* Reward speed
      * see if speed can be a bonus if good speed; not +3.
      * reward higher for +10 than +50 speed (decreased return).
      */
@@ -307,10 +302,10 @@ static int32_t borg_power_equipment(void)
             value += (((borg.trait[BI_SPEED] - 110) * 2500L));
     }
 
-    /* Hack -- Reward strength bonus */
+    /* Reward strength bonus */
     value += (borg.trait[BI_STR_INDEX] * 100L);
 
-    /* Hack -- Reward spell stat bonus */
+    /* Reward spell stat bonus */
     int spell_stat = borg_spell_stat();
     if (spell_stat >= 0) {
         value += (borg.trait[BI_STR_INDEX + spell_stat] * 500L);
@@ -335,7 +330,7 @@ static int32_t borg_power_equipment(void)
 
     /* Dexterity Bonus --good for attacking and ac*/
     if (borg.trait[BI_DEX_INDEX] <= 37) {
-        /* Hack -- Reward bonus */
+        /* Reward bonus */
         value += (borg.trait[BI_DEX_INDEX] * 120L);
     }
 
@@ -344,10 +339,10 @@ static int32_t borg_power_equipment(void)
 
         if (borg_cfg[BORG_WORSHIPS_HP]) {
             value += (borg.trait[BI_CON_INDEX] * 250L);
-            /* Hack -- Reward hp bonus */
-            /*         This is a bit weird because we are not really giving */
-            /*         a bonus for what hp you have, but the 'bonus' */
-            /*         hp you get getting over 800hp is very important. */
+            /* Reward hp bonus */
+            /* This is a bit weird because we are not really giving */
+            /* a bonus for what hp you have, but the 'bonus' */
+            /* hp you get getting over 800hp is very important. */
             if (borg.trait[BI_HP_ADJ] < 800)
                 value += borg.trait[BI_HP_ADJ] * 450L;
             else
@@ -355,10 +350,10 @@ static int32_t borg_power_equipment(void)
         } else /*does not worship hp */
         {
             value += (borg.trait[BI_CON_INDEX] * 150L);
-            /* Hack -- Reward hp bonus */
-            /*         This is a bit weird because we are not really giving */
-            /*         a bonus for what hp you have, but the 'bonus' */
-            /*         hp you get getting over 500hp is very important. */
+            /* Reward hp bonus */
+            /* This is a bit weird because we are not really giving */
+            /* a bonus for what hp you have, but the 'bonus' */
+            /* hp you get getting over 500hp is very important. */
             if (borg.trait[BI_HP_ADJ] < 500)
                 value += borg.trait[BI_HP_ADJ] * 350L;
             else
@@ -375,7 +370,7 @@ static int32_t borg_power_equipment(void)
     for (i = 0; i < STAT_MAX; i++)
         value += borg.trait[BI_ASTR+i];
 
-    /* Hack -- tiny rewards */
+    /* Tiny rewards */
     value += (borg.trait[BI_DISP] * 2L);
     value += (borg.trait[BI_DISM] * 2L);
     value += (borg.trait[BI_DEV] * 25L);
@@ -1101,7 +1096,7 @@ static int32_t borg_power_equipment(void)
     /* Determine the weight allowance */
     max_wgt = player->class->magic.spell_weight;
 
-    /* Hack -- heavy armor hurts magic */
+    /* Heavy armor hurts magic */
     if (player->class->magic.total_spells && ((cur_wgt - max_wgt) / 10) > 0) {
         /* max sp must be calculated in case it changed with the armor */
         int max_sp = borg.trait[BI_SP_ADJ] / 100 + 1;
@@ -1688,7 +1683,7 @@ static int32_t borg_power_inventory(void)
     for (; k < 6 && k < borg.trait[BI_AROD2]; k++)
         value += 12000;
 
-    /* Hack -- Reward being at max stat */
+    /* Reward being at max stat */
     if (!borg.need_statgain[STAT_STR])
         value += 50000;
     if (!borg.need_statgain[STAT_INT])
@@ -1705,7 +1700,7 @@ static int32_t borg_power_inventory(void)
         if (!borg.need_statgain[spell_stat])
             value += 50000;
 
-    /* Hack -- Reward stat potions */
+    /* Reward stat potions */
     if (borg.amt_statgain[STAT_STR] && borg.trait[BI_CSTR] < (18 + 100))
         value += 550000;
     if (borg.amt_statgain[STAT_INT] && borg.trait[BI_CINT] < (18 + 100))
@@ -1729,7 +1724,7 @@ static int32_t borg_power_inventory(void)
             value += 90000;
     }
 
-    /* Hack -- Restore experience */
+    /* Restore experience */
     if (borg.trait[BI_HASFIXEXP])
         value += 50000;
 
@@ -1770,7 +1765,7 @@ static int32_t borg_power_inventory(void)
         && borg.trait[BI_ADIGGER] == 1)
         value += 5000L;
 
-    /*** Hack -- books ***/
+    /*** Books ***/
     /*   Reward books    */
     for (book = 0; book < 9; book++) {
         /* No copies */
@@ -1818,7 +1813,7 @@ static int32_t borg_power_inventory(void)
                 /* if (as->power < mana) mana = as->power; */
             }
 
-            /* Hack -- Ignore "difficult" normal books */
+            /* Ignore "difficult" normal books */
             if ((when > 5) && (when >= borg.trait[BI_MAXCLEVEL] + 2))
                 continue;
             /* if (mana > borg.trait[BI_MAXSP]) continue; */
@@ -1833,7 +1828,7 @@ static int32_t borg_power_inventory(void)
         }
     }
 
-    /*  Hack -- Apply "encumbrance" from weight */
+    /* Apply "encumbrance" from weight */
 
     /* XXX XXX XXX Apply "encumbrance" from weight */
     if (borg.trait[BI_WEIGHT] > borg.trait[BI_CARRY] / 2) {

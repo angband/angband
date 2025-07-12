@@ -450,7 +450,6 @@ static struct keypress internal_borg_inkey(int flush_first)
         borg_note(format("# Key type was <%d><%c>", ch_evt.type, ch_evt.type));
         borg_oops("user abort");
 
-        /* Escape */
         key.code = ESCAPE;
         return key;
     }
@@ -509,7 +508,6 @@ static struct keypress internal_borg_inkey(int flush_first)
     /* Oops */
     borg_oops("normal abort");
 
-    /* Escape */
     key.code = ESCAPE;
     return key;
 }
@@ -555,7 +553,17 @@ void do_cmd_borg(void)
 
 #endif /* BABLOS */
 
-    /* Set the player location */
+    /* Set the Borg's player location using the game's internal state.
+     *
+     * Normally, the Borg is only supposed to "know" what is visible on the screen.
+     * But at this point the screen has not yet been scanned, so we cannot rely on
+     * screen data. Some Borg commands (a/%/@/#/^/_/y/!/G) require knowing the
+     * player's position before screen processing occurs, so we temporarily break
+     * the abstraction here to ensure correct behavior for those commands.
+     *
+     * This does not affect normal Borg behavior. All automated play and
+     * decision-making still rely solely on information obtained by scanning the screen.
+     */
     borg.c = player->grid;
 
     /* Simple help */

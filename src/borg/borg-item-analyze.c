@@ -53,7 +53,7 @@ static int32_t borg_object_value_known(borg_item *item)
     /* Extract the base value */
     value = k_ptr->cost;
 
-    /* Hack -- use artifact base costs */
+    /* Use artifact base costs Cheat */
     if (item->art_idx) {
         struct artifact *a_ptr = &a_info[item->art_idx];
 
@@ -61,11 +61,11 @@ static int32_t borg_object_value_known(borg_item *item)
         if (!a_ptr->cost)
             return (0L);
 
-        /* Hack -- use the artifact cost */
+        /* Use the artifact cost Cheat */
         value = a_ptr->cost;
     }
 
-    /* Hack -- add in ego-item bonus cost */
+    /* Add in ego-item bonus cost Cheat */
     if (item->ego_idx) {
         struct ego_item *e_ptr = &e_info[item->ego_idx];
 
@@ -73,7 +73,7 @@ static int32_t borg_object_value_known(borg_item *item)
         if (!e_ptr->cost)
             return (0L);
 
-        /* Hack -- reward the ego-item cost */
+        /* Reward the ego-item cost Cheat */
         value += e_ptr->cost;
     }
 
@@ -109,7 +109,7 @@ static int32_t borg_object_value_known(borg_item *item)
     case TV_LIGHT:
     case TV_AMULET:
     case TV_RING: {
-        /* Hack -- Negative "pval" is always bad */
+        /* Negative "pval" is always bad */
         if (item->pval < 0)
             return (0L);
 
@@ -176,7 +176,7 @@ static int32_t borg_object_value_known(borg_item *item)
 
     /* Fall through */
     case TV_AMULET: {
-        /* Hack -- negative bonuses are bad */
+        /* Negative bonuses are bad */
         if (item->to_a < 0)
             return (0L);
         if (item->to_h < 0)
@@ -200,7 +200,7 @@ static int32_t borg_object_value_known(borg_item *item)
     case TV_SOFT_ARMOR:
     case TV_HARD_ARMOR:
     case TV_DRAG_ARMOR: {
-        /* Hack -- negative armor bonus */
+        /* Negative armor bonus */
         if (item->to_a < 0)
             return (0L);
 
@@ -221,14 +221,14 @@ static int32_t borg_object_value_known(borg_item *item)
     case TV_HAFTED:
     case TV_SWORD:
     case TV_POLEARM: {
-        /* Hack -- negative hit/damage bonuses */
+        /* Negative hit/damage bonuses */
         if (item->to_h + item->to_d < 0)
             return (0L);
 
         /* Factor in the bonuses */
         value += ((item->to_h + item->to_d + item->to_a) * 100L);
 
-        /* Hack -- Factor in extra damage dice */
+        /* Factor in extra damage dice */
         if ((item->dd > k_ptr->dd) && (item->ds == k_ptr->ds)) {
             value += (item->dd - k_ptr->dd) * item->ds * 200L;
         }
@@ -240,14 +240,14 @@ static int32_t borg_object_value_known(borg_item *item)
     case TV_SHOT:
     case TV_ARROW:
     case TV_BOLT: {
-        /* Hack -- negative hit/damage bonuses */
+        /* Negative hit/damage bonuses */
         if (item->to_h + item->to_d < 0)
             return (0L);
 
         /* Factor in the bonuses */
         value += ((item->to_h + item->to_d) * 5L);
 
-        /* Hack -- Factor in extra damage dice */
+        /* Factor in extra damage dice */
         if ((item->dd > k_ptr->dd) && (item->ds == k_ptr->ds)) {
             value += (item->dd - k_ptr->dd) * item->ds * 5L;
         }
@@ -291,7 +291,7 @@ static int32_t borg_object_value_guess(borg_item *item)
     case TV_AMULET:
         value = 45L;
 
-        /* Hack -- negative bonuses are bad */
+        /* Negative bonuses are bad */
         if (item->to_a < 0)
             value = 0;
         if (item->to_h < 0)
@@ -307,7 +307,7 @@ static int32_t borg_object_value_guess(borg_item *item)
     default:
         value = 20L;
 
-        /* Hack -- negative bonuses are bad */
+        /* Negative bonuses are bad */
         if (item->to_a < 0)
             value = 0;
         if (item->to_h < 0)

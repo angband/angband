@@ -577,7 +577,7 @@ void borg_write_map(bool ask)
     file_putf(borg_map_file, "\n\n");
 
 
-    /* Hack -- Build the artifact name */
+    /* Build the artifact name */
     file_putf(borg_map_file, "   [Artifact Info] \n\n");
 
     /* Scan the artifacts */
@@ -611,7 +611,7 @@ void borg_write_map(bool ask)
             object_desc_spoil(o_name, sizeof(o_name), i_ptr, false, 0);
         }
 
-        /* Hack -- Build the artifact name */
+        /* Build the artifact name */
         file_putf(borg_map_file, "The %s\n", o_name);
     }
 
@@ -647,7 +647,7 @@ void borg_write_map(bool ask)
     borg_sort(who, &why, n);
 
 
-    /* Hack -- Build the artifact name */
+    /* Build the unique name */
     file_putf(borg_map_file, "   [Unique Info] \n\n");
 
     /* Print the monsters */

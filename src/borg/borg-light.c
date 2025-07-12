@@ -289,7 +289,8 @@ bool borg_check_light(void)
     if (!borg_detect_trap[q_y + 1][q_x + 1])
         do_trap = true;
 
-    /* Hack -- check traps every few turns anyway */
+    /* Check traps every few turns anyway */
+    /* !FIX !TODO: Uncomment and fix magic number or delete */
     /* if (!when_detect_traps || (borg_t - when_detect_traps >= 183)) do_trap =
      * true; */
 
@@ -306,10 +307,6 @@ bool borg_check_light(void)
     if (!borg_detect_door[q_y + 1][q_x + 1])
         do_door = true;
 
-    /* Hack -- check doors every few turns anyway */
-    /* if (!when_detect_doors || (borg_t - when_detect_doors >= 731)) do_door =
-     * true; */
-
     /* Start */
     do_wall = false;
 
@@ -323,7 +320,8 @@ bool borg_check_light(void)
     if (!borg_detect_wall[q_y + 1][q_x + 1])
         do_wall = true;
 
-    /* Hack -- check walls every few turns anyway */
+    /* Check walls every few turns anyway */
+    /* !FIX !TODO: Uncomment and fix magic number or delete */
     /* if (!when_detect_walls || (borg_t - when_detect_walls >= 937)) do_wall =
      * true; */
 
@@ -353,7 +351,8 @@ bool borg_check_light(void)
     if (!borg_detect_obj[q_y + 1][q_x + 1])
         do_obj = true;
 
-    /* Hack -- check evil every few turns anyway- more fq if low level */
+    /* Check evil every few turns anyway- more fq if low level */
+    /* !FIX !TODO: Uncomment and fix magic number or delete */
     /* if (!when_detect_evil ||
        (borg_t - when_detect_evil  >= 183 - (80 - borg.trait[BI_MAXCLEVEL])))
        do_evil = true; */
@@ -381,7 +380,7 @@ bool borg_check_light(void)
 
     /*** Do Things ***/
 
-    /* Hack -- find traps and doors and evil*/
+    /* Find traps and doors and evil*/
     if ((do_trap || do_door || do_evil)
         && ((!borg.when_detect_traps || (borg_t - borg.when_detect_traps >= 5))
             || (!borg.when_detect_evil || (borg_t - borg.when_detect_evil >= 5))
@@ -408,7 +407,7 @@ bool borg_check_light(void)
         }
     }
 
-    /* Hack -- find evil */
+    /* Find evil */
     if (do_evil
         && (!borg.when_detect_evil || (borg_t - borg.when_detect_evil >= 20))) {
         /* Check for evil */
@@ -426,7 +425,7 @@ bool borg_check_light(void)
         }
     }
 
-    /* Hack -- find traps and doors (and stairs) */
+    /* Find traps and doors (and stairs) */
     if ((do_trap || do_door)
         && ((!borg.when_detect_traps || (borg_t - borg.when_detect_traps >= 5))
             || (!borg.when_detect_doors
@@ -450,7 +449,7 @@ bool borg_check_light(void)
         }
     }
 
-    /* Hack -- find traps */
+    /* Find traps */
     if (do_trap
         && (!borg.when_detect_traps || (borg_t - borg.when_detect_traps >= 7))
         && borg.trait[BI_CDEPTH]) /* Never in town */
@@ -468,7 +467,7 @@ bool borg_check_light(void)
         }
     }
 
-    /* Hack -- find doors */
+    /* Find doors */
     if (do_door
         && (!borg.when_detect_doors || (borg_t - borg.when_detect_doors >= 9))
         && borg.trait[BI_CDEPTH]) /* Never in town */
@@ -487,7 +486,7 @@ bool borg_check_light(void)
         }
     }
 
-    /* Hack -- find walls */
+    /* Find walls */
     if (do_wall
         && (!borg.when_detect_walls || (borg_t - borg.when_detect_walls >= 15))
         /* Never in town */
@@ -519,7 +518,7 @@ bool borg_check_light(void)
         }
     }
 
-    /* Hack -- find objects */
+    /* Find objects */
     if (do_obj
         && (!borg.when_detect_obj || (borg_t - borg.when_detect_obj >= 20))) {
         /* Check for objects */
@@ -540,7 +539,7 @@ bool borg_check_light(void)
 }
 
 /*
- * Hack -- refuel a lantern
+ * Refuel a lantern
  */
 static bool borg_refuel_lantern(void)
 {
@@ -591,7 +590,7 @@ static bool borg_refuel_lantern(void)
     borg_keypress('F');
     borg_keypress(all_letters_nohjkl[i]);
 
-    /* Hack -- Clear "shop" goals */
+    /* Clear "shop" goals */
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
     /* Success */
@@ -681,7 +680,7 @@ bool borg_light_beam(bool simulation)
 
     borg_grid *ag = &borg_grids[borg.c.y][borg.c.x];
 
-    /* Hack -- weak/dark is very unhappy */
+    /* Weak/dark is very unhappy */
     if (borg.trait[BI_ISWEAK])
         return false;
 

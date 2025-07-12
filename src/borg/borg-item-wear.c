@@ -56,7 +56,7 @@ int16_t  track_worn_time;
  * Otherwise the "identify" might induce bizarre actions by sending
  * the "index" of an item as a command.
  *
- * Hack -- recover from mind blanking by re-identifying the equipment.
+ * Recover from mind blanking by re-identifying the equipment.
  *
  * We instantly identify items known to be "good" (or "terrible").
  *
@@ -157,7 +157,7 @@ bool borg_test_stuff(void)
         else if (free_id || borg_item_worth_id(item))
             v = item->value;
 
-        /* Hack -- reward "unaware" items */
+        /* Reward "unaware" items */
         if (!item->aware) {
             /* Analyze the type */
             switch (item->tval) {
@@ -177,11 +177,11 @@ bool borg_test_stuff(void)
 
             case TV_POTION:
             case TV_SCROLL:
-                /* Hack -- boring levels */
+                /* Boring levels */
                 if (borg.trait[BI_MAXDEPTH] < 5)
                     break;
 
-                /* Hack -- reward depth */
+                /* Reward depth */
                 v += (borg.trait[BI_MAXDEPTH] * 500L);
                 break;
 
@@ -442,7 +442,7 @@ bool borg_wear_rings(void)
         if (!item->aware)
             continue;
 
-        /* Hack -- ignore "worthless" items */
+        /* Ignore "worthless" items */
         if (!item->value)
             continue;
 
@@ -797,7 +797,7 @@ bool borg_wear_stuff(void)
         if (!item->aware)
             continue;
 
-        /* Hack -- ignore "worthless" items */
+        /* Ignore "worthless" items */
         if (!item->value)
             continue;
 
@@ -909,7 +909,7 @@ bool borg_wear_stuff(void)
 
             /* XXX XXX XXX Consider if slot is empty */
 
-            /* Hack -- Ignore "essentially equal" swaps */
+            /* Ignore "essentially equal" swaps */
             if (p <= b_p + 50)
                 continue;
 
@@ -1037,7 +1037,7 @@ bool borg_wear_stuff(void)
 }
 
 /*
- * Hack -- order of the slots
+ * Order of the slots
  */
 static uint16_t borg_best_stuff_order(int n)
 {
@@ -1262,7 +1262,7 @@ static void borg_best_stuff_aux(
         if (!item->aware)
             continue;
 
-        /* Hack -- ignore "worthless" items */
+        /* Ignore "worthless" items */
         if (!item->value)
             continue;
 
@@ -1355,7 +1355,7 @@ bool borg_best_stuff(void)
 
     best = mem_alloc(sizeof(uint8_t) * z_info->equip_slots_max);
     test = mem_alloc(sizeof(uint8_t) * z_info->equip_slots_max);
-    /* Hack -- Initialize */
+    /* Initialize */
     for (k = 0; k < z_info->equip_slots_max; k++) {
         /* Initialize */
         best[k] = test[k] = 255;

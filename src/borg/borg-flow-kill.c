@@ -56,25 +56,25 @@ int16_t borg_kills_nxt;
 borg_kill *borg_kills;
 
 /*
- * Hack -- count racial appearances per level
+ * Count racial appearances per level
  */
 int16_t *borg_race_count;
 
 /*
- * Hack -- count racial kills (for uniques)
+ * Count racial kills (for uniques)
  */
 
 int16_t *borg_race_death;
 
 /*
- * Hack -- help identify "unique" monster names
+ * Help identify "unique" monster names
  */
 static int           borg_unique_size; /* Number of uniques */
 static unsigned int *borg_unique_what; /* Indexes of uniques */
 static const char  **borg_unique_text; /* Names of uniques */
 
 /*
- * Hack -- help identify "normal" monster names
+ * Help identify "normal" monster names
  */
 static int           borg_normal_size; /* Number of normals */
 static unsigned int *borg_normal_what; /* Indexes of normals */
@@ -127,7 +127,7 @@ const char *borg_race_name(int r_idx)
 }
 
 /*
- * Hack -- Update a "new" monster
+ * Update a "new" monster
  */
 static void borg_update_kill_new(int i)
 {
@@ -241,14 +241,14 @@ static void borg_update_kill_new(int i)
         morgy_panel_x = j;
     }
 
-    /* Hack -- Force the monster to be sitting on a floor
+    /* Force the monster to be sitting on a floor
      * grid unless that monster can pass through walls
      */
     if (!rf_has(r_ptr->flags, RF_PASS_WALL)) {
         borg_grids[kill->pos.y][kill->pos.x].feat = FEAT_FLOOR;
     }
 
-    /* Hack -- Force the ghostly monster to be in a wall
+    /* Force the ghostly monster to be in a wall
      * grid until the grid is proven to be something else
      */
     if (borg_grids[kill->pos.y][kill->pos.x].feat != FEAT_FLOOR
@@ -258,7 +258,7 @@ static void borg_update_kill_new(int i)
 }
 
 /*
- * Hack -- Update a "old" monster
+ * Update a "old" monster
  *
  * We round the player speed down, and the monster speed up,
  * and we assume maximum racial speed for each monster.
@@ -389,14 +389,14 @@ static void borg_update_kill_old(int i)
         morgy_panel_x = j;
     }
 
-    /* Hack -- Force the monster to be sitting on a floor
+    /* HACK/CHEAT: Force the monster to be sitting on a floor
      * grid unless that monster can pass through walls
      */
     if (!rf_has(r_ptr->flags, RF_PASS_WALL)) {
         borg_grids[kill->pos.y][kill->pos.x].feat = FEAT_FLOOR;
     }
 
-    /* Hack -- Force the ghostly monster to be in a wall
+    /* Force the ghostly monster to be in a wall
      * grid until the grid is proven to be something else
      */
     if (borg_grids[kill->pos.y][kill->pos.x].feat != FEAT_FLOOR
@@ -747,12 +747,12 @@ static int borg_new_kill(unsigned int r_idx, int y, int x)
         n = borg_kills_nxt++;
     }
 
-    /* Hack -- steal an old monster */
+    /* Steal an old monster */
     if (n < 0) {
         /* Note */
         borg_note("# Too many monsters");
 
-        /* Hack -- Pick a random monster */
+        /* Pick a random monster */
         n = randint1(borg_kills_nxt - 1) + 1;
 
         /* Kill it */
@@ -843,14 +843,14 @@ static int borg_new_kill(unsigned int r_idx, int y, int x)
         && borg_los(kill->pos.y, kill->pos.x, borg.c.y, borg.c.x))
         borg.goal.type = 0;
 
-    /* Hack -- Force the monster to be sitting on a floor
+    /* Force the monster to be sitting on a floor
      * grid unless that monster can pass through walls
      */
     if (!(rf_has(r_ptr->flags, RF_PASS_WALL))) {
         ag->feat = FEAT_FLOOR;
     }
 
-    /* Hack -- Force the ghostly monster to be in a wall
+    /* Force the ghostly monster to be in a wall
      * grid until the grid is proven to be something else
      */
     if (rf_has(r_ptr->flags, RF_PASS_WALL)) {
@@ -906,7 +906,7 @@ static int borg_new_kill(unsigned int r_idx, int y, int x)
  *
  * The actual rewards and penalties probably need some tweaking.
  *
- * Hack -- try not to choose "unique" monsters, or we will flee a lot.
+ * HACK: Try not to choose "unique" monsters, or we will flee a lot.
  */
 static unsigned int borg_guess_race(
     uint8_t a, wchar_t c, bool multi, int y, int x)
@@ -1185,7 +1185,7 @@ static unsigned int borg_guess_race_name(char *who)
         return (borg_unique_what[m]);
     }
 
-    /* Hack -- handle "offscreen" */
+    /* Handle "offscreen" */
     if (suffix(who, " (offscreen)")) {
         /* Remove the suffix */
         my_strcpy(partial, who, sizeof(partial));
@@ -1347,7 +1347,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
             borg_race_name(r_idx), r, c.y, c.x));
     }
 
-    /* Hack -- count racial appearances */
+    /* Count racial appearances */
     if (borg_race_count[r_idx] < SHRT_MAX)
         borg_race_count[r_idx]++;
 
@@ -1357,7 +1357,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
         borg_note("# Bizarre monster nearby");
     }
 
-    /*** Hack -- Find a similar object ***/
+    /*** Find a similar object ***/
 
     /* Nothing yet */
     b_i = -1;
@@ -1443,7 +1443,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
         return b_i;
     }
 
-    /*** Hack -- Find a similar monster ***/
+    /*** Find a similar monster ***/
 
     /* Nothing yet */
     b_i = -1;
@@ -1525,7 +1525,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
         return b_i;
     }
 
-    /*** Hack -- Find an existing monster ***/
+    /*** Find an existing monster ***/
 
     /* Nothing yet */
     b_i = -1;
@@ -1563,7 +1563,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
         b_d = d;
     }
 
-    /*** Hack -- Find an existing monster Last Chance ***/
+    /*** Find an existing monster Last Chance ***/
     /* Note:
      * There can be some problems with monsters that use melee
      * attack.  The range (r) will be 1.  But the known monster
@@ -1652,7 +1652,7 @@ void borg_count_death(int i)
     borg_kill *kill = &borg_kills[i];
 
     if (kill->r_idx) {
-        /* Hack -- count racial deaths */
+        /* Count racial deaths */
         if (borg_race_death[kill->r_idx] < SHRT_MAX)
             borg_race_death[kill->r_idx]++;
 
@@ -1786,9 +1786,10 @@ bool borg_flow_kill(bool viewable, int nearness)
             && (rf_has(r_info[kill->r_idx].flags, RF_MULTIPLY)))
             continue;
 
-        /* Hack -- ignore Maggot until later.  Player will chase Maggot
+        /* Ignore Maggot until later.  Player will chase Maggot
          * down all across the screen waking up all the monsters.  Then
          * he is stuck in a compromised situation.
+         * !FIX !TODO: Handle all uniques generically.
          */
         if ((rf_has(r_info[kill->r_idx].flags, RF_UNIQUE))
             && borg.trait[BI_CDEPTH] == 0 && borg.trait[BI_CLEVEL] < 5)
@@ -1808,7 +1809,7 @@ bool borg_flow_kill(bool viewable, int nearness)
         /* Calculate danger */
         p = borg_danger(y, x, 1, true, false);
 
-        /* Hack -- Skip "deadly" monsters unless uniques*/
+        /* Skip "deadly" monsters unless uniques*/
         if (borg.trait[BI_CLEVEL] > 25 && (!rf_has(r_info->flags, RF_UNIQUE))
             && p > avoidance / 2)
             continue;
@@ -1826,7 +1827,7 @@ bool borg_flow_kill(bool viewable, int nearness)
                 continue;
         }
 
-        /* Hack -- Avoid getting surrounded */
+        /* Avoid getting surrounded */
         if (borg_in_hall && (rf_has(r_info[kill->r_idx].flags, RF_GROUP_AI))) {
             /* check to see if monster is in a hall, */
             for (hall_x = -1; hall_x <= 1; hall_x++) {
@@ -3255,7 +3256,7 @@ void borg_init_flow_kill(void)
 
     /*** XXX XXX XXX Hack -- Cheat ***/
 
-    /* Hack -- Extract dead uniques */
+    /* Extract dead uniques */
     for (int i = 1; i < z_info->r_max - 1; i++) {
         struct monster_race *r_ptr = &r_info[i];
 

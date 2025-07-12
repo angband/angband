@@ -237,7 +237,7 @@ bool borg_los(int y1, int x1, int y2, int x2)
 /*
  * Check the projection from (x1,y1) to (x2,y2).
  * Assume that there is no monster in the way.
- * Hack -- we refuse to assume that unknown grids are floors
+ * HACK: We refuse to assume that unknown grids are floors
  * Adapted from "projectable()" in "spells1.c".
  */
 bool borg_projectable(int y1, int x1, int y2, int x2)
@@ -319,7 +319,7 @@ bool borg_projectable(int y1, int x1, int y2, int x2)
 /*
  * Check the projection from (x1,y1) to (x2,y2).
  * Assume that there is no monster in the way.
- * Hack -- we refuse to assume that unknown grids are floors
+ * We refuse to assume that unknown grids are floors
  * Adapted from "projectable()" in "spells1.c".
  * This is used by borg_offset()
  */
@@ -365,7 +365,7 @@ bool borg_offset_projectable(int y1, int x1, int y2, int x2)
 /*
  * Check the projection from (x1,y1) to (x2,y2).
  * Assume that monsters in the way will stop the projection
- * Hack -- we refuse to assume that unknown grids are floors
+ * We refuse to assume that unknown grids are floors
  * In fact, we assume they are walls.
  * Adapted from "projectable()" in "spells1.c".
  */
@@ -383,7 +383,7 @@ bool borg_projectable_pure(int y1, int x1, int y2, int x2)
         /* Get the grid */
         ag = &borg_grids[y][x];
 
-        /* Hack -- assume unknown grids are walls */
+        /* Assume unknown grids are walls */
         if (dist && (ag->feat == FEAT_NONE))
             break;
 
@@ -499,7 +499,7 @@ void borg_inc_motion(int *py, int *px, int y1, int x1, int y2, int x2)
         sx = 1;
     }
 
-    /* Paranoia -- Hack -- no motion */
+    /* Paranoia -- no motion */
     if (!dy && !dx)
         return;
 

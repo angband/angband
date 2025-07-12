@@ -760,7 +760,7 @@ bool borg_flow_shop_entry(int i)
     x = track_shop_x[i];
     y = track_shop_y[i];
 
-    /* Must be known */
+    /* Ignore shop with unset (zero) coordinates */
     if (!x || !y)
         return false;
 

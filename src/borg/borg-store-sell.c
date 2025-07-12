@@ -212,11 +212,11 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
         if (o_ptr->ego_idx != j_ptr->ego_idx)
             return false;
 
-        /* Hack -- Never stack "powerful" items */
+        /* HACK: Never stack "powerful" items */
         if (!of_is_empty(o_ptr->flags) || !of_is_empty(j_ptr->flags))
             return false;
 
-        /* Hack -- Never stack recharging items */
+        /* Never stack recharging items */
         if (o_ptr->timeout || j_ptr->timeout)
             return false;
 
@@ -243,7 +243,7 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
     }
     }
 
-    /* Hack -- Require identical "broken" status */
+    /* Require identical "broken" status */
     if ((o_ptr->ident) != (j_ptr->ident))
         return 0;
 
@@ -251,7 +251,7 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
     /* has him assuming that he can't stack sometimes when he can.  This */
     /* is alright, it just causes him to take a bit more time to do */
     /* some exchanges. */
-    /* Hack -- require semi-matching "inscriptions" */
+    /* Require semi-matching "inscriptions" */
     if ((o_ptr->note && !j_ptr->note) || (!o_ptr->note && j_ptr->note))
         return 0;
 
@@ -260,7 +260,7 @@ static bool borg_object_similar(borg_item *o_ptr, borg_item *j_ptr)
             && (!streq(o_ptr->note, j_ptr->note)))
             return 0;
 
-        /* Hack -- normally require matching "inscriptions" */
+        /* Normally require matching "inscriptions" */
         if ((!streq(o_ptr->note, j_ptr->note)))
             return 0;
     }
@@ -340,7 +340,7 @@ static bool borg_think_home_sell_bad(int i, int32_t borg_empty_home_power)
     if (OPT(player, birth_randarts) && item->art_idx && !item->ident)
         return true;
 
-    /* Hack -- ignore "worthless" items */
+    /* Ignore "worthless" items */
     if (!item->value)
         return true;
 
@@ -534,7 +534,7 @@ bool borg_think_home_sell_useful(int32_t *best_home_power)
     memset(test_item, 0, sizeof(z_info->store_inven_max * sizeof(uint8_t)));
     memset(best_item, 0, sizeof(z_info->store_inven_max * sizeof(uint8_t)));
 
-    /* Hack -- the home is full */
+    /* The home is full */
     /* and pack is full */
     if (borg_shops[BORG_HOME].ware[z_info->store_inven_max - 1].iqty
         && borg_items[PACK_SLOTS - 1].iqty)
@@ -962,7 +962,7 @@ bool borg_think_shop_sell_useless(void)
 
     /* Check each shop */
     for (k = 0; k < (z_info->store_max - 1); k++) {
-        /* Hack -- Skip "full" shops */
+        /* Skip "full" shops */
         if (borg_shops[k].ware[icky].iqty)
             continue;
 
@@ -1103,7 +1103,7 @@ bool borg_think_shop_sell(void)
         /* Sell the desired item */
         borg_keypress(all_letters_nohjkl[borg.goal.item]);
 
-        /* Hack -- Sell a single item */
+        /* Sell a single item */
         if (item->iqty > 1 || qty >= 2) {
             if (qty == 5)
                 borg_keypress('5');

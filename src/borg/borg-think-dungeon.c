@@ -1175,22 +1175,7 @@ bool borg_think_dungeon(void)
         borg_oops("Money Scum complete.");
     }
 
-    /* Stop the borg if money scumming and the shops are out of food. */
-    if (!borg.trait[BI_CDEPTH] && borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0
-        && (borg_food_onsale == 0 && borg.trait[BI_FOOD] < 5)) {
-        /* Town out of food.  If player initiated borg, stop here */
-        if (borg_cfg[BORG_SELF_SCUM] == false) {
-            borg_oops("Money Scum stopped.  No more food in shop.");
-            return true;
-        } else
-        /* Borg doing it himself */
-        {
-            /* move money goal to 0 and leave the level */
-            borg_cfg[BORG_MONEY_SCUM_AMOUNT] = 0;
-        }
-    }
-
-    /* Prevent clock wrapping Step 1 */
+    /* HACK: Prevent clock wrapping Step 1 */
     if ((borg_t >= 12000 && borg_t <= 12025)
         || (borg_t >= 25000 && borg_t <= 25025)) {
         /* Clear Possible errors */

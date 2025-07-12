@@ -89,11 +89,12 @@ bool borg_play_magic(bool bored)
     int r, b_r = -1;
     int spell_num, b_spell_num;
 
-    /* Hack -- must use magic or prayers */
+    /* Must use magic or prayers */
+    /* !FIX !TODO add to borg struct and check that */
     if (!player->class->magic.total_spells)
         return false;
 
-    /* Hack -- blind/confused */
+    /* Blind/confused */
     if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED])
         return false;
 
@@ -159,11 +160,11 @@ bool borg_play_magic(bool bored)
         return true;
     }
 
-    /* Hack -- only in town */
+    /* Only in town */
     if (borg.trait[BI_CDEPTH] && !borg.munchkin_mode)
         return false;
 
-    /* Hack -- only when bored */
+    /* Only when bored */
     if (!bored)
         return false;
 
@@ -200,20 +201,20 @@ bool borg_play_magic(bool bored)
         /* Note */
         borg_note("# Testing untried spell/prayer");
 
-        /* Hack -- Use spell or prayer */
+        /* Use spell or prayer */
         if (borg_spell(as->spell_enum)) {
-            /* Hack -- Allow attack spells */
+            /* Allow attack spells */
             /* MEGAHACK -- assume "Random" is shooting.  */
             if (effects[as->effect_index].aim || as->effect_index == EF_RANDOM
                 || as->effect_index == EF_TELEPORT_TO) {
-                /* Hack -- target self */
+                /* Target self */
                 borg_keypress('*');
                 borg_keypress('t');
             }
 
-            /* Hack -- Allow spells that require selection of a monster type */
+            /* Allow spells that require selection of a monster type */
             if (as->effect_index == EF_BANISH) {
-                /* Hack -- target Maggot */
+                /* Target Maggot */
                 borg_keypress('h');
             }
 
