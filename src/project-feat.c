@@ -111,7 +111,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		/* Destroy the rubble */
 		square_destroy_rubble(cave, grid);
 
-		/* Hack -- place an object */
+		/* Place an object */
 		if (randint0(100) < 10){
 			place_object(cave, grid, player->depth, false, false,
 						 ORIGIN_RUBBLE, 0);
@@ -124,7 +124,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 			}
 		}
 	} else if (square_isdoor(cave, grid)) {
-		/* Hack -- special message */
+		/* Special message */
 		if (square_isseen(cave, grid)) {
 			msg("The door turns into mud!");
 			context->obvious = true;
@@ -701,7 +701,7 @@ static const project_feature_handler_f feature_handlers[] = {
  * Note that this function determines if the player can see anything that
  * happens by taking into account: blindness, line-of-sight, and illumination.
  *
- * Hack -- effects on grids which are memorized but not in view are also seen.
+ * Effects on grids which are memorized but not in view are also seen.
  */
 bool project_f(struct source origin, int r, struct loc grid, int dam, int typ)
 {

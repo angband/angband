@@ -43,7 +43,7 @@ static void display_score_page(const struct high_score scores[], int start,
 		char out_val[160];
 		char tmp_val[160];
 
-		/* Hack -- indicate death in yellow */
+		/* Indicate death in yellow */
 		attr = (start == highlight) ? COLOUR_L_GREEN : COLOUR_WHITE;
 
 		c = player_id2class(atoi(score->p_c));
@@ -55,7 +55,7 @@ static void display_score_page(const struct high_score scores[], int start,
 		cdun = atoi(score->cur_dun);
 		mdun = atoi(score->max_dun);
 
-		/* Hack -- extract the gold and such */
+		/* Extract the gold and such */
 		for (user = score->uid; isspace((unsigned char)*user); user++)
 			/* loop */;
 		for (when = score->day; isspace((unsigned char)*when); when++)
@@ -125,7 +125,7 @@ static void display_scores_aux(const struct high_score scores[], int from,
 	if (to < 0) to = allow_scrolling ? 5 : 10;
 	if (to > MAX_HISCORES) to = MAX_HISCORES;
 
-	/* Hack -- Count the high scores */
+	/* Count the high scores */
 	for (count = 0; count < MAX_HISCORES; count++)
 		if (!scores[count].what[0])
 			break;

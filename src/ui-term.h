@@ -354,7 +354,7 @@ extern char angband_term_name[ANGBAND_TERM_MAX][16];
 extern uint32_t window_flag[ANGBAND_TERM_MAX];
 
 /**
- * Hack -- The main "screen"
+ * The main "screen"
  */
 #define term_screen	(angband_term[0])
 

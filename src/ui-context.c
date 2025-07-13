@@ -118,7 +118,7 @@ static int context_menu_player_2(int mx, int my)
 	menu_dynamic_add_label(m, "Options", '=', MENU_VALUE_OPTIONS, labels);
 	menu_dynamic_add_label(m, "Commands", '?', MENU_VALUE_HELP, labels);
 
-	/* Hack -- no flush needed */
+	/* No flush needed */
 	msg_flag = false;
 	screen_save();
 
@@ -310,7 +310,7 @@ int context_menu_player(int mx, int my)
 
 	menu_dynamic_add_label(m, "Other", ' ', MENU_VALUE_OTHER, labels);
 
-	/* Hack -- no flush needed */
+	/* No flush needed */
 	msg_flag = false;
 	screen_save();
 
@@ -504,7 +504,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 
 	ADD_LABEL("Throw To", CMD_THROW, MN_ROW_VALID);
 
-	/* Hack -- no flush needed */
+	/* No flush needed */
 	msg_flag = false;
 	screen_save();
 
@@ -772,7 +772,7 @@ int context_menu_object(struct object *obj)
 
 	area.width = -(r.width + 2);
 
-	/* Hack -- no flush needed */
+	/* No flush needed */
 	msg_flag = false;
 	screen_save();
 

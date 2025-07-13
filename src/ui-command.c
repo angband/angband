@@ -72,7 +72,7 @@ void do_cmd_redraw(void)
 	if (character_dungeon)
 		verify_panel();
 
-	/* Hack -- React to changes */
+	/* React to changes */
 	Term_xtra(TERM_XTRA_REACT, 0);
 
 	if (character_dungeon) {
@@ -98,7 +98,7 @@ void do_cmd_redraw(void)
 	Term_clear();
 
 	if (character_dungeon) {
-		/* Hack -- update */
+		/* Update */
 		handle_stuff(player);
 
 		/* Place the cursor on the player */
@@ -483,7 +483,7 @@ void html_screenshot(const char *path, int mode, term *other_term)
 
 
 /**
- * Hack -- save a screen dump to a file in html format
+ * Save a screen dump to a file in html format
  */
 static void do_cmd_save_screen_html(int mode, term *other_term)
 {
@@ -535,7 +535,7 @@ static void do_cmd_save_screen_html(int mode, term *other_term)
 
 
 /**
- * Hack -- save a screen dump to a file
+ * Save a screen dump to a file
  */
 void do_cmd_save_screen(void)
 {
