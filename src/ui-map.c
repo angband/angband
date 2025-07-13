@@ -36,7 +36,7 @@
 
 
 /**
- * Hack -- Hallucinatory monster
+ * Hallucinatory monster
  */
 static void hallucinatory_monster(int *a, wchar_t *c)
 {
@@ -56,7 +56,7 @@ static void hallucinatory_monster(int *a, wchar_t *c)
 
 
 /**
- * Hack -- Hallucinatory object
+ * Hallucinatory object
  */
 static void hallucinatory_object(int *a, wchar_t *c)
 {
@@ -265,7 +265,7 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 				dc = monster_x_char[mon->race->ridx];
 				c = dc;
 			} else if (a & 0x80) {
-				/* Hack -- Bizarre grid under monster */
+				/* Bizarre grid under monster */
 				a = da;
 				c = dc;
 			} else if (!rf_has(mon->race->flags, RF_CHAR_CLEAR)) {
@@ -553,7 +553,7 @@ static void print_rel_map(wchar_t c, uint8_t a, int y, int x)
 		if ((ky < 0) || (ky >= t->hgt)) continue;
 		if ((kx < 0) || (kx >= t->wid)) continue;
 
-		/* Hack -- Queue it */
+		/* Queue it */
 		Term_queue_char(t, kx, ky, a, c, 0, 0);
 
 		if ((tile_width > 1) || (tile_height > 1))
@@ -602,7 +602,7 @@ void print_rel(wchar_t c, uint8_t a, int y, int x)
 	vx = COL_MAP + (tile_width * kx);
 	vy = ROW_MAP + (tile_height * ky);
 
-	/* Hack -- Queue it */
+	/* Queue it */
 	Term_queue_char(Term, vx, vy, a, c, 0, 0);
 
 	if ((tile_width > 1) || (tile_height > 1))
@@ -734,7 +734,7 @@ void prt_map(void)
 			map_info(loc(x, y), &g);
 			grid_data_as_text(&g, &a, &c, &ta, &tc);
 
-			/* Hack -- Queue it */
+			/* Queue it */
 			Term_queue_char(Term, vx, vy, a, c, ta, tc);
 
 			if ((tile_width > 1) || (tile_height > 1))

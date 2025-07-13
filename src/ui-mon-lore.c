@@ -95,7 +95,7 @@ void lore_description(textblock *tb, const struct monster_race *race,
 
 	assert(tb && race && original_lore);
 
-	/* Hack -- create a copy of the monster-memory that we can modify */
+	/* Create a copy of the monster-memory that we can modify */
 	memcpy(lore, original_lore, sizeof(struct monster_lore));
 
 	/* Spoilers -- know everything */

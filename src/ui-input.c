@@ -181,7 +181,7 @@ ui_event inkey_ex(void)
 		inkey_xtra = false;
 	}
 
-	/* Hack -- Use the "inkey_next" pointer */
+	/* Use the "inkey_next" pointer */
 	while (inkey_next && inkey_next->code) {
 		/* Get next character, and advance */
 		ke.key = *inkey_next++;
@@ -248,27 +248,27 @@ ui_event inkey_ex(void)
 		(void)Term_set_cursor(true);
 
 
-	/* Hack -- Activate main screen */
+	/* Activate main screen */
 	Term_activate(term_screen);
 
 
 	/* Get a key */
 	while (ke.type == EVT_NONE) {
-		/* Hack -- Handle "inkey_scan == SCAN_INSTANT */
+		/* Handle "inkey_scan == SCAN_INSTANT */
 		if (inkey_scan == SCAN_INSTANT &&
 			(0 != Term_inkey(&kk, false, false)))
 			break;
 
 
-		/* Hack -- Flush output once when no key ready */
+		/* Flush output once when no key ready */
 		if (!done && (0 != Term_inkey(&kk, false, false))) {
-			/* Hack -- activate proper term */
+			/* Activate proper term */
 			Term_activate(old);
 
 			/* Flush output */
 			Term_fresh();
 
-			/* Hack -- activate main screen */
+			/* Activate main screen */
 			Term_activate(term_screen);
 
 			/* Mega-Hack -- reset saved flag */
@@ -294,7 +294,7 @@ ui_event inkey_ex(void)
 			ke.key.code = ESCAPE;
 	}
 
-	/* Hack -- restore the term */
+	/* Restore the term */
 	Term_activate(old);
 
 	/* Restore the cursor */
@@ -380,7 +380,7 @@ ui_event inkey_m(void)
 
 
 /**
- * Hack -- flush
+ * Flush
  */
 static void msg_flush(int x)
 {
@@ -478,7 +478,7 @@ bool msg_flag;
  * result in the loss of information if the screen is cleared, or if anything
  * is displayed on the top line.
  *
- * Hack -- Note that "msg("%s", NULL)" will clear the top line even if no
+ * Note that "msg("%s", NULL)" will clear the top line even if no
  * messages are pending.
  */
 void display_message(game_event_type unused, game_event_data *data, void *user)
@@ -508,13 +508,13 @@ void display_message(game_event_type unused, game_event_data *data, void *user)
 	/* Obtain the size */
 	(void)Term_get_size(&w, &h);
 
-	/* Hack -- Reset */
+	/* Reset */
 	if (!msg_flag) message_column = 0;
 
 	/* Message Length */
 	n = (msg ? strlen(msg) : 0);
 
-	/* Hack -- flush when requested or needed */
+	/* Flush when requested or needed */
 	if (message_column && (!msg || ((message_column + n) > (w - 8)))) {
 		/* Flush */
 		if (message_column <= w - 8) {
@@ -608,7 +608,7 @@ void bell_message(game_event_type unused, game_event_data *data, void *user)
  */
 void message_flush(game_event_type unused, game_event_data *data, void *user)
 {
-	/* Hack -- Reset */
+	/* Reset */
 	if (!msg_flag) message_column = 0;
 
 	/* Flush when needed */
@@ -1274,7 +1274,7 @@ static bool textui_get_check(const char *prompt)
 	char buf[80];
 
 	/*
-	 * Hack -- Build a "useful" prompt; do this first so prompts built by
+	 * Build a "useful" prompt; do this first so prompts built by
 	 * format() won't run afoul of event_signal()'s side effects.
 	 */
 	strnfmt(buf, 78, "%.70s[y/n] ", prompt);
@@ -1320,7 +1320,7 @@ char get_char(const char *prompt, const char *options, size_t len, char fallback
 	/* Paranoia */
 	event_signal(EVENT_MESSAGE_FLUSH);
 
-	/* Hack -- Build a "useful" prompt */
+	/* Build a "useful" prompt */
 	strnfmt(buf, 78, "%.70s[%s] ", prompt, options);
 
 	/* Prompt for it */
@@ -1619,7 +1619,7 @@ static bool textui_get_aim_dir(int *dp)
 	/* Initialize */
 	(*dp) = 0;
 
-	/* Hack -- auto-target if requested */
+	/* Auto-target if requested */
 	if (OPT(player, use_old_target) && target_okay() && !dir) dir = 5;
 
 	/* Ask until satisfied */
@@ -1779,7 +1779,7 @@ static int textui_get_count(void)
 
 
 /**
- * Hack -- special buffer to hold the action of the current keymap
+ * Special buffer to hold the action of the current keymap
  */
 static struct keypress request_command_buffer[256];
 
@@ -1809,7 +1809,7 @@ ui_event textui_get_command(int *count)
 
 	/* Get command */
 	while (1) {
-		/* Hack -- no flush needed */
+		/* No flush needed */
 		msg_flag = false;
 
 		/* Activate "command mode" */
@@ -1913,7 +1913,7 @@ bool key_confirm_command(unsigned char c)
 {
 	int i;
 
-	/* Hack -- Scan equipment */
+	/* Scan equipment */
 	for (i = 0; i < player->body.count; i++) {
 		char verify_inscrip[] = "^*";
 		unsigned n;

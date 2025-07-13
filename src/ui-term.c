@@ -484,7 +484,7 @@ errr Term_xtra(int n, int v)
 
 
 /**
- * Hack -- fake hook for "Term_curs()" (see above)
+ * HACK fake hook for "Term_curs()" (see above)
  */
 static errr Term_curs_hack(int x, int y)
 {
@@ -496,7 +496,7 @@ static errr Term_curs_hack(int x, int y)
 }
 
 /**
- * Hack -- fake hook for "Term_wipe()" (see above)
+ * HACK fake hook for "Term_wipe()" (see above)
  */
 static errr Term_wipe_hack(int x, int y, int n)
 {
@@ -508,7 +508,7 @@ static errr Term_wipe_hack(int x, int y, int n)
 }
 
 /**
- * Hack -- fake hook for "Term_text()" (see above)
+ * HACK fake hook for "Term_text()" (see above)
  */
 static errr Term_text_hack(int x, int y, int n, int a, const wchar_t *cp)
 {
@@ -521,7 +521,7 @@ static errr Term_text_hack(int x, int y, int n, int a, const wchar_t *cp)
 
 
 /**
- * Hack -- fake hook for "Term_pict()" (see above)
+ * HACK fake hook for "Term_pict()" (see above)
  */
 static errr Term_pict_hack(int x, int y, int n, const int *ap,
 						   const wchar_t *cp, const int *tap,
@@ -565,7 +565,7 @@ void Term_queue_char(term *t, int x, int y, int a, wchar_t c, int ta,
 	if (!ta) ta = ota;
 	if (!tc) tc = otc;
 
-	/* Hack -- Ignore non-changes */
+	/* Ignore non-changes */
 	if ((oa == a) && (oc == c) && (ota == ta) && (otc == tc)) return;
 
 	/* Save the "literal" information */
@@ -705,7 +705,7 @@ void Term_queue_chars(int x, int y, int n, int a, const wchar_t *s)
 		int ota = scr_taa[x];
 		wchar_t otc = scr_tcc[x];
 
-		/* Hack -- Ignore non-changes */
+		/* Ignore non-changes */
 		if ((oa == a) && (oc == *s) && (ota == 0) && (otc == 0)) continue;
 
 		/* Save the "literal" information */
@@ -1174,7 +1174,7 @@ static void Term_fresh_row_both(int y, int x1, int x2)
 			/* 2nd byte of bigtile */
 			if (na == 255) continue;
 
-			/* Hack -- Draw the special attr/char pair */
+			/* Draw the special attr/char pair */
 			(void)((*Term->pict_hook)(x, y, 1, &na, &nc, &nta, &ntc));
 
 			/* Skip */
@@ -1409,7 +1409,7 @@ static void Term_fresh_row_both_dblh(int y, int x1, int x2, int *pr_drw)
 			/* Skip padding element for big tiles. */
 			if (na == 255) continue;
 
-			/* Hack -- Draw the special attr/char pair */
+			/* Draw the special attr/char pair */
 			(void)((*Term->pict_hook)(x, y, 1, &na, &nc, &nta,
 				&ntc));
 
@@ -1751,7 +1751,7 @@ errr Term_fresh(void)
 		/* Physically erase the entire window */
 		Term_xtra(TERM_XTRA_CLEAR, 0);
 
-		/* Hack -- clear all "cursor" data */
+		/* Clear all "cursor" data */
 		old->cv = old->cu = false;
 		old->cx = old->cy = 0;
 		old->cnx = old->cny = 1;
@@ -1904,7 +1904,7 @@ errr Term_fresh(void)
 					/* Flush the row */
 					Term_fresh_row_text(y, x1, x2);
 				}
-				/* Hack -- Flush that row (if allowed) */
+				/* Flush that row (if allowed) */
 				if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
 			} else if (pr_drw) {
 				/*
@@ -2149,7 +2149,7 @@ errr Term_addstr(int n, int a, const char *buf)
 	/* Advance the cursor */
 	Term->scr->cx += n;
 
-	/* Hack -- Notice "Useless" cursor */
+	/* Notice "Useless" cursor */
 	if (res) Term->scr->cu = 1;
 
 	/* Success (usually) */
@@ -2278,7 +2278,7 @@ errr Term_erase(int x, int y, int n)
 		int oa = scr_aa[x];
 		wchar_t oc = scr_cc[x];
 
-		/* Hack -- Ignore "non-changes" */
+		/* Ignore "non-changes" */
 		if ((oa == COLOUR_WHITE) && (oc == ' ')) continue;
 
 		/* Save the "literal" information */
@@ -2373,7 +2373,7 @@ errr Term_redraw(void)
 	/* Force "total erase" */
 	Term->total_erase = true;
 
-	/* Hack -- Refresh */
+	/* Refresh */
 	Term_fresh();
 
 	/* Success */
@@ -2418,7 +2418,7 @@ errr Term_redraw_section(int x1, int y1, int x2, int y2)
 		}
 	}
 
-	/* Hack -- Refresh */
+	/* Refresh */
 	Term_fresh();
 
 	/* Success */
@@ -2514,7 +2514,7 @@ errr Term_flush(void)
 	if (!Term)
 		return 0;
 
-	/* Hack -- Flush all events */
+	/* Flush all events */
 	Term_xtra(TERM_XTRA_FLUSH, 0);
 
 	/* Forget all keypresses */
@@ -2544,7 +2544,7 @@ static void log_keypress(ui_event e)
  */
 errr Term_keypress(keycode_t k, uint8_t mods)
 {
-	/* Hack -- Refuse to enqueue non-keys */
+	/* Refuse to enqueue non-keys */
 	if (!k) return (-1);
 
 	if(!Term->complex_input) {
@@ -2631,10 +2631,10 @@ errr Term_key_push(int k)
 
 errr Term_event_push(const ui_event *ke)
 {
-	/* Hack -- Refuse to enqueue non-keys */
+	/* Refuse to enqueue non-keys */
 	if (!ke) return (-1);
 
-	/* Hack -- Overflow may induce circular queue */
+	/* Overflow may induce circular queue */
 	if (Term->key_tail == 0) Term->key_tail = Term->key_size;
 
 	/* Back up, Store the char */
@@ -2667,7 +2667,7 @@ errr Term_inkey(ui_event *ch, bool wait, bool take)
 	/* Assume no key */
 	memset(ch, 0, sizeof *ch);
 
-	/* Hack -- get bored */
+	/* Get bored */
 	if (!Term->never_bored)
 		/* Process random events */
 		Term_xtra(TERM_XTRA_BORED, 0);
@@ -3039,13 +3039,13 @@ errr Term_resize(int w, int h)
  */
 errr Term_activate(term *t)
 {
-	/* Hack -- already done */
+	/* Already done */
 	if (Term == t) return (1);
 
 	/* Deactivate the old Term */
 	if (Term) Term_xtra(TERM_XTRA_LEVEL, 0);
 
-	/* Hack -- Call the special "init" hook */
+	/* Call the special "init" hook */
 	if (t && !t->active_flag) {
 		/* Call the "init" hook */
 		if (t->init_hook) (*t->init_hook)(t);
@@ -3074,7 +3074,7 @@ errr Term_activate(term *t)
  */
 errr term_nuke(term *t)
 {
-	/* Hack -- Call the special "nuke" hook */
+	/* Call the special "nuke" hook */
 	if (t->active_flag) {
 		/* Call the "nuke" hook */
 		if (t->nuke_hook) (*t->nuke_hook)(t);
