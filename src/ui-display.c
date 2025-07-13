@@ -2508,7 +2508,7 @@ static void repeated_command_display(game_event_type type,
 static void new_level_display_update(game_event_type type,
 									 game_event_data *data, void *user)
 {
-	/* Hack -- enforce illegal panel */
+	/* Enforce illegal panel */
 	Term->offset_y = z_info->dungeon_hgt;
 	Term->offset_x = z_info->dungeon_wid;
 
@@ -2518,7 +2518,7 @@ static void new_level_display_update(game_event_type type,
 	/* Clear */
 	Term_clear();
 
-	/* Hack -- Invoke partial update mode */
+	/* Invoke partial update mode */
 	player->upkeep->only_partial = true;
 
 	/* Update stuff */
@@ -2553,7 +2553,7 @@ static void new_level_display_update(game_event_type type,
 	 */
 	handle_stuff(player);
 
-	/* Hack -- Kill partial update mode */
+	/* Kill partial update mode */
 	player->upkeep->only_partial = false;
 
 	/* Refresh */
@@ -2780,7 +2780,7 @@ static void ui_enter_world(game_event_type type, game_event_data *data,
 	/* Allow the player to cheat death, if appropriate */
 	event_add_handler(EVENT_CHEAT_DEATH, cheat_death, NULL);
 
-	/* Hack -- Decrease "icky" depth */
+	/* Decrease "icky" depth */
 	screen_save_depth--;
 }
 
@@ -2848,7 +2848,7 @@ static void ui_leave_world(game_event_type type, game_event_data *data,
 	/* If we've gone into a store, we need to know how to leave */
 	event_add_handler(EVENT_LEAVE_STORE, leave_store, NULL);
 
-	/* Hack -- Increase "icky" depth */
+	/* Increase "icky" depth */
 	screen_save_depth++;
 }
 

@@ -59,7 +59,7 @@ void wiz_cheat_death(void)
 		msg("A tension leaves the air around you...");
 		event_signal(EVENT_MESSAGE_FLUSH);
 
-		/* Hack -- Prevent recall */
+		/* Prevent recall */
 		player->word_recall = 0;
 	}
 
@@ -70,7 +70,7 @@ void wiz_cheat_death(void)
 		msg("The air around you stops swirling...");
 		event_signal(EVENT_MESSAGE_FLUSH);
 
-		/* Hack -- Prevent recall */
+		/* Prevent recall */
 		player->deep_descent = 0;
 	}
 

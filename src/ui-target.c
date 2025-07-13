@@ -849,7 +849,7 @@ static bool aux_terrain(struct chunk *c, struct player *p,
 	/* Terrain feature if needed */
 	name = square_apparent_name(p->cave, auxst->grid);
 
-	/* Hack -- handle unknown grids */
+	/* Handle unknown grids */
 
 	/* Pick a preposition if needed */
 	lphrase2 = (*auxst->phrase2) ?

@@ -574,7 +574,7 @@ static bool store_will_buy(struct store *store, const struct object *obj)
  * The "greed" value should exceed 100 when the player is "buying" the
  * object, and should be less than 100 when the player is "selling" it.
  *
- * Hack -- the black market always charges twice as much as it should.
+ * The black market always charges twice as much as it should.
  */
 int price_item(struct store *store, const struct object *obj,
 			   bool store_buying, int qty)
@@ -1079,7 +1079,7 @@ static void store_delete_random(struct store *store)
 			/* 25% of the time, destroy all objects */
 			else num = obj->number;
 
-			/* Hack -- decrement the total charges of staves and wands. */
+			/* Decrement the total charges of staves and wands. */
 			if (tval_can_have_charges(obj))
 				obj->pval -= num * obj->pval / obj->number;
 		}

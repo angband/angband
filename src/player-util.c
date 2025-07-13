@@ -189,7 +189,7 @@ int player_apply_damage_reduction(struct player *p, int dam)
  * \param kb_str is the null-terminated string describing the cause of the
  * damage.
  *
- * Hack -- this function allows the user to save (or quit) the game
+ * This function allows the user to save (or quit) the game
  * when he dies, since the "You die." message is shown before setting
  * the player to "dead".
  */
@@ -246,7 +246,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 					&& !get_check("Die? ")) {
 				event_signal(EVENT_CHEAT_DEATH);
 			} else {
-				/* Hack -- Note death */
+				/* Note death */
 				msgt(MSG_DEATH, "You die.");
 				event_signal(EVENT_MESSAGE_FLUSH);
 
@@ -264,7 +264,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 
 	/* Hitpoint warning */
 	if (p->chp < warning) {
-		/* Hack -- bell on first notice */
+		/* Bell on first notice */
 		if (old_chp > warning)
 			bell();
 
@@ -311,7 +311,7 @@ void death_knowledge(struct player *p)
 	(void)time(&death_time);
 	enter_score(p, &death_time);
 
-	/* Hack -- Recalculate bonuses */
+	/* Recalculate bonuses */
 	p->upkeep->update |= (PU_BONUS);
 	handle_stuff(p);
 }
@@ -355,7 +355,7 @@ int16_t modify_stat_value(int value, int amount)
 			/* Ten points at a time */
 			if (value >= 18+10) value -= 10;
 
-			/* Hack -- prevent weirdness */
+			/* Prevent weirdness */
 			else if (value > 18) value = 18;
 
 			/* One point at a time */
@@ -700,14 +700,14 @@ void player_update_light(struct player *p)
 			/* Decrease life-span */
 			obj->timeout--;
 
-			/* Hack -- notice interesting fuel steps */
+			/* Notice interesting fuel steps */
 			if ((obj->timeout < 100) || (!(obj->timeout % 100)))
 				/* Redraw stuff */
 				p->upkeep->redraw |= (PR_EQUIP);
 
-			/* Hack -- Special treatment when blind */
+			/* Special treatment when blind */
 			if (p->timed[TMD_BLIND]) {
-				/* Hack -- save some light for later */
+				/* Save some light for later */
 				if (obj->timeout == 0) obj->timeout++;
 			} else if (obj->timeout == 0) {
 				/* The light is now out */

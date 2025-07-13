@@ -236,7 +236,7 @@ void spoil_obj_desc(const char *fname)
 	for (i = 0; true; i++) {
 		/* Write out the group title */
 		if (group_item[i].name) {
-			/* Hack -- bubble-sort by cost and then level */
+			/* Bubble-sort by cost and then level */
 			for (s = 0; s < n - 1; s++) {
 				for (t = 0; t < n - 1; t++) {
 					int i1 = t;
@@ -314,7 +314,7 @@ void spoil_obj_desc(const char *fname)
 			/* Skip wrong tvals */
 			if (kind->tval != group_item[i].tval) continue;
 
-			/* Hack -- Skip instant-artifacts */
+			/* Skip instant-artifacts */
 			if (kf_has(kind->kind_flags, KF_INSTA_ART)) continue;
 
 			/* Save the index */
@@ -580,7 +580,7 @@ void spoil_mon_desc(const char *fname)
 		/* Experience */
 		strnfmt(exp, sizeof(exp), "%ld", (long)(race->mexp));
 
-		/* Hack -- use visual instead */
+		/* Use visual instead */
 		n_mbbuf = text_wctomb(mbbuf, race->d_char);
 		if (n_mbbuf > 0) {
 			mbbuf[n_mbbuf] = '\0';

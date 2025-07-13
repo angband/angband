@@ -227,7 +227,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* Close it */
 			file_close(fff);
 
-			/* Hack -- Re-Open the file */
+			/* Re-Open the file */
 			fff = file_open(path, MODE_READ, FTYPE_TEXT);
 			if (!fff) return (true);
 
@@ -261,7 +261,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 		/* Dump the next lines of the file */
 		for (i = 0; i < hgt - 4; ) {
-			/* Hack -- track the "first" line */
+			/* Track the "first" line */
 			if (!i) line = next;
 
 			/* Get a line of the file or stop */
@@ -289,10 +289,10 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* Make the line lower case */
 			if (!case_sensitive) string_lower(lc_buf);
 
-			/* Hack -- keep searching */
+			/* Keep searching */
 			if (find && !i && !strstr(lc_buf, find)) continue;
 
-			/* Hack -- stop searching */
+			/* Stop searching */
 			find = NULL;
 
 			/* Dump the line */
@@ -319,7 +319,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			i++;
 		}
 
-		/* Hack -- failed search */
+		/* Failed search */
 		if (find) {
 			bell();
 			line = back;

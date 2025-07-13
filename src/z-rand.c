@@ -172,7 +172,7 @@ uint32_t Rand_div(uint32_t m)
 	/* Division by zero will result if m is larger than 0x10000000 */
 	assert(m <= 0x10000000);
 
-	/* Hack -- simple case */
+	/* Simple case */
 	if (m <= 1) return (0);
 
 	if (rand_fixed)
