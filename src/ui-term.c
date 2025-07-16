@@ -625,6 +625,7 @@ void Term_queue_char(term *t, int x, int y, int a, wchar_t c, int ta,
 
 /**
  * Queue a large-sized tile.
+ * \param t Is the terminal to modify.
  * \param x Is the column for the upper left corner of the tile.
  * \param y Is the row for the upper left corner of the tile.
  * \param clipy Is the lower bound for rows that should not be modified when
