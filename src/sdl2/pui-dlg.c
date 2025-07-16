@@ -1952,8 +1952,8 @@ void sdlpui_dialog_handle_loses_key(struct sdlpui_dialog *d,
  *
  * \param d is the menu.
  * \param w is the window containing the menu.
- * \param e is the mouse motion event causing the other dialog to take focus.
- * May be NULL if not available.
+ * \param new_c is the new control with key focus.
+ * \param new_d is the dialog or menu that contains new_c.
  */
 void sdlpui_menu_handle_loses_key(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, struct sdlpui_control *new_c,
@@ -2229,6 +2229,8 @@ void sdlpui_complete_simple_menu(struct sdlpui_dialog *d,
  * called by the controlling application in response to
  * SDL_RENDER_TARGETS_RESET (all set to false) or SDL_RENDER_DEVICE_RESET
  * (all set to true) events.
+ * \param tag sets the tag field of the generated dialog so different dialogs
+ * using the same callbacks can be distinguished.
  * \return a pointer to the structure describing the dialog.
  */
 struct sdlpui_dialog *sdlpui_start_simple_info(const char *button_label,
@@ -2269,6 +2271,7 @@ struct sdlpui_dialog *sdlpui_start_simple_info(const char *button_label,
 /**
  * Add an image to a simple information dialog.
  *
+ * \param d is the dialog to which the image will be added.
  * \param image is the texture containing the image to add.  The dialog assumes
  * ownership of the texture and calls SDL_DestroyTexture() on it when the dialog
  * is destroyed.
@@ -2316,6 +2319,7 @@ void sdlpui_simple_info_add_image(struct sdlpui_dialog *d, SDL_Texture *image,
 /**
  * Add a label to a simple information dialog.
  *
+ * \param d is the dialog to which the label will be added.
  * \param label is the null-terminated UTF-8 string to use as the label.
  * The contents of label are copied, so the lifetime of what's passed is
  * independent of the lifetime of the control.
