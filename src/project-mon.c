@@ -1269,12 +1269,17 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
  *
  * \param origin is the monster list index of the caster
  * \param r is the distance from the centre of the effect
- * \param y the coordinates of the grid being handled
- * \param x the coordinates of the grid being handled
+ * \param grid is the coordinates of the grid being handled
  * \param dam is the "damage" from the effect at distance r from the centre
  * \param typ is the projection (PROJ_) type
  * \param flg consists of any relevant PROJECT_ flags
- * \return whether the effects were obvious
+ * \param did_hit is dereferenced and set to true if there is a monster in
+ * grid and the projection could affect it (note that does not account for
+ * things like a monster resistance).  Otherwise, did_hit is dereferenced and
+ * set to false.
+ * \param was_obvious is dereferenced and set to true if the effects of the
+ * projection on a monster in grid were obvious to the player.  Otherwise,
+ * was_obvious is dereferenced and set to false.
  *
  * Note that this routine can handle "no damage" attacks (like teleport) by
  * taking a zero damage, and can even take parameters to attacks (like

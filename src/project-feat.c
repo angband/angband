@@ -692,8 +692,7 @@ static const project_feature_handler_f feature_handlers[] = {
  *
  * \param origin is the origin of the effect
  * \param r is the distance from the centre of the effect
- * \param y the coordinates of the grid being handled
- * \param x the coordinates of the grid being handled
+ * \param grid is the coordinates of the grid being handled
  * \param dam is the "damage" from the effect at distance r from the centre
  * \param typ is the projection (PROJ_) type
  * \return whether the effects were obvious
