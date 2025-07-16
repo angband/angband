@@ -303,7 +303,7 @@ static void adjust_panel_help(int y, int x, bool help,
 
 /**
  * Display the object name of the selected object and allow for full object
- * recall. Returns an event that occurred display.
+ * recall.
  *
  * This will only work for a single object on the ground and not a pile. This
  * loop is similar to the monster recall loop in target_set_interactive_aux().
@@ -318,7 +318,9 @@ static void adjust_panel_help(int y, int x, bool help,
  * \param s1 is part of the output string.
  * \param s2 is part of the output string.
  * \param s3 is part of the output string.
- * \param coords is part of the output string
+ * \param coords is part of the output string.
+ * \param p is the player doing the targeting.
+ * \return the last event that occurred during display.
  */
 static ui_event target_recall_loop_object(struct object *obj, int y, int x,
 		char out_val[TARGET_OUT_VAL_SIZE],
