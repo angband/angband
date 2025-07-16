@@ -136,8 +136,8 @@ static void check_object_curses(struct object *obj)
 /**
  * Append a given curse with a given power to an object
  *
- * \param the object to curse
- * \param pick the curse to append
+ * \param obj the object to curse
+ * \param pick the index of the curse to append
  * \param power the power of the new curse
  */
 bool append_object_curse(struct object *obj, int pick, int power)
@@ -310,8 +310,8 @@ bool artifact_curse_conflicts(struct artifact *art, int pick)
 /**
  * Append a given curse with a given power to an artifact
  *
- * \param the artifact to curse
- * \param pick the curse to append
+ * \param art the artifact to curse
+ * \param pick the index of the curse to append
  * \param power the power of the new curse
  */
 bool append_artifact_curse(struct artifact *art, int pick, int power)
@@ -348,6 +348,7 @@ bool append_artifact_curse(struct artifact *art, int pick, int power)
  * Do a curse effect.
  *
  * \param i the index into the curses array
+ * \param obj the object with the curse
  */
 bool do_curse_effect(int i, struct object *obj)
 {
