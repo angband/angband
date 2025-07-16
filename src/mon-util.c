@@ -1184,9 +1184,11 @@ static bool monster_scared_by_damage(struct monster *mon, int dam)
  * This is a helper for melee handlers. It is very similar to mon_take_hit(),
  * but eliminates the player-oriented stuff of that function.
  *
- * \param context is the project_m context.
- * \param hurt_msg is the message if the monster is hurt (if any).
- * \return true if the monster died, false if it is still alive.
+ * \param dam is the amount of damage to inflict
+ * \param t_mon is the monster to damage
+ * \param hurt_msg is the message, if any, to use when the monster is hurt
+ * \param die_msg is the message, if any to use when the monster dies
+ * \return true if the monster died, false if it is still alive
  */
 bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
 							enum mon_messages hurt_msg,

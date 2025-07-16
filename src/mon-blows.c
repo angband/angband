@@ -495,8 +495,7 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context,
  * \param amount is the amount that the timer should be increased by.
  * \param of_flag is the OF_ flag that is passed on to monster learning for
  * this effect.
- * \param attempt_save indicates if a saving throw should be attempted for
- * this effect.
+ * \param save indicates if a saving throw should be attempted for this effect.
  * \param save_msg is the message that is displayed if the saving throw is
  * successful.
  */
