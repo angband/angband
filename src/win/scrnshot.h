@@ -1,5 +1,5 @@
 /**
- * \file win-scrnshot.h
+ * \file scrnshot.h
  * \brief Prototypes for functions from scrnshot.c
  */
 

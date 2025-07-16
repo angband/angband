@@ -1,5 +1,5 @@
 /**
- * \file borg_util.c
+ * \file borg-util.c
  * \brief Utility functions like sorting
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
