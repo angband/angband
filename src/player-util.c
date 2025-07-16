@@ -1418,6 +1418,7 @@ static bool player_rest_disturb = false;
 /**
  * Set the number of resting turns.
  *
+ * \param p is the player trying to rest.
  * \param count is the number of turns to rest or one of the REST_ constants.
  */
 void player_resting_set_count(struct player *p, int16_t count)
@@ -1533,6 +1534,7 @@ int player_get_resting_repeat_count(struct player *p)
 /**
  * Set the number of resting turns to repeat.
  *
+ * \param p is the player trying to rest.
  * \param count is the number of turns requested for rest most recently.
  */
 void player_set_resting_repeat_count(struct player *p, int16_t count)
