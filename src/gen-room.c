@@ -419,8 +419,7 @@ static void generate_hole(struct chunk *c, int y1, int x1, int y2, int x2,
 /**
  * Place a square of granite with a flag
  * \param c the current chunk
- * \param y the square co-ordinates
- * \param x the square co-ordinates
+ * \param grid is the coordinates for the grid to be modified
  * \param flag the SQUARE_* flag we are marking with
  */
 void set_marked_granite(struct chunk *c, struct loc grid, int flag)
@@ -1041,8 +1040,7 @@ static void reserve_blocks(int by1, int bx1, int by2, int bx2)
 /**
  * Find a good spot for the next room.
  *
- * \param y centre of the room
- * \param x centre of the room
+ * \param centre points to storage for the centre for the next room
  * \param height dimensions of the room
  * \param width dimensions of the room
  * \return success
@@ -1054,8 +1052,8 @@ static void reserve_blocks(int by1, int bx1, int by2, int bx2)
  *
  * Be careful to include the edges of the room in height and width!
  *
- * Return true and values for the center of the room if all went well.
- * Otherwise, return false.
+ * Return true and dereference and set centre to the centre for the room if all
+ * went well.  Otherwise, return false.
  */
 static bool find_space(struct loc *centre, int height, int width)
 {
@@ -1708,8 +1706,7 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
  * Helper function for building vaults.
  * \param c the chunk the room is being built in
  * \param centre the room centre; out of chunk centre invokes find_space()
- * \param typ the vault type
- * \param label name of the vault type (eg "Greater vault")
+ * \param typ the name of the vault type (eg "Greater vault") to build
  * \return success
  */
 static bool build_vault_type(struct chunk *c, struct loc centre,
@@ -1841,11 +1838,10 @@ static void make_chamber(struct chunk *c, int y1, int x1, int y2, int x2)
 }
 
 /**
- * Expand in every direction from a start point, turning magma into rooms.
+ * Expand in every direction from a starting point, turning magma into rooms.
  * Stop only when the magma and the open doors totally run out.
  * \param c the chunk the room is being built in
- * \param y co-ordinates to start hollowing
- * \param x co-ordinates to start hollowing
+ * \param grid is the coordinates for the starting point of the hollowing
  */
 static void hollow_out_room(struct chunk *c, struct loc grid)
 {
@@ -1957,6 +1953,7 @@ bool build_staircase(struct chunk *c, struct loc centre, int rating)
  * Build a circular room (interior radius 4-7).
  * \param c the chunk the room is being built in
  * \param centre the room centre; out of chunk centre invokes find_space()
+ * \param rating is not used for this room type
  * \return success
  */
 bool build_circular(struct chunk *c, struct loc centre, int rating)
@@ -2014,6 +2011,7 @@ bool build_circular(struct chunk *c, struct loc centre, int rating)
  * Builds a normal rectangular room.
  * \param c the chunk the room is being built in
  * \param centre the room centre; out of chunk centre invokes find_space()
+ * \param rating is not used for this room type
  * \return success
  */
 bool build_simple(struct chunk *c, struct loc centre, int rating)
@@ -2124,6 +2122,7 @@ bool build_simple(struct chunk *c, struct loc centre, int rating)
  * Builds an overlapping rectangular room.
  * \param c the chunk the room is being built in
  * \param centre the room centre; out of chunk centre invokes find_space()
+ * \param rating is not used for this room type
  * \return success
  */
 bool build_overlap(struct chunk *c, struct loc centre, int rating)
@@ -2200,6 +2199,7 @@ bool build_overlap(struct chunk *c, struct loc centre, int rating)
  * Builds a cross-shaped room.
  * \param c the chunk the room is being built in
  * \param centre the room centre; out of chunk centre invokes find_space()
+ * \param rating is not used for this room type
  * \return success
  *
  * Room "a" runs north/south, and Room "b" runs east/east 
@@ -2375,6 +2375,7 @@ bool build_crossed(struct chunk *c, struct loc centre, int rating)
  * Build a large room with an inner room.
  * \param c the chunk the room is being built in
  * \param centre the room centre; out of chunk centre invokes find_space()
+ * \param rating is not used for this room type
  * \return success
  *
  * Possible sub-types:
@@ -2617,6 +2618,7 @@ bool build_large(struct chunk *c, struct loc centre, int rating)
  * Build a monster nest
  * \param c the chunk the room is being built in
  * \param centre the room centre; out of chunk centre invokes find_space()
+ * \param rating is not used for this room type
  * \return success
  *
  * A monster nest consists of a rectangular moat around a room containing
