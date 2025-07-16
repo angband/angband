@@ -435,8 +435,7 @@ struct loc origin_get_loc(struct source origin)
  *   \param origin Origin of the projection
  *   \param rad Radius of explosion (0 = beam/bolt, 1 to 20 = ball), or maximum
  *	  length of arc from the source.
- *   \param y Target location (or location to travel towards)
- *   \param x Target location (or location to travel towards)
+ *   \param finish Target location (or location to travel towards)
  *   \param dam Base damage to apply to monsters, terrain, objects, or player
  *   \param typ Type of projection (fire, frost, dispel demons etc.)
  *   \param flg Extra bit flags that control projection behavior
