@@ -1,5 +1,5 @@
 /**
- * \file borg-think-store.
+ * \file borg-think-store.c
  * \brief Prepare to perform an action while in a store
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
