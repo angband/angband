@@ -706,6 +706,7 @@ static void place_feeling(struct chunk *c)
 /**
  * Calculate the level feeling for objects.
  * \param c is the cave where the feeling is being measured
+ * \param p is the player
  */
 static int calc_obj_feeling(struct chunk *c, struct player *p)
 {
@@ -1075,6 +1076,8 @@ static void cleanup_dun_data(struct dun_data *dd)
  *
  * Confusingly, this function also generates the town level (level 0).
  * \param p is the current player struct, in practice the global player
+ * \param height is the minimum height, in grids, for the level
+ * \param width is the minimum width, in grids, for the level
  * \return a pointer to the new level
  */
 static struct chunk *cave_generate(struct player *p, int height, int width)
@@ -1329,7 +1332,6 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
  * Prepare the level the player is about to enter, either by generating
  * or reloading
  *
- * \param c is the level we're going to end up with, in practice the global cave
  * \param p is the current player struct, in practice the global player
 */
 void prepare_next_level(struct player *p)

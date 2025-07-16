@@ -350,10 +350,10 @@ void rand_dir(struct loc *offset)
 
 
 /**
- * Determine whether the given coordinate is a valid starting location.
- * \param c current chunk
- * \param y co-ordinates
- * \param x co-ordinates
+ * Locate a valid starting point for the player in a chunk
+ * \param c is the chunk of interest
+ * \param grid is, when the search is successful, dereferenced and set to the
+ * coordinates of the starting location
  * \return success
  */
 static bool find_start(struct chunk *c, struct loc *grid)
