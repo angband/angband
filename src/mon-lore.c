@@ -1617,8 +1617,6 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
  * \param lore is the known information about the monster race.
  * \param known_flags is the preprocessed bitfield of race flags known to the
  *        player.
- * \param melee_colors is a list of colors that is associated with each
- *        blow effect.
  */
 void lore_append_attack(textblock *tb, const struct monster_race *race,
 						const struct monster_lore *lore,
