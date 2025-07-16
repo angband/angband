@@ -428,10 +428,11 @@ bool target_sighted(void)
  * Return a target set of interesting locations including monsters, objects,
  * traps, and features.
  *
- * \mode If mode includes TARGET_KILL, only target_able monsters matching pred
- *       are included
- * \pred The monster predicate used to filter monsters (optional)
- * \restrict_to_panel Restricts the interesting points to the current panel
+ * \param mode If mode includes TARGET_KILL, only target_able monsters matching
+ * pred are included
+ * \param pred The monster predicate used to filter monsters (optional)
+ * \param restrict_to_panel Restricts the interesting points to the current
+ * panel
  */
 struct point_set *target_get_monsters(int mode, monster_predicate pred,
 		bool restrict_to_panel)
