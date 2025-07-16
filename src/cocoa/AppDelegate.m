@@ -50,7 +50,7 @@
  * 7) The generated .nib file will be in
  *    Contents/Resources/Base.lproj in the product directory which
  *    is something like
- *    ~/Library/Developer/Xcode/DerivedData/<product_name>-<some_string>/Build/Products/Debug/<product_name>.app
+ *    ~/Library/Developer/Xcode/DerivedData/`product_name`-`some_string`/Build/Products/Debug/`product_name`.app
  *    You can use them to replace the .nib file in src/cocoa/en.lproj in the
  *    Angband source files.  In older versions of Angband, MainMenu.nib is a
  *    directory; you'll have to remove it and replace it with the flat file

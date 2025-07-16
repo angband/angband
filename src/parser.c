@@ -474,9 +474,9 @@ static errr parse_specs(struct parser_hook *h, char *fmt) {
  * Registers a parser hook.
  *
  * Hooks have the following format:
- *   <fmt>  ::= <name> [<type> <name>]* [?<type> <name>]*
- *   <type> ::= int | str | sym | rand | char
- * The first <name> is called the directive for this hook. Any other hooks with
+ *   `fmt`  ::= `name` [`type` `name`]* [?`type` `name`]*
+ *   `type` ::= int | str | sym | rand | char
+ * The first `name` is called the directive for this hook. Any other hooks with
  * the same directive are superseded by this hook. It is an error for a
  * mandatory field to follow an optional field. It is an error for any field to
  * follow a field of type `str`, since `str` fields are not delimited and will
