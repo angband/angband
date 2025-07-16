@@ -177,7 +177,7 @@ bool object_is_in_quiver(struct player *p, const struct object *obj)
  * Get the total number of objects in the pack or quiver that are like the
  * given object.
  *
- * \param player is the player whose inventory is used for the calculation.
+ * \param p is the player whose inventory is used for the calculation.
  * \param obj is the template for the objects to look for.
  * \param ignore_inscrip if true, ignore the inscriptions when testing whether
  * an object is similar; otherwise, test the inscriptions as well.
@@ -471,7 +471,8 @@ char gear_to_label(struct player *p, struct object *obj)
 
 /**
  * Remove an object from the gear list, leaving it unattached
- * \param obj the object being tested
+ * \param p the player to affect
+ * \param obj the object to remove
  * \return whether an object was removed
  */
 static bool gear_excise_object(struct player *p, struct object *obj)

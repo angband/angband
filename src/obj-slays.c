@@ -215,8 +215,10 @@ bool append_slay(bool **current, int pick)
 }
 
 /**
- * Count a set of brands
- * \param brands The brands to count.
+ * Return the number of brands present
+ *
+ * \param brands_on is an array of z_info->brand_max booleans indicating
+ * whether each brand is present
  */
 int brand_count(const bool *brands_on)
 {
@@ -234,8 +236,10 @@ int brand_count(const bool *brands_on)
 
 
 /**
- * Count a set of slays
- * \param slays The slays to count.
+ * Return the number of slays present
+ *
+ * \param slays_on is an array of z_info->slay_max booleans indicating whether
+ * each slay is present
  */
 int slay_count(const bool *slays_on)
 {
@@ -339,7 +343,7 @@ int get_monster_brand_multiplier(const struct monster *mon,
 /**
  * Extract the multiplier from a given object hitting a given monster.
  *
- * \param player is the player performing the attack
+ * \param p is the player performing the attack
  * \param obj is the object being used to attack
  * \param mon is the monster being attacked
  * \param brand_used is the brand that gave the best multiplier, or NULL
@@ -619,9 +623,7 @@ void learn_brand_slay_from_launch(struct player *p, struct object *missile,
  * from a ranged attack with a thrown object.
  *
  * \param p is the player learning from the experience.
- * \param missile is the missile used in the attack.  Must not be NULL.
- * \param launcher is the launcher used in the attack; this is a parameter
- * to allow for body types with multiple equipped launchers.
+ * \param missile is the thrown object used in the attack.  Must not be NULL.
  * \param mon is the monster being attacked.
  */
 void learn_brand_slay_from_throw(struct player *p, struct object *missile,
