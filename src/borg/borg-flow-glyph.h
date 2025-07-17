@@ -34,7 +34,7 @@ extern struct borg_track track_glyph;
 
 extern bool borg_needs_new_sea;
 
-extern bool borg_flow_glyph(int why);
+extern bool borg_flow_glyph(void);
 
 extern void borg_init_flow_glyph(void);
 extern void borg_free_flow_glyph(void);

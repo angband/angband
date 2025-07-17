@@ -136,7 +136,7 @@ void borg_formula_error(const char *section, const char *full_line,
  *    depth(nnn)
  * this should return the nnn as a number and -1 if it fails
  */
-static int parse_depth(char *line, const char *full_line)
+static int parse_depth(char *line)
 {
     line = strchr(line, '(');
     if (!line)
@@ -625,7 +625,7 @@ static bool parse_depth_line(bool restock, char *line, const char *full_line)
 
     if (s_depth) {
         if (!fail) {
-            d->dlevel = parse_depth(s_depth, full_line);
+            d->dlevel = parse_depth(s_depth);
             if (d->dlevel < 0) {
                 borg_formula_error(start, full_line, "value",
                     "** depth section can't be parsed");

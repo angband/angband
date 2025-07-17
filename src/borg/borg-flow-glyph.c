@@ -78,7 +78,7 @@ bool borg_needs_new_sea;
  * lmnop  24 grids
  *
  */
-bool borg_flow_glyph(int why)
+bool borg_flow_glyph(void)
 {
     int i;
     int cost;

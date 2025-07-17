@@ -553,7 +553,7 @@ static int borg_danger_physical(int i, bool full_damage)
  * We reduce the danger if the monster is immobile or not LOS
  */
 static int borg_danger_spell(
-    int i, int y, int x, int d, bool average, bool full_damage)
+    int i, int y, int x, int d, bool average)
 {
     int q, n = 0, pfe = 0, glyph = 0, glyph_check = 0;
 
@@ -2588,7 +2588,7 @@ int borg_danger_one_kill(
     }
 
     /** Ranged Attacks **/
-    v2 = borg_danger_spell(i, y, x, d, average, full_damage);
+    v2 = borg_danger_spell(i, y, x, d, average);
 
     /* Never cast spells */
     if (!r_ptr->freq_innate && !r_ptr->freq_spell) {

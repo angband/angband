@@ -904,7 +904,7 @@ void do_cmd_borg(void)
             low = high = FEAT_NONE;
             break;
         case ';':
-            low = high = -1;
+            low = high = FEAT_NONE;
             glyph      = true;
             break;
         case ',':
@@ -924,7 +924,7 @@ void do_cmd_borg(void)
             high = FEAT_HOME;
             break;
         case '^':
-            low = high = -1;
+            low = high = FEAT_NONE;
             glyph      = true;
             break;
         case '+':

@@ -349,7 +349,7 @@ bool borg_think_dungeon_light(void)
  * This is an exploitation function.  The borg will stair scum
  * in the dungeon to grab items close to the stair.
  */
-bool borg_think_stair_scum(bool from_town)
+bool borg_think_stair_scum(void)
 {
     int j, b_j = -1;
     int i;

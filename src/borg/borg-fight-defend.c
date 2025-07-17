@@ -102,7 +102,7 @@ enum {
 /* Log the pathway and feature of the spell pathway
  * Useful for debugging beams and Tport Other spell
  */
-static void borg_log_spellpath(bool beam)
+static void borg_log_spellpath()
 {
     int n_x, n_y, x, y;
 
@@ -1256,7 +1256,7 @@ static int borg_defend_aux_tele_away(int p1)
     }
 
     /* Log the Path for Debug */
-    borg_log_spellpath(true);
+    borg_log_spellpath();
 
     /* Log additional info for debug */
     for (i = 0; i < borg_tp_other_n; i++) {
@@ -3165,7 +3165,7 @@ static int borg_defend_aux_tele_away_morgoth(void)
         return (p2);
 
     /* Log the Path for Debug */
-    borg_log_spellpath(true);
+    borg_log_spellpath();
 
     /* Log additional info for debug */
     for (i = 0; i < borg_tp_other_n; i++) {

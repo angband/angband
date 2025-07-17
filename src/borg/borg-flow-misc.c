@@ -203,7 +203,7 @@ bool borg_happy_grid_bold(int y, int x)
  * fight was, but if he cannot, then he needs to retreat a bit. This will help
  * him find a good safe place to hide.
  */
-bool borg_flow_recover(bool viewable, int dist)
+bool borg_flow_recover(int dist)
 {
     int i, x, y;
 

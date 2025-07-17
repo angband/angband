@@ -295,8 +295,8 @@ static void borg_update_map(void)
                 ag->feat = g.f_idx;
             }
 
-            /* default store to - 1 */
-            ag->store = -1;
+            /* default store to HOME */
+            ag->store = BORG_HOME;
 
             /* Notice the player */
             if (g.is_player) {
@@ -611,8 +611,7 @@ static void borg_update_map(void)
  *   #54433333333333445#
  *   ###################
  */
-static void borg_fear_grid(
-    const char *who, int y, int x, int k) /* 8-8, this was uint */
+static void borg_fear_grid(int y, int x, int k)
 {
     int        x1 = 0, y1 = 0;
     borg_kill *kill;
@@ -2988,7 +2987,7 @@ void borg_update(void)
         p = (borg_danger(kill->pos.y, kill->pos.x, 1, false, false) / 10);
 
         /* Apply the Fear */
-        borg_fear_grid(borg_race_name(kill->r_idx), kill->pos.y, kill->pos.x, p);
+        borg_fear_grid(kill->pos.y, kill->pos.x, p);
     }
 
     /*** Notice missing objects ***/

@@ -2732,7 +2732,7 @@ static int borg_attack_aux_staff_dispel(int sval, int rad, int dam, int typ)
         return 0;
 
     /* Choose optimal location--radius defined as 10 */
-    b_n = borg_launch_bolt(10, dam, typ, z_info->max_range, 0);
+    b_n = borg_launch_bolt(rad, dam, typ, z_info->max_range, 0);
 
     /* Big Penalize charge usage */
     b_n = b_n - 50;
@@ -4365,6 +4365,7 @@ int borg_calculate_attack_effectiveness(int attack_type)
     /* Staff -- Sleep Monsters */
     case BF_STAFF_SLEEP_MONSTERS:
         dam = 60;
+        rad = 10;
         return (borg_attack_aux_staff_dispel(
             sv_staff_sleep_monsters, rad, dam, BORG_ATTACK_OLD_SLEEP));
 
@@ -4378,12 +4379,14 @@ int borg_calculate_attack_effectiveness(int attack_type)
     /* Staff -- Dispel Evil */
     case BF_STAFF_DISPEL_EVIL:
         dam = 60;
+        rad = 10;
         return (borg_attack_aux_staff_dispel(
             sv_staff_dispel_evil, rad, dam, BORG_ATTACK_DISP_EVIL));
 
     /* Staff -- Power */
     case BF_STAFF_POWER:
         dam = 120;
+        rad = 10;
         return (borg_attack_aux_staff_dispel(
             sv_staff_power, rad, dam, BORG_ATTACK_TURN_ALL));
 
@@ -4393,6 +4396,7 @@ int borg_calculate_attack_effectiveness(int attack_type)
             dam = 500;
         else
             dam = 120;
+        rad = 10;
         return (borg_attack_aux_staff_dispel(
             sv_staff_holiness, rad, dam, BORG_ATTACK_DISP_EVIL));
 

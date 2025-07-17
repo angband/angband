@@ -42,9 +42,8 @@
  * or a visible trap, or an "unknown" grid.
  * or a non-perma-wall adjacent to a perma-wall. (GCV)
  *
- * b_stair is the index to the closest upstairs.
  */
-static bool borg_flow_dark_interesting(int y, int x, int b_stair)
+static bool borg_flow_dark_interesting(int y, int x)
 {
     int oy;
     int ox, i;
@@ -480,7 +479,7 @@ static bool borg_flow_dark_1(int b_stair)
         x = borg_light_x[i];
 
         /* Skip "boring" grids (assume reachable) */
-        if (!borg_flow_dark_interesting(y, x, b_stair))
+        if (!borg_flow_dark_interesting(y, x))
             continue;
 
         /* don't go too far from the stairs */
@@ -669,7 +668,7 @@ static bool borg_flow_dark_3(int b_stair)
         /* Examine the region */
         for (x = x1; x <= x2; x++) {
             /* Skip "boring" grids */
-            if (!borg_flow_dark_interesting(y, x, b_stair))
+            if (!borg_flow_dark_interesting(y, x))
                 continue;
 
             /* Skip "unreachable" grids */
@@ -778,7 +777,7 @@ static bool borg_flow_dark_4(int b_stair)
         /* Examine the panel */
         for (x = x1; x <= x2; x++) {
             /* Skip "boring" grids */
-            if (!borg_flow_dark_interesting(y, x, b_stair))
+            if (!borg_flow_dark_interesting(y, x))
                 continue;
 
             /* Skip "unreachable" grids */
@@ -872,7 +871,7 @@ static bool borg_flow_dark_5(int b_stair)
     for (y = 1; y < AUTO_MAX_Y - 1; y++) {
         for (x = 1; x < AUTO_MAX_X - 1; x++) {
             /* Skip "boring" grids */
-            if (!borg_flow_dark_interesting(y, x, b_stair))
+            if (!borg_flow_dark_interesting(y, x))
                 continue;
 
             /* Skip "unreachable" grids */
@@ -960,7 +959,7 @@ bool borg_flow_dark(bool neer)
         return false;
 
     /* Paranoia */
-    if (borg_flow_dark_interesting(borg.c.y, borg.c.x, -1)) {
+    if (borg_flow_dark_interesting(borg.c.y, borg.c.x)) {
         return false;
     }
 
