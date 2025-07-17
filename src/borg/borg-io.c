@@ -490,7 +490,8 @@ void borg_dump_recent_keys(int num)
 
 /*
  * The bell should never sound when the borg is running.  If it does,
- * log ... something.
+ * log the keypress history and halt, if configured to do so.
+ * NOTE: parameters set by event handler requirements.
  */
 static void borg_bell(game_event_type unused, game_event_data *data, void *user)
 {

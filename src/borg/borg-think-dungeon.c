@@ -1273,7 +1273,7 @@ bool borg_think_dungeon(void)
     if (borg.trait[BI_CDEPTH] == 1 && borg.goal.fleeing_to_town) {
 
         /* Try to grab a close item while I'm down here */
-        if (borg_think_stair_scum(true))
+        if (borg_think_stair_scum())
             return true;
 
         /* Start leaving */
@@ -1586,7 +1586,7 @@ bool borg_think_dungeon(void)
         return true;
 
     /* Dig an anti-summon corridor */
-    if (borg_flow_kill_corridor(true))
+    if (borg_flow_kill_corridor())
         return true;
 
     /* Attack monsters */
@@ -1638,7 +1638,7 @@ bool borg_think_dungeon(void)
 
     /* Attempt to find a grid which is safe and I can recover on it.  This
      * should work closely with borg_recover. */
-    if (borg_flow_recover(false, 50))
+    if (borg_flow_recover(50))
         return true;
 
     /* Perform "cool" perma spells */
@@ -1784,7 +1784,7 @@ bool borg_think_dungeon(void)
             return true;
 
         /* Attempt to locate a good Glyphed grid */
-        if (borg_flow_glyph(GOAL_MISC))
+        if (borg_flow_glyph())
             return true;
 
         /* Have the borg excavate the dungeon with Stone to Mud */
@@ -2046,7 +2046,7 @@ bool borg_think_dungeon(void)
         return true;
 
     /* Flow directly to a monster if not able to be spastic */
-    if (borg_flow_kill_direct(false, false))
+    if (borg_flow_kill_direct(false))
         return true;
 
     /* Recharge items before leaving the level */
@@ -2078,7 +2078,7 @@ bool borg_think_dungeon(void)
         return true;
 
     /* Flow directly to a monster if not able to be spastic */
-    if (borg_flow_kill_direct(true, false))
+    if (borg_flow_kill_direct(false))
         return true;
 
     /*** Wait for recall ***/
@@ -2311,7 +2311,7 @@ bool borg_think_dungeon(void)
     borg_kills_nxt = 1;
 
     /* Attempt to dig to the center of the dungeon */
-    if (borg_flow_kill_direct(true, true))
+    if (borg_flow_kill_direct(true))
         return true;
 
     /* Twitch around */

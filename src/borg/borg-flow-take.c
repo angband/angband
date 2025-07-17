@@ -51,7 +51,7 @@ struct object * borg_get_top_object(struct chunk *c, struct loc grid)
 {
     /* Cheat the Actual item */
     struct object *o_ptr;
-    o_ptr = square_object(cave, grid);
+    o_ptr = square_object(c, grid);
     while (o_ptr) {
         if ((o_ptr->known && o_ptr->known->notice & OBJ_NOTICE_IGNORE))
             o_ptr = o_ptr->next;
@@ -121,12 +121,12 @@ void borg_delete_take(int i)
 /*
  * Determine if an object should be "viewable"
  */
-static bool borg_follow_take_aux(int i, int y, int x)
+static bool borg_follow_take_aux(int i)
 {
     borg_grid *ag;
 
     /* Access the grid */
-    ag = &borg_grids[y][x];
+    ag = &borg_grids[borg_takes[i].y][borg_takes[i].x];
 
     /* Not on-screen */
     if (!(ag->info & BORG_OKAY))
@@ -171,7 +171,7 @@ void borg_follow_take(int i)
     }
 
     /* Out of sight */
-    if (!borg_follow_take_aux(i, oy, ox))
+    if (!borg_follow_take_aux(i))
         return;
 
     /* Some monsters won't take or crush items */
