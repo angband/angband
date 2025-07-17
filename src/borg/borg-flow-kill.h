@@ -167,12 +167,12 @@ extern bool borg_flow_kill_aim(bool viewable);
 /*
  * Dig an anti-summon corridor.
  */
-extern bool borg_flow_kill_corridor(bool viewable);
+extern bool borg_flow_kill_corridor(void);
 
 /*
  * Dig a straight Tunnel to a close monster
  */
-extern bool borg_flow_kill_direct(bool viewable, bool twitchy);
+extern bool borg_flow_kill_direct(bool twitchy);
 
 /*
  * Check if a dangerous monster is nearby

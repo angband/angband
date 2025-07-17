@@ -2078,7 +2078,7 @@ bool borg_flow_kill_aim(bool viewable)
  * NORTH  SOUTH  WEST   East
  *
  */
-bool borg_flow_kill_corridor(bool viewable)
+bool borg_flow_kill_corridor(void)
 {
     int o_y = 0;
     int o_x = 0;
@@ -2572,7 +2572,7 @@ bool borg_flow_kill_corridor(bool viewable)
 }
 
 /* Dig a straight Tunnel to a close monster */
-bool borg_flow_kill_direct(bool viewable, bool twitchy)
+bool borg_flow_kill_direct(bool twitchy)
 {
     int i;
     int b_i = -1;

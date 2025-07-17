@@ -56,7 +56,7 @@ extern bool borg_happy_grid_bold(int y, int x);
 /*
  * go someplace safe to rest
  */
-extern bool borg_flow_recover(bool viewable, int dist);
+extern bool borg_flow_recover(int dist);
 
 /*
  * Prepare to "flow" towards mineral veins with treasure

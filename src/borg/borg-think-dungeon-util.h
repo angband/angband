@@ -39,7 +39,7 @@ extern bool borg_think_dungeon_light(void);
  * This is an exploitation function.  The borg will stair scum
  * in the dungeon to grab items close to the stair.
  */
-extern bool borg_think_stair_scum(bool from_town);
+extern bool borg_think_stair_scum(void);
 
 /*
  * Leave the level if necessary (or bored)
