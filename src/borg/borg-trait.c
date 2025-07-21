@@ -1510,24 +1510,28 @@ static void borg_notice_equipment(void)
         /* Boost might */
         extra_might += item->modifiers[OBJ_MOD_MIGHT];
 
-        /* Item makes player glow or has a light radius  */
-        borg.trait[BI_LIGHT] += item->modifiers[OBJ_MOD_LIGHT];
 
-        /* LIGHT_2 and LIGHT_3 */
-        if (of_has(item->flags, OF_LIGHT_2)) {
-            borg.trait[BI_LIGHT] += 2;
-        } else if (of_has(item->flags, OF_LIGHT_3)) {
-            borg.trait[BI_LIGHT] += 3;
-        }
-
-        /* people with "unlight" can use radius 1 light artifacts */
-        if ((item->modifiers[OBJ_MOD_LIGHT] > 0) 
-            && (borg.trait[BI_CLASS] == CLASS_NECROMANCER))
-            borg.trait[BI_LIGHT]--;
- 
-        /* Light from items with no fuel don't count  */
-        if (i == INVEN_LIGHT && (item->timeout || of_has(item->flags, OF_NO_FUEL)))
+        if (i != INVEN_LIGHT ||
+            of_has(borg_items[i].flags, OF_NO_FUEL)
+            || item->timeout != 0) {
+            /* Item makes player glow or has a light radius  */
             borg.trait[BI_LIGHT] += item->modifiers[OBJ_MOD_LIGHT];
+
+            /* LIGHT_2 and LIGHT_3 */
+            if (of_has(item->flags, OF_LIGHT_2)) {
+                borg.trait[BI_LIGHT] += 2;
+            }
+            else if (of_has(item->flags, OF_LIGHT_3)) {
+                borg.trait[BI_LIGHT] += 3;
+            }
+
+            /* people with "unlight" can use radius 1 light artifacts */
+            if ((item->modifiers[OBJ_MOD_LIGHT] > 0)
+                && (borg.trait[BI_CLASS] == CLASS_NECROMANCER))
+                borg.trait[BI_LIGHT]--;
+
+            borg.trait[BI_LIGHT] += item->modifiers[OBJ_MOD_LIGHT];
+        }
 
         /* Boost mod moves */
         borg.trait[BI_MOD_MOVES] += item->modifiers[OBJ_MOD_MOVES];
