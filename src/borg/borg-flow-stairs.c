@@ -62,7 +62,11 @@ int borg_flow_cost_stair(int y, int x, int b_stair)
     /* Distance from the grid to the stair */
     cost = borg_data_cost->data[y][x];
 
-    return (cost);
+    /* if it is impossible to get to the stairs, go off leash */
+    if (cost == 255)
+        return 0;
+
+    return cost;
 }
 
 /*

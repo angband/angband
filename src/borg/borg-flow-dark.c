@@ -740,7 +740,7 @@ static bool borg_flow_dark_4(int b_stair)
 {
     int i, x, y;
     int x1, y1, x2, y2;
-    int leash = 250;
+    int leash = borg_get_leash(false);
 
     /* Not in town */
     if (!borg.trait[BI_CDEPTH])
@@ -768,10 +768,6 @@ static bool borg_flow_dark_4(int b_stair)
 
     /* Nothing yet */
     borg_temp_n = 0;
-
-    /* check the leash length */
-    if (borg.trait[BI_CDEPTH] >= borg.trait[BI_CLEVEL] - 5)
-        leash = borg.trait[BI_CLEVEL] * 3 + 9;
 
     /* Examine the panel */
     for (y = y1; y <= y2; y++) {
@@ -855,7 +851,7 @@ static bool borg_flow_dark_4(int b_stair)
 static bool borg_flow_dark_5(int b_stair)
 {
     int i, x, y;
-    int leash = 250;
+    int leash = borg_get_leash(false);
 
     /* Not in town */
     if (!borg.trait[BI_CDEPTH])
@@ -863,10 +859,6 @@ static bool borg_flow_dark_5(int b_stair)
 
     /* Nothing yet */
     borg_temp_n = 0;
-
-    /* check the leash length */
-    if (borg.trait[BI_CDEPTH] >= borg.trait[BI_CLEVEL] - 5)
-        leash = borg.trait[BI_CLEVEL] * 3 + 9;
 
     /* Examine every "legal" grid */
     for (y = 1; y < AUTO_MAX_Y - 1; y++) {
