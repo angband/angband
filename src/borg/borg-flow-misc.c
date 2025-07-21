@@ -71,6 +71,30 @@ void borg_flow_reverse(int depth, bool optimize, bool avoid, bool tunneling,
     borg_flow_spread(depth, optimize, avoid, tunneling, stair_idx, sneak);
 }
 
+/* 
+ * Get the borgs "leash"
+ * This is the distance from the stairs the borg can explore before 
+ * returning to the stairs and trying to explore in anohter direction.
+ * The leash is different for exploring vs trying to get something.
+ */
+int borg_get_leash(bool pick_up)
+{
+    int leash = 250;
+
+    if (pick_up && borg.trait[BI_CLEVEL] < 20)
+        leash = borg.trait[BI_CLEVEL] * 3 + 9;
+
+    if (!pick_up && borg.trait[BI_CDEPTH] >= borg.trait[BI_CLEVEL] - 5)
+        leash = borg.trait[BI_CLEVEL] * 3 + 9;
+
+    /* if the borg has run out of things to do, allow him to go a */
+    /* little further afield */
+    if (borg.times_twitch > 21)
+        leash += borg.times_twitch;
+
+    return leash;
+}
+
 /*
  * Check a floor grid for "happy" status
  *
@@ -325,7 +349,7 @@ bool borg_flow_vein(bool viewable, int nearness)
     int i, x, y;
     int b_stair = -1, j, b_j = -1;
     int cost  = 0;
-    int leash = borg.trait[BI_CLEVEL] * 3 + 9;
+    int leash = borg_get_leash(true);
     uint8_t min_feat;
 
     borg_grid *ag;
@@ -333,10 +357,6 @@ bool borg_flow_vein(bool viewable, int nearness)
     /* Efficiency -- Nothing to take */
     if (!track_vein.num)
         return false;
-
-    /* Increase leash */
-    if (borg.trait[BI_CLEVEL] >= 20)
-        leash = 250;
 
     /* Not needed if rich */
     if (borg.trait[BI_GOLD] >= 100000)
@@ -1345,7 +1365,7 @@ bool borg_check_rest(int y, int x)
 bool borg_flow_far_from_stairs(int x, int y, int b_stair)
 {
     return borg_flow_far_from_stairs_dist(
-        x, y, b_stair, borg.trait[BI_CLEVEL] * 3 + 9);
+        x, y, b_stair, borg_get_leash(false));
 }
 
 /* check if this spot is too far from the stairs */

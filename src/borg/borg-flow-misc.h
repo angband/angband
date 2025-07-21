@@ -49,6 +49,11 @@ extern void borg_flow_reverse(int depth, bool optimize, bool avoid,
     bool tunneling, int stair_idx, bool sneak);
 
 /*
+ * Get the leash distance.
+ */
+extern int borg_get_leash(bool pick_up);
+
+/*
  * Check a floor grid for "happy" status
  */
 extern bool borg_happy_grid_bold(int y, int x);

@@ -421,7 +421,7 @@ bool borg_flow_take(bool viewable, int nearness)
 {
     int i, x, y;
     int b_stair = -1, j, b_j = -1;
-    int leash = borg.trait[BI_CLEVEL] * 3 + 9;
+    int leash = borg_get_leash(true);
     int full_quiver;
 
     borg_grid *ag;
@@ -452,10 +452,6 @@ bool borg_flow_take(bool viewable, int nearness)
     /* Not if sitting in a sea of runes */
     if (borg_morgoth_position)
         return false;
-
-    /* increase leash */
-    if (borg.trait[BI_CLEVEL] >= 20)
-        leash = 250;
 
     /* Starting over on count */
     borg_temp_n = 0;
@@ -496,7 +492,7 @@ bool borg_flow_take(bool viewable, int nearness)
             j = borg_distance(
                 track_less.y[b_stair], track_less.x[b_stair], y, x);
             /* skip far away takes while I am close to stair*/
-            if (b_j <= leash && j >= leash)
+            if (j != 255 && (b_j <= leash && j >= leash))
                 continue;
         }
 
