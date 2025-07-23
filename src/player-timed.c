@@ -1034,6 +1034,7 @@ bool player_inc_check(struct player *p, int idx, bool lore)
  * \param p is the player to affect.
  * \param idx is the index, greater than equal to zero and less than TMD_MAX,
  * for the effect.
+ * \param v is the amount by which to increase the effect's duration.
  * \param notify, if true, allows for messages, updates to the user interface,
  * and player disturbance if increasing the duration doesn't duplicate an effect
  * already present.  If false, prevents messages, updates to the user interface,

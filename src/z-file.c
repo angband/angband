@@ -1139,8 +1139,10 @@ bool file_write(ang_file *f, const char *buf, size_t n)
 /**
  * Read a line of text from file 'f' into buffer 'buf' of size 'n' bytes.
  *
- * Support both \r\n and \n as line endings, but not the outdated \r that used
- * to be used on Macs.  Replace non-printables with '?', and \ts with ' '.
+ * Accepts carriage return + new line (ASCII 0xd + ASCII 0xa),
+ * new line (ASCII 0xa), or carriage return (ASCII 0xa) as line endings.
+ * Replaces any tab with one to TAB_COLUMNS spaces (i.e. the number of spaces
+ * to move the offset within the string to the next multiple of TAB_COLUMNS).
  */
 #define TAB_COLUMNS 4
 
