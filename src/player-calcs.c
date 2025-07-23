@@ -1692,6 +1692,7 @@ int calc_unlocking_chance(const struct player *p, int lock_power,
 /**
  * Calculate the blows a player would get.
  *
+ * \param p is the player of interest
  * \param obj is the object for which we are calculating blows
  * \param state is the player state for which we are calculating blows
  * \param extra_blows is the number of +blows available from this object and

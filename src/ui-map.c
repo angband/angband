@@ -338,8 +338,8 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 
 /**
  * Get dimensions of a small-scale map (i.e. display_map()'s result).
- * \param term Is the terminal displaying the map.
- * \param chunk Is the chunk to display.
+ * \param t Is the terminal displaying the map.
+ * \param c Is the chunk to display.
  * \param tw Is the tile width in characters.
  * \param th Is the tile height in characters.
  * \param mw *mw is set to the width of the small-scale map.

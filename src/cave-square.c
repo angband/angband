@@ -1188,10 +1188,10 @@ void square_know_pile(struct chunk *c, struct loc grid,
 
 
 /**
- * Return how many cardinal directions around (x, y) contain walls.
+ * Return how many cardinal directions around a grid contain walls.
+ *
  * \param c current chunk
- * \param y co-ordinates
- * \param x co-ordinates
+ * \param grid is the location in c to examine
  * \return the number of walls
  */
 int square_num_walls_adjacent(struct chunk *c, struct loc grid)
@@ -1208,10 +1208,9 @@ int square_num_walls_adjacent(struct chunk *c, struct loc grid)
 }
 
 /**
- * Return how many diagonal directions around (x, y) contain walls.
+ * Return how many diagonal directions around a grid contain walls.
  * \param c current chunk
- * \param y co-ordinates
- * \param x co-ordinates
+ * \param grid is the location in c to examine
  * \return the number of walls
  */
 int square_num_walls_diagonal(struct chunk *c, struct loc grid)
