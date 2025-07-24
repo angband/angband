@@ -3638,7 +3638,7 @@ static int borg_attack_aux_crush(void)
     /* if there is still danger afterward, make sure the reductioning in HP */
     /* doesn't make this put us in danger */
     int new_hp = (borg.trait[BI_CURHP] - (borg.trait[BI_CLEVEL] * 2));
-    if (borg_simulate && (p2 >= new_hp || new_hp <= 5))
+    if (borg_simulate && (p2 >= (new_hp * 2) || new_hp <= 50))
         return 0;
 
     int spell_power = borg_get_spell_power(CRUSH);
