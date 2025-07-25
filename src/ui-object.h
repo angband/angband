@@ -1,5 +1,5 @@
 /**
- * \file ui-obj.h
+ * \file ui-object.h
  * \brief lists of objects and object pictures
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
