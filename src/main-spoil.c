@@ -122,9 +122,14 @@ static uint32_t parse_seed(const char *src)
 
 			errno = 0;
 			ulv = strtoul(s + 5, &pe, 16);
-			if (pe != s + 5 && (ulv < ULONG_MAX || errno == 0)
-					&& ulv <= 4294967295) {
+			if (pe != s + 5 && (ulv < ULONG_MAX || errno == 0)) {
+#if ULONG_MAX > 4294967295
+				if (ulv <= 4294967295) {
+					result = (uint32_t)ulv;
+				}
+#else
 				result = (uint32_t)ulv;
+#endif
 			}
 		}
 		(void) file_close(fin);
