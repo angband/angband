@@ -305,26 +305,41 @@ bool borg_think_shop_buy_useful(void)
             /* Remove one item from shop (sometimes) */
             borg_shops[k].ware[n].iqty -= qty;
 
-            /* Obtain "slot" */
-            slot = borg_wield_slot(item);
+            slot = -1;
 
-            /* XXX what if the item is a ring?  we have 2 ring slots --- copy it
-             * from the Home code */
+            /* require two empty slots to buy things to wield */
+            if ((hole + 1) < PACK_SLOTS) {
 
-            /* He will not replace his Brightness Torch with a plain one, so he
-             * ends up not buying any torches.  Force plain torches for purchase
-             * to be seen as fuel only
-             */
-            if (item->tval == TV_LIGHT && item->sval == sv_light_torch
-                && of_has(borg_items[INVEN_LIGHT].flags, OF_BURNS_OUT)) {
-                slot = -1;
+                /* Obtain "slot" */
+                slot = borg_wield_slot(item);
+
+                /* XXX what if the item is a ring?  we have 2 ring slots --- copy it
+                 * from the Home code */
+
+                 /* special cases for buying torches */
+                if (item->tval == TV_LIGHT && item->sval == sv_light_torch) {
+                    /* the borg will not replace his Brightness Torch with a plain one,
+                     * so it ends up not buying any torches.  Force plain torches for
+                     * purchase to be seen as fuel only
+                     */
+                    if (of_has(borg_items[INVEN_LIGHT].flags, OF_BURNS_OUT))
+                        slot = -1;
+
+                    /* the borg will buy torches to replace a lantern when he should
+                    *  just refuel the lantern.  Again, make the torches just go to
+                    *  inventory rather than equipment.
+                    */
+                    if (borg_items[INVEN_LIGHT].sval == sv_light_lantern &&
+                        of_has(borg_items[INVEN_LIGHT].flags, OF_TAKES_FUEL))
+                        slot = -1;
+                }
+
+                /* Hack, we keep diggers as a back-up, not to
+                 * replace our current weapon
+                 */
+                if (item->tval == TV_DIGGING)
+                    slot = -1;
             }
-
-            /* Hack, we keep diggers as a back-up, not to
-             * replace our current weapon
-             */
-            if (item->tval == TV_DIGGING)
-                slot = -1;
 
             /* Consider new equipment */
             if (slot >= 0) {
