@@ -1412,20 +1412,24 @@ int pathfind_direction_to(struct loc from, struct loc to)
  * grids on a given side is a wall, then that side is considered to
  * be "closed".  Both sides enclosed yields a hallway.
  *
+ * \verbatim
  *    LL                     @L
  *    @x      (normal)       RxL   (diagonal)
  *    RR      (east)          R    (south-east)
+ * \endverbatim
  *
  * In the diagram below, in which the player is running east along a
  * hallway, he will stop as indicated before attempting to enter the
  * intersection (marked 'x').  Starting a new run in any direction
  * will begin a new hallway run.
  *
- * #.#
+ * \verbatim
+ *  #.#
  * ##.##
  * o@x..
  * ##.##
- * #.#
+ *  #.#
+ * \endverbatim
  *
  * Note that a minor hack is inserted to make the angled corridor
  * entry (with one side blocked near and the other side blocked
@@ -1439,11 +1443,13 @@ int pathfind_direction_to(struct loc from, struct loc to)
  * Continuing the run to the south-east would result in a long run
  * stopping at the end of the hallway (marked '2').
  *
+ * \verbatim
  * ##################
  * o@x       1
  * ########### ######
  * #2          #
  * #############
+ * \endverbatim
  *
  * After each step, the surroundings are examined to determine if
  * the running should stop, and to determine if the running should
@@ -1455,9 +1461,11 @@ int pathfind_direction_to(struct loc from, struct loc to)
  * or five new grids (for straight and diagonal moves respectively)
  * to which you were not previously adjacent (marked as '!').
  *
+ * \verbatim
  *   ...!              ...
  *   .o@!  (normal)    .o.!  (diagonal)
  *   ...!  (east)      ..@!  (south east)
+ * \endverbatim
  *                      !!!
  *
  * If any of the newly adjacent grids are "interesting" (monsters,
@@ -1479,9 +1487,11 @@ int pathfind_direction_to(struct loc from, struct loc to)
  * to be open, then running stops.  Otherwise, as shown below, the
  * player has probably reached a "corner".
  *
+ * \verbatim
  *    ###             o##
  *    o@x  (normal)   #@!   (diagonal)
  *    ##!  (east)     ##x   (south east)
+ * \endverbatim
  *
  * In this situation, there will be two newly adjacent open grids,
  * one touching the player on a diagonal, and one directly adjacent.
@@ -1489,9 +1499,11 @@ int pathfind_direction_to(struct loc from, struct loc to)
  * We assign "option" to the straight-on grid, and "option2" to the
  * diagonal grid.
  *
+ * \verbatim
  *    ###s
  *    o@x?   (may be incorrect diagram!)
  *    ##!?
+ * \endverbatim
  *
  * If both "option" grids are closed, then there is no reason to enter
  * the corner, and so we can cut the corner, by moving into the other
@@ -1500,10 +1512,12 @@ int pathfind_direction_to(struct loc from, struct loc to)
  * Below, we avoid the obvious grid (marked 'x') and cut the corner
  * instead (marked 'n').
  *
+ * \verbatim
  *    ###:               o##
  *    o@x#   (normal)    #@n    (maybe?)
  *    ##n#   (east)      ##x#
  *                       ####
+ * \endverbatim
  *
  * If one of the "option" grids is open, then we may have a choice, so
  * we check to see whether it is a potential corner or an intersection
@@ -1512,9 +1526,11 @@ int pathfind_direction_to(struct loc from, struct loc to)
  * and we enter it if requested.  Otherwise, we stop, because it is
  * not a corner, and is instead an intersection or a room entrance.
  *
+ * \verbatim
  *    ###
  *    o@x
  *    ##!#
+ * \endverbatim
  *
  * I do not think this documentation is correct.
  */
@@ -1575,10 +1591,12 @@ static bool see_wall(int dir, struct loc grid)
  * we seem to be in a corridor, then force a turn into the side
  * corridor, must be moving straight into a corridor here. (?)
  *
+ * \verbatim
  * Diagonal Corridor    Blunt Corridor (?)
  *       # #                  #
  *       #x#                 @x#
  *       @p.                  p
+ * \endverbatim
  */
 static void run_init(int dir)
 {
