@@ -307,7 +307,7 @@ bool borg_think_shop_buy_useful(void)
 
             slot = -1;
 
-            /* require two empty slots to buy things to weild */
+            /* require two empty slots to buy things to wield */
             if ((hole + 1) < PACK_SLOTS) {
 
                 /* Obtain "slot" */
