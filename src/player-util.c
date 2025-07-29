@@ -906,7 +906,7 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
  *
  * \param p is the player to check
  * \param grid is the location of the terrain
- * \param actual, if true, will cause the player to learn the appropriate
+ * \param actual will, if true, cause the player to learn the appropriate
  * runes if equipment or effects mitigate the damage.
  */
 int player_check_terrain_damage(struct player *p, struct loc grid, bool actual)
@@ -1589,9 +1589,9 @@ void player_place(struct chunk *c, struct player *p, struct loc grid)
  * Take care of bookkeeping after moving the player with monster_swap().
  *
  * \param p is the player that was moved.
- * \param eval_trap, if true, will cause evaluation (possibly affecting the
+ * \param eval_trap will, if true, cause evaluation (possibly affecting the
  * player) of the traps in the grid.
- * \param is_involuntary, if true, will do appropriate actions (flush the
+ * \param is_involuntary will, if true, do appropriate actions (flush the
  * command queue) for a move not expected by the player.
  */
 void player_handle_post_move(struct player *p, bool eval_trap,

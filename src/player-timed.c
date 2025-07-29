@@ -774,13 +774,13 @@ static bool player_of_has_not_timed(struct player *p, int flag)
  * for the effect.
  * \param v is the new value for the effect.  Internally, v is coerced to lie
  * within the range of acceptable values for the effect.
- * \param notify, if true, allows for messages, updates to the user interface,
+ * \param notify allows, if true for messages, updates to the user interface,
  * and player disturbance if setting the effect doesn't duplicate an effect
  * already present.  If false, prevents messages, updates to the user interface,
  * and player disturbance unless setting the effect increases the effect's
  * gradation or decreases the effect's gradation when the effect has messages
  * for the gradations that lapse.
- * \param can_disturb, if true, allows for setting the effect to disturb the
+ * \param can_disturb allows, if true, for setting the effect to disturb the
  * player.
  * \return whether setting the effect caused the player to be notified.
  */
@@ -916,7 +916,7 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify,
  * \param p is the player to check.
  * \param idx is the index, greater than equal to zero and less than TMD_MAX,
  * for the effect.
- * \param lore, if true, modifies the check so it is appropriate for filling
+ * \param lore modifies, if true, the check so it is appropriate for filling
  * in details of monster recall.
  * \return whether the player can be affected by the effect.
  */
@@ -1035,15 +1035,15 @@ bool player_inc_check(struct player *p, int idx, bool lore)
  * \param idx is the index, greater than equal to zero and less than TMD_MAX,
  * for the effect.
  * \param v is the amount by which to increase the effect's duration.
- * \param notify, if true, allows for messages, updates to the user interface,
+ * \param notify allows, if true, for messages, updates to the user interface,
  * and player disturbance if increasing the duration doesn't duplicate an effect
  * already present.  If false, prevents messages, updates to the user interface,
  * and player disturbance unless increasing the duration increases the effect's
  * gradation or decreases the effect's gradation when the effect has messages
  * for the gradations that lapse.
- * \param can_disturb, if true, allows for setting the effect to disturb the
+ * \param can_disturb allows, if true for setting the effect to disturb the
  * player.
- * \param check, if true, allows for the player to resist the effect if
+ * \param check allows, if true, for the player to resist the effect if
  * player_inc_check(p, idx, false) is true.
  * \return whether increasing the duration caused the player to be notified.
  */
@@ -1079,14 +1079,14 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify,
  * \param idx is the index, greater than equal to zero and less than TMD_MAX,
  * for the effect.
  * \param v is the amount to subtract from the effect's duration.
- * \param notify, if true or v is greater than or equal to the effect's current
- * duration, allows for messages, updates to the user interface, and player
+ * \param notify allows, if true or v is greater than or equal to the effect's
+ * current duration, for messages, updates to the user interface, and player
  * disturbance.  If false and v is less than the effect's current duration,
  * prevents messages, updates to the user interface, and player disturbance
  * unless the change to the duration increases the effect's gradation or
  * decreases the effect's gradation when the effect has messages for the
  * gradations that lapse.
- * \param can_disturb, if true, allows for the change to the duration to disturb
+ * \param can_disturb allows, if true, for the change to the duration to disturb
  * the player.
  * \return whether changing the duration caused the player to be notified.
  */
@@ -1111,12 +1111,12 @@ bool player_dec_timed(struct player *p, int idx, int v, bool notify,
  * \param p is the player to affect.
  * \param idx is the index, greater than equal to zero and less than TMD_MAX,
  * for the effect.
- * \param notify, if true, allows for messages, updates to the user interface,
+ * \param notify allows, if true, for messages, updates to the user interface,
  * and player disturbance if clearing the effect doesn't duplicate an effect
  * already present.  If false, prevents messages, updates to the user interface,
  * and player disturbance unless clearing the effect decreases the effect's
  * gradation and the effect has messages for the gradations that lapse.
- * \param can_disturb, if true, allows for setting the effect to disturb the
+ * \param can_disturb allows, if true, for setting the effect to disturb the
  * player.
  * \return whether clearing the effect caused the player to be notified.
  */
