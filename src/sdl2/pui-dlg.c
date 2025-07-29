@@ -1203,7 +1203,7 @@ bool sdlpui_is_descendant_dialog(struct sdlpui_dialog *ancestor,
  *
  * \param d is the dialog of interest.
  * \param w is the window containing the dialog.
- * \param give_key_focus, if true, causes the dialog to be given key focus
+ * \param give_key_focus causes, if true, the dialog to be given key focus
  * when it is popped up.
  */
 void sdlpui_popup_dialog(struct sdlpui_dialog *d, struct sdlpui_window *w,
