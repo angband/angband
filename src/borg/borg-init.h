@@ -50,6 +50,11 @@ extern bool borg_init_txt_file(void);
 extern void borg_reinit_options(void);
 
 /*
+ * Reset the ignore values
+ */
+extern void borg_reset_ignore(void);
+
+/*
  * Prepare some stuff based on the player race and class
  */
 extern void borg_prepare_race_class_info(void);

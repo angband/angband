@@ -173,9 +173,9 @@ uint16_t borg_step = 0;
  */
 
 /*
- * KEYMAP_MODE_ROGUE or KEYMAP_MODE_ORIG
+ * saved initialization data to be restored when the borg stops
  */
-int key_mode;
+struct borg_save_init borg_init_save;
 
 
 /*
@@ -249,11 +249,13 @@ static struct keypress internal_borg_inkey(int flush_first)
         flush(0, 0, 0);
 
         /* Restore user key mode */
-        if (key_mode == KEYMAP_MODE_ROGUE) {
+        if (borg_init_save.key_mode == KEYMAP_MODE_ROGUE) {
             option_set("rogue_like_commands", true);
-        } else if (key_mode == KEYMAP_MODE_ORIG) {
+        } else if (borg_init_save.key_mode == KEYMAP_MODE_ORIG) {
             option_set("rogue_like_commands", false);
         }
+
+        borg_reset_ignore();
 
         /* Done */
         /* Need to flush the key buffer to change modes */

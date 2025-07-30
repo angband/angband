@@ -21,6 +21,7 @@
 
 #ifdef ALLOW_BORG
 
+#include "../obj-ignore.h"
 #include "../player-calcs.h"
 #include "../ui-command.h"
 #include "../ui-keymap.h"
@@ -88,6 +89,7 @@ struct borg_setting borg_settings[] = {
     { "borg_stop_on_bell", 'b', false },
     { "borg_allow_strange_opts", 'b', false},
     { "borg_autosave", 'b', false},
+    { "borg_restore_ignore_settings", 'b', false},
     { 0, 0, 0 }};
 
 
@@ -334,14 +336,74 @@ bool borg_init_txt_file(void)
     return warning;
 }
 
+void borg_reset_ignore(void)
+{
+    int i, j;
+
+    if (borg_cfg[BORG_RESTORE_IGNORE_SETTINGS]) {
+        /* Reset ignore bits */
+        for (i = 0; i < z_info->k_max; i++)
+            k_info[i].ignore = borg_init_save.kinfo_ignore[i];
+
+        /* Clear the ignore bytes */
+        for (i = ITYPE_NONE; i < ITYPE_MAX; i++)
+            ignore_level[i] = borg_init_save.ignore_level[i];
+
+        /* Clear ego ignore */
+        for (i = 0; i < z_info->e_max; i++)
+            for (j = ITYPE_NONE; j < ITYPE_MAX; j++)
+                ego_ignore_types[i][j] = borg_init_save.ego_ignore_types[i][j];
+    }
+
+    for (i = 0; i < z_info->e_max; i++)
+        mem_free(borg_init_save.ego_ignore_types[i]);
+    mem_free(borg_init_save.ego_ignore_types);
+
+    borg_init_save.ego_ignore_types = NULL;
+
+    mem_free(borg_init_save.kinfo_ignore);
+    borg_init_save.kinfo_ignore = NULL;
+}
+
+
+static void borg_init_ignore(void)
+{
+    int i, j;
+
+    /* allocate the memory */
+    borg_init_save.kinfo_ignore = mem_alloc(sizeof(uint8_t) * z_info->k_max);
+ 
+    borg_init_save.ego_ignore_types = mem_zalloc(z_info->e_max * sizeof(bool*));
+    for (i = 0; i < z_info->e_max; i++)
+        borg_init_save.ego_ignore_types[i] = mem_zalloc(ITYPE_MAX * sizeof(bool));
+
+    /* Reset ignore bits */
+    for (i = 0; i < z_info->k_max; i++)
+        borg_init_save.kinfo_ignore[i] = k_info[i].ignore;
+
+    /* Clear the ignore bytes */
+    for (i = ITYPE_NONE; i < ITYPE_MAX; i++)
+        borg_init_save.ignore_level[i] = ignore_level[i];
+
+    /* Clear ego ignore */
+    for (i = 0; i < z_info->e_max; i++)
+        for (j = ITYPE_NONE; j < ITYPE_MAX; j++)
+            borg_init_save.ego_ignore_types[i][j] = ego_ignore_types[i][j];
+
+    /* clear the saved flags */
+    ignore_birth_init();
+}
+
 /*
  * Reset the required options when returning from user control
  */
 void borg_reinit_options(void)
 {
     /* Save current key mode */
-    key_mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE
+    borg_init_save.key_mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE
                                                 : KEYMAP_MODE_ORIG;
+
+    borg_init_ignore();
 
     /* The Borg uses the original keypress codes */
     option_set("rogue_like_commands", false);

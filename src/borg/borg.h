@@ -22,6 +22,7 @@
  * must be included before ALLOW_BORG to avoid empty compilation unit
  */
 #include "../angband.h"
+#include "../obj-ignore.h"
 
 #ifdef ALLOW_BORG
 
@@ -76,6 +77,7 @@ enum {
     BORG_STOP_ON_BELL,
     BORG_ALLOW_STRANGE_OPTS,
     BORG_AUTOSAVE,
+    BORG_RESTORE_IGNORE_SETTINGS,
     BORG_MAX_SETTINGS
 };
 extern int *borg_cfg;
@@ -107,10 +109,21 @@ extern uint16_t borg_step;
 extern int w_x; /* Current panel offset (X) */
 extern int w_y; /* Current panel offset (Y) */
 
-/*
- * KEYMAP_MODE_ROGUE or KEYMAP_MODE_ORIG
- */
-extern int key_mode;
+struct borg_save_init {
+
+	/*
+	 * KEYMAP_MODE_ROGUE or KEYMAP_MODE_ORIG
+	 */
+	int         key_mode;
+
+	/*
+	 * object ignore settings
+	 */
+	uint8_t*    kinfo_ignore;
+	uint8_t     ignore_level[ITYPE_MAX];
+	bool**      ego_ignore_types;
+};
+extern struct borg_save_init borg_init_save;
 
 /*
  * Special "inkey_hack" hook.
