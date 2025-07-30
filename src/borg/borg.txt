@@ -321,6 +321,10 @@ borg_munchkin_depth = 16
 
 borg_enchant_limit = 12
 
+# keep the ignore settings from before the borg was run
+
+borg_restore_ignore_settings = false
+
 
 ### Dynamic Calculations ###
 
