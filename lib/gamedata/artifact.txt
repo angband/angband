@@ -756,7 +756,7 @@ desc: bathe it in the blood of your foes.
 
 name:'Firestar'
 base-object:hafted:Morning Star
-level:20
+level:25
 weight:150
 cost:35000
 alloc:7:20 to 100
@@ -807,7 +807,7 @@ desc: crackle around its massive head.
 
 name:'Taratol'
 base-object:hafted:Mace
-level:20
+level:35
 weight:200
 cost:50000
 alloc:7:20 to 100
@@ -923,7 +923,7 @@ desc: of the Undead!
 
 name:'Aiglos'
 base-object:polearm:Spear
-level:15
+level:40
 weight:50
 cost:140000
 alloc:2:15 to 100
@@ -1404,7 +1404,7 @@ desc: although Náin himself fell before their lord Azog.
 
 name:of Fëanor
 base-object:boots:Pair of Leather Boots
-level:20
+level:30
 weight:20
 cost:300000
 alloc:1:40 to 127
@@ -1810,7 +1810,7 @@ desc: nothing else can.
 
 name:'Colluin'
 base-object:cloak:Cloak
-level:5
+level:12
 weight:10
 cost:50000
 alloc:2:5 to 100
@@ -1824,7 +1824,7 @@ desc: of Elements.
 
 name:'Holcolleth'
 base-object:cloak:Cloak
-level:5
+level:13
 weight:10
 cost:18000
 alloc:5:5 to 100
@@ -1839,7 +1839,7 @@ desc: the Sindar.
 
 name:of Thingol
 base-object:cloak:Cloak
-level:5
+level:62
 weight:10
 cost:35000
 alloc:5:5 to 100
@@ -1868,7 +1868,7 @@ desc: and sea.
 
 name:'Colannon'
 base-object:cloak:Cloak
-level:5
+level:26
 weight:10
 cost:20000
 alloc:5:5 to 100
