@@ -1487,19 +1487,17 @@ static int dir_transitions[10][10] =
 };
 
 /**
- * Request a "movement" direction (1,2,3,4,6,7,8,9) from the user.
+ * Request a "movement" direction (1,2,3,4,5(optional),6,7,8,9) from the user.
  *
  * Return true if a direction was chosen, otherwise return false.
  *
  * This function should be used for all "repeatable" commands, such as
  * run, walk, open, close, bash, disarm, spike, tunnel, etc, as well
- * as all commands which must reference a grid adjacent to the player,
- * and which may not reference the grid under the player.
+ * as all commands which must reference a grid adjacent to the player.
+ * If the command does not allow the grid under the player, pass false
+ * for allow_5.  Otherwise, use true for allow_5.
  *
- * Directions "5" and "0" are illegal and will not be accepted.
- *
- * This function tracks and uses the "global direction", and uses
- * that as the "desired direction", if it is set.
+ * The direction, "0", is illegal and will not be accepted.
  */
 static bool textui_get_rep_dir(int *dp, bool allow_5)
 {
