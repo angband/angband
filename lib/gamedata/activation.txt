@@ -762,7 +762,7 @@ desc:gives you information on the health and abilities of monsters you can see
 
 name:HASTE
 aim:0
-level:20
+level:40
 power:10
 effect:TIMED_INC:FAST:0:5
 dice:20+2d10
@@ -770,7 +770,7 @@ desc:hastens you for 2d10+20 turns
 
 name:HASTE1
 aim:0
-level:20
+level:40
 power:10
 msg:Your {kind} glow{s} bright green...
 effect:TIMED_INC:FAST:0:5
