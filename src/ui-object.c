@@ -1157,7 +1157,7 @@ static struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 		m->selections = all_letters_nohjkl;
 	m->switch_keys = "/|-";
 	m->context_hook = use_context_menu_list_switcher;
-	m->flags = (MN_PVT_TAGS | MN_INSCRIP_TAGS);
+	m->flags = (MN_PVT_TAGS | MN_INSCRIP_TAGS | MN_KEYMAP_ESC);
 	m->browse_hook = item_menu_browser;
 
 	/* Get inscriptions */

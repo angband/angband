@@ -1523,7 +1523,7 @@ static bool textui_get_rep_dir(int *dp, bool allow_5)
 
 		if (ke.type == EVT_NONE ||
 				(ke.type == EVT_KBRD
-				&& !target_dir_allow(ke.key, allow_5))) {
+				&& !target_dir_allow(ke.key, allow_5, true))) {
 			prt("Direction or <click> (Escape to cancel)? ", 0, 0);
 			ke = inkey_ex();
 		}
@@ -1558,10 +1558,17 @@ static bool textui_get_rep_dir(int *dp, bool allow_5)
 
 				/* XXX Ideally show and move the cursor here to indicate
 				 the currently "Pending" direction. XXX */
-				this_dir = target_dir_allow(ke.key, allow_5);
+				this_dir = target_dir_allow(ke.key, allow_5,
+					true);
 
-				if (this_dir)
+				if (this_dir == ESCAPE) {
+					/* Clear the prompt */
+					prt("", 0, 0);
+
+					return (false);
+				} else if (this_dir) {
 					dir = dir_transitions[dir][this_dir];
+				}
 
 				if (player->opts.lazymove_delay == 0 || ++keypresses_handled > 1)
 					break;
@@ -1673,8 +1680,12 @@ static bool textui_get_aim_dir(int *dp)
 
 					/* XXX Ideally show and move the cursor here to indicate
 					 * the currently "Pending" direction. XXX */
-					this_dir = target_dir(ke.key);
+					this_dir = target_dir_allow(ke.key,
+						false, true);
 
+					if (this_dir == ESCAPE) {
+						return false;
+					}
 					if (this_dir) {
 						dir = dir_transitions[dir][this_dir];
 					} else {
