@@ -198,7 +198,13 @@ enum
 	MN_NO_ACTION = 0x20,
 
 	/* Tags can be selected via an inscription */
-	MN_INSCRIP_TAGS = 0x40
+	MN_INSCRIP_TAGS = 0x40,
+
+	/* Allow a keymap trigger whose first character in the action is ESCAPE
+	 * to break out of the menu; note that selections, cmd_keys, and
+	 * switch_keys take precedence so a keymap trigger that is also one
+	 * of those will not break out */
+	MN_KEYMAP_ESC = 0x80
 };
 
 

@@ -123,7 +123,7 @@ static int curse_menu(struct object *obj, char *dice_string)
 			  sizeof(header));
 	m->header = header;
 	m->selections = all_letters_nohjkl;
-	m->flags = (MN_PVT_TAGS);
+	m->flags = (MN_PVT_TAGS | MN_KEYMAP_ESC);
 	m->browse_hook = curse_menu_browser;
 
 	/* Set up the item list variables */

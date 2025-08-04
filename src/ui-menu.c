@@ -729,9 +729,12 @@ bool menu_handle_keypress(struct menu *menu, const ui_event *in,
 		out->type = EVT_SELECT;
 	} else {
 		/* Try directional movement */
-		int dir = target_dir(in->key);
+		int dir = target_dir_allow(in->key, false,
+			menu->flags & MN_KEYMAP_ESC);
 
-		if (dir && !no_valid_row(menu, count)) {
+		if (dir == ESCAPE) {
+			out->type = EVT_ESCAPE;
+		} else if (dir && !no_valid_row(menu, count)) {
 			*out = menu->skin->process_dir(menu, dir);
 
 			if (out->type == EVT_MOVE) {

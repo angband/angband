@@ -70,10 +70,29 @@ typedef bool (*target_aux_handler)(struct chunk *c, struct player *p,
  */
 int target_dir(struct keypress ch)
 {
-	return target_dir_allow(ch, false);
+	return target_dir_allow(ch, false, false);
 }
 
-int target_dir_allow(struct keypress ch, bool allow_5)
+/**
+ * Extract, with finer control, a direction (or zero) from a character.
+ *
+ * \param ch is the keypress to examine.
+ * \param allow_5 will, if true, allow 5 to be returned as a direction.
+ * If false, zero will be returned when 5 is extracted.
+ * \param allow_esc will, if true, test if ch is the trigger for a keymap
+ * whose first character in the action is ESCAPE and, when that happens,
+ * return ESCAPE.
+ * \return an integer that is either in 0 to 4, inclusive, or 6 to 9, inclusive,
+ * indicating the direction extracted.  If it was not possible to extract a
+ * direction, return 0.  If allow_5 is true, the returned value can be 5 as
+ * well when the extracted direction is 5.  If allow_esc is true, the retured
+ * value can be ESCAPE as well if ch is the trigger for a keymap whose first
+ * character in the action is ESCAPE.
+ *
+ * When examining a keymap, should any '(' or ')' be skipped over since they
+ * do nothing but toggle how more prompts are handled?
+ */
+int target_dir_allow(struct keypress ch, bool allow_5, bool allow_esc)
 {
 	int d = 0;
 
@@ -96,13 +115,37 @@ int target_dir_allow(struct keypress ch, bool allow_5)
 		else
 			mode = KEYMAP_MODE_ORIG;
 
-		/* XXX see if this key has a digit in the keymap we can use */
 		act = keymap_find(mode, ch);
-		if (act) {
-			const struct keypress *cur;
-			for (cur = act; cur->type == EVT_KBRD; cur++) {
-				if (isdigit((unsigned char) cur->code))
-					d = D2I(cur->code);
+		if (act && act->type == EVT_KBRD) {
+			if (allow_esc && act->code == ESCAPE) {
+				/*
+				 * Let the player break out of the targeting
+				 * with a keymap whose action starts with
+				 * escape.  Suggested by
+				 * https://github.com/angband/angband/issues/6297 .
+				 * To save extra keystrokes by the player, it
+				 * is tempting, if there isn't a kaymap active
+				 * or the current keymap is at its end, to
+				 * insert the keymap triggered by ch into the
+				 * command queue, but we do not know if the
+				 * ESCAPE passed out here will end the
+				 * processing of the last command.
+				 */
+				d = ESCAPE;
+			} else if (((unsigned char)act->code
+					== cmd_lookup_key(CMD_WALK, mode)
+					|| (unsigned char)act->code
+					== cmd_lookup_key(CMD_RUN, mode))) {
+				/*
+				 * Let the player use a single action movement
+				 * keymap to specify the direction.
+				 */
+				++act;
+				if (act->type == EVT_KBRD
+						&& isdigit((unsigned char)act->code)
+						&& (act + 1)->type == EVT_NONE) {
+					d = D2I(act->code);
+				}
 			}
 		}
 	}
@@ -197,7 +240,7 @@ void target_display_help(bool monster, bool object, bool free)
 
 
 /**
- * Return whether a key triggers a running action.
+ * Return whether a key triggers a keymap whose only action is to run.
  */
 static bool is_running_keymap(struct keypress ch)
 {
@@ -205,14 +248,13 @@ static bool is_running_keymap(struct keypress ch)
 		KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	const struct keypress *act = keymap_find(mode, ch);
 
-	if (act) {
-		unsigned char run_key = cmd_lookup_key(CMD_RUN, mode);
-		const struct keypress *cur;
-
-		for (cur = act; cur->type == EVT_KBRD; cur++) {
-			if ((unsigned char)cur->code == run_key) {
-				return true;
-			}
+	if (act && act->type == EVT_KBRD && (unsigned char)act->code
+			== cmd_lookup_key(CMD_RUN, mode)) {
+		++act;
+		if (act->type == EVT_NONE || (act->type == EVT_KBRD
+				&& isdigit((unsigned char)act->code)
+				&& (act + 1)->type == EVT_NONE)) {
+			return true;
 		}
 	}
 	return false;
@@ -1513,10 +1555,12 @@ bool target_set_interactive(int mode, int x, int y)
 
 		} else {
 			/* Try to extract a direction from the key press */
-			int dir = target_dir(press.key);
+			int dir = target_dir_allow(press.key, false, true);
 
 			if (!dir) {
 				bell();
+			} else if (dir == ESCAPE) {
+				done = true;
 			} else if (use_interesting_mode) {
 				/* Interesting mode direction: Pick new interesting grid */
 				int old_y = targets->pts[target_index].y;
