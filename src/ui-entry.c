@@ -1,6 +1,7 @@
 /**
  * \file ui-entry.c
  * \brief Definitions to link object/player properties to 2nd character screen
+ * and equippable coomparison
  *
  * Copyright (c) 2020 - 2021 Eric Branlund
  *
@@ -31,7 +32,7 @@
 #include "z-util.h"
 #include "z-virt.h"
 
-/*
+/**
  * This is the maximum number of characters stored for a label.  Used to
  * limit what's extracted from the configuration file.
  */
@@ -86,7 +87,7 @@ static struct entry_flag entry_flags[] = {
 	{ "TIMED_AS_AUX", ENTRY_FLAG_TIMED_AUX },
 };
 
-/*
+/**
  * Set the maximum number of shortened versions of the label that will be
  * accepted.  The shortened versions will have lengths of one to MAX_SHORTENED
  * characters, not including the terminating null.
@@ -185,9 +186,28 @@ static struct ui_entry **entries = NULL;
 
 /**
  * Binds an object property, given by type and index, to a user interface
- * entry configured in ui_entry.txt.  If name isn't configured in that file
- * returns a nonzero value.  Otherwise returns zero after binding the property.
- * Currently, this is only used for some parts of the second character screen.
+ * entry configured in ui_entry.txt.
+ *
+ * \param name is the name of the user interface entry to bind.
+ * \param type is the type of the property and must be one of the
+ * OBJ_PROPERTY_* constants other than OBJ_PROPERTY_NONE or OBJ_PROPERTY_MAX.
+ * In other words, it is the value of the type field in the struct obj_property
+ * describing the property.
+ * \param index is the index of the property within its type.  In other words,
+ * it is the value of the index field in the struct obj_property describing the
+ * property.
+ * \param value is, when have_value is true, the value to use for this property
+ * with the user interface entry when the property is present.
+ * \param have_value controls how the property is presented in the user
+ * interface.  If false, the underlying value of the property (0/1 for a
+ * flag, any integer for a modifier ...) is used as is.  Otherwise, value is
+ * what is presented to the user interface.
+ * \param isaux is whether this property should be treated as an auxiliary
+ * value for the purposes of the user interface.
+ * \return a nonzero value if name is not configured in ui_entry.txt.
+ * Otherwise, return zero after binding the property.
+ *
+ * Implements the bindui directive in object_property.txt.
  */
 int bind_object_property_to_ui_entry_by_name(const char *name, int type,
 	int index, int value, bool have_value, bool isaux)
@@ -227,10 +247,24 @@ int bind_object_property_to_ui_entry_by_name(const char *name, int type,
 
 
 /**
- * Binds a player ability to to a user interface entry configured in ui_entry.
- * If name isn't configured in that file returns a nonzero value.  Otherwise
- * returns zero after binding the ability.  Currently, this is only used for
- * some parts of the second character screen.
+ * Binds a player ability to to a user interface entry configured in
+ * ui_entry.txt.
+ *
+ * \param name is the name of the user interface entry to bind.
+ * \param ability points to the player ability to bind to the user interface
+ * entry.
+ * \param value is, when have_value is true, the value to use for this ability
+ * with the user interface entry when the ability is present.
+ * \param have_value controls how the ability is presented in the user
+ * interface.  If false, the value of the ability is determined by special case
+ * logic in compute_ui_entry_values_for_player().  Otherwise, value is what
+ * is presented in the user interface.
+ * \param isaux is whether this ability should be treated as an auxiliary
+ * value for the purposes of the user interface.
+ * \return a nonzero value if name is not configure in ui_entry.txt.  Otherwise,
+ * return zero after binding the ability.
+ *
+ * Implements the bindui directive in player_property.txt.
  */
 int bind_player_ability_to_ui_entry_by_name(const char *name,
 	struct player_ability *ability, int value, bool have_value, bool isaux)
@@ -271,9 +305,12 @@ int bind_player_ability_to_ui_entry_by_name(const char *name,
 
 
 /**
- * Returns true if the given user interface entry was configured in
- * ui_entry.txt to be part of the category with the given name.  Otherwise,
- * returns false.
+ * Query whether a user interface entry is part of a specific category.
+ *
+ * \param entry points to the user interface entry of interest.
+ * \param name is the name of the category of interest.
+ * \return true if entry was configured in ui_entry.txt to be included in
+ * the category, name.  Otherwise, return false.
  */
 bool ui_entry_has_category(const struct ui_entry *entry, const char *name)
 {
@@ -284,11 +321,18 @@ bool ui_entry_has_category(const struct ui_entry *entry, const char *name)
 
 
 /**
- * Fills label with length characters, including a terminating null, of a
- * label for a user interface entry configured in ui_entry.txt.  If the label
- * is naturally shorter than the specified length, the label will be padded
- * with spaces, either on the left if pad_left is true, or on the right if
- * pad_left is false.
+ * Fills a label for a user interface entry configured in ui_entry.txt.
+ *
+ * \param entry is the entry of interest.
+ * \param length is the number of characters, including the terminating null,
+ * for the label.
+ * \param pad_left will, if true, cause any padding spaces to be added on the
+ * left rather than on the right.
+ * \param label points to the label to fill.
+ *
+ * If the label is naturally shorter than the specified length, the label will
+ * be padded with spaces, either on the left if pad_left is true, or on the
+ * right if pad_left is false.
  */
 void get_ui_entry_label(const struct ui_entry *entry, int length,
 	bool pad_left, wchar_t *label)
@@ -396,9 +440,21 @@ static int cmp_desc_prio(const void *left, const void *right)
 
 /**
  * Constructs an iterator to enumerate all the user interface elements for
- * which the given predicate returns true.  The iterator will present those
- * elements in descending order of priority where the priority is that
- * configured for the element in the category named sortcategory.
+ * which the given predicate returns true.
+ *
+ * \param predicate is the function to test the user interface element.  It
+ * takes two arguments, a const pointer to the element to test, and a void
+ * pointer whose value is equal to closure.  When predicate returns true,
+ * the user interface element will be included in the iterator's enumeration.
+ * \param closure is the value to pass as the second argument to predicate.
+ * \param sortcategory points to the name of the category whose priority
+ * ordering will set the order of the enumberation.
+ * \return the pointer to the iterator.  When that iterator is no longer
+ * needed, release it with release_ui_entry_iterator().
+ *
+ * The iterator will present those elements in descending order of priority
+ * where the priority is that configured for the element in the category named
+ * sortcategory.
  */
 struct ui_entry_iterator *initialize_ui_entry_iterator(
 	ui_entry_predicate predicate, void *closure, const char *sortcategory)
@@ -435,7 +491,7 @@ void release_ui_entry_iterator(struct ui_entry_iterator *i)
 
 
 /**
- * Resets the given iterator to the position it ahd when returned by
+ * Resets the given iterator to the position it had when returned by
  * initialize_ui_entry_iterator.
  */
 void reset_ui_entry_iterator(struct ui_entry_iterator *i)
@@ -561,46 +617,50 @@ bool is_ui_entry_for_known_rune(const struct ui_entry *entry,
 /**
  * For a given object and set of object properties bound to a ui_entry, loop
  * over those properties and report the combined value of them for the object.
- * \param entry Is the ui_entry to use.  It is the source of the object
+ *
+ * \param entry is the ui_entry to use.  It is the source of the object
  * properties that will be combined and the algorithm for combining the values.
- * \param obj Is the object to assess.  May be NULL.
- * \param p Is the player used to assess whether an object property is known.
- * May be NULL to assume that all the properties are known.
- * \param cache If *cache is not NULL, *cache is assumed to have been
- * initialized by a prior call to compute_ui_entry_values_for_object() for the
- * same object and for a player whose state of knowledge is the same as p's.
- * If *cache is NULL, it will be initialized by this call and is specific to
- * obj and the state of p's knowledge.  The cache is to optimize away repeated
- * calculations that would be performed when looping over multiple ui_entry
- * structures and calling this function for each of them with the same object
- * and player.  Once it is no longer needed, *cache should be passed to
- * release_cached_object_data() to release the resources associated with it.
- * \param val At exit, *val will be the combined value for the object across
- * the non-auxiliary object properties bound to entry.  It will be
+ * \param obj is the object to assess.  It may be NULL.
+ * \param p is the player used to assess whether an object property is known.
+ * It may be NULL to assume that all the properties are known.
+ * \param cache controls caching of computations between different calls
+ * to compute_ui_entry_values_for_object().  If *cache is not NULL, *cache is
+ * assumed to have been initialized by a prior call to
+ * compute_ui_entry_values_for_object() for the same object and for a player
+ * whose state of knowledge is the same as p's.  If *cache is NULL, it will be
+ * initialized by this call and is specific to obj and the state of p's
+ * knowledge.  The cache is to optimize away repeated calculations that would
+ * be performed when looping over multiple ui_entry structures and calling
+ * this function for each of them with the same object and player.  Once it is
+ * no longer needed, *cache should be passed to release_cached_object_data()
+ * to release the resources associated with it.
+ * \param val will be dereferenced and set to the combined value for the object
+ * across the non-auxiliary object properties bound to entry.  The combined
+ * value will be
  *   a) UI_ENTRY_VALUE_NOT_PRESENT if obj is NULL
  *   b) 0 if all the properties bound to entry are auxiliary properties
  *   c) UI_ENTRY_UNKNOWN_VALUE if the object has a property unknown to p and
- *   there's at least one non-auxiliary property bound to entry and of those
- *   properties, at least one is unknown to p and any of the known ones are not
- *   present on the object
+ *      there's at least one non-auxiliary property bound to entry and of those
+ *      properties, at least one is unknown to p and any of the known ones are
+ *      not present on the object
  *   d) the combined value of the known non-auxiliary properties if there's at
- *   least one non-auxiliary property bound to entry and at least one such
- *   property is known to p
+ *      least one non-auxiliary property bound to entry and at least one such
+ *      property is known to p
  * The value of *val at entry is not used.
  * One use of auxiliary properties is to have the modifier for a stat be bound
  * to an entry and have the sustain for the stat be bound to the same entry as
  * an auxiliary property.
- * \param auxval At exit, *auxval will be the combined value for the object
- * across the auxiliary object properties bound to entry.  It will be
+ * \param auxval will be dereferenced and set to the combined value for the
+ * object across the auxiliary object properties bound to entry.  It will be
  *   a) UI_ENTRY_VALUE_NOT_PRESENT if obj is NULL
  *   b) 0 if all the properties bound to entry are non-auxiliary properties
  *   c) UI_ENTRY_UNKNOWN_VALUE if the object has a property unknown to p and
- *   there's at least one auxiliary property bound to entry and of those
- *   properties, at least one is unknown to p and any of the known ones are not
- *   present on the object
+ *      there's at least one auxiliary property bound to entry and of those
+ *      properties, at least one is unknown to p and any of the known ones are
+ *      not present on the object
  *   d) the combined value of the known auxiliary properties if there's at
- *   least one auxiliary property bound to entry and at least one such
- *   property is known to p
+ *      least one auxiliary property bound to entry and at least one such
+ *      property is known to p
  * The value of *auxval at entry is not used.
  */
 void compute_ui_entry_values_for_object(const struct ui_entry *entry,
@@ -772,9 +832,10 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
 /**
  * For a player and a set of object properties bound to a ui_entry, loop
  * over those properties and report the combined value of them for the player.
- * \param entry Is the ui_entry to use.  It is the source of the object
+ *
+ * \param entry is the ui_entry to use.  It is the source of the object
  * properties that will be combined and the algorithm for combining the values.
- * \param p Is the player to assess.  May be NULL.
+ * \param p is the player to assess.  May be NULL.
  * \param cache If *cache is not NULL, *cache is assumed to have been
  * initialized by a prior call to compute_ui_entry_values_for_player()
  * while the given player was in the same state.  If *cache is NULL, it will
@@ -784,19 +845,23 @@ void compute_ui_entry_values_for_object(const struct ui_entry *entry,
  * each of them with the same player.  Once it is no longer needed, *cache
  * should be passed to release_cached_player_data() to release the resources
  * associated with it.
- * \param val At exit, *val will be the combined value for the player across
- * the non-auxiliary object properties bound to entry.  It will be
- *   a) UI_ENTRY_VALUE_NOT_PRESENT if p is NULL
- *   bound to entry but all such properties are unknown to p
+ * \param val will be dereferenced and set to the combined value for the player
+ * across the non-auxiliary object properties bound to entry.  The combined
+ * value will be
+ *   a) UI_ENTRY_VALUE_NOT_PRESENT if p is NULL, there are no properties
+ *      bound to the entry, or all properaties bound to the entry are auxiliary
+ *      ones and entry has ENTRY_FLAG_TIMED_AUX
  *   b) the combined value of the non-auxiliary properties bound to entry
  * The value of *val at entry is not used.
  * One use of auxiliary properties is to have the modifier for a stat be bound
  * to an entry and have the sustain for the stat be bound to the same entry as
  * an auxiliary property.
- * \param auxval At exit, *auxval will be the combined value for the object
- * across the auxiliary object properties bound to entry.  It will be
- *   a) UI_ENTRY_VALUE_NOT_PRESENT if p is NULL
- *   bound to entry but all such properties are unknown to p
+ * \param auxval will be dereferenced and set to the combined value for the
+ * player across the auxiliary object properties bound to entry.  The combined
+ * value will be
+ *   a) UI_ENTRY_VALUE_NOT_PRESENT if p is NULL, there are not properties
+ *      bound t the entry, or all properties bound to the entry are auxiliary
+ *      ones and entry has ENTRY_FLAG_TIMED_AUX
  *   b) the combined value of the auxiliary properties bound to entry
  * The value of *auxval at entry is not used.
  */
@@ -1085,9 +1150,10 @@ void release_cached_player_data(struct cached_player_data *cache)
 
 
 /**
- * Lookup the entry by name.  Return a nonzero value if present and set *ind to
- * its index.  Otherwise return zero and set *ind to where it should be
- * inserted.
+ * Lookup a user interface entry by name.
+ *
+ * \return a nonzero value if present and set *ind to its index.  Otherwise,
+ * return zero and set *ind to where it should be inserted.
  */
 static int ui_entry_search(const char *name, int *ind)
 {
@@ -1117,8 +1183,10 @@ static int ui_entry_search(const char *name, int *ind)
 
 
 /**
- * Lookup the entry by name.  If present return its index + 1.  Otherwise,
- * return 0.
+ * Lookup a user interface entry by name.
+ *
+ * \return one plus the index of the user entry if it is present.
+ * Otherwwise, return zero.
  */
 static int ui_entry_lookup(const char *name)
 {
@@ -1129,7 +1197,7 @@ static int ui_entry_lookup(const char *name)
 
 
 /**
- * Insert the entry.
+ * Insert a user interface entry.
  */
 static void ui_entry_insert(struct ui_entry *entry)
 {
@@ -1171,9 +1239,10 @@ static void ui_entry_insert(struct ui_entry *entry)
 
 
 /**
- * Search for name in the categories associated with ui_entry.  Return a
- * nonzero value if present and set *ind to its index.  Otherwise, return zero
- * and set *ind to where it should be inserted.
+ * Search for name in the categories associated with ui_entry.
+ *
+ * \return a nonzero value if present and set *ind to index.  Otherwise,
+ * return zero and set *ind to where it should be inserted.
  */
 static int ui_entry_search_categories(const struct ui_entry *entry,
 	const char *name, int *ind)
@@ -1298,7 +1367,8 @@ static int get_timed_modifier_effect(const struct player *p, int ind)
 
 /**
  * Search for name in the categories associated with ui_entry being parsed.
- * Return a nonzero value if present and set *ind to its index.  Otherwise,
+ *
+ * \return a nonzero value if present and set *ind to its index.  Otherwise,
  * return zero and set *ind to where it should be inserted.
  */
 static int search_embryo_categories(const struct embryonic_ui_entry *embryo,
@@ -1336,9 +1406,10 @@ static int search_embryo_categories(const struct embryonic_ui_entry *embryo,
 
 
 /**
- * Search the list of all categories seen so far for a name.  Return a
- * nonzero value if found and set *ind to its index.  Otherwise, return zero
- * and set *ind to where it should be inserted.
+ * Search the list of all categories seen so far for a name.
+ *
+ * \return a nonzero value if found and set *ind to its index.  Otherwise,
+ * return zero and set *ind to where it should be inserted.
  */
 static int search_categories(const char *name, int *ind)
 {
@@ -1487,13 +1558,14 @@ static void insert_embryo_category(struct embryonic_ui_entry *embryo,
 }
 
 
-/* These are for handling unparameterized entry names. */
+/** Used for handling handling unparameterized entry names. */
 static int get_dummy_param_count(void)
 {
 	return 1;
 }
 
 
+/** Used for handling handling unparameterized entry names. */
 static const char *get_dummy_param_name(int i)
 {
 	assert(i == 0);
@@ -1501,7 +1573,7 @@ static const char *get_dummy_param_name(int i)
 }
 
 
-/* These are for handling of entries parameterized by the element name. */
+/** Used for handling of entries parameterized by the element name. */
 static const char *element_names[] = {
 	#define ELEM(x) #x,
 	#include "list-elements.h"
@@ -1509,12 +1581,14 @@ static const char *element_names[] = {
 };
 
 
+/** Used for handling of entries parameterized by the element name. */
 static int get_element_count(void)
 {
 	return N_ELEMENTS(element_names);
 }
 
 
+/** Used for handling of entries parameterized by the element name. */
 static const char *get_element_name(int i)
 {
 	assert(i >= 0 && i < get_element_count());
@@ -1522,7 +1596,7 @@ static const char *get_element_name(int i)
 }
 
 
-/* These are for handling of entries parameterized by the stat name. */
+/** Used for handling entries parameterized by the stat name. */
 static const char *stat_names[] = {
 	#define STAT(x) #x,
 	#include "list-stats.h"
@@ -1530,12 +1604,14 @@ static const char *stat_names[] = {
 };
 
 
+/** Used for handling entries parameterized by the stat name. */
 static int get_stat_count(void)
 {
 	return N_ELEMENTS(stat_names);
 }
 
 
+/** Used for handling entries parameterized by the stat name. */
 static const char *get_stat_name(int i)
 {
 	assert(i >= 0 && i < get_stat_count());
@@ -1543,7 +1619,7 @@ static const char *get_stat_name(int i)
 }
 
 
-/*
+/**
  * For handling of automatically setting the priority based on the parameter
  * indexing.
  */
@@ -1553,19 +1629,27 @@ static int get_dummy_priority(int i)
 }
 
 
+/**
+ * For handling of automatically setting the priority based on the parameter
+ * indexing.
+ */
 static int get_priority_from_index(int i)
 {
 	return i;
 }
 
 
+/**
+ * For handling of automatically setting the priority based on the parameter
+ * indexing.
+ */
 static int get_priority_from_negative_index(int i)
 {
 	return -i;
 }
 
 
-/* Convert list of categories in the embryo to its final form. */
+/** Convert list of categories in the embryo to its final form. */
 static void parameterize_category_list(
 	const struct embryonic_category_reference *ctgs, int n, int ind,
 	struct ui_entry *entry)

@@ -415,7 +415,7 @@ static void logical_or_vec(int n, const int *vals, const int *auxs,
 }
 
 
-/*
+/**
  * The accumulated value will be either UI_ENTRY_UNKNOWN_VALUE,
  * UI_ENTRY_VALUE_NOT_PRESENT, or a bitwise-or of 0, 1, or 2.  In the last
  * case, if 1 is in the bitwise-or, at least one positive value has been seen,
