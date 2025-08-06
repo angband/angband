@@ -9,27 +9,27 @@
 #include "z-type.h"
 
 struct ui_entry_details {
-	/* This is the position for the first character in the label. */
+	/** This is the position for the first character in the label. */
 	struct loc label_position;
-	/* This is the position for the rendering of the first value. */
+	/** This is the position for the rendering of the first value. */
 	struct loc value_position;
-	/* This is the step size to use between values. */
+	/** This is the step size to use between values. */
 	struct loc position_step;
-	/* This is the location for the combined value, if shown. */
+	/** This is the location for the combined value, if shown. */
 	struct loc combined_position;
-	/* If true the characters of the label will be spaced vertically. */
+	/** If true the characters of the label will be spaced vertically. */
 	bool vertical_label;
-	/*
+	/**
 	 * The rendering may alternate the colors for every other value shown.
 	 * If this is true, the first value is shown with the alternate color.
 	 */
 	bool alternate_color_first;
-	/*
+	/**
 	 * If true, the rune associated with the values is known to the
 	 * player.
 	 */
 	bool known_rune;
-	/* If true, the combined value will be shown. */
+	/** If true, the combined value will be shown. */
 	bool show_combined;
 };
 

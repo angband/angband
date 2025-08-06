@@ -23,13 +23,13 @@
 #include "z-util.h"
 #include "z-virt.h"
 
-/*
+/**
  * This is the maximum number of symbols/colors used by any renderer.  Used to
  * limit what's extracted from the configuration file.
  */
 #define MAX_PALETTE (64)
 
-/*
+/**
  * This is the maximum number of characters to use for any units label.  Used
  * to limit what's extracted from the configuration file.
  */
@@ -180,9 +180,10 @@ static struct renderer_info *renderers = 0;
 
 /**
  * Return the first valid index accepted by ui_entry_renderer_apply()
- * and the other functions expecting a renderer index.  Any index whose
- * value is greater than or equal to ui_entry_get_min_index() and less than
- * ui_entry_get_index_limit() is valid.
+ * and the other functions expecting a renderer index.
+ *
+ * Any index whose value is greater than or equal to ui_entry_get_min_index()
+ * and less than ui_entry_get_index_limit() is valid.
  */
 int ui_entry_renderer_get_min_index(void)
 {
@@ -192,9 +193,10 @@ int ui_entry_renderer_get_min_index(void)
 
 /**
  * Return the upper bound for indices accepted by ui_entry_renderer_apply()
- * and the other functions expecting a renderer index.  Any index whose
- * value is greater than or equal to ui_entry_get_min_index() and less than
- * ui_entry_get_index_limit() is valid.
+ * and the other functions expecting a renderer index.
+ *
+ * Any index whose value is greater than or equal to ui_entry_get_min_index()
+ * and less than ui_entry_get_index_limit() is valid.
  */
 int ui_entry_renderer_get_index_limit(void)
 {
@@ -203,7 +205,8 @@ int ui_entry_renderer_get_index_limit(void)
 
 
 /**
- * Returns the name for the renderer as configured in ui_entry_renderers.txt.
+ * Return the name for the renderer as configured in ui_entry_renderers.txt.
+ *
  * The returned value will be NULL if ind is out of bounds.
  */
 const char *ui_entry_renderer_get_name(int ind)
@@ -213,9 +216,10 @@ const char *ui_entry_renderer_get_name(int ind)
 }
 
 /**
- * Look up a renderer by name.  If the name is not one of those configured in
- * ui_entry_renderers.txt, returns zero.  Otherwise returns the index for
- * the renderer.
+ * Look up a renderer by name.
+ *
+ * \return zero if the name is not one of those configured in
+ * ui_entry_renderers.txt.  Otherwise, return the index for the renderer.
  */
 int ui_entry_renderer_lookup(const char *name)
 {
@@ -232,9 +236,11 @@ int ui_entry_renderer_lookup(const char *name)
 
 
 /**
- * Query a renderer for the number of characters used to draw a value.  ind
- * is the index for the renderer; use ui_entry_renderer_lookup to get it.
- * Will return -1 if the renderer is not valid or does not have an implemented
+ * Query a renderer for the number of characters used to draw a value.
+ *
+ * \param ind is the index for the renderer; use ui_entry_renderer_lookup to
+ * get it.
+ * \return -1 if the renderer is not valid or does not have an implemented
  * backend.
  */
 int ui_entry_renderer_query_value_width(int ind)
@@ -248,9 +254,13 @@ int ui_entry_renderer_query_value_width(int ind)
 
 /**
  * Query a renderer for the number of characters used to draw the combined
- * value.  ind is the index for the renderer; use ui_entry_renderer_lookup to
- * get it.  Will return -1 if the renderer is not valid or has not been
- * attached to another renderer to show the combined value.
+ * value.
+ *
+ * \param ind is the index for the renderer; use ui_entry_renderer_lookup to
+ * get it.
+ * \return -1 if the renderer is not valid or has not been attached to another
+ * renderer to show the combined value.  Otherwise, return the number of
+ * characters needed to display the combined value.
  */
 int ui_entry_renderer_query_combined_width(int ind)
 {
@@ -269,9 +279,11 @@ int ui_entry_renderer_query_combined_width(int ind)
 
 
 /**
- * Returns the combiner index, suitable as the first argument to
+ * Return the combiner index, suitable as the first argument to
  * ui_entry_combiner_get_funcs(), for the given user interface renderer.
- * Returns zero if the renderer is not valid or has an invalid combiner.
+ *
+ * If the renderer is not valid or has an invalid combiner, the returned
+ * value will be zero.
  */
 int ui_entry_renderer_query_combiner(int ind)
 {
@@ -282,12 +294,16 @@ int ui_entry_renderer_query_combiner(int ind)
 
 /**
  * Use a renderer to draw a set of values and, optionally, their label and
- * combined value.  ind is the index for the renderer; use
- * ui_entry_renderer_lookup to get it.  label and nlabel specify the label to
- * draw.  If nlabel is 0, no label will be drawn.  vals, auxvals, and n set
- * the values to draw.  vals and auxvals each refer to n values.  details
- * controls certain aspects of the rendering including positions and the
- * handling of the combined value.  The comments for it in
+ * combined value.
+ *
+ * \param ind is the index for the renderer; use ui_entry_renderer_lookup to
+ * get it.
+ * \param label, nlabel specify the label to draw.  If nlabel is 0, no label
+ * will be drawn.
+ * \param vals, auxvals, n set the values to draw.  vals and auxvals each
+ * refer to n values.
+ * \param details controls certain aspects of the rendering including
+ * positions and the handling of the combined value.  The comments for it in
  * ui-entry-renderers.h describe it in more detail.
  */
 void ui_entry_renderer_apply(int ind, const wchar_t *label, int nlabel,
@@ -302,12 +318,15 @@ void ui_entry_renderer_apply(int ind, const wchar_t *label, int nlabel,
 }
 
 
-/*
- * Change the colors, label colors, or symbols used by a renderer.  Any of
- * the three may be a null pointer which leaves the current setting for that
- * unchanged.  Returns zero if successful.  Returns a nonzero value if the
- * renderer index is invalid or it was not possible to convert one or more
- * of the values to change.
+/**
+ * Change the colors, label colors, or symbols used by a renderer.
+ *
+ * \return zero if successful.  Return a nonzero value if the renderer index
+ * is invalid or it was not possible to convert one or more of the values to
+ * change.
+ *
+ * Any of colors, label_colors, or symbols may be a null pointer which leaves
+ * the renderer's current setting for that category unchanged.
  */
 int ui_entry_renderer_customize(int ind, const char *colors,
 	const char *label_colors, const char *symbols)
@@ -350,10 +369,14 @@ int ui_entry_renderer_customize(int ind, const char *colors,
 }
 
 
-/*
- * If ind is valid, returns a dynamically allocated string with the current
- * setting for the palette of colors.  That string should be released with
- * string_free().  Otherwise, returns NULL.
+/**
+ * Return a dynamically allocated string with a renderer's palette of colors.
+ *
+ * \param ind is the index for the renderer; use ui_entry_renderer_lookup to
+ * get it.
+ * \return a non-NULL pointer to the palette when ind is valid.  That
+ * string should be released with string_free() when it is no longer needed.
+ * If ind is invalid, return NULL.
  */
 char *ui_entry_renderer_get_colors(int ind)
 {
@@ -365,10 +388,15 @@ char *ui_entry_renderer_get_colors(int ind)
 }
 
 
-/*
- * If ind is valid, returns a dynamically allocated string with the current
- * setting for the palette of label colors.  That string should be released
- * with string_free().  Otherwise, returns NULL.
+/**
+ * Return a dynamically allocated string with a renderer's palette of label
+ * colors.
+ *
+ * \param ind is the index for the renderer; use ui_entry_renderer_lookup to
+ * get it.
+ * \return a non-NULL pointer to the palette when ind is valid.  That
+ * string should be released with string_free() when it is no longer needed.
+ * If ind is invalid, return NULL.
  */
 char *ui_entry_renderer_get_label_colors(int ind)
 {
@@ -380,10 +408,14 @@ char *ui_entry_renderer_get_label_colors(int ind)
 }
 
 
-/*
- * If ind is valid, returns a dynamically allocated string with the current
- * setting for the palette of symbols.  That string should be released
- * with mem_free().  Otherwise, returns NULL.
+/**
+ * Return a dynamically allocated string with a renderer's palette of symbols.
+ *
+ * \param ind is the index for the renderer; use ui_entry_renderer_lookup to
+ * get it.
+ * \return a non-NULL pointer to the palette when ind is valid.  That
+ * string should be released with string_free() when it is no longer needed.
+ * If ind is invalid, return NULL.
  */
 char *ui_entry_renderer_get_symbols(int ind)
 {

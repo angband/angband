@@ -94,12 +94,12 @@ struct equippable_expr {
 	enum equippable_expr_class c;
 };
 struct equippable_filter {
-	/*
+	/**
 	 * Has nv + 1 used elements with the last a sentinel (c ==
 	 * EQUIP_EXPR_TERMINATOR).
 	 */
 	struct equippable_expr *v;
-	/*
+	/**
 	 * Use EQUIP_EXPR_SELECTOR to indicate the simple evaluation is not
 	 * possible.  Use EQUIP_EXPR_TERMINATOR when nv is zero:  there's no
 	 * filtering.  The others indicate the way the terms are combined
@@ -138,9 +138,9 @@ struct prop_category {
 };
 
 struct equippable_summary {
-	/* Has space for nalloc items; nitems are currently used */
+	/** Has space for nalloc items; nitems are currently used */
 	struct equippable *items;
-	/*
+	/**
 	 * Has space for nalloc + 1 items; nfilt + 1 are currently used with
 	 * the last a sentinel (-1).
 	 */
@@ -150,7 +150,7 @@ struct equippable_summary {
 	const char *dlg_trans_msg;
 	struct prop_category propcats[5];
 	struct equippable_filter easy_filt;
-	/*
+	/**
 	 * Was intended to be an alternative to easy_filt where the player
 	 * could configure a filter on more than one attribute.  Backend
 	 * support is, in principle there, but there's currently in place to
@@ -163,7 +163,7 @@ struct equippable_summary {
 	struct equippable_filter config_filt;
 	struct equippable_filter config_mod_filt;
 	struct equippable_sorter default_sort;
-	/*
+	/**
 	 * Was intended to be an alternative to the default sort that the
 	 * player could configure.  While backend support should mostly be
 	 * there, there's nothing that allows the player to do the
@@ -171,39 +171,39 @@ struct equippable_summary {
 	 */
 	struct equippable_sorter config_sort;
 	enum store_inclusion stores;
-	/* Is the index, in sorted_indices, for first shown on page. */
+	/** Is the index, in sorted_indices, for first shown on page. */
 	int ifirst;
 	int indinc;
 	int iview;
-	/* Are indices into items for selection. */
+	/** Are indices into items for selection. */
 	int isel0, isel1;
-	/* Is the index, into sorted_indices, for choosing selection. */
+	/** Is the index, into sorted_indices, for choosing selection. */
 	int work_sel;
-	/* Is the number shown on current page. */
+	/** Is the number shown on current page. */
 	int npage;
 	int nfilt;
 	int nitems;
 	int nalloc;
 	int nprop;
-	/* Is the maximum number that can be shown on any page. */
+	/** Is the maximum number that can be shown on any page. */
 	int maxpage;
-	/* Is the maximum number of characters for a short object name. */
+	/** Is the maximum number of characters for a short object name. */
 	int nshortnm;
-	/* Is the number of character for propery labels. */
+	/** Is the number of character for propery labels. */
 	int nproplab;
-	/*
+	/**
 	 * Is the number of views to use for displaying the properties, either
 	 * two or three.
 	 */
 	int nview;
-	/*
+	/**
 	 * Is the row used for display of the combined player and current
 	 * equipment properties.
 	 */
 	int irow_combined_equip;
-	/* Is the column where the object names start. */
+	/** Is the column where the object names start. */
 	int icol_name;
-	/*
+	/**
 	 * These two are the terminal dimensions used when configuring the
 	 * layout.
 	 */
@@ -218,7 +218,7 @@ struct indirect_sort_data {
 };
 
 
-/* These have to match up with the state array in equip_cmp_display(). */
+/** These have to match up with the state array in equip_cmp_display(). */
 enum {
 	EQUIP_CMP_MENU_DONE,
 	EQUIP_CMP_MENU_BAIL,
@@ -1954,6 +1954,11 @@ struct obj_visitor_data {
 
 
 /**
+ * Select any object.
+ *
+ * \param obj is the object to test.
+ * \param closure is unused.
+ *
  * Intended for use with apply_visitor_to_pile() or
  * apply_visitor_to_equipped().
  */
@@ -1964,8 +1969,12 @@ static bool select_any(const struct object *obj, const void *closure)
 
 
 /**
- * Test for wearable objects in the pack.  Intended for use with
- * apply_visitor_to_pile().  Assumes obj is in the player's gear.
+ * Test for wearable objects in the pack.
+ *
+ * \param obj is the object to test.  It is assumed to be in the player's gear.
+ * \param closure is the pointer to the player of interest, cast to a void*.
+ *
+ * Intended for use with apply_visitor_to_pile().
  */
 static bool select_nonequipped_wearable(const struct object *obj,
 	const void *closure)
@@ -1977,7 +1986,12 @@ static bool select_nonequipped_wearable(const struct object *obj,
 
 
 /**
- * Test for wearable objects.  Intended for use with apply_visitor_to_pile().
+ * Test for wearable objects.
+ *
+ * \param obj is the object to test.
+ * \param closure is unused.
+ *
+ * Intended for use with apply_visitor_to_pile().
  */
 static bool select_wearable(const struct object *obj, const void *closure)
 {
@@ -1987,7 +2001,12 @@ static bool select_wearable(const struct object *obj, const void *closure)
 
 /**
  * Test for wearable objects that are not ignored and have been seen (have a
- * known object).  Intended for use with apply_visitor_to_pile().
+ * known object).
+ *
+ * \param obj is the object to test.
+ * \param closure is the pointer to the player of interest, cast to a void*.
+ *
+ * Intended for use with apply_visitor_to_pile().
  */
 static bool select_seen_wearable(const struct object *obj, const void *closure)
 {
@@ -1998,7 +2017,12 @@ static bool select_seen_wearable(const struct object *obj, const void *closure)
 
 
 /**
- * Increment a counter; intended for use with apply_visitor_to_pile() or
+ * Increment a counter.
+ *
+ * \param obj is an object from a collection.
+ * \param closure is a pointer to an integer, the count, cast to a void*.
+ *
+ * Intended for use with apply_visitor_to_pile() or
  * apply_visitor_to_equipped().
  */
 static void count_objects(const struct object *obj, void *closure)
@@ -2009,15 +2033,22 @@ static void count_objects(const struct object *obj, void *closure)
 }
 
 
-/**
- * Add an object to the summary of equippable items; intended for use with
- * apply_visitor_to_pile() or apply_visitor_to_equipped().
- */
 struct add_obj_to_summary_closure {
 	const struct player *p;
 	struct equippable_summary *summary;
 	enum equippable_source src;
 };
+
+
+/**
+ * Add an object to the summary of equippable items.
+ *
+ * \param obj is an object from a collection.
+ * \param closure is a pointer to a struct add_obj_to_summary_closure cast
+ * to a void*.
+ *
+ * Intended for use with apply_visitor_to_pile() or apply_visitor_to_equipped().
+ */
 static void add_obj_to_summary(const struct object *obj, void *closure)
 {
 	struct add_obj_to_summary_closure *c = closure;
