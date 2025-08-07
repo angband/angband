@@ -102,7 +102,7 @@ enum {
 /* Log the pathway and feature of the spell pathway
  * Useful for debugging beams and Tport Other spell
  */
-static void borg_log_spellpath()
+static void borg_log_spellpath(void)
 {
     int n_x, n_y, x, y;
 
