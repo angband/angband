@@ -11,7 +11,7 @@
 struct sdlpui_dialog;
 struct sdlpui_window;
 
-/*
+/**
  * Set out predefined values for the type_code field of struct sdlpui_dialog.
  * These are initialized by sdlpui_init().  For custom dialogs, you can get
  * a code with sdlpui_register_code().
@@ -19,40 +19,77 @@ struct sdlpui_window;
 extern Uint32 SDLPUI_DIALOG_SIMPLE_MENU;
 extern Uint32 SDLPUI_DIALOG_SIMPLE_INFO;
 
-/* Set out possible flags that can be set for buttons in a simple menu. */
+/** Set out possible flags that can be set for buttons in a simple menu. */
 enum sdlpui_menu_flags {
 	SDLPUI_MFLG_NONE = 0,
-	SDLPUI_MFLG_END_GRAVITY = 1,	/* when the menu is bigger than needed
-						for the buttons, the button
-						prefers to have its position
-						stack from the end of the
-						menu */
-	SDLPUI_MFLG_CAN_HIDE = 2,	/* if the menu is smaller than its
-						natural size, this button can
-						be hidden */
+	/**
+	 * When the menu is bigger than needed for the buttons, the button
+	 * prefers to have its position stack from the end of the menu.
+	 */
+	SDLPUI_MFLG_END_GRAVITY = 1,
+	/**
+	 * If the menu is smaller than its natural size, this button can be
+	 * hidden.
+	 */
+	SDLPUI_MFLG_CAN_HIDE = 2,
 };
 
-/* Holds a function table to be used for a class of dialogs. */
+/** Holds a function table to be used for a class of dialogs. */
 struct sdlpui_dialog_funcs {
-	/*
-	 * Respond to events.  Return true if the event was handled and
+	/**
+	 * Respond to a key event.  Return true if the event was handled and
 	 * should not be passed on to another handler.  Otherwise, return false.
-	 * Any can be NULL if the dialog and the controls it contains do not
-	 * do anything with that type of event and want the window to handle it.
+	 * Can be NULL if the dialog and the controls it contains do not do
+	 * anything with a key event and want the window to handle it.
 	 */
 	bool (*handle_key)(struct sdlpui_dialog *d, struct sdlpui_window *w,
 		const SDL_KeyboardEvent *e);
+	/**
+	 * Respond to a text input event.  Return true if the event was
+	 * handled and should not be passed on to another handler.  Otherwise,
+	 * return false.  Can be NULL if the dialog and the controls it
+	 * contains do not do anything with a text input event and want the
+	 * window to handle it.
+	 */
 	bool (*handle_textin)(struct sdlpui_dialog *d, struct sdlpui_window *w,
 		const SDL_TextInputEvent *e);
+	/**
+	 * Respond to a text edit event.  Return true if the event was
+	 * handled and should not be passed on to another handler.  Otherwise,
+	 * return false.  Can be NULL if the dialog and the controls it
+	 * contains do not do anything with a text edit event and want the
+	 * window to handle it.
+	 */
 	bool (*handle_textedit)(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const SDL_TextEditingEvent *e);
+	/**
+	 * Respond to a mouse button event.  Return true if the event was
+	 * handled and should not be passed on to another handler.  Otherwise,
+	 * return false.  Can be NULL if the dialog and the controls it
+	 * contains do not do anything with a mouse button event and want the
+	 * window to handle it.
+	 */
 	bool (*handle_mouseclick)(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const SDL_MouseButtonEvent *e);
+	/**
+	 * Respond to a mouse motion event.  Return true if the event was
+	 * handled and should not be passed on to another handler.  Otherwise,
+	 * return false.  Can be NULL if the dialog and the controls it
+	 * contains do not do anything with a mouse motion event and want the
+	 * window to handle it.
+	 */
 	bool (*handle_mousemove)(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const SDL_MouseMotionEvent *e);
+	/**
+	 * Respond to a mouse wheel event.  Return true if the event was
+	 * handled and should not be passed on to another handler.  Otherwise,
+	 * return false.  Can be NULL if the dialog and the controls it
+	 * contains do not do anything with a mouse wheel event and want the
+	 * window to handle it.
+	 */
 	bool (*handle_mousewheel)(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const SDL_MouseWheelEvent *e);
-	/*
+	/**
 	 * Respond to the mouse focus being taken by another dialog.  May be
 	 * NULL.  new_c is the control taking focus, it may be NULL.  new_d
 	 * is the dialog taking focus, it may be NULL.
@@ -60,7 +97,7 @@ struct sdlpui_dialog_funcs {
 	void (*handle_loses_mouse)(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, struct sdlpui_control *new_c,
 		struct sdlpui_dialog *new_d);
-	/*
+	/**
 	 * Respond to the key focus being taken by another dialog.  May be NULL.
 	 * new_c is the control taking focus, it may be NULL.  new_d is the
 	 * dialog taking focus; it may be NULL.
@@ -68,34 +105,34 @@ struct sdlpui_dialog_funcs {
 	void (*handle_loses_key)(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, struct sdlpui_control *new_c,
 		struct sdlpui_dialog *new_d);
-	/*
+	/**
 	 * Respond to the mouse leaving the containing window if the dialog
 	 * had mouse focus when that happened.  May be NULL.
 	 */
 	void (*handle_window_loses_mouse)(struct sdlpui_dialog *d,
 		struct sdlpui_window *w);
-	/*
+	/**
 	 * Respond to the containing window losing key focus if the dialog
 	 * had key focus when that happened.  May be NULL.
 	 */
 	void (*handle_window_loses_key)(struct sdlpui_dialog *d,
 		struct sdlpui_window *w);
-	/*
+	/**
 	 * Redraw for the current state of the dialog/menu.  Can be NULL,
 	 * but then the dialog is not redrawn by standard event handling.
 	 */
 	void (*render)(struct sdlpui_dialog *d, struct sdlpui_window *w);
-	/* Do the default action for a dialog or menu.  Can be NULL. */
+	/** Do the default action for a dialog or menu.  Can be NULL. */
 	void (*respond_default)(struct sdlpui_dialog *d,
 		struct sdlpui_window *w);
-	/*
+	/**
 	 * Go to the dialog's primary (or first) control that can accept
 	 * focus and give it key focus.  May be NULL if there is nothing in the
 	 * dialog that can accept focus.
 	 */
 	void (*goto_first_control)(struct sdlpui_dialog *d,
 		struct sdlpui_window *w);
-	/*
+	/**
 	 * If forward is true, go to the dialog's next (with wrap around)
 	 * control after c that can accept focus.  If forward is false, go to
 	 * the dialog's previous (with wrap around) control before c that
@@ -106,7 +143,7 @@ struct sdlpui_dialog_funcs {
 	 */
 	void (*step_control)(struct sdlpui_dialog *d, struct sdlpui_window *w,
 		struct sdlpui_control *c, bool forward);
-	/*
+	/**
 	 * Find the dialog's control that's willing to accept focus and
 	 * contains the given coordinate, relative to the window.  For simple
 	 * controls, set *comp_ind to zero.  For compound controls, set
@@ -117,11 +154,15 @@ struct sdlpui_dialog_funcs {
 	struct sdlpui_control *(*find_control_containing)(
 		struct sdlpui_dialog *d, struct sdlpui_window *w, Sint32 x,
 		Sint32 y, int *comp_ind);
-	/*
-	 * For a nested menu, return the parent or child respectively for the
-	 * menu.  May be NULL for a dialog that is not a nested menu.
+	/**
+	 * For a nested menu, return the parent for the menu.  May be NULL
+	 * for a dialog that is not a nested menu.
 	 */
 	struct sdlpui_dialog *(*get_parent)(struct sdlpui_dialog *d);
+	/**
+	 * For a nested menu, return the active child for the menu.  May be NULL
+	 * for a dialog that is not a nested menu.
+	 */
 	struct sdlpui_dialog *(*get_child)(struct sdlpui_dialog *d);
 	/*
 	 * For a nested menu, get the parent control for the menu.  May be
@@ -133,39 +174,39 @@ struct sdlpui_dialog_funcs {
 	 * for a dialog that is not a nested menu.
 	 */
 	void (*set_child)(struct sdlpui_dialog *d, struct sdlpui_dialog *child);
-	/*
+	/**
 	 * Resize the dialog so it has the given dimensions.  May be NULL
 	 * if resizing the dialog is as simple as setting d->rect.w and
 	 * d->rect.h to the desired dimensions.
 	 */
 	void (*resize)(struct sdlpui_dialog *d, struct sdlpui_window *w,
 		int width, int height);
-	/* Get the natural size for the dialog.  May not be NULL. */
+	/** Get the natural size for the dialog.  May not be NULL. */
 	void (*query_natural_size)(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, int *width, int *height);
-	/*
+	/**
 	 * Get the minimum size for the dialog.  May be NULL:  the caller
 	 * will assume the natural size is the minimum size.
 	 */
 	void (*query_minimum_size)(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, int *width, int *height);
-	/*
+	/**
 	 * Handle releasing resources for the private data, if any.  May
 	 * be NULL to have no special cleanup done.
 	 */
 	void (*cleanup)(struct sdlpui_dialog *d);
 };
 
-/* Represents a menu or dialog displayed on top of a window. */
+/** Represents a menu or dialog displayed on top of a window. */
 struct sdlpui_dialog {
 	const struct sdlpui_dialog_funcs *ftb;
-	/*
+	/**
 	 * Called with up set to true when popping the dialog up.  Called
 	 * with up set to false when popping the dialog down.
 	 */
 	void (*pop_callback)(struct sdlpui_dialog *d, struct sdlpui_window *w,
 		bool up);
-	/*
+	/**
 	 * If not NULL, used by a controlling application to recreate
 	 * textures in response to a SDL_RENDER_TARGETS_RESET (all set to
 	 * false to request that all non-static textures be recreated) or
@@ -174,42 +215,42 @@ struct sdlpui_dialog {
 	 */
 	void (*recreate_textures_callback)(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, bool all);
-	/*
+	/**
 	 * Managed by the containing window so it can keep a stack of its
 	 * menus and dialogs.
 	 */
 	struct sdlpui_dialog *next, *prev;
-	/*
+	/**
 	 * Holds the rendered contents of the dialog/menu.  May be NULL to
 	 * directly render to the window's backing buffer.
 	 */
 	SDL_Texture *texture;
-	/*
+	/**
 	 * These point to the control which should receive mouse or keyboard
 	 * events, respectively.  If NULL, events will be directed to the
 	 * dialog itself.
 	 */
 	struct sdlpui_control *c_mouse, *c_key;
-	/* Holds menu/dialog-specific data. */
+	/** Holds menu/dialog-specific data. */
 	void *priv;
-	/*
+	/**
 	 * Holds the position, relative to the window's upper left corner,
 	 * and size of the dialog/menu.
 	 */
 	SDL_Rect rect;
-	/* Allow for a check before casting priv to another type. */
+	/** Allow for a check before casting priv to another type. */
 	Uint32 type_code;
-	/*
+	/**
 	 * Allow for different behavior for different dialogs with the same
 	 * callback.
 	 */
 	int tag;
-	/*
+	/**
 	 * The dialog/menu is pinned and should not be automatically removed
 	 * when popping down a child.
 	 */
 	bool pinned;
-	/*
+	/**
 	 * Dialog/menu's texture is out-of-date with respect to the state of
 	 * the dialog and should be rerendered.
 	 */
@@ -217,7 +258,7 @@ struct sdlpui_dialog {
 };
 
 
-/*
+/**
  * Holds the private data for a sdlpui_dialog used to represent a simple menu
  * (either a standalone popup menu, a vertical menu pane that's part of a
  * system of nested menus, or a horizontal menu bar).  The corresponding
@@ -227,37 +268,37 @@ struct sdlpui_simple_menu {
 	struct sdlpui_dialog *parent, *child;
 	struct sdlpui_control *parent_ctrl;
 	struct sdlpui_control *controls;
-					/* flat array of the menu buttons */
+					/**< flat array of the menu buttons */
 	struct sdlpui_control **v_ctrls;
-					/* flat array referring to the subset
+					/**< flat array referring to the subset
 						of buttons that are visible */
-	int *control_flags;		/* flat array of flags
+	int *control_flags;		/**< flat array of flags
 						(SDLPUI_MFLG_END_GRAVITY and
 						SDLPUI_MFLG_CAN_HIDE) for each
 						button */
-	int size, number, n_vis;	/* allocated number of buttons for
+	int size, number, n_vis;	/**< allocated number of buttons for
 						controls, a_ctrls, and
 						control_flags; the number of
 						buttons in controls and
 						control_flags; the number of
 						buttons in v_ctrls */
 	bool vertical;
-	bool border;			/* is it rendered with a border */
+	bool border;			/**< is it rendered with a border */
 };
 
 
-/*
+/**
  * Holds the private data for a sdlpui_dialog used to a dialog with zero or
  * more labels or images and a button that dismisses the dialog.  The
  * corresponding type_code value is SDLPUI_DIALOG_SIMPLE_INFO.
  */
 struct sdlpui_simple_info {
-	struct sdlpui_control *labels;	/* flat array of controls like labels
+	struct sdlpui_control *labels;	/**< flat array of controls like labels
 						or images that don't accept
 						focus */
-	struct sdlpui_control button;	/* single button to dismiss the
+	struct sdlpui_control button;	/**< single button to dismiss the
 						dialog */
-	int size, number;		/* allocated number of controls for
+	int size, number;		/**< allocated number of controls for
 						labels; the number of
 						controls in labels */
 };

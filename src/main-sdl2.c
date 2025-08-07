@@ -235,7 +235,7 @@ struct window_config {
 	int font_size;
 };
 
-/* struct subwindow is representation of angband's term */
+/** struct subwindow is representation of angband's term */
 struct subwindow {
 	bool inited;
 	bool loaded;
@@ -244,7 +244,7 @@ struct subwindow {
 
 	struct subwindow_config *config;
 
-	/* top in z-order */
+	/** top in z-order */
 	bool top;
 	bool always_top;
 
@@ -253,12 +253,12 @@ struct subwindow {
 	int rows;
 	int cols;
 
-	/* struct ttf also has this information; these members are
+	/** struct ttf also has this information; these members are
 	 * just for convenience */
 	int font_width;
 	int font_height;
 
-	/*
+	/**
 	 * These are transiently used during font selection for the subwindow.
 	 * The font size must be >= min_font_size and < max_font_size to
 	 * match the constraints of the subwindow's miniumum number of columns
@@ -266,20 +266,20 @@ struct subwindow {
 	 */
 	int min_font_size, max_font_size;
 
-	/* coordinates of full rect are relative to coordinates of window
+	/** coordinates of full rect are relative to coordinates of window
 	 * (basically, full rect is texture) */
 	SDL_Rect full_rect;
-	/* coordinates of inner rect are relative to that of full rect */
+	/** coordinates of inner rect are relative to that of full rect */
 	SDL_Rect inner_rect;
-	/* for use when resizing term */
+	/** for use when resizing term */
 	SDL_Rect sizing_rect;
-	/* version of full_rect for the opposite setting of fullscreen */
+	/** version of full_rect for the opposite setting of fullscreen */
 	SDL_Rect stored_rect;
-	/* a one pixel texture, mostly for displaying something when
+	/** a one pixel texture, mostly for displaying something when
 	 * the player is resizing term */
 	SDL_Texture *aux_texture;
 
-	/* background color */
+	/** background color */
 	SDL_Color color;
 
 	struct subwindow_border borders;
@@ -335,57 +335,58 @@ struct wallpaper {
 	enum wallpaper_mode mode;
 };
 
-/* struct sdlpui_window is a real window on screen, it has one or more
+/** struct sdlpui_window is a real window on screen, it has one or more
  * subwindows (terms) in it */
 struct sdlpui_window {
 	bool inited;
 	bool loaded;
 
-	/* id is SDL's id, for use with events */
+	/** id is SDL's id, for use with events */
 	Uint32 id;
-	/* and this is our id, mostly for debugging */
+	/** and this is our id, mostly for debugging */
 	unsigned index;
-	/* index of transiently outlined subwindow */
+	/** index of transiently outlined subwindow */
 	unsigned outlined_subwindow;
 
 	struct window_config *config;
 
-	/* window has changed and must be redrawn */
+	/** window has changed and must be redrawn */
 	bool dirty;
 
-	/* limiter for frames */
+	/** limiter for frames */
 	Uint32 next_redraw;
-	/* from display mode */
+	/** from display mode */
 	int delay;
 
-	/* as reported by SDL_GetWindowFlags() */
+	/** as reported by SDL_GetWindowFlags() */
 	Uint32 flags;
 
-	/* position and size of window as it is on display */
+	/** position and size of window as it is on display */
 	SDL_Rect full_rect;
-	/* size of window without status bar, basically */
+	/** size of window without status bar, basically */
 	SDL_Rect inner_rect;
-	/* version of full_rect for the opposite setting of fullscreen */
+	/** version of full_rect for the opposite setting of fullscreen */
 	SDL_Rect stored_rect;
 
 	SDL_Color color;
-	/* for making terms transparent while moving or sizing them */
+	/** for making terms transparent while moving or sizing them */
 	Uint8 alpha;
 
 	SDL_Window *window;
 	SDL_Renderer *renderer;
-	/* The font to use for this window's dialogs and menus */
+	/** The font to use for this window's dialogs and menus */
 	struct font *dialog_font;
-	/* The status bar (i.e. menu bar) for the window */
+	/** The status bar (i.e. menu bar) for the window */
 	struct sdlpui_dialog *status_bar;
-	/* The buttons in the status bar for moving and resizing the window */
+	/** The button in the status bar for moving the window */
 	struct sdlpui_control *move_button;
+	/** The button in the status bar for resizing the window */
 	struct sdlpui_control *size_button;
-	/* The about dialog; NULL if not currently displayed */
+	/** The about dialog; NULL if not currently displayed */
 	struct sdlpui_dialog *infod;
-	/* The keyboard shortcut dialog; NULL if not currently displayed */
+	/** The keyboard shortcut dialog; NULL if not currently displayed */
 	struct sdlpui_dialog *shorte;
-	/* The SDL details dialog; NULL if not currently displayed */
+	/** The SDL details dialog; NULL if not currently displayed */
 	struct sdlpui_dialog *detaild;
 
 	int pixelformat;
@@ -398,16 +399,16 @@ struct sdlpui_window {
 
 	struct subwindow *subwindows[MAX_SUBWINDOWS];
 
-	/* Point back to the containing application */
+	/** Point back to the containing application */
 	struct my_app *app;
 
-	/*
+	/**
 	 * These are the head and tail of the stack of menus/dialogs for this
 	 * window.  Both will be NULL if no menus/dialogs are active.
 	 */
 	struct sdlpui_dialog *d_head, *d_tail;
 
-	/*
+	/**
 	 * These point to the dialog/menu that should receive mouse events or
 	 * keyboard events, respectively.  If NULL, events will be directed
 	 * to the game's core.
@@ -435,14 +436,14 @@ struct shortcut_editor_data {
 };
 
 struct my_app {
-	/*
+	/**
 	 * The string ANGBAND_DIR_USER is freed before calling quit_hook(),
 	 * so we need to save the path to the config file.
 	 */
 	char config_file[4096];
-	/* the game's color table translated into what SDL expects */
+	/** the game's color table translated into what SDL expects */
 	SDL_Color colors[MAX_COLORS];
-	/*
+	/**
 	 * fonts from the game's lib/fonts directory that can be selected
 	 * directly from the menus
 	 */
@@ -450,24 +451,24 @@ struct my_app {
 	struct subwindow subwindows[MAX_SUBWINDOWS];
 	struct sdlpui_window windows[MAX_WINDOWS];
 	struct keypress menu_shortcuts[MAX_WINDOWS];
-	/*
+	/**
 	 * point to the window that should receive mouse and key events,
 	 * respectively
 	 */
 	struct sdlpui_window *w_mouse;
 	struct sdlpui_window *w_key;
-	/* Number of entries stored in fonts */
+	/** Number of entries stored in fonts */
 	int font_count;
-	/* Number of entries allocated in fonts */
+	/** Number of entries allocated in fonts */
 	int font_alloc;
-	/* Width and height on screen for the default font */
+	/** Width and height on screen for the default font */
 	int def_font_w, def_font_h;
-	/*
+	/**
 	 * true if KC_MOD_KEYPAD will be sent for numeric keypad keys at the
 	 * expense of not handling some keyboard layouts properly
 	 */
 	bool kp_as_mod;
-	/* true if details about the SDL environment are to be logged. */
+	/** true if details about the SDL environment are to be logged. */
 	bool print_sdl_details;
 
 	SDL_GameController *controller;
@@ -999,7 +1000,7 @@ static void set_subwindows_alpha(const struct sdlpui_window *window, int alpha)
 	}
 }
 
-/* this function allows to perform special things that are not
+/** this function allows to perform special things that are not
  * needed while playing the game, like moving terms */
 static void redraw_window_while_menu_active(struct sdlpui_window *window)
 {
@@ -1009,7 +1010,7 @@ static void redraw_window_while_menu_active(struct sdlpui_window *window)
 	window->next_redraw = SDL_GetTicks() + window->delay;
 }
 
-/* this function is mostly used while normally playing the game */
+/** this function is mostly used while normally playing the game */
 static void redraw_window(struct sdlpui_window *window)
 {
 	if (window->move_state.moving || window->size_state.sizing
@@ -1042,7 +1043,7 @@ static void redraw_all_windows(struct my_app *a, bool dirty)
 	}
 }
 
-/* this function is typically called in a loop, so for efficiency it doesn't
+/** this function is typically called in a loop, so for efficiency it doesn't
  * SetRenderTarget; caller must do it (but it does SetTextureColorMod) */
 static void render_glyph_mono(const struct sdlpui_window *window,
 		const struct font *font, SDL_Texture *dst_texture,
@@ -1143,7 +1144,7 @@ static void render_grid_cell_text(const struct subwindow *subwindow,
 			subwindow->font, texture, rect.x, rect.y, &fg, (uint32_t) c);
 }
 
-/* does not SetRenderTarget */
+/** does not SetRenderTarget */
 static void render_tile_rect_scaled(const struct subwindow *subwindow,
 		int col, int row, SDL_Rect dst, int a, int c)
 {
@@ -3410,7 +3411,7 @@ static void fit_rect_in_rect_proportional(SDL_Rect *small, const SDL_Rect *big)
 	}
 }
 
-/*
+/**
  * Like fit_rect_in_rect_by_xy() but allow changing the size as well as position
  * of small.  If not possible to fit one dimension of small in big while leaving
  * the size at least the minimum size specified, leave the size in that
@@ -3490,7 +3491,7 @@ static void crop_rects(SDL_Rect *src, SDL_Rect *dst)
 	}
 }
 
-/* tries to snap to other term in such a way so that their
+/** tries to snap to other term in such a way so that their
  * (visible) borders overlap */
 static void try_snap(struct sdlpui_window *window,
 		struct subwindow *subwindow, SDL_Rect *rect)
@@ -3915,7 +3916,7 @@ static bool handle_mousemotion(struct my_app *a,
 	return false;
 }
 
-/* x and y are relative to window */
+/** x and y are relative to window */
 static bool get_colrow_from_xy(const struct subwindow *subwindow,
 		int x, int y, int *col, int *row)
 {
@@ -4240,7 +4241,7 @@ static bool trigger_menu_shortcut(struct my_app *a, keycode_t ch, uint8_t mods)
 	}
 }
 
-/*
+/**
  * This function handles keys that don't produce text, and, if kp_as_mod
  * the keypad and keypresses that will produce the same characters as keypad
  * keypresses.  Others should be handled in textinput_event_to_angband_key.
@@ -6037,7 +6038,7 @@ static void set_window_delay(struct sdlpui_window *window)
 	window->delay = 1000 / mode.refresh_rate;
 }
 
-/* initialize miscellaneous things in window */
+/** initialize miscellaneous things in window */
 static void load_window(struct sdlpui_window *window)
 {
 	if (window->dialog_font == NULL) {
