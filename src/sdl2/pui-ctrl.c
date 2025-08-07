@@ -130,7 +130,7 @@ Uint32 SDLPUI_CTRL_LABEL = 0;
 Uint32 SDLPUI_CTRL_MENU_BUTTON = 0;
 Uint32 SDLPUI_CTRL_PUSH_BUTTON = 0;
 
-/* Function table for sdlpui_image */
+/** Function table for sdlpui_image */
 static const struct sdlpui_control_funcs image_funcs = {
 	NULL,
 	NULL,
@@ -160,7 +160,7 @@ static const struct sdlpui_control_funcs image_funcs = {
 	cleanup_image
 };
 
-/* Function table for sdlpui_label */
+/** Function table for sdlpui_label */
 static const struct sdlpui_control_funcs label_funcs = {
 	NULL,
 	NULL,
@@ -190,7 +190,7 @@ static const struct sdlpui_control_funcs label_funcs = {
 	cleanup_label
 };
 
-/* Function table for sdlpui_push_button */
+/** Function table for sdlpui_push_button */
 const struct sdlpui_control_funcs push_button_funcs = {
 	sdlpui_control_handle_key,
 	NULL,
@@ -220,7 +220,7 @@ const struct sdlpui_control_funcs push_button_funcs = {
 	cleanup_pb
 };
 
-/* Function table for sdlpui_menu_button */
+/** Function table for sdlpui_menu_button */
 static const struct sdlpui_control_funcs menu_button_funcs = {
 	sdlpui_control_handle_key,
 	NULL,
@@ -2086,7 +2086,7 @@ bool sdlpui_control_handle_key(struct sdlpui_control *c,
 }
 
 
-/*
+/**
  * Handle a mouse button event for a simple control.
  *
  * \param c is the control receiving the event.  The events handled here
@@ -2128,7 +2128,7 @@ bool sdlpui_control_handle_mouseclick(struct sdlpui_control *c,
 }
 
 
-/*
+/**
  * Handle a mouse motion event for a simple control.
  *
  * \param c is the control receiving the event.  The events handled here
@@ -2180,7 +2180,7 @@ void sdlpui_invoke_dialog_default_action(struct sdlpui_control *c,
 }
 
 
-/*
+/**
  * Initializes the contents of c to be appropriate for an image control.
  *
  * \param c points to the control to be initialized.  Must not be NULL.
@@ -2223,7 +2223,7 @@ void sdlpui_create_image(struct sdlpui_control *c, SDL_Texture *image,
 }
 
 
-/*
+/**
  * Initializes the contents of c to be appropriate for a label control.
  *
  * \param c points to the control to be initialized.  Must not be NULL.
@@ -2251,7 +2251,7 @@ void sdlpui_create_label(struct sdlpui_control *c, const char *caption,
 }
 
 
-/*
+/**
  * Initializes the contents of c to be appropriate for a push button control.
  *
  * \param c points to the control to be initialized.  Must not be NULL.
@@ -2294,7 +2294,7 @@ void sdlpui_create_push_button(struct sdlpui_control *c, const char *caption,
 }
 
 
-/*
+/**
  * Initializes the contents of c to be appropriate for a menu button control.
  *
  * \param c points to the control to be initialized.  Must not be NULL.
@@ -2338,7 +2338,7 @@ void sdlpui_create_menu_button(struct sdlpui_control *c, const char *caption,
 }
 
 
-/*
+/**
  * Initializes the contents of c to be appropriate for a menu indicator control.
  *
  * \param c points to the control to be initialized.  Must not be NULL.
@@ -2377,7 +2377,7 @@ void sdlpui_create_menu_indicator(struct sdlpui_control *c, const char *caption,
 }
 
 
-/*
+/**
  * Initializes the contents of c to be appropriate for a menu button
  * controlling an integer parameter limited to a fixed range.
  *
@@ -2433,7 +2433,7 @@ void sdlpui_create_menu_ranged_int(struct sdlpui_control *c,
 }
 
 
-/*
+/**
  * Initializes the contents of c to be appropriate for a toggleable control
  * in a menu.
  *
@@ -2481,7 +2481,7 @@ void sdlpui_create_menu_toggle(struct sdlpui_control *c, const char *caption,
 }
 
 
-/*
+/**
  * Initializes the contents of c to be appropriate for a menu button that
  * leads to a nested menu.
  *

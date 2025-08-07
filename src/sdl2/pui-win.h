@@ -55,7 +55,7 @@ TTF_Font *sdlpui_get_ttf(struct sdlpui_window *w);
  */
 struct sdlpui_stipple *sdlpui_get_stipple(struct sdlpui_window *w);
 
-/*
+/**
  * These are the roles where the primitive UI toolkit uses color.  You could
  * either assign unique values to each (so you can lookup the appropriate
  * color in sdlpui_get_color()) or optimize away that indirection and assign

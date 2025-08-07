@@ -36,7 +36,7 @@ struct sdlpui_code_registry {
 static struct sdlpui_code_registry my_registry = { NULL, NULL, 0, 0, 0 };
 
 
-/*
+/**
  * Initialize the resources needed by the sdlpui_*() calls.
  *
  * Can safely be called multiple times without an intervening sdlpui_quit().

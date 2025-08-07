@@ -119,7 +119,7 @@ static const struct sdlpui_dialog_funcs simple_info_funcs = {
 };
 
 
-/*
+/**
  * Menus react to some additional keyboard events since the geometry allows
  * for easy interpretations of cursor movements.  Otherwise, they act like
  * simple dialogs.
@@ -1504,7 +1504,7 @@ bool sdlpui_dialog_handle_mouseclick(struct sdlpui_dialog *d,
 }
 
 
-/*
+/**
  * Perform basic handling of a mouse motion event for a menu or dialog.
  *
  * \param d is the menu or dialog.
