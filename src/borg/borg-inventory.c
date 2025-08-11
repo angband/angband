@@ -158,7 +158,8 @@ static void borg_cheat_quiver(void)
                 borg_item_analyze(&borg_items[i], obj, buf, false);
 
                 /* Uninscribe items with ! or borg inscriptions */
-                if (strstr(borg_items[i].desc, "!") || strstr(borg_items[i].desc, "borg"))
+                if (borg_items[i].note && (strstr(borg_items[i].note, "!") 
+                    || strstr(borg_items[i].note, "borg")))
                     borg_deinscribe(i);
             }
         }
@@ -170,40 +171,41 @@ static void borg_cheat_quiver(void)
  */
 void borg_cheat_equip(void)
 {
-    char buf[256];
+	char buf[256];
 
-    /* Extract the equipment */
-    int count = player->body.count + z_info->pack_size;
-    for (int j = 0, i = z_info->pack_size; i < count; i++, j++) {
-        memset(&borg_items[i], 0, sizeof(borg_item));
+	/* Extract the equipment */
+	int count = player->body.count + z_info->pack_size;
+	for (int j = 0, i = z_info->pack_size; i < count; i++, j++) {
+		memset(&borg_items[i], 0, sizeof(borg_item));
 
-        struct object *obj = player->body.slots[j].obj;
-        if (obj) {
-            /* Default to "nothing" */
-            buf[0] = '\0';
+		struct object* obj = player->body.slots[j].obj;
+		if (obj) {
+			/* Default to "nothing" */
+			buf[0] = '\0';
 
-            /* skip non items */
-            if (!obj->kind)
-                continue;
+			/* skip non items */
+			if (!obj->kind)
+				continue;
 
-            /* Default to "nothing" */
-            buf[0] = '\0';
+			/* Default to "nothing" */
+			buf[0] = '\0';
 
-            /* Describe a real item */
-            if (obj->kind) {
-                /* Describe it */
-                object_desc(buf, sizeof(buf), obj, ODESC_FULL, player);
+			/* Describe a real item */
+			if (obj->kind) {
+				/* Describe it */
+				object_desc(buf, sizeof(buf), obj, ODESC_FULL, player);
 
-                /* Analyze the item (no price) */
-                borg_item_analyze(&borg_items[i], obj, buf, false);
+				/* Analyze the item (no price) */
+				borg_item_analyze(&borg_items[i], obj, buf, false);
 
-                /* Uninscribe items with ! or borg inscriptions */
-                if (strstr(borg_items[i].desc, "!") || strstr(borg_items[i].desc, "borg"))
-                    borg_deinscribe(i);
-            }
-        }
-    }
-    borg_cheat_quiver();
+				/* Uninscribe items with ! or borg inscriptions */
+				if (borg_items[i].note && (strstr(borg_items[i].note, "!")
+					|| strstr(borg_items[i].note, "borg")))
+					borg_deinscribe(i);
+			}
+		}
+	}
+	borg_cheat_quiver();
 }
 
 /*
@@ -241,7 +243,8 @@ void borg_cheat_inven(void)
         borg_do_crush_junk = true;
 
         /* Uninscribe items with ! or borg inscriptions */
-        if (strstr(borg_items[i].desc, "!") || strstr(borg_items[i].desc, "borg"))
+        if (borg_items[i].note && (strstr(borg_items[i].note, "!") 
+            || strstr(borg_items[i].note, "borg")))
             borg_deinscribe(i);
     }
 }

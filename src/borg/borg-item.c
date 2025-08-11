@@ -53,7 +53,6 @@ const char *borg_get_note(const borg_item *item)
  */
 void borg_deinscribe(int i)
 {
-
     /* Ok to inscribe Slime Molds */
     if (borg_items[i].tval == TV_FOOD
         && borg_items[i].sval == sv_food_slime_mold)
