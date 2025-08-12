@@ -111,7 +111,7 @@ Original Keyset Command Summary
 ``m``  Cast a spell                  ``M``  Display map of entire level
 ``n``  Repeat previous command       ``N``  (unused)
 ``o``  Open a door or chest          ``O``  (unused)
-``p``  Walk to unexplored location   ``P``  (unused)
+``p``  (normally unused; see note)   ``P``  (unused)
 ``q``  Quaff a potion                ``Q``  Kill character & quit
 ``r``  Read a scroll                 ``R``  Rest for a period
 ``s``  Steal (rogues only)           ``S``  See abilities
@@ -145,14 +145,27 @@ Original Keyset Command Summary
 ``'``  Target closest monster        ``^u`` (unused)
 ``"``  Enter a user pref command     ``^v`` (unused)
 ``,``  Stay still (with pickup)      ``^w`` (special - wizard mode)
-``<``  Go up/to up staircase         ``^x`` Save and quit
+``<``  Go up staircase (see note)    ``^x`` Save and quit
 ``.``  Run                           ``^y`` (unused)
-``>``  Go down/to down staircase     ``^z`` Borg commands (if available)
+``>``  Go down staircase (see note)  ``^z`` Borg commands (if available)
 ``\``  (special - bypass keymap)     ``~``  Check knowledge
  \`    (special - escape)            ``?``  Display help
 ``/``  Identify symbol
 ``|``  List contents of quiver
 ====== ============================= ====== ============================
+
+.. index::
+   single: autoexplore; original keyset
+
+Note that the ``<``, ``>``, and ``p`` commands are affected by the
+autoexplore_commands option (see
+:ref:`Autoexplore Commands Option <autoexplore-commands-option>`). When that
+option is off (that is the default), the commands act as described above.
+When that option is on, ``<`` or ``>`` will use the staircase at the player's
+location if it is the appropriate kind of staircase or will move to the
+nearest known staircase of the appropriate kind if the player is not already
+at that kind of staircase. ``p`` will move to the nearest unexplored location
+when the autoexplore_commands option is on.
 
 .. index::
    single: roguelike keyset
@@ -177,7 +190,7 @@ Roguelike Keyset Command Summary
  ``m``  Cast a spell                  ``M``  Display map of entire level
  ``n``  (walk - south east)           ``N``  (run - south east)
  ``o``  Open a door or chest          ``O``  Toggle ignore
- ``p``  Walk to unexplored location   ``P``  Browse a book
+ ``p``  (normally unused; see note)   ``P``  Browse a book
  ``q``  Quaff a potion                ``Q``  Kill character & quit
  ``r``  Read a scroll                 ``R``  Rest for a period
  ``s``  Steal (rogues only)           ``S``  See abilities
@@ -211,15 +224,28 @@ Roguelike Keyset Command Summary
  ``'``  Target closest monster        ``^u`` (alter - north east)
  ``"``  Enter a user pref command     ``^v`` Repeat previous command
  ``,``  Run                           ``^w`` (special - wizard mode)
- ``<``  Go up/to up staircase         ``^x`` Save and quit
+ ``<``  Go up staircase (see note)    ``^x`` Save and quit
  ``.``  Stay still (with pickup)      ``^y`` (alter - north west)
- ``>``  Go down/to down staircase     ``^z`` Borg commands (if available)
+ ``>``  Go down staircase (see note)  ``^z`` Borg commands (if available)
  ``\``  (special - bypass keymap)     ``~``  Check knowledge
   \`    (special - escape)            ``?``  Display help
  ``/``  Identify symbol
 ``TAB`` Fire default ammo at target
  ``|``  List contents of quiver
 ======= ============================= ====== ============================
+
+.. index::
+   single: autoexplore; roguelike keyset
+
+Note that the ``<``, ``>``, and ``p`` commands are affected by the
+autoexplore_commands option (see
+:ref:`Autoexplore Commands Option <autoexplore-commands-option>`). When that
+option is off (that is the default), the commands act as described above. When
+that option is on, ``<`` or ``>`` will use the staircase at the player's
+location if it is the appropriate kind of staircase or will move to the
+nearest known staircase of the appropriate kind if the player is not already
+at that kind of staircase. ``p`` will move to the nearest unexplored location
+when the autoexplore_commands option is on.
 
 Special Keys
 ============

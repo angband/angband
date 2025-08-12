@@ -251,6 +251,7 @@ int context_menu_player(int mx, int my)
 	int selected;
 	char *labels;
 	bool allowed = true;
+	bool autoexplore = OPT(player, autoexplore_commands);
 	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	unsigned char cmdkey;
 	struct object *obj;
@@ -270,12 +271,16 @@ int context_menu_player(int mx, int my)
 		ADD_LABEL("Cast", CMD_CAST, MN_ROW_VALID);
 	}
 
-	/* if player is on stairs add option to use them */
-	if (square_isupstairs(cave, player->grid)) {
+	/* if player is on stairs or autoexplore commands are enabled,
+		add option to use them */
+	if (square_isupstairs(cave, player->grid) || autoexplore) {
 		ADD_LABEL("Go Up", CMD_GO_UP, MN_ROW_VALID);
 	}
-	else if (square_isdownstairs(cave, player->grid)) {
+	if (square_isdownstairs(cave, player->grid) || autoexplore) {
 		ADD_LABEL("Go Down", CMD_GO_DOWN, MN_ROW_VALID);
+	}
+	if (autoexplore) {
+		ADD_LABEL("Explore", CMD_EXPLORE, MN_ROW_VALID);
 	}
 
 	/* Looking has different keys, but we don't have a way to look them up
@@ -337,6 +342,7 @@ int context_menu_player(int mx, int my)
 		case CMD_CAST:
 		case CMD_GO_UP:
 		case CMD_GO_DOWN:
+		case CMD_EXPLORE:
 		case CMD_PICKUP:
 			/* Only check for ^ inscriptions, since we don't have an object
 			 * selected (if we need one). */
@@ -376,6 +382,7 @@ int context_menu_player(int mx, int my)
 
 		case CMD_GO_UP:
 		case CMD_GO_DOWN:
+		case CMD_EXPLORE:
 		case CMD_PICKUP:
 			cmdq_push(selected);
 			break;
