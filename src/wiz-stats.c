@@ -1777,47 +1777,169 @@ static void calc_cave_distances(int **cave_dist)
 /**
  * Generate several pits and collect statistics about the type of inhabitants.
  *
- * \param nsim Is the number of pits to generate.
+ * \param nsim Is the number of pits to generate at each depth.
  * \param pittype Must be 1 (pit), 2 (nest), or 3 (other).
- * \param depth Is the depth to use for the simulations.
+ * \param depth_min Is the minimum depth to use for the simulations.
+ * \param depth_max Is the maximum depth to use for the simulations.
+ *
+ * Does not account for failures that can occur in build_pit() or build_nest()
+ * when selecting the specific types of monsters to populate the room.
  */
-void pit_stats(int nsim, int pittype, int depth)
+void pit_stats(int nsim, int pittype, int depth_min, int depth_max)
 {
-	int *hist;
-	int j, p;
+	unsigned long *hist;
+	unsigned long *sum_hist;
+	const char *file_part;
+	char path[1024];
+	ang_file *pitfile;
+	int depth, p;
 
 	/* Initialize hist */
-	hist = mem_zalloc(z_info->pit_max * sizeof(*hist));
+	hist = mem_alloc(z_info->pit_max * sizeof(*hist));
+	if (depth_min < depth_max) {
+		sum_hist = mem_zalloc(z_info->pit_max * sizeof(*sum_hist));
+	} else {
+		sum_hist = NULL;
+	}
 
-	for (j = 0; j < nsim; j++) {
-		int i;
-		int pit_idx = 0;
-		int pit_dist = 999;
+	switch (pittype) {
+	case 1:
+		file_part = "pit_pit_stat.txt";
+		break;
 
-		for (i = 0; i < z_info->pit_max; i++) {
-			int offset, dist;
-			struct pit_profile *pit = &pit_info[i];
+	case 2:
+		file_part = "pit_nest_stat.txt";
+		break;
 
-			if (!pit->name || pit->room_type != pittype) continue;
+	case 3:
+		file_part = "pit_other_stat.txt";
+		break;
 
-			offset = Rand_normal(pit->ave, 10);
-			dist = ABS(offset - depth);
+	default:
+		file_part = NULL;
+	}
 
-			if (dist < pit_dist && one_in_(pit->rarity)) {
-				pit_idx = i;
-				pit_dist = dist;
+	if (file_part) {
+		path_build(path, sizeof(path), ANGBAND_DIR_USER, file_part);
+		pitfile = file_open(path, MODE_WRITE, FTYPE_TEXT);
+		if (pitfile) {
+			(void)file_putf(pitfile,
+				"%d simulations at each depth\n", nsim);
+			(void)file_putf(pitfile, "depth");
+			for (p = 0; p < z_info->pit_max; ++p) {
+				const struct pit_profile *pit = &pit_info[p];
+
+				if (pit->name) {
+					/*
+					 * Replace spaces or tabs in the name
+					 * with underscores so columns in the
+					 * output can be extracted by splitting
+					 * on whitespace.
+					 */
+					char *name_copy =
+						string_make(pit->name);
+					char *c = name_copy;
+
+					while (*c) {
+						if (*c == ' ' || *c == '\t') {
+							*c = '_';
+						}
+						++c;
+					}
+
+					(void)file_putf(pitfile,
+						"\t%s", name_copy);
+					string_free(name_copy);
+				}
 			}
+			(void)file_putf(pitfile, "\n");
+		}
+	} else {
+		pitfile = NULL;
+	}
+
+	for (depth = depth_min; depth <= depth_max; ++depth) {
+		int j;
+
+		for (p = 0; p < z_info->pit_max; ++p) {
+			hist[p] = 0;
 		}
 
-		hist[pit_idx]++;
+		for (j = 0; j < nsim; j++) {
+			int i;
+			int pit_idx = 0;
+			int pit_dist = 999;
+
+			for (i = 0; i < z_info->pit_max; i++) {
+				int offset, dist;
+				const struct pit_profile *pit = &pit_info[i];
+
+				if (!pit->name || pit->room_type != pittype) {
+					continue;
+				}
+
+				offset = Rand_normal(pit->ave, 10);
+				dist = ABS(offset - depth);
+
+				if (dist < pit_dist && one_in_(pit->rarity)) {
+					pit_idx = i;
+					pit_dist = dist;
+				}
+			}
+
+			hist[pit_idx]++;
+		}
+
+		if (pitfile) {
+			(void)file_putf(pitfile, "%d", depth);
+			for (p = 0; p < z_info->pit_max; ++p) {
+				const struct pit_profile *pit = &pit_info[p];
+
+				if (pit->name) {
+					(void)file_putf(pitfile, "\t%lu",
+						hist[p]);
+				}
+			}
+			(void)file_putf(pitfile, "\n");
+		}
+
+		if (sum_hist) {
+			for (p = 0; p < z_info->pit_max; ++p) {
+				sum_hist[p] += hist[p];
+			}
+		}
 	}
 
-	for (p = 0; p < z_info->pit_max; p++) {
-		struct pit_profile *pit = &pit_info[p];
-		if (pit->name)
-			msg("Type: %s, Number: %d.", pit->name, hist[p]);
+	for (p = 0; p < z_info->pit_max; ++p) {
+		const struct pit_profile *pit = &pit_info[p];
+
+		if (pit->name) {
+			msg("Type %s: %lu.", pit->name, (sum_hist) ?
+				sum_hist[p] : hist[p]);
+		}
 	}
 
+	if (pitfile) {
+		if (sum_hist) {
+			(void)file_putf(pitfile, "\nsum");
+			for (p = 0; p < z_info->pit_max; ++p) {
+				const struct pit_profile *pit = &pit_info[p];
+
+				if (pit->name) {
+					(void)file_putf(pitfile, "\t%lu",
+						sum_hist[p]);
+				}
+			}
+			(void)file_putf(pitfile, "\n");
+		}
+		if (file_close(pitfile)) {
+			msg("Results are also recorded in %s.", file_part);
+		}
+	}
+
+	if (sum_hist) {
+		mem_free(sum_hist);
+	}
 	mem_free(hist);
 
 	return;
@@ -2968,7 +3090,7 @@ void disconnect_stats(int nsim, bool stop_on_disconnect)
 {
 }
 
-void pit_stats(int nsim, int pittype, int depth)
+void pit_stats(int nsim, int pittype, int depth_min, int depth_max)
 {
 }
 #endif /* USE_STATS */
