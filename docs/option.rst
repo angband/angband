@@ -36,6 +36,17 @@ Rogue-like commands ``rogue_like_commands``
   work better for you if use a keyboard which doesn't have a numeric
   keypad.
 
+.. _autoexplore-commands-option:
+.. index::
+   single: autoexplore; commands option
+
+Autoexplore commands ``autoexplore_commands``
+  Modifies how the commands to use staircases work: if not already at
+  the appropriate staircase, attempt to move to the nearest known
+  staircase of the appropriate kind. Adds a command, ``p``, in both
+  the original and "roguelike" command sets to move to the nearest
+  unexplored location.
+
 Use sound ``use_sound``
   Turns on sound effects, if your system supports them.
 

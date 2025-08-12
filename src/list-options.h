@@ -13,6 +13,8 @@ OP(none,                  "",
 SPECIAL, false)
 OP(rogue_like_commands,   "Use the roguelike command keyset",
 INTERFACE, false)
+OP(autoexplore_commands,  "Use autoexplore commands",
+INTERFACE, false)
 OP(use_sound,             "Use sound",
 INTERFACE, false)
 OP(show_damage,           "Show damage player deals to monsters",
