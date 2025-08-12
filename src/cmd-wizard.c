@@ -671,7 +671,7 @@ void do_cmd_wiz_collect_obj_mon_stats(struct command *cmd)
  */
 void do_cmd_wiz_collect_pit_stats(struct command *cmd)
 {
-	int nsim, depth, pittype;
+	int nsim, depth_min, depth_max, pittype;
 	char s[80];
 
 	if (!stats_are_enabled()) return;
@@ -680,7 +680,8 @@ void do_cmd_wiz_collect_pit_stats(struct command *cmd)
 		/* Set default. */
 		strnfmt(s, sizeof(s), "%d", 1000);
 
-		if (!get_string("Number of simulations: ", s, sizeof(s))) return;
+		if (!get_string("Number of simulations per depth: ", s,
+				sizeof(s))) return;
 		if (!get_int_from_string(s, &nsim) || nsim < 1) return;
 		cmd_set_arg_number(cmd, "quantity", nsim);
 	}
@@ -695,16 +696,29 @@ void do_cmd_wiz_collect_pit_stats(struct command *cmd)
 		cmd_set_arg_choice(cmd, "choice", pittype);
 	}
 
-	if (cmd_get_arg_number(cmd, "depth", &depth) != CMD_OK) {
+	if (cmd_get_arg_number(cmd, "depth_min", &depth_min) != CMD_OK) {
 		/* Set default. */
 		strnfmt(s, sizeof(s), "%d", player->depth);
 
-		if (!get_string("Depth: ", s, sizeof(s))) return;
-		if (!get_int_from_string(s, &depth) || depth < 1) return;
-		cmd_set_arg_number(cmd, "depth", depth);
+		if (!get_string("Minimum depth: ", s, sizeof(s))) return;
+		if (!get_int_from_string(s, &depth_min)
+				|| depth_min < 1) return;
+		cmd_set_arg_number(cmd, "depth_min", depth_min);
 	}
 
-	pit_stats(nsim, pittype, depth);
+	if (cmd_get_arg_number(cmd, "depth_max", &depth_max) != CMD_OK) {
+		/* Set default. */
+		strnfmt(s, sizeof(s), "%d", depth_min);
+
+		if (!get_string("Maximum depth: ", s, sizeof(s))) return;
+		if (!get_int_from_string(s, &depth_max)
+				|| depth_max < depth_min) return;
+		cmd_set_arg_number(cmd, "depth_max", depth_max);
+	} else if (depth_max < depth_min) {
+		return;
+	}
+
+	pit_stats(nsim, pittype, depth_min, depth_max);
 }
 
 

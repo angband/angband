@@ -71,7 +71,7 @@ void wiz_cheat_death(void);
 bool stats_are_enabled(void);
 void stats_collect(int nsim, int simtype);
 void disconnect_stats(int nsim, bool stop_on_disconnect);
-void pit_stats(int nsim, int pittype, int depth);
+void pit_stats(int nsim, int pittype, int depth_min, int depth_max);
 void stat_grid_counter(struct chunk *c, struct grid_counter_pred *gpreds,
 	int n_gpred, struct neighbor_counter_pred *npreds, int n_npred);
 void stat_grid_counter_simple(struct chunk *c, struct grid_counts counts[3]);

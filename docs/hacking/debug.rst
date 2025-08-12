@@ -158,7 +158,8 @@ Collect disconnection stats ``D``
 Collect pit stats ``P``
   Generates several pits of the room type you specify (pit, nest, or
   other) and computes a histogram of the types of monsters involved.
-  The results are written to the message window.
+  A summary of the results are written to the message window.
+  Per-level results and the summary are also written to a file.
 
 Nick hack ``_``
   Maps out the reachable grids (by the sound and scent algorithm) in
