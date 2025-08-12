@@ -1060,7 +1060,7 @@ bool borg_excavate_vault(int range)
             continue;
 
         /* Attempt to target the grid */
-        borg_target(loc(borg_temp_x[i], borg_temp_y[i]));
+        borg_target(loc(borg_temp_x[i], borg_temp_y[i]), false);
 
         /* Attempt to excavate it with "stone to mud" */
         if (borg_spell(TURN_STONE_TO_MUD) 

@@ -59,7 +59,7 @@ extern int borg_distance(int y, int x, int y2, int x2);
 /*
  * Target a location.  Can be used alone or at "Direction?" prompt.
  */
-extern bool borg_target(struct loc target);
+extern bool borg_target(struct loc target, bool require_monster);
 
 /*
  * Find a wall to target.

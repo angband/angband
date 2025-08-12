@@ -608,7 +608,7 @@ bool borg_dimension_door(int allow_fail)
     }
 
     if (best_d < borg_fear_region[borg.c.y][borg.c.x]) {
-        borg_target(best);
+        borg_target(best, false);
 
         borg_spell(DIMENSION_DOOR);
 
