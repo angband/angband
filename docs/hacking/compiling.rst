@@ -646,9 +646,9 @@ To create the angband.zip distribution
 
 	make -f Makefile.ibm dist
 
-Documentation
--------------
-To convert the documentation from restructured text to the desired output
+User Documentation
+------------------
+To convert the user manual from restructured text to the desired output
 format, you'll need Sphinx ( https://www.sphinx-doc.org/en/master/ )
 and, unless you change the theme in the documentation configuration, the
 sphinx-better-theme ( https://pypi.org/project/sphinx-better-theme/ ; which
@@ -658,8 +658,33 @@ can be installed via pip using::
 
 ).
 
-With those utilities in place and sphinx-build in your path, you can perform
-the conversion by running::
+If you are using configure, you can tell it to build the manual in HTML by
+including ``--with-sphinx`` in the options to configure.  If you want to
+override the default theme, specify the theme's name in the DOC_HTML_THEME
+variable.  For instance, running this at the top level of the distribution::
+
+        ./configure --with-no-install --with-sphinx DOC_HTML_THEME=alabaster
+
+would use one of the themes always included with Sphinx and avoid the need
+to install the sphinx-better-theme.  When running make or ``make manual``
+after configure has been set up to generate the user manual, the result
+will appear in docs/_build/html.
+
+If you are using CMake, you can tell it to build the manual in HTML by including
+``-DBUILD_DOC=ON``  in the options to CMake.  If you want to override the
+default theme, specify the theme's name in the DOC_HTML_THEME variable.  For
+instance running this at the top level of the distribution::
+
+        mkdir build
+        cd build
+        cmake -DBUILD_DOC=ON -DDOC_HTML_THEME=alabaster ..
+
+would behave much like the earlier example using configure.  After building
+with CMake (i.e. ``cmake --build .`` or ``cmake --build -t OurManual .``), the
+generated user manual will be in manual-output-html in the build directory.
+
+To build the user manual without configure or CMake, make sure sphinx-build
+is in your path and then run::
 
 	make html
 
@@ -673,3 +698,14 @@ Other output formats besides HTML are possible.  Run::
 
 without any arguments in the docs subdirectory to see the formats that Sphinx
 can generate.
+
+Developer Documentation
+-----------------------
+
+To extract documentation from comments in the source code, you will need
+doxygen, https://www.doxygen.nl .  Then you can run this in the top level
+directory of the distribution::
+
+        doxygen src/doc/doxygen.conf
+
+to assemble the documentation and place it in src/doc/_doxygen .
