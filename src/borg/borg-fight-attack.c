@@ -3378,7 +3378,7 @@ static int borg_attack_aux_maim_foe(void)
     int p, dir;
 
     int i, b_i = -1;
-    int d, b_d = -1;
+    int d = -1, b_d = -1;
 
     borg_grid *ag;
 
@@ -3487,7 +3487,7 @@ static int borg_attack_aux_vampire_strike(void)
 
     int  i, b_i = -1;
     int  d;
-    int  dist, best_dist = z_info->max_range;
+    int  dist = 0, best_dist = z_info->max_range;
     int  o_x, o_y, x2, y2;
     int  x = 0, y = 0;
 
@@ -4108,8 +4108,10 @@ int borg_calculate_attack_effectiveness(int attack_type)
         rad = 0;
         dam = -1;
 
-        return (borg_attack_aux_spell_bolt(
-            CURSE, rad, dam, BORG_ATTACK_CURSE, z_info->max_range, false));
+        /* disabling the CURSE spell because the current targetting code is not working */
+        return -1;
+/*        return (borg_attack_aux_spell_bolt(
+            CURSE, rad, dam, BORG_ATTACK_CURSE, z_info->max_range, false));*/
 
     /* spell - Whirlwind Attack */
     case BF_SPELL_WHIRLWIND_ATTACK:
