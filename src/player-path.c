@@ -43,13 +43,13 @@
  * movement turns, from a player's grid to other grids in the cave.
  */
 struct pfdistances {
-	/* This is height * width entries to store the distances. */
+	/** This is height * width entries to store the distances. */
 	int *buffer;
-	/* This is height pointers to the start of each row in buffer. */
+	/** This is height pointers to the start of each row in buffer. */
 	int **rows;
-	/* This is the grid from which the distances are computed. */
+	/** This is the grid from which the distances are computed. */
 	struct loc start;
-	/*
+	/**
 	 * These are the dimensions of the arrays, copied from the player's
 	 * view of the cave.
 	 */
