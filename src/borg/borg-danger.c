@@ -25,6 +25,7 @@
 #include "../player-calcs.h"
 
 #include "borg-cave-util.h"
+#include "borg-cave-view.h"
 #include "borg-cave.h"
 #include "borg-fight-attack.h"
 #include "borg-flow-glyph.h"
@@ -2476,10 +2477,14 @@ int borg_danger_one_kill(
         }
     }
     if (borg_crush_spell) {
-        /* HACK for now, either it dies or it doesn't.  */
-        /* If we discover it isn't using this spell much, we can modify */
-        if ((kill->power * kill->injury) / 100 < borg.trait[BI_CLEVEL] * 4)
-            v1 = 0;
+        /* Either it dies or it doesn't.  For it to die it must have less */
+        /* than 4x the borgs leve in hp and be in view.  */
+        /* So power(total hp) times (100-injury(percent injured)) divided by 100 */
+        if ((kill->power * (100 - kill->injury)) / 100 < borg.trait[BI_CLEVEL] * 4) {
+            borg_grid *ag = &borg_grids[y9][x9];
+            if (ag->info & BORG_VIEW && borg_cave_floor_grid(ag))
+                v1 = 0;
+        }
     }
 
     /* Reduce danger from confused monsters */
@@ -2732,10 +2737,14 @@ int borg_danger_one_kill(
     }
 
     if (borg_crush_spell) {
-        /* HACK for now, either it dies or it doesn't.  */
-        /* If we discover it isn't using this spell much, we can modify */
-        if ((kill->power * kill->injury) / 100 < borg.trait[BI_CLEVEL] * 4)
-            v2 = 0;
+        /* Either it dies or it doesn't.  For it to die it must have less */
+        /* than 4x the borgs leve in hp and be in view.  */
+        /* So power(total hp) times (100 - injury(percent injured)) divided by 100 */
+        if ((kill->power * (100 - kill->injury)) / 100 < borg.trait[BI_CLEVEL] * 4) {
+            borg_grid* ag = &borg_grids[y9][x9];
+            if (ag->info & BORG_VIEW && borg_cave_floor_grid(ag))
+                v1 = 0;
+        }
     }
 
     /* Reduce danger from sleeping monsters with the sleep 1,3 spell*/
