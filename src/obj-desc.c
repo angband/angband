@@ -276,7 +276,7 @@ size_t obj_desc_name_format(char *buf, size_t max, size_t end,
 					(int) (endmark - plural), plural);
 
 			fmt = endmark;
-		} else if (*fmt == '#') {
+		} else if (*fmt == '#' && modstr) {
 			/* Add modstr, with pluralisation if relevant */
 			end = obj_desc_name_format(buf, max, end, modstr, NULL,	pluralise);
 		}

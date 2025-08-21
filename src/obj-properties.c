@@ -94,6 +94,17 @@ void flag_message(int flag, char *name)
 	size_t end = 0;
 
 	/* See if we have a message */
+	if (!prop) {
+		if (flag < 0 || flag >= OF_MAX) {
+			msg("Bug: invalid flag index, %d, passed to "
+				"flag_message().", flag);
+		} else {
+			msg("Bug: flag '%s' (index %d) noticed but has "
+				"no entry in object_property.txt.",
+				list_obj_flag_names[flag], flag);
+		}
+		return;
+	}
 	if (!prop->msg) return;
 	in_cursor = prop->msg;
 

@@ -546,9 +546,11 @@ const struct artifact *lookup_artifact_name(const char *name)
  */
 struct ego_item *lookup_ego_item(const char *name, int tval, int sval)
 {
+	struct object_kind *kind = lookup_kind(tval, sval);
 	int i;
 
 	/* Look for it */
+	if (!kind) return NULL;
 	for (i = 0; i < z_info->e_max; i++) {
 		struct ego_item *ego = &e_info[i];
 		struct poss_item *poss_item = ego->poss_items;
@@ -559,7 +561,6 @@ struct ego_item *lookup_ego_item(const char *name, int tval, int sval)
 
 		/* Check tval and sval */
 		while (poss_item) {
-			struct object_kind *kind = lookup_kind(tval, sval);
 			if (kind->kidx == poss_item->kidx) {
 				return ego;
 			}

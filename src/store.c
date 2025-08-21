@@ -2013,7 +2013,7 @@ void do_cmd_stash(struct command *cmd)
 		return;
 
 	/* Check we are somewhere we can stash items. */
-	if (store->feat != FEAT_HOME) {
+	if (!store || store->feat != FEAT_HOME) {
 		msg("You are not in your home.");
 		return;
 	}

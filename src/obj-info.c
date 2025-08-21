@@ -2391,15 +2391,30 @@ textblock *object_info_ego(struct ego_item *ego)
 {
 	struct object_kind *kind = NULL;
 	struct object obj = OBJECT_NULL, known_obj = OBJECT_NULL;
-	size_t i;
 	textblock *result;
 
-	for (i = 0; i < z_info->k_max; i++) {
-		kind = &k_info[i];
-		if (!kind->name)
-			continue;
-		if (i == ego->poss_items->kidx)
-			break;
+	if (ego->poss_items) {
+		size_t i;
+
+		for (i = 0; i < z_info->k_max; i++) {
+			kind = &k_info[i];
+			if (!kind->name)
+				continue;
+			if (i == ego->poss_items->kidx)
+				break;
+		}
+	}
+	if (!kind) {
+		result = textblock_new();
+		if (ego->poss_items) {
+			textblock_append(result, "Bug: the array of kinds of "
+				"objects no longer contains the first kind "
+				"that can have this ego.");
+		} else {
+			textblock_append(result,
+				"This ego does not appear on any items.");
+		}
+		return result;
 	}
 
 	obj.kind = kind;
