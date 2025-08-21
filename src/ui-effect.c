@@ -82,8 +82,10 @@ static struct menu *effect_menu_new(struct effect *effect, int count,
 		++ms_count;
 		effect = effect_next(effect);
 	}
-	/* Set the sentinel element. */
-	ms[ms_count] = NULL;
+	if (count > 0) {
+		/* Set the sentinel element. */
+		ms[ms_count] = NULL;
+	}
 
 	menu_setpriv(m, ms_count, ms);
 

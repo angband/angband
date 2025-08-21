@@ -2720,6 +2720,11 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		/* Monster being teleported */
 		start = t_mon->grid;
 	} else if (context->subtype) {
+		if (!mon) {
+			msg("Bug: TELEPORT_TO:SELF effect used that is not "
+				"cast by a monster.");
+			return true;
+		}
 		/* Monster teleporting to the player */
 		start = mon->grid;
 	} else {

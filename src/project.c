@@ -616,7 +616,7 @@ bool project(struct source origin, int rad, struct loc finish,
 	bool player_sees_grid[256];
 
 	/* Precalculated damage values for each distance. */
-	int *dam_at_dist = malloc((z_info->max_range + 1) * sizeof(*dam_at_dist));
+	int *dam_at_dist = mem_alloc((z_info->max_range + 1) * sizeof(*dam_at_dist));
 
 	/* Flush any pending output */
 	handle_stuff(player);
@@ -999,7 +999,7 @@ bool project(struct source origin, int rad, struct loc finish,
 						  flg & PROJECT_SELF)) {
 				notice = true;
 				if (player->is_dead) {
-					free(dam_at_dist);
+					mem_free(dam_at_dist);
 					return notice;
 				}
 				break;
@@ -1026,7 +1026,7 @@ bool project(struct source origin, int rad, struct loc finish,
 	/* Update stuff if needed */
 	if (player->upkeep->update) update_stuff(player);
 
-	free(dam_at_dist);
+	mem_free(dam_at_dist);
 
 	/* Return "something was noticed" */
 	return (notice);

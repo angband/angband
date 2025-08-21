@@ -813,8 +813,12 @@ static bool labyrinth_check(int depth)
 static const struct cave_profile *choose_profile(struct player *p)
 {
 	const struct cave_profile *profile = NULL;
-	int moria_alloc = find_cave_profile("moria")->alloc;
-	int labyrinth_alloc = find_cave_profile("labyrinth")->alloc;
+	const struct cave_profile *moria_profile = find_cave_profile("moria");
+	const struct cave_profile *labyrinth_profile =
+		find_cave_profile("labyrinth");
+	int moria_alloc = (moria_profile) ? moria_profile->alloc : 0;
+	int labyrinth_alloc = (labyrinth_profile) ?
+		labyrinth_profile->alloc : 0;
 
 	/* A bit of a hack, but worth it for now NRM */
 	if (p->noscore & NOSCORE_JUMPING) {
@@ -839,10 +843,10 @@ static const struct cave_profile *choose_profile(struct player *p)
 		profile = find_cave_profile("classic");
 	} else if (labyrinth_check(p->depth) &&
 			(labyrinth_alloc > 0 || labyrinth_alloc == -1)) {
-		profile = find_cave_profile("labyrinth");
+		profile = labyrinth_profile;
 	} else if ((p->depth >= 10) && (p->depth < 40) && one_in_(40) &&
 			(moria_alloc > 0 || moria_alloc == -1)) {
-		profile = find_cave_profile("moria");
+		profile = moria_profile;
 	} else {
 		int total_alloc = 0;
 		size_t i;

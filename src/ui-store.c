@@ -120,9 +120,9 @@ struct store_context {
 /* Return a random hint from the global hints list */
 static const char *random_hint(void)
 {
-	struct hint *v, *r = NULL;
+	struct hint *v, *r = hints;
 	int n;
-	for (v = hints, n = 1; v; v = v->next, n++)
+	for (v = hints->next, n = 2; v; v = v->next, n++)
 		if (one_in_(n))
 			r = v;
 	return r->hint;
@@ -153,7 +153,7 @@ static void prt_welcome(const struct owner *proprietor)
 	/* Truncate the name */
 	short_name[j] = '\0';
 
-	if (one_in_(3)) {
+	if (hints && one_in_(3)) {
 		size_t i = randint0(N_ELEMENTS(comment_hint));
 		msg(comment_hint[i], random_hint());
 	} else if (player->lev > 5) {
