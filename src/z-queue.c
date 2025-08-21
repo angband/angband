@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 #include "z-queue.h"
+#include "z-util.h"
 #include "z-virt.h"
 
 /* Clear macro shortcuts for priority queue functions. */
@@ -32,11 +33,10 @@ struct queue *q_new(size_t size) {
 	struct queue *q;
 
 	if (size > SIZE_MAX / sizeof(uintptr_t) - 1) {
-		return NULL;
+		quit("Size overflow for queue!");
 	}
 	q = (struct queue*)mem_alloc(sizeof(struct queue));
-	if (!q) return NULL;
-	q->data = (uintptr_t*)malloc(sizeof(uintptr_t) * (size + 1));
+	q->data = (uintptr_t*)mem_alloc(sizeof(uintptr_t) * (size + 1));
 	q->size = size + 1;
 	q->head = 0;
 	q->tail = 0;
@@ -104,8 +104,8 @@ uintptr_t q_pop(struct queue *q) {
 }
 
 void q_free(struct queue *q) {
-	free(q->data);
-	free(q);
+	mem_free(q->data);
+	mem_free(q);
 }
 
 /**
@@ -196,7 +196,7 @@ struct priority_queue *qp_new(size_t size)
 	struct priority_queue *result;
 
 	if (size > SIZE_MAX / MAX(2, sizeof(struct priority_queue_element))) {
-		return NULL;
+		quit("Size overflow for priority queue!");
 	}
 	result = mem_alloc(sizeof(*result));
 	result->data = mem_alloc(size * sizeof(*result->data));
