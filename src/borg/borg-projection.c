@@ -661,7 +661,7 @@ int borg_distance(int y, int x, int y2, int x2)
  *
  * Warning -- This will only work for locations on the current panel
  */
-bool borg_target(struct loc t)
+bool borg_target(struct loc t, bool require_monster)
 {
     int x1, y1, x2, y2;
 
@@ -711,6 +711,9 @@ bool borg_target(struct loc t)
         borg_keypress('6');
     for (; x1 > x2; x1--)
         borg_keypress('4');
+
+    if (require_monster)
+        borg_keypress('m');
 
     /* Select the target */
     borg_keypress('5');

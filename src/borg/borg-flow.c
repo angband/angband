@@ -833,7 +833,7 @@ static bool borg_play_step(int y2, int x2)
             if (distance(loc(take->x, take->y), borg.c) == 1) {
                 if (borg_spell_okay_fail(ORB_OF_DRAINING, 25)) {
                     /* Target the Take location */
-                    borg_target(loc(take->x, take->y));
+                    borg_target(loc(take->x, take->y), false);
 
                     /* Cast the prayer */
                     borg_spell(ORB_OF_DRAINING);
@@ -908,7 +908,7 @@ static bool borg_play_step(int y2, int x2)
             borg.no_rest_prep = 3000;
 
             /* the activation needs to target the trap */
-            borg_target(borg.goal.g);
+            borg_target(borg.goal.g, false);
             return true;
         }
 
