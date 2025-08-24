@@ -2382,7 +2382,7 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 	/* Hurt the player */
 	dam = player_apply_damage_reduction(player, dam);
 	if (dam > 0 && OPT(player, show_damage)) {
-		msg("You take %d damage.\n", dam);
+		msg("You take %d damage.", dam);
 	}
 	take_hit(player, dam, "the strain of casting Banishment");
 
@@ -2434,7 +2434,7 @@ bool effect_handler_MASS_BANISH(effect_handler_context_t *context)
 	/* Hurt the player */
 	dam = player_apply_damage_reduction(player, dam);
 	if (dam > 0 && OPT(player, show_damage)) {
-		msg("You take %d damage.\n", dam);
+		msg("You take %d damage.", dam);
 	}
 	take_hit(player, dam, "the strain of casting Mass Banishment");
 
