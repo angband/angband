@@ -710,7 +710,7 @@ static bool start_game(bool new_game)
 		}
 	}
 	safe_setuid_grab();
-	exists = file_exists(loadpath);
+	exists = loadpath[0] && file_exists(loadpath);
 	safe_setuid_drop();
 	if (exists && !savefile_load(loadpath, arg_wizard)) {
 		return false;
