@@ -696,6 +696,15 @@ static void borg_parse_aux(char *msg, int len)
         return;
     }
 
+    /* check for trying to dig when you can't */
+    if (prefix(msg, "You chip away futilely ")) {
+        /* get rid of the goal monster we were chasing */
+        if (borg.goal.type == GOAL_KILL && ag->kill)
+            borg_delete_kill(ag->kill);
+        return;
+    }
+
+
     /* Word of Recall -- Ignition */
     if (prefix(msg, "The air about you becomes ")) {
         /* Initiate recall */
