@@ -462,10 +462,10 @@ bool player_knows_curse(struct player *p, int index)
  * \param p is the player
  * \param ego is the ego item type
  * \param obj may be NULL to test whether the player knows the ego in general;
- *     if obj is not NULL, the test is for whether the ego is know for that
+ *     if obj is not NULL, the test is for whether the ego is known for that
  *     specific object (allows for the ego to be known for the object in the
  *     case where an ego has range of at least two values, including zero, for
- *     a modifier, the player doesn't know that modifier,  and the object has
+ *     a modifier, the player doesn't know that modifier, and the object has
  *     zero for that modifier)
  */
 bool player_knows_ego(struct player *p, struct ego_item *ego,

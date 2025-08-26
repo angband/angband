@@ -1,7 +1,7 @@
 /**
  * \file ui-entry.c
  * \brief Definitions to link object/player properties to 2nd character screen
- * and equippable coomparison
+ * and equippable comparison
  *
  * Copyright (c) 2020 - 2021 Eric Branlund
  *
