@@ -56,6 +56,11 @@ find_package(Sphinx)
 CMAKE_DEPENDENT_OPTION(BUILD_DOC "Build the documentation" OFF "Sphinx_FOUND" OFF)
 SET(DOC_HTML_THEME "" CACHE STRING "If set and not an empty string, it is the builtin Sphinx HTML theme to use in place of the default theme in conf.py (currently the better theme).")
 
+# Allow the user to enable code coverage if the system supports it.
+INCLUDE(src/cmake/modules/CheckCoverage.cmake)
+CHECK_COVERAGE(Coverage_FOUND)
+CMAKE_DEPENDENT_OPTION(SUPPORT_COVERAGE "Compile for reporting code coverage" OFF "Coverage_FOUND" OFF)
+
 IF ((SUPPORT_NCURSES_FRONTEND) AND (NOT SUPPORT_GCU_FRONTEND))
     SET(SUPPORT_GCU_FRONTEND ON)
 ENDIF()
@@ -374,12 +379,19 @@ IF(SUPPORT_BORG)
     ENDIF()
 ENDIF()
 
+IF(SUPPORT_COVERAGE)
+    CONFIGURE_TARGET_FOR_COVERAGE(OurCoreLib)
+ENDIF()
+
 IF(SUPPORT_SDL_SOUND OR SUPPORT_SDL2_SOUND)
     ADD_LIBRARY(OurSoundSupportLib OBJECT
             src/snd-sdl.c
     )
     SET_TARGET_PROPERTIES(OurSoundSupportLib PROPERTIES C_STANDARD 99)
     SET(SOUND_SUPPORT_LIB OurSoundSupportLib)
+    IF(SUPPORT_COVERAGE)
+        CONFIGURE_TARGET_FOR_COVERAGE(OurSoundSupportLib)
+    ENDIF()
 ELSE()
     SET(SOUND_SUPPORT_LIB "")
 ENDIF()
@@ -477,6 +489,10 @@ ENDIF()
 IF(SUPPORT_TEST_FRONTEND)
     INCLUDE(src/cmake/macros/TEST_Frontend.cmake)
     CONFIGURE_TEST_FRONTEND(OurExecutable)
+ENDIF()
+
+IF(SUPPORT_COVERAGE)
+    CONFIGURE_TARGET_FOR_COVERAGE(OurExecutable)
 ENDIF()
 
 # Set the build ID.
@@ -900,6 +916,10 @@ IF((NOT CMAKE_CROSSCOMPILING) AND SUPPORT_TEST_FRONTEND)
 ELSE()
     ADD_CUSTOM_TARGET(alltests)
 ENDIF()
+IF(SUPPORT_COVERAGE)
+    ADD_COVERAGE_TARGETS(resetcoverage reportcoverage coverage
+        COMBINED_SUBTARGETS alltests)
+ENDIF()
 
 # For unit tests, use a working directory so the data files can be found.
 # This complements how DEFAULT_CONFIG_PATH, DEFAULT_LIB_PATH, DEFAULT_DATA_PATH,
@@ -934,7 +954,7 @@ IF((READONLY_INSTALL) OR (SHARED_INSTALL))
     TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D TEST_OVERRIDE_PATHS)
 ENDIF()
 IF(SUPPORT_WINDOWS_FRONTEND)
-   CONFIGURE_WINDOWS_FRONTEND(OurUnitTestLib YES)
+    CONFIGURE_WINDOWS_FRONTEND(OurUnitTestLib YES)
 ENDIF()
 
 # Set up targets for exercising the unit tests (from src/tests in the source
@@ -980,16 +1000,19 @@ FOREACH(ANGBAND_TEST_CASE_SOURCE ${ANGBAND_TEST_CASE_SOURCES})
         CONFIGURE_SDL2_SOUND(${ANGBAND_TEST_CASE_NAME} NO)
     ENDIF()
     IF(SUPPORT_WINDOWS_FRONTEND)
-       CONFIGURE_WINDOWS_FRONTEND(${ANGBAND_TEST_CASE_NAME} YES)
-       # Guarantee that it is not marked as having a WinMain entry point
-       # regardless of the setting of CMAKE_WIN32_EXECUTABLE.
-       SET_TARGET_PROPERTIES(${ANGBAND_TEST_CASE_NAME} PROPERTIES
-           WIN32_EXECUTABLE OFF)
-       IF(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
-           # Despite the guarantee above, the Visual Studio generator still
-           # needs this to avoid a linker error about missing WinMain.
-           TARGET_LINK_OPTIONS(${ANGBAND_TEST_CASE_NAME} PRIVATE "/SUBSYSTEM:CONSOLE")
-       ENDIF()
+        CONFIGURE_WINDOWS_FRONTEND(${ANGBAND_TEST_CASE_NAME} YES)
+        # Guarantee that it is not marked as having a WinMain entry point
+        # regardless of the setting of CMAKE_WIN32_EXECUTABLE.
+        SET_TARGET_PROPERTIES(${ANGBAND_TEST_CASE_NAME} PROPERTIES
+            WIN32_EXECUTABLE OFF)
+        IF(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+            # Despite the guarantee above, the Visual Studio generator still
+            # needs this to avoid a linker error about missing WinMain.
+            TARGET_LINK_OPTIONS(${ANGBAND_TEST_CASE_NAME} PRIVATE "/SUBSYSTEM:CONSOLE")
+        ENDIF()
+    ENDIF()
+    IF(SUPPORT_COVERAGE)
+        CONFIGURE_TARGET_FOR_COVERAGE(${ANGBAND_TEST_CASE_NAME} LINKONLY)
     ENDIF()
     # Very few of the test cases use the math library, but it is easier to
     # have all use it.
