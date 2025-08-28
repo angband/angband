@@ -707,7 +707,7 @@ instance running this at the top level of the distribution::
         cmake -DBUILD_DOC=ON -DDOC_HTML_THEME=alabaster ..
 
 would behave much like the earlier example using configure.  After building
-with CMake (i.e. ``cmake --build .`` or ``cmake --build -t OurManual .``), the
+with CMake (i.e. ``cmake --build .`` or ``cmake --build . -t OurManual``), the
 generated user manual will be in manual-output-html in the build directory.
 
 To build the user manual without configure or CMake, make sure sphinx-build
