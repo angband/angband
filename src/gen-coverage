@@ -8,7 +8,6 @@ my $cov = 0;
 my @fs = ();
 foreach my $fn (@ARGV) {
 	my $fh;
-	$fn =~ s!/!#!g;
 	open($fh, '<', $fn) or (warn "cannot open $fn: $!" and next);
 	my $fcov = 0;
 	my $ftot = 0;

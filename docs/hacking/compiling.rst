@@ -405,6 +405,33 @@ If you only want the unit tests while using CMake, it's a little simpler::
     cmake ..
     make allunittests
 
+There is some support for measuring how well the test cases cover the code.
+If you use configure and have gcc, gcov, and perl, you can run this in src
+directory after running configure::
+
+    make coverage
+
+That cleans the directories (removing object files, intermediates generated
+for code coverage, and coverage reports), rebuilds the game with code coverage
+profiling enabled, runs the unit tests, generates coverage reports for
+individual source files (*.gcov in the src directory), and then writes a
+summary of those reports to standard output.  The gen-coverage Perl script in
+the src directory is what is used to generate the summary.
+
+If you use CMake, have perl, and have either gcc and gcov or clang and
+llvm-cov, then you can configure code coverage support by including
+-DSUPPORT_COVERAGE=ON in the options to cmake.  That adds three targets for
+manipulating coverage results.  "make reportcoverage" generates per-file
+coverage reports (*.gcov in the directory where you are building) using
+the current accumulated coverage data and then writes a summary of those
+reports to standard output.  The gen-coverage Perl script in the src directory
+is what is used to generate the summary.  "make resetcoverage" removes the
+accumulated coverage data (*.gcda files) and any per-file coverage reports.
+"make coverage" is equivalent to "make resetcoverage; make alltests;
+make reportcverage":  clear accumulated coverage information, run the unit
+tests (and, if -DSUPPORT_TEST_FRONTEND=ON was supplied to cmake, the end-to-end
+tests), and then report the coverage results.
+
 Statistics build
 ~~~~~~~~~~~~~~~~
 
