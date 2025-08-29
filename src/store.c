@@ -812,18 +812,12 @@ void store_stock_list(struct store *store, struct object **list, int n)
  */
 static void store_object_absorb(struct object *old, struct object *new)
 {
-	int total = old->number + new->number;
-
 	/* Combine quantity, lose excess items */
-	old->number = MIN(total, old->kind->base->max_stack);
+	int change = (old->number < old->kind->base->max_stack) ?
+		MIN(new->number, old->kind->base->max_stack - old->number) : 0;
 
-	/* If rods are stacking, add the charging timeouts */
-	if (tval_can_have_timeout(old))
-		old->timeout += new->timeout;
-
-	/* If wands/staves are stacking, combine the charges */
-	if (tval_can_have_charges(old))
-		old->pval += new->pval;
+	distribute_charges(new, old, change, false);
+	old->number += change;
 
 	object_origin_combine(old, new);
 
@@ -1818,12 +1812,13 @@ void do_cmd_retrieve(struct command *cmd)
 	}
 
 	/* Distribute charges of wands, staves, or rods */
-	distribute_charges(obj, picked_item, amt);
+	distribute_charges(obj, picked_item, amt, true);
 
 	/* Make a known object */
 	known_obj = object_new();
 	object_copy(known_obj, obj->known);
 	picked_item->known = known_obj;
+	distribute_charges(obj->known, picked_item->known, amt, true);
 
 	/* Give it to the player */
 	inven_carry(player, picked_item, true, true);
