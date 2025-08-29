@@ -71,7 +71,8 @@ bool obj_needs_aim(const struct object *obj);
 bool obj_can_fail(const struct object *o);
 
 int get_use_device_chance(const struct object *obj);
-void distribute_charges(struct object *source, struct object *dest, int amt);
+void distribute_charges(struct object *source, struct object *dest, int amt,
+		bool dest_new);
 int number_charging(const struct object *obj);
 bool recharge_timeout(struct object *obj);
 bool verify_object(const char *prompt, const struct object *obj,
