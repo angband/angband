@@ -877,6 +877,8 @@ void home_carry(struct object *obj)
 		/* The home acts just like the player */
 		if (object_mergeable(temp_obj, obj, OSTACK_PACK)) {
 			/* Save the new number of items */
+			object_absorb(temp_obj->known, obj->known);
+			obj->known = NULL;
 			object_absorb(temp_obj, obj);
 			return;
 		}
@@ -1816,7 +1818,18 @@ void do_cmd_retrieve(struct command *cmd)
 
 	/* Make a known object */
 	known_obj = object_new();
-	object_copy(known_obj, obj->known);
+	/*
+	 * Have at least one save,
+	 * https://github.com/angband/angband/issues/6362 , where
+	 * obj->known->number does not agree with obj->number.  Coerce
+	 * obj->known->number so it is usable in object_copy_amt() and
+	 * distribute_charges().  It may be possible to drop that coercion if
+	 * the source of the misaligned numbers is fixed and compatibility
+	 * with old saves which may have misaligned numbers is no longer
+	 * required.
+	 */
+	obj->known->number = obj->number;
+	object_copy_amt(known_obj, obj->known, amt);
 	picked_item->known = known_obj;
 	distribute_charges(obj->known, picked_item->known, amt, true);
 
