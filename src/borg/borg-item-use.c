@@ -139,6 +139,8 @@ bool borg_quaff_unknown(void)
     /* Clear "shop" goals. Inventory changed so goals need to be redone. */
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
+    borg.trying_unknown = true;
+
     /* Success */
     return true;
 }
@@ -234,6 +236,8 @@ bool borg_read_unknown(void)
     /* Clear "shop" goals */
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
 
+    borg.trying_unknown = true;
+
     /* Success */
     return true;
 }
@@ -307,6 +311,8 @@ bool borg_eat_unknown(void)
 
     /* Clear "shop" goals */
     borg.goal.shop = borg.goal.ware = borg.goal.item = -1;
+
+    borg.trying_unknown = true;
 
     /* Success */
     return true;
@@ -557,6 +563,8 @@ bool borg_use_unknown(void)
 
     /* In case it is ID staff, ESCAPE out. */
     borg_keypress(ESCAPE);
+
+    borg.trying_unknown = true;
 
     /* Success */
     return true;
