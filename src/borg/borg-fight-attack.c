@@ -2947,6 +2947,8 @@ static int borg_attack_aux_wand_bolt_unknown(int dam, int typ)
     /* Use target */
     borg_keypress('5');
 
+    borg.trying_unknown = true;
+
     /* Set our shooting flag */
     successful_target = -1;
 
@@ -3019,6 +3021,8 @@ static int borg_attack_aux_rod_bolt_unknown(int dam, int typ)
 
     /* Set our shooting flag */
     successful_target = -1;
+
+    borg.trying_unknown = true;
 
     /* Value */
     return b_n;

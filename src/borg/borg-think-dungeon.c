@@ -1198,6 +1198,9 @@ bool borg_think_dungeon(void)
         return true;
     }
 
+    /* no longer trying an unknown object */
+    borg.trying_unknown = false;
+
     /* if standing on something valueless, destroy it */
     if (borg_destroy_floor())
         return true;

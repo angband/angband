@@ -253,6 +253,16 @@ bool borg_react_prompted(const char* buf, struct keypress *key, int x, int y)
         return true;
     }
 
+    /* Word of Recall -- cancel */
+    if (x >= 25 && (prefix(buf, "Word of Recall is already"))) {
+        /* this shouldn't happen but can if the borg is "playing with" and unknown rod */
+        if (!borg.trying_unknown)
+            borg_oops("unexpected double Word of Recall");
+
+        /* no canceling it */
+        key->code = 'n';
+        return true;
+    }
 
     return false;
 }

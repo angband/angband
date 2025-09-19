@@ -455,6 +455,9 @@ struct borg_struct {
     int16_t times_twitch; /* how often twitchy on this level */
     int16_t escapes; /* how often teleported on this level */
 
+    /* trying an unknown potion wand rod scroll etc */
+    bool trying_unknown;
+
     /* goals */
     struct goals goal;
 
