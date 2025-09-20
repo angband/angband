@@ -353,10 +353,7 @@ static void option_toggle_menu(const char *name, int page)
 	m->title = name;
 
 	/* Find the number of valid entries */
-	for (i = 0; i < OPT_PAGE_PER; i++) {
-		if (option_page[page][i] == OPT_none)
-			break;
-	}
+	for (i = 0; option_page[page][i] != OPT_none; ++i) {}
 
 	/* Set the data to the player's options */
 	menu_setpriv(m, OPT_MAX, &player->opts.opt);

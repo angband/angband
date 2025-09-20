@@ -53,7 +53,6 @@ enum
  * Information for "do_cmd_options()".
  */
 #define OPT_PAGE_MAX				OP_SCORE
-#define OPT_PAGE_PER				21
 #define OPT_PAGE_BIRTH				1
 
 /**
@@ -69,7 +68,7 @@ struct player_options {
 	uint8_t name_suffix;		/**< Numeric suffix for player name */
 };
 
-extern int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
+extern int *option_page[OPT_PAGE_MAX];
 
 #ifdef ALLOW_BORG
 /* Screensaver variables for the borg.  apw */
@@ -87,6 +86,7 @@ bool option_set(const char *opt, int val);
 void options_init_cheat(void);
 void options_init_defaults(struct player_options *opts);
 void init_options(void);
+void clean_options(void);
 bool options_save_custom(struct player_options *opts, int page);
 bool options_restore_custom(struct player_options *opts, int page);
 void options_restore_maintainer(struct player_options *opts, int page);

@@ -23,7 +23,7 @@
 /**
  * Option screen interface
  */
-int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] = { {0} };
+int *option_page[OPT_PAGE_MAX];
 
 static struct option_entry {
 	const char *name;
@@ -353,18 +353,38 @@ void init_options(void)
 
 	/* Allocate options to pages */
 	for (page = 0; page < OPT_PAGE_MAX; page++) {
-		int page_opts = 0;
+		int count = 0, i;
 		for (opt = 0; opt < OPT_MAX; opt++) {
-			if ((options[opt].type == page) && (page_opts < OPT_PAGE_PER))
-				option_page[page][page_opts++] = opt;
+			if (options[opt].type == page) ++count;
 		}
-		while (page_opts < OPT_PAGE_PER)
-			option_page[page][page_opts++] = OPT_none;
+		option_page[page] = mem_alloc((count + 1)
+				* sizeof(*option_page[page]));
+		for (opt = 0, i = 0; opt < OPT_MAX; opt++) {
+			if (options[opt].type == page) {
+				assert(i < count);
+				option_page[page][i] = opt;
+				++i;
+			}
+		}
+		option_page[page][count] = OPT_none;
+	}
+}
+
+/**
+ * Cleanup options package
+ */
+void clean_options(void)
+{
+	int page;
+
+	for (page = 0; page < OPT_PAGE_MAX; page++) {
+		mem_free(option_page[page]);
+		option_page[page] = NULL;
 	}
 }
 
 struct init_module options_module = {
 	.name = "options",
 	.init = init_options,
-	.cleanup = NULL
+	.cleanup = clean_options
 };
