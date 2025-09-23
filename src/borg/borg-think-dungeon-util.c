@@ -928,6 +928,7 @@ bool borg_leave_level(bool bored)
             /* Recall if needing to Restock */
             if (need_restock && borg.trait[BI_CDEPTH] >= 5 && borg_recall()) {
                 borg_note("# Recalling to town (need to restock)");
+                return true;
             }
         }
 
