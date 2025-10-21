@@ -225,6 +225,7 @@ static int compute_rubble_penalty(struct player *p)
 	int digging_chances[DIGGING_MAX], num_digger = 1;
 	bool swapped_digger;
 	int penalty;
+	int16_t csp = p->csp, chp = p->chp;
 
 	if (best_digger != current_weapon && (!current_weapon
 			|| obj_can_takeoff(current_weapon))) {
@@ -276,6 +277,7 @@ static int compute_rubble_penalty(struct player *p)
 			penalty = INT_MAX;
 		}
 	}
+	p->csp = csp; p->chp = chp;
 
 	return convert_turn_penalty(penalty, p);
 }
