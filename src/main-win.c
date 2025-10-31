@@ -2045,15 +2045,22 @@ static errr Term_bigcurs_win(int x, int y)
 static errr Term_wipe_win_helper(int x, int y, int nc, int nr, COLORREF c)
 {
 	term_data *td = (term_data*)(Term->data);
-
+	int tile_wid, tile_hgt;
 	HDC hdc;
 	RECT rc;
 
 	/* Rectangle to erase in client coords */
-	rc.left = x * td->tile_wid + td->size_ow1;
-	rc.right = rc.left + nc * td->tile_wid;
-	rc.top = y * td->tile_hgt + td->size_oh1;
-	rc.bottom = rc.top + nr * td->tile_hgt;
+	if (td->map_active) {
+		tile_wid = td->map_tile_wid;
+		tile_hgt = td->map_tile_hgt;
+	} else {
+		tile_wid = td->tile_wid;
+		tile_hgt = td->tile_hgt;
+	}
+	rc.left = x * tile_wid + td->size_ow1;
+	rc.right = rc.left + nc * tile_wid;
+	rc.top = y * tile_hgt + td->size_oh1;
+	rc.bottom = rc.top + nr * tile_hgt;
 
 	hdc = GetDC(td->w);
 	SetBkColor(hdc, c);
