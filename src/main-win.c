@@ -2573,8 +2573,8 @@ static void windows_map_aux(void)
 	max_y = cave->height;
 
 	/* Draw the map */
-	for (x = min_x; x < max_x; x++) {
-		for (y = min_y; y < max_y; y++) {
+	for (y = min_y; y < max_y; y++) {
+		for (x = min_x; x < max_x; x++) {
 			struct grid_data g;
 
 			map_info(loc(x, y), &g);
@@ -2582,7 +2582,7 @@ static void windows_map_aux(void)
 
 			/* Ignore non-graphics */
 			if (a & 0x80)
-				Term_pict_win(x - min_x, y - min_y, 1, &a, &c, &ta, &tc);
+				(*td->t.pict_hook)(x - min_x, y - min_y, 1, &a, &c, &ta, &tc);
 		}
 	}
 
