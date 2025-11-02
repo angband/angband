@@ -556,7 +556,13 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 		}
 		player->body.slots[weapon_slot].obj = best_digger;
 		memcpy(&local_state, &player->state, sizeof(local_state));
-		calc_bonuses(player, &local_state, false, true);
+		/*
+		 * Avoid side effects from using update set to false with
+		 * calc_bonuses().
+		 */
+		local_state.stat_ind[STAT_STR] = 0;
+		local_state.stat_ind[STAT_DEX] = 0;
+		calc_bonuses(player, &local_state, false, false);
 		used_state = &local_state;
 	}
 	calc_digging_chances(used_state, digging_chances);
@@ -579,7 +585,6 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 			best_digger->number = oldn;
 		}
 		player->body.slots[weapon_slot].obj = current_weapon;
-		calc_bonuses(player, &local_state, false, true);
 	}
 
 	/* Success */
