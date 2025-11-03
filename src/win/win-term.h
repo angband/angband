@@ -60,8 +60,8 @@ struct _term_data
 
 	uint keys;
 
-	uint8_t rows;
-	uint8_t cols;
+	uint16_t rows;
+	uint16_t cols;
 
 	uint pos_x;
 	uint pos_y;
