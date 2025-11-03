@@ -117,3 +117,39 @@ jobs:
           ./configure --enable-win
           make install
           make tests
+
+  cmake-win:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Set up prerequisites
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          # The libraries in src/win/lib and src/win/dll are 32-bit.
+          msystem: MINGW32
+          install: >-
+            mingw-w64-i686-gcc
+            mingw-w64-i686-cmake
+            mingw-w64-i686-ninja
+
+      - name: Clone Project
+        uses: actions/checkout@v4
+
+      - name: Configure with CMake/Ninja
+        run: |
+          mkdir build-msys2-win32
+          cd build-msys2-win32
+          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DCMAKE_BUILD_TYPE=Release ..
+
+      - name: Build with Ninja
+        run: |
+          cd build-msys2-win32
+          cmake --build . -j$(nproc)
+
+      - name: Run Tests
+        run: |
+          cd build-msys2-win32
+          cmake --build . --target alltests

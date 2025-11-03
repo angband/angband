@@ -794,10 +794,26 @@ IF(SC_INSTALL)
     )
 
     IF(SUPPORT_WINDOWS_FRONTEND)
-        # Transfer the packaged DLLs so there in the same directory as the
-        # executable.
-        FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/win/dll/zlib1.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
-        FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/win/dll/libpng12.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+        # Repo root is CMAKE_SOURCE_DIR
+        SET(REPO_ROOT_DIR ${CMAKE_SOURCE_DIR})
+        
+        # Copy final executable and DLLs to repo root.
+        # Note that building the executable in the same directory as the DLLs fails in MSYS2 MINGW32.
+        ADD_CUSTOM_COMMAND(TARGET OurExecutable POST_BUILD
+            # Copy executable (rename to lowercase)
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "$<TARGET_FILE:OurExecutable>"
+                "${REPO_ROOT_DIR}/angband.exe"
+            # Copy source DLLs from src/win/dll/
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_SOURCE_DIR}/src/win/dll/libpng12.dll"
+                "${REPO_ROOT_DIR}/libpng12.dll"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_SOURCE_DIR}/src/win/dll/zlib1.dll"
+                "${REPO_ROOT_DIR}/zlib1.dll"
+            COMMENT "Copying Angband.exe and DLLs to repository root"
+            VERBATIM
+        )
     ENDIF()
 ENDIF()
 

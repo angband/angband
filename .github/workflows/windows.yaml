@@ -13,14 +13,41 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install gcc-mingw-w64 automake autoconf make
+          sudo apt-get install gcc-mingw-w64 automake autoconf make cmake ninja-build
 
       - name: Clone Project
         uses: actions/checkout@v4
 
       - name: Build
+        id: autotools_build
         run: |
+          start_time=$(date +%s)
           ./autogen.sh
           ./configure --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32
           make
+          end_time=$(date +%s)
+          echo "autotools_time=$((end_time - start_time))" >> $GITHUB_OUTPUT
 
+      - name: Build debug version with CMake/Ninja
+        id: cmake_build
+        run: |
+          start_time=$(date +%s)
+          mkdir build-mingw-debug
+          cd build-mingw-debug
+          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-i686-mingw32-cross.cmake -DCMAKE_BUILD_TYPE=Debug ..
+          cmake --build . -j$(nproc)
+          end_time=$(date +%s)
+          echo "cmake_time=$((end_time - start_time))" >> $GITHUB_OUTPUT
+
+      - name: Display build time results
+        run: |
+          echo "=== BUILD TIME RESULTS ==="
+          echo "Autotools/Make: ${{ steps.autotools_build.outputs.autotools_time }} seconds"
+          echo "CMake/Ninja:    ${{ steps.cmake_build.outputs.cmake_time }} seconds"
+          echo "Time difference: $(( ${{ steps.cmake_build.outputs.cmake_time }} - ${{ steps.autotools_build.outputs.autotools_time }} )) seconds"
+          
+          if [ ${{ steps.cmake_build.outputs.cmake_time }} -lt ${{ steps.autotools_build.outputs.autotools_time }} ]; then
+            echo "✅ CMake/Ninja is faster!"
+          else
+            echo "⚠️  Autotools/Make is faster or equal"
+          fi
