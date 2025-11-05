@@ -287,7 +287,7 @@ bool borg_think_store(void)
 {
     /* HACK: Prevent clock wrapping */
     if (borg_t >= 20000 && borg_t <= 20010) {
-        /* Clear Possible errors */
+        /* Clear Possible errors and leave the store */
         borg_keypress(ESCAPE);
         borg_keypress(ESCAPE);
         borg_keypress(ESCAPE);
@@ -296,6 +296,7 @@ bool borg_think_store(void)
         /* Re-examine inven and equip */
         borg_do_inven = true;
         borg_do_equip = true;
+        return true;
     }
 
     /* update all my equipment and swap items */
@@ -303,10 +304,6 @@ bool borg_think_store(void)
     borg_do_equip = true;
     borg_notice(true);
 
-#if 0
-    /* Stamp the shop with a time stamp */
-    borg_shops[shop_num].when = borg_t;
-#endif
 
     /* Wear "optimal" equipment */
     if (borg_best_stuff())

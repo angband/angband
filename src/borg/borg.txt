@@ -646,7 +646,7 @@ Power
 	condition(value(activation, stinking_cloud)): reward(524 * value(activation, stinking_cloud));
 	condition(value(activation, cold_ball50)): reward(596 * value(activation, cold_ball50));
 	condition(value(activation, cold_ball100)): reward(700 * value(activation, cold_ball100));
-	condition(value(activation, fire_bolt72)): reward(572 * value(activation, fire_bolt72));
+	condition(value(activation, fire_ball72)): reward(572 * value(activation, fire_ball72));
 	condition(value(activation, cold_bolt2)): reward(554 * value(activation, cold_bolt2));
 	condition(value(activation, fire_ball)): reward(644 * value(activation, fire_ball));
 	condition(value(activation, dispel_evil)): reward((500 + (10 + (value(trait, clevel) *5)/ 2)) * value(activation, dispel_evil));
@@ -904,13 +904,13 @@ Power
 	condition(value(trait, amt recharge) and value(trait, max depth) < 99): reward(5000);
 
 # missles
-	value(trait, amt missiles): range(1, 40): condition(value(class, warrior) or value(class, ranger)): reward(1000);
-	value(trait, amt missiles): range(41, 80): condition((value(class, warrior) or value(class, ranger)) and value(trait, str) > 15 and value(trait, str) <= 18): reward(100);
-	value(trait, amt missiles): range(81, 180): condition((value(class, warrior) or value(class, ranger)) and value(trait, str) > 18): reward(80);
+	value(trait, amt missiles): range(1, 40): condition(value(class, warrior) or value(class, ranger)): reward(100);
+	value(trait, amt missiles): range(41, 80): condition((value(class, warrior) or value(class, ranger)) and value(trait, str) > 15 and value(trait, str) <= 18): reward(10);
+	value(trait, amt missiles): range(81, 180): condition((value(class, warrior) or value(class, ranger)) and value(trait, str) > 18): reward(8);
 	value(trait, quiver slots): range(5, 10): condition(value(class, warrior) or value(class, ranger)): reward(-10000);
 
-	value(trait, amt missiles): range(1, 20): condition(!value(class, warrior) and !value(class, ranger)): reward(1000);
-	value(trait, amt missiles): range(21, 50): condition((!value(class, warrior) and !value(class, ranger)) and value(trait, str) > 15): reward(100);
+	value(trait, amt missiles): range(1, 20): condition(!value(class, warrior) and !value(class, ranger)): reward(100);
+	value(trait, amt missiles): range(21, 50): condition((!value(class, warrior) and !value(class, ranger)) and value(trait, str) > 15): reward(10);
 	condition((!value(class, warrior) and !value(class, ranger)) and value(trait, str) <= 15 and value(trait, amt missiles) > 20): reward(-1000);
 	value(trait, quiver slots): range(3, 10): condition(!value(class, warrior) and !value(class, ranger)): reward(-10000);
 

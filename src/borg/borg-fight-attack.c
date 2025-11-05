@@ -2919,8 +2919,6 @@ static int borg_attack_aux_wand_bolt_unknown(int dam, int typ)
         /* No charges */
         if (!borg_items[i].pval)
             continue;
-        if (strstr(borg_items[i].desc, "empty"))
-            continue;
 
         /* Select this wand */
         b_i = i;
