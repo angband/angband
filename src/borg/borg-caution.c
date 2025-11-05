@@ -1966,13 +1966,14 @@ bool borg_caution(void)
 
     /* Use "recall" to flee if possible */
     if (borg.goal.fleeing && !borg.goal.fleeing_munchkin
-        && !borg.goal.fleeing_to_town && borg.trait[BI_CDEPTH] >= 1
-        && (borg_recall())) {
-        /* Note */
-        borg_note("# Fleeing the level (recall)");
+        && !borg.goal.fleeing_to_town && borg.trait[BI_CDEPTH] >= 1) {
+        if (borg_recall()) {
+            /* Note */
+            borg_note("# Fleeing the level (recall)");
 
-        /* Success */
-        return true;
+            /* Success */
+            return true;
+        }
     }
 
     /* If I am waiting for recall,and in danger, buy time with

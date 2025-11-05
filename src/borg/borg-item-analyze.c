@@ -596,8 +596,6 @@ void borg_item_analyze(
         /* if seen {empty} assume pval 0 */
         if (!item->aware && !o->pval)
             item->pval = 0;
-        if (strstr(borg_get_note(item), "empty"))
-            item->pval = 0;
     }
 
     /* Kind index -- Only if we are aware of its kind */

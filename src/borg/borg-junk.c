@@ -305,8 +305,7 @@ bool borg_drop_junk(void)
          * ie. 5 Staffs of Teleportation (2 charges).
          * Only 2 charges in 5 staves means top 3 are empty.
          */
-        if ((item->tval == TV_STAFF || item->tval == TV_WAND)
-            && (item->aware || (item->note && strstr(item->note, "empty")))) {
+        if ((item->tval == TV_STAFF || item->tval == TV_WAND) && item->aware) {
             if (item->iqty > item->pval)
                 value = 0L;
         }

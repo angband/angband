@@ -2982,6 +2982,12 @@ void borg_notice_player(void)
     /* Assume experience is fine */
     borg.trait[BI_ISFIXEXP] = false;
 
+    /* Access depth Cheat */
+    borg.trait[BI_CDEPTH] = player->depth;
+
+    /* Access max depth Cheat */
+    borg.trait[BI_MAXDEPTH] = player->max_depth;
+
     /* Note "Exp" vs "EXP" and am I lower than level 50*/
     if (player->exp < player->max_exp) {
         /* fix it if in town */
@@ -3125,12 +3131,6 @@ void borg_notice_player(void)
             = player->stat_cur[STAT_STR + i] < player->stat_max[STAT_STR + i];
         borg.trait[BI_CSTR + i] = player->stat_cur[STAT_STR + i];
     }
-
-    /* Access depth Cheat */
-    borg.trait[BI_CDEPTH] = player->depth;
-
-    /* Access max depth Cheat */
-    borg.trait[BI_MAXDEPTH] = player->max_depth;
 
     /* Track if Sauron is dead Cheat */
     borg.trait[BI_SAURON_DEAD] = borg_race_death[borg_sauron_id];
