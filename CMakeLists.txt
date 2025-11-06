@@ -867,6 +867,7 @@ SET(ANGBAND_TEST_CASE_SOURCES
     player/birth.c
     player/calc-inventory.c
     player/combine-pack.c
+    player/digging.c
     player/history.c
     player/inven-carry-num.c
     player/inven-wield.c
