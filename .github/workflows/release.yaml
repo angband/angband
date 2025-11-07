@@ -309,8 +309,8 @@ jobs:
         run: |
           mkdir build-mingw-release
           cd build-mingw-release
-          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-i686-mingw32-cross.cmake -DCMAKE_BUILD_TYPE=Release ..
-          cmake --build .
+          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-i686-mingw32-cross.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG" ..
+          ninja -j$(nproc)
 
       - name: Upload CMake/Ninja build artifacts
         uses: actions/upload-artifact@v4
