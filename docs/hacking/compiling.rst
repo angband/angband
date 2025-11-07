@@ -266,6 +266,37 @@ hardwired in the executable, setting the destination directory when running
 make (i.e. by setting DESTDIR) is not supported and will not work in general:
 set the destination when running cmake by setting the variables mentioned above.
 
+Speeding up CMake with Ninja and multiple cores
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For faster builds, you can switch from the default Makefile generator to Ninja, 
+which is optimized for parallel compilation.  
+Instead of:
+
+    mkdir build && cd build
+    cmake ..
+    make
+
+you can do: 
+
+    mkdir build && cd build
+    cmake -G Ninja ..
+    ninja -j16
+
+The option `-j16` tells Ninja to use 16 cores. It’s best to set this to the number 
+of CPU cores available on your machine.  
+On Linux, you can do that automatically with `ninja -j$(nproc)`.  
+On macOS, use `ninja -j$(sysctl -n hw.ncpu)`.  
+In PowerShell, use `ninja -j${env:NUMBER_OF_PROCESSORS}`.
+
+This can also be done with Make (`make -j$(nproc)`), but Ninja is often faster.  
+
+Instead of `ninja -j$(nproc)`, you can also use:
+
+    cmake --build . -- -j$(nproc)
+
+which works regardless of the generator used (Ninja, Makefiles, etc.).
+
 Cross-building for Windows with Mingw
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
