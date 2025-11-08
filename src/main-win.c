@@ -4622,9 +4622,8 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 		{
 			/* Ignore if palette change caused by itself */
 			if ((HWND)wParam == hWnd) return 0;
-
-			/* Fall through... */
 		}
+		/* fall through */
 
 		case WM_QUERYNEWPALETTE:
 		{
@@ -4859,8 +4858,8 @@ static LRESULT FAR PASCAL AngbandListProc(HWND hWnd, UINT uMsg,
 		{
 			/* ignore if palette change caused by itself */
 			if ((HWND)wParam == hWnd) return false;
-			/* otherwise, fall through!!! */
 		}
+		/* fall through */
 
 		case WM_QUERYNEWPALETTE:
 		{
