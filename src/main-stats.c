@@ -1137,7 +1137,13 @@ static int stats_level_data_offsetof(const char *member)
 		return offsetof(struct level_data, wearables);
 		
 	/* We should not get to this point. */
+#ifdef NDEBUG
+	quit_fmt("Invalid member, \"%s\", in stats_level_data_offsetof()",
+		member);
+	return 0;
+#else
 	assert(0);
+#endif
 }
 
 /**
@@ -1164,7 +1170,13 @@ static int stats_wearables_data_offsetof(const char *member)
 		return offsetof(struct wearables_data, modifiers);
 		
 	/* We should not get to this point. */
+#ifdef NDEBUG
+	quit_fmt("Invalid member, \"%s\", in stats_wearables_data_offsetof()",
+		member);
+	return 0;
+#else
 	assert(0);
+#endif
 }
 
 /**
