@@ -32,10 +32,10 @@ jobs:
         id: cmake_build
         run: |
           start_time=$(date +%s)
-          mkdir build-mingw-debug
-          cd build-mingw-debug
+          mkdir build
+          cd build
           cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-i686-mingw32-cross.cmake -DCMAKE_BUILD_TYPE=Debug ..
-          cmake --build . -j$(nproc)
+          ninja -j$(nproc)
           end_time=$(date +%s)
           echo "cmake_time=$((end_time - start_time))" >> $GITHUB_OUTPUT
 

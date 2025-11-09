@@ -364,21 +364,19 @@ worked as the contents of a minimal toolchain file::
 	set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 	set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
-With Wine installed on that system, you could add this to the toolchain file::
+With Wine installed on that system and this in the toolchain file::
 
 	set(CMAKE_CROSSCOMPILING_EMULATOR wine)
 
-so the unit test cases could be run from cmake (for instance with
-"cmake --build . --target allunittests").
+the unit test cases can be run from cmake.
 
-If the toolchain file was saved as /home/user/mingw-cross.cmake, then you could
-use this to perform the build::
+To perform the build::
 
 	mkdir build && cd build
-	cmake -DCMAKE_TOOLCHAIN_FILE=/home/user/mingw-cross.cmake ..
-	cmake --build .
+	cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-i686-mingw32-cross.cmake ..
+	cmake --build . -- -j$(nproc)
 
-That will leave an Angband.exe and the needed .dll files in the directory
+That will leave an Angband.exe and the needed .dll files in the `dist` subdirectory
 where cmake was run.  That executable can be run with wine:
 
 	wine Angband.exe

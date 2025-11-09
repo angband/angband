@@ -8,6 +8,11 @@ MACRO(CONFIGURE_GCU_FRONTEND _NAME_TARGET)
     FIND_PACKAGE(Curses)
 
     IF (CURSES_FOUND)
+        # Ensure #include <ncurses.h> works if it is in a subdirectory (on MSYS2)
+        IF (EXISTS "${CURSES_INCLUDE_DIRS}/ncursesw/ncurses.h")
+            SET(CURSES_INCLUDE_DIRS "${CURSES_INCLUDE_DIRS}/ncursesw")
+        ENDIF()
+        message(STATUS "CURSES_INCLUDE_DIRS=${CURSES_INCLUDE_DIRS}")
 
         TARGET_LINK_LIBRARIES(${_NAME_TARGET} PRIVATE ${CURSES_LIBRARIES})
         TARGET_INCLUDE_DIRECTORIES(${_NAME_TARGET} PRIVATE ${CURSES_INCLUDE_DIRS})

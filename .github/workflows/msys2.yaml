@@ -23,6 +23,8 @@ jobs:
             make
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-ncurses
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
 
       - name: Clone Project
         uses: actions/checkout@v4
@@ -31,6 +33,16 @@ jobs:
         run: |
           cd src
           make -f Makefile.msys2
+
+      - name: Build with CMake/Ninja
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja \
+            -DSUPPORT_GCU_FRONTEND=ON \
+            -DCMAKE_TOOLCHAIN_FILE=../toolchains/msys2-mingw64-gcu.cmake \
+            ..
+          ninja -j$(nproc) --verbose
 
   sdl:
     name: SDL2
@@ -52,6 +64,8 @@ jobs:
             mingw-w64-x86_64-SDL2_ttf
             mingw-w64-x86_64-SDL2_image
             mingw-w64-x86_64-SDL2_mixer
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
 
       - name: Clone Project
         uses: actions/checkout@v4
@@ -60,6 +74,13 @@ jobs:
         run: |
           cd src
           make -f Makefile.msys2.sdl2 SOUND=yes
+
+      - name: Build with CMake/Ninja
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON ..
+          ninja -j$(nproc)
 
   makefile-win:
     name: Makefile-win
@@ -140,16 +161,16 @@ jobs:
 
       - name: Configure with CMake/Ninja
         run: |
-          mkdir build-msys2-win32
-          cd build-msys2-win32
+          mkdir build
+          cd build
           cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DCMAKE_BUILD_TYPE=Release ..
 
       - name: Build with Ninja
         run: |
-          cd build-msys2-win32
-          cmake --build . -j$(nproc)
+          cd build
+          ninja -j$(nproc)
 
       - name: Run Tests
         run: |
-          cd build-msys2-win32
-          cmake --build . --target alltests
+          cd build
+          ninja -j$(nproc) alltests
