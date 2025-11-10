@@ -89,7 +89,6 @@
 #define IDM_OPTIONS_GRAPHICS_NICE   445
 #define IDM_OPTIONS_LOW_PRIORITY    420
 #define IDM_OPTIONS_SAVER           430
-#define IDM_OPTIONS_MAP             440
 #define IDM_OPTIONS_SCREENSHOT      441
 
 #define IDM_OPTIONS_TILE_1x1        447

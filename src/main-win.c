@@ -2629,6 +2629,21 @@ static void windows_map(void)
 }
 
 
+static void term_view_map_hook(term* t) {
+	(void)t;
+
+    if (!use_graphics) {
+		/* Fall back to default view of map */
+		Term->view_map_hook = NULL;
+		do_cmd_view_map();
+		Term->view_map_hook = term_view_map_hook;
+		return;
+	}
+
+	windows_map();
+}
+
+
 /**
  * ------------------------------------------------------------------------
  *  Other routines
@@ -2669,6 +2684,7 @@ static void term_data_link(term_data *td)
 	t->text_hook = Term_text_win;
 	t->pict_hook = Term_pict_win;
 	t->dblh_hook = NULL;
+	t->view_map_hook = term_view_map_hook;
 
 	/* Remember where we came from */
 	t->data = td;
@@ -3071,14 +3087,6 @@ static void setup_menus(void)
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	EnableMenuItem(hm, IDM_OPTIONS_LOW_PRIORITY,
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-
-	/* Menu "Options", Item "Map" */
-	if (inkey_flag && initialized && (use_graphics != GRAPHICS_NONE))
-		EnableMenuItem(GetMenu(data[0].w), IDM_OPTIONS_MAP,
-					   MF_BYCOMMAND | MF_ENABLED);
-	else
-		EnableMenuItem(GetMenu(data[0].w), IDM_OPTIONS_MAP,
-		               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
 	/* Menu "Options", update all */
 	mode = graphics_modes;
@@ -4085,18 +4093,6 @@ static void process_menus(WORD wCmd)
 			/* Toggle priority */
 			low_priority = !low_priority;
 
-			break;
-		}
-
-		case IDM_OPTIONS_MAP:
-		{
-			/* Paranoia */
-			if (!inkey_flag || !initialized) {
-				plog("You may not do that right now.");
-				break;
-			}
-
-			windows_map();
 			break;
 		}
 
