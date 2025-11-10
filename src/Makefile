@@ -13,7 +13,7 @@ CFLAGS += -DHAVE_VERSION_H
 CFLAGS += -I. -fPIC -std=c99
 # Replace above line with the two below and then look at gmon.out
 # to do performance monitoring
-# CFLAGS += -g -pg -I. -fPIC -std=c99 -O0
+# CFLAGS += -g -pg -I. -fPIC -std=c99
 # LDFLAGS += -g -pg
 
 # gcov intermediate data
