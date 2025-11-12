@@ -277,7 +277,7 @@ jobs:
       # (or link with -s) afterwards to achieve the same reduced size.
       #
       # The main size reduction comes from removing -g.
-      # Using -s or defining NDEBUG has no further measurable effect.
+      # Using -s or defining NDEBUG has no further measurable effect on the size.
       # Optimizing for size (-Os) gives an additional ~13–18 % reduction after stripping.
       #
       # Example measurements:
