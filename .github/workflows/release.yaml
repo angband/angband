@@ -252,7 +252,7 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install gcc-mingw-w64 automake autoconf git make zip cmake ninja-build
+          sudo apt-get install gcc-mingw-w64 automake autoconf git make zip
 
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
@@ -304,49 +304,6 @@ jobs:
           path: ${{ steps.create_windows_archive.outputs.archive_file }}
           retention-days: 1
 
-      - name: Build release version with CMake/Ninja
-        id: cmake_build
-        run: |
-          mkdir build
-          cd build
-          cmake -G Ninja \
-            -DSUPPORT_WINDOWS_FRONTEND=ON \
-            -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-i686-mingw32-cross.cmake \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG" \
-            ..
-          ninja -j$(nproc)
-          # Get file size for comparison
-          file_size=$(stat -c%s "Angband.exe")
-          echo "cmake_file_size=$file_size" >> $GITHUB_OUTPUT
-
-      - name: Create CMake/Ninja distribution package
-        run: |
-          cd build
-          # Copy required DLLs
-          cp ../src/win/dll/libpng12.dll ../src/win/dll/zlib1.dll .
-          # Create zip with same structure as autotools build
-          archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
-          zip ${archive_prefix}-cmake-win.zip Angband.exe libpng12.dll zlib1.dll
-          echo "cmake_archive=${archive_prefix}-cmake-win.zip" >> $GITHUB_ENV
-
-      - name: Upload CMake/Ninja build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: cmake-ninja-build
-          path: |
-            build/Angband.exe
-            build/${{ env.cmake_archive }}
-          retention-days: 1
-
-      - name: Compare build sizes
-        run: |
-          autotools_size=$(stat -c%s "src/angband.exe")
-          cmake_size=${{ steps.cmake_build.outputs.cmake_file_size }}
-          echo "Autotools build size: $autotools_size bytes"
-          echo "CMake/Ninja build size: $cmake_size bytes"
-          echo "Size difference: $(( cmake_size - autotools_size )) bytes"
-
   mac:
     needs: [setup, docconvert]
     name: Mac
@@ -393,7 +350,7 @@ jobs:
         id: create_mac_archive
         run: |
           cd src
-          env OPT="-O2 -DNDEBUG" make -f Makefile.osx  -j$(nproc) dist
+          env OPT="-O2 -DNDEBUG" make -f Makefile.osx -j$(sysctl -n hw.ncpu) dist
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}-osx
           echo "archive_file=${archive_prefix}.dmg" >> $GITHUB_OUTPUT
 

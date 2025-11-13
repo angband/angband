@@ -24,7 +24,7 @@ jobs:
           start_time=$(date +%s)
           ./autogen.sh
           ./configure --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32
-          make
+          make -j$(nproc)
           end_time=$(date +%s)
           echo "autotools_time=$((end_time - start_time))" >> $GITHUB_OUTPUT
 

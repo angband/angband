@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5...3.26 FATAL_ERROR)
 PROJECT(Angband LANGUAGES C)
-SET(OUR_EXECUTABLE_NAME ${PROJECT_NAME})
+STRING(TOLOWER ${PROJECT_NAME} OUR_EXECUTABLE_NAME)
 
 # Append the custom modules to the search path.
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/modules")
@@ -123,8 +123,7 @@ IF(SUPPORT_WINDOWS_FRONTEND)
         SET(SUPPORT_SDL2_SOUND OFF)
     ENDIF()
     # Set up the path for the source of the resource file.
-    STRING(TOLOWER ${OUR_EXECUTABLE_NAME} OUR_WINDOWS_RC_BASE)
-    STRING(CONCAT OUR_WINDOWS_RC src/win/ ${OUR_WINDOWS_RC_BASE} .rc)
+    STRING(CONCAT OUR_WINDOWS_RC src/win/ ${OUR_EXECUTABLE_NAME} .rc)
     # Enable compilation of resource files.
     ENABLE_LANGUAGE(RC)
 ENDIF()
@@ -794,24 +793,29 @@ IF(SC_INSTALL)
     )
 
     IF(SUPPORT_WINDOWS_FRONTEND)
-        # Transfer the packaged DLLs and EXE to the distribution root
-        SET(DIST_DIR "${CMAKE_CURRENT_BINARY_DIR}/dist")
-        
-        # Note that building the executable in the same directory as the DLLs fails in MSYS2 MINGW32.
-        ADD_CUSTOM_COMMAND(TARGET OurExecutable POST_BUILD
-            # Copy executable (rename to lowercase)
+        # Transfer the packaged DLLs so there in the same directory as the
+        # executable.
+
+        # Step 1: WORKAROUND: delete DLLs before build to prevent compilation confusion on at least MSYS2 MINGW32
+        add_custom_command(
+            TARGET OurExecutable PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E rm -f
+                "$<TARGET_FILE_DIR:OurExecutable>/zlib1.dll"
+                "$<TARGET_FILE_DIR:OurExecutable>/libpng12.dll"
+            COMMENT "Removing pre-existing DLLs to avoid compilation confusion"
+        )
+
+        # Step 2: copy DLLs back after successful linking
+        add_custom_command(
+            TARGET OurExecutable 
+            POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "$<TARGET_FILE:OurExecutable>"
-                "${DIST_DIR}/angband.exe"
-            # Copy source DLLs from src/win/dll/
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/win/dll/zlib1.dll"
+                "$<TARGET_FILE_DIR:OurExecutable>/zlib1.dll"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${CMAKE_SOURCE_DIR}/src/win/dll/libpng12.dll"
-                "${DIST_DIR}/libpng12.dll"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${CMAKE_SOURCE_DIR}/src/win/dll/zlib1.dll"
-                "${DIST_DIR}/zlib1.dll"
-            COMMENT "Copying Angband.exe and DLLs to ${DIST_DIR}"
-            VERBATIM
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/win/dll/libpng12.dll"
+                "$<TARGET_FILE_DIR:OurExecutable>/libpng12.dll"
+            COMMENT "Copying required DLLs to the output directory"
         )
     ENDIF()
 ENDIF()

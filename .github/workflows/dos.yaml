@@ -27,4 +27,4 @@ jobs:
           rm "$archive"
           PATH="$PATH":"`pwd`/djgpp/bin"
           cd src
-          make -f Makefile.ibm
+          make -f Makefile.ibm -j$(nproc)

@@ -16,7 +16,7 @@ jobs:
       - name: Build
         run: |
           cd src
-          make -f Makefile.osx
+          make -f Makefile.osx -j$(sysctl -n hw.ncpu)
 
   autoconf:
     runs-on: macos-latest

@@ -177,7 +177,7 @@ one or more of the other graphical front ends are selected. The graphical front
 ends are: GCU, SDL, SDL2 and X11.  All of the following generate a
 self-contained directory, build, that you can move elsewhere or rename.  To
 run the result, change directories to build (or whatever you renamed it to) and
-run ./Angband .
+run ./angband .
 
 To build Angband with the X11 front end::
 
@@ -204,18 +204,6 @@ To build Angband with the GCU front end::
 
     mkdir build && cd build
     cmake -DSUPPORT_GCU_FRONTEND=ON ..
-    make
-
-On OpenBSD (at least with OpenBSD 6.9), there's known issues with detecting
-the software needed for the GCU front end.  As a workaround, you could use
-this instead::
-
-    mkdir build && cd build
-    mkdir -p ncursesw/include/ncursesw
-    ln -s /usr/include/ncurses.h ncursesw/include/ncursesw
-    mkdir -p ncursesw/lib
-    ln -s /usr/lib/libncursesw.so* ncursesw/lib
-    cmake -DCMAKE_PREFIX_PATH=`pwd`/ncursesw -DSUPPORT_GCU_FRONTEND=ON ..
     make
 
 You can build support for more than one of the graphical front ends by setting
@@ -269,7 +257,7 @@ set the destination when running cmake by setting the variables mentioned above.
 Speeding up CMake with Ninja and multiple cores
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For faster builds, you can switch from the default Makefile generator to Ninja, 
+ For faster builds, you can switch from the default Makefile generator to Ninja, 
 which is optimized for parallel compilation.  
 Instead of:
 
@@ -304,7 +292,22 @@ Many developers (as well as the auto-builder) build Angband for Windows using
 Mingw on Linux. This requires that the necessary Mingw packages are all
 installed.
 
-This type of build now also uses autotools so the overall procedure is very
+A build using Mingw cross-compiler is possible with CMake.
+
+To perform the build::
+
+	mkdir build && cd build
+	cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-i686-mingw32-cross.cmake ..
+	cmake --build . -- -j$(nproc)
+
+That will leave an angband.exe and the needed .dll files in the directory
+where cmake was run.  That executable can be run with wine:
+
+	wine angband.exe
+
+The unit test cases can also be run from cmake.
+
+This type of build can also use autotools to make the overall procedure very
 similar to that for a native build.  The key difference is setting up to
 cross-compile when running configure.
 
@@ -347,39 +350,6 @@ process to fail when linking angband.exe (the error message will likely be
 --enable options for configure are not appropriate when using --enable-win.
 The ones that are okay are --with-private-dirs (on by default),
 --with-gamedata-in-lib (has no effect), and --enable-release.
-
-A build using Mingw cross-compiler is also possible with CMake.  You will
-need to have a toolchain file appropriate for Mingw on your system.  Some
-information on toolchain files can be found at https://cmake.org/cmake/help/book/mastering-cmake/chapter/Cross%20Compiling%20With%20CMake.html .
-On a Debian 11 system using Mingw from the gcc-mingw-w64 package (that puts
-the Mingw executables in /usr/bin with the prefix, i686-w64-mingw32-, and
-has the other files for cross-compiling in /usr/i686-w64-mingw32), this
-worked as the contents of a minimal toolchain file::
-
-	set(CMAKE_SYSTEM_NAME Windows)
-	set(CMAKE_C_COMPILER i686-w64-mingw32-gcc)
-	set(CMAKE_RC_COMPILER i686-w64-mingw32-windres)
-	set(CMAKE_FIND_ROOT_PATH /usr/i686-w64-mingw32)
-	set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-	set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-	set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-
-With Wine installed on that system and this in the toolchain file::
-
-	set(CMAKE_CROSSCOMPILING_EMULATOR wine)
-
-the unit test cases can be run from cmake.
-
-To perform the build::
-
-	mkdir build && cd build
-	cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-i686-mingw32-cross.cmake ..
-	cmake --build . -- -j$(nproc)
-
-That will leave an Angband.exe and the needed .dll files in the `dist` subdirectory
-where cmake was run.  That executable can be run with wine:
-
-	wine Angband.exe
 
 Debug build
 ~~~~~~~~~~~

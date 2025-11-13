@@ -23,6 +23,7 @@ jobs:
           mkdir build
           cd build
           env CFLAGS=-Wall cmake -G Ninja -DSUPPORT_TEST_FRONTEND=ON ..
+          ninja -j$(nproc)
           ninja -j$(nproc) alltests
 
   x11:
@@ -98,7 +99,7 @@ jobs:
         run: |
           ./autogen.sh
           ./configure --with-no-install --enable-sdl2 --enable-sdl2-mixer
-          make
+          make -j$(nproc)
 
       - name: Build with CMake/Ninja
         run: |
@@ -125,7 +126,7 @@ jobs:
         run: |
           ./autogen.sh
           env CFLAGS="-Wvla -Wlogical-op" ./configure --with-no-install --enable-stats --enable-test --enable-sdl-mixer
-          make
+          make -j$(nproc)
 
   makefilestd:
     name: Makefile.std
@@ -143,7 +144,7 @@ jobs:
         run: |
           cd src
           sed -e 's/^# SYS_x11 =/SYS_x11 =/' -e 's/^# SYS_sdl =/SYS_sdl=/' -e 's/^# SYS_stats =/SYS_stats =/' -e 's/^# SYS_stats_objs =/SYS_stats_objs =/' -e 's/^#SOUND_sdl =/SOUND_sdl =/' -e 's/^#SOUND_sdl_objs =/SOUND_sdl_objs =/' <Makefile.std >Makefile.std.modified
-          make -f Makefile.std.modified
+          make -f Makefile.std.modified -j$(nproc)
           make -f Makefile.std.modified clean
           sed -e 's/^# SYS_sdl2 =/SYS_sdl2 =/' -e 's/^# SYS_sdl2_objs =/SYS_sdl2_objs =/' -e 's/^#SOUND_sdl2 =/SOUND_sdl2 =/' -e 's/^#SOUND_sdl_objs =/SOUND_sdl_objs =/' <Makefile.std >Makefile.std.modified
-          make -f Makefile.std.modified
+          make -f Makefile.std.modified -j$(nproc)

@@ -32,7 +32,7 @@ jobs:
       - name: Build
         run: |
           cd src
-          make -f Makefile.msys2
+          make -f Makefile.msys2 -j$(nproc)
 
       - name: Build with CMake/Ninja
         run: |
@@ -42,7 +42,7 @@ jobs:
             -DSUPPORT_GCU_FRONTEND=ON \
             -DCMAKE_TOOLCHAIN_FILE=../toolchains/msys2-mingw64-gcu.cmake \
             ..
-          ninja -j$(nproc) --verbose
+          ninja -j$(nproc)
 
   sdl:
     name: SDL2
@@ -73,7 +73,7 @@ jobs:
       - name: Build
         run: |
           cd src
-          make -f Makefile.msys2.sdl2 SOUND=yes
+          make -f Makefile.msys2.sdl2 SOUND=yes -j$(nproc)
 
       - name: Build with CMake/Ninja
         run: |
@@ -107,7 +107,7 @@ jobs:
       - name: Build
         run: |
           cd src
-          make -f Makefile.win MINGW=yes
+          make -f Makefile.win MINGW=yes -j$(nproc)
 
   configure-win:
     runs-on: windows-latest
@@ -163,7 +163,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DCMAKE_BUILD_TYPE=Release ..
+          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON ..
 
       - name: Build with Ninja
         run: |
