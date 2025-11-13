@@ -120,5 +120,6 @@ void player_handle_post_move(struct player *p, bool eval_trap,
 		bool is_involuntary);
 void disturb(struct player *p);
 void search(struct player *p);
+bool player_has_monster_in_view(const struct player *p);
 
 #endif /* !PLAYER_UTIL_H */

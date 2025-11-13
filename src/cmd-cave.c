@@ -1407,8 +1407,6 @@ void do_cmd_run(struct command *cmd)
  */
 void do_cmd_navigate_down(struct command *cmd)
 {
-	int visible_monster_count = 0;
-
 	/* cancel if confused */
 	if (player->timed[TMD_CONFUSED]) {
 		msg("You cannot explore while confused.");
@@ -1427,24 +1425,7 @@ void do_cmd_navigate_down(struct command *cmd)
 
 
 	/* Screen for visible monsters */
-	for (int y = 0; y < cave->height; y++) {
-		for (int x = 0; x < cave->width; x++) {
-			struct loc grid = loc(x, y);
-
-			if (loc_eq(grid, player->grid)) continue;
-
-			if (square_isoccupied(cave, grid)) {
-				int m_idx = square(cave, grid)->mon;
-				struct monster *mon = cave_monster(cave, m_idx);
-				if (monster_is_obvious(mon)) {
-					visible_monster_count++;
-					break;
-				}
-			}
-		}
-	}
-
-	if (visible_monster_count > 0) {
+	if (player_has_monster_in_view(player)) {
 		msg("Something is here.");
 		return;
 	}
@@ -1471,7 +1452,6 @@ void do_cmd_navigate_down(struct command *cmd)
  */
 void do_cmd_navigate_up(struct command *cmd)
 {
-	int visible_monster_count = 0;
 	/* cancel if confused */
 	if (player->timed[TMD_CONFUSED]) {
 		msg("You cannot explore while confused.");
@@ -1490,24 +1470,7 @@ void do_cmd_navigate_up(struct command *cmd)
 
 
 	/* Screen for visible monsters */
-	for (int y = 0; y < cave->height; y++) {
-		for (int x = 0; x < cave->width; x++) {
-			struct loc grid = loc(x, y);
-
-			if (loc_eq(grid, player->grid)) continue;
-
-			if (square_isoccupied(cave, grid)) {
-				int m_idx = square(cave, grid)->mon;
-				struct monster *mon = cave_monster(cave, m_idx);
-				if (monster_is_obvious(mon)) {
-					visible_monster_count++;
-					break;
-				}
-			}
-		}
-	}
-
-	if (visible_monster_count > 0) {
+	if (player_has_monster_in_view(player)) {
 		msg("Something is here.");
 		return;
 	}
@@ -1534,8 +1497,6 @@ void do_cmd_navigate_up(struct command *cmd)
  */
 void do_cmd_explore(struct command *cmd)
 {
-	bool visible_monster = false;
-
 	/* Do nothing if autoexplore commands disabled. */
 	if (!OPT(player, autoexplore_commands)) {
 		return;
@@ -1559,24 +1520,7 @@ void do_cmd_explore(struct command *cmd)
 
 
 	/* Screen for visible monsters */
-	for (int y = 0; y < cave->height && !visible_monster; y++) {
-		for (int x = 0; x < cave->width; x++) {
-			struct loc grid = loc(x, y);
-
-			if (loc_eq(grid, player->grid)) continue;
-
-			if (square_isoccupied(cave, grid)) {
-				int m_idx = square(cave, grid)->mon;
-				struct monster *mon = cave_monster(cave, m_idx);
-				if (monster_is_obvious(mon)) {
-					visible_monster = true;
-					break; /* only breaks the inner loop */
-				}
-			}
-		}
-	}
-
-	if (visible_monster) {
+	if (player_has_monster_in_view(player)) {
 		msg("Something is here.");
 		return;
 	}
