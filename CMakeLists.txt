@@ -795,21 +795,7 @@ IF(SC_INSTALL)
     IF(SUPPORT_WINDOWS_FRONTEND)
         # Transfer the packaged DLLs so there in the same directory as the
         # executable.
-
-        # WORKAROUND: Prevent compiler confusion from leftover DLLs in the build directory.
-        # Some compilers (MSYS2 MINGW32) misinterpret .dll files, leading to
-        # mysterious "exit 1" failures without error output. We remove them before
-        # (re)building targets and restore them later if needed.
-        ADD_CUSTOM_TARGET(clean_dlls
-            COMMAND ${CMAKE_COMMAND} -E remove -f ${CMAKE_CURRENT_BINARY_DIR}/*.dll
-            COMMENT "Removing stray DLLs before building tests to avoid compiler confusion."
-        )
-
-        # Ensure stray DLLs are removed before build
-        add_dependencies(OurExecutable clean_dlls)
-
-        # Copy DLLs back after successful linking
-        add_custom_command(
+        ADD_CUSTOM_COMMAND(
             TARGET OurExecutable 
             POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -931,7 +917,7 @@ IF((NOT CMAKE_CROSSCOMPILING) AND SUPPORT_TEST_FRONTEND)
     ADD_CUSTOM_TARGET(alltests
         COMMAND ${CMAKE_CURRENT_BINARY_DIR}/run-tests ${TEST_EXECUTABLE}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-    ADD_DEPENDENCIES(alltests clean_dlls OurExecutable)
+    ADD_DEPENDENCIES(alltests OurExecutable)
     IF(SC_INSTALL)
         ADD_DEPENDENCIES(alltests TransferLib)
     ENDIF()
@@ -1078,3 +1064,17 @@ ELSE()
     ADD_CUSTOM_TARGET(allunittests)
 ENDIF()
 ADD_DEPENDENCIES(alltests allunittests)
+
+# ----------------------------------------------------------------------
+# Workaround for MinGW/MSYS2 issue: the presence of .dll files in the
+# build directory can cause the compiler to fail with exit code 1 and
+# no diagnostics. To prevent that, we remove the DLLs before each build.
+# ----------------------------------------------------------------------
+if(DEFINED ENV{MSYSTEM})
+    ADD_CUSTOM_TARGET(clean_dlls
+        COMMAND ${CMAKE_COMMAND} -E echo "WORKAROUND: Remove DLLs before compilation to avoid failure of CC on MSYS2"
+        COMMAND ${CMAKE_COMMAND} -E remove -f "${CMAKE_CURRENT_BINARY_DIR}/zlib1.dll" "${CMAKE_CURRENT_BINARY_DIR}/libpng12.dll"
+    )
+    ADD_DEPENDENCIES(OurExecutable clean_dlls)
+    ADD_DEPENDENCIES(OurUnitTestLib clean_dlls)
+endif()
