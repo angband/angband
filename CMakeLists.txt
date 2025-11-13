@@ -796,16 +796,19 @@ IF(SC_INSTALL)
         # Transfer the packaged DLLs so there in the same directory as the
         # executable.
 
-        # Step 1: WORKAROUND: delete DLLs before build to prevent compilation confusion on at least MSYS2 MINGW32
-        add_custom_command(
-            TARGET OurExecutable PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -E rm -f
-                "$<TARGET_FILE_DIR:OurExecutable>/zlib1.dll"
-                "$<TARGET_FILE_DIR:OurExecutable>/libpng12.dll"
-            COMMENT "Removing pre-existing DLLs to avoid compilation confusion"
+        # WORKAROUND: Prevent compiler confusion from leftover DLLs in the build directory.
+        # Some compilers (MSYS2 MINGW32) misinterpret .dll files, leading to
+        # mysterious "exit 1" failures without error output. We remove them before
+        # (re)building targets and restore them later if needed.
+        ADD_CUSTOM_TARGET(clean_dlls
+            COMMAND ${CMAKE_COMMAND} -E remove -f ${CMAKE_CURRENT_BINARY_DIR}/*.dll
+            COMMENT "Removing stray DLLs before building tests to avoid compiler confusion."
         )
 
-        # Step 2: copy DLLs back after successful linking
+        # Ensure stray DLLs are removed before build
+        add_dependencies(OurExecutable clean_dlls)
+
+        # Copy DLLs back after successful linking
         add_custom_command(
             TARGET OurExecutable 
             POST_BUILD
@@ -928,7 +931,7 @@ IF((NOT CMAKE_CROSSCOMPILING) AND SUPPORT_TEST_FRONTEND)
     ADD_CUSTOM_TARGET(alltests
         COMMAND ${CMAKE_CURRENT_BINARY_DIR}/run-tests ${TEST_EXECUTABLE}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-    ADD_DEPENDENCIES(alltests OurExecutable)
+    ADD_DEPENDENCIES(alltests clean_dlls OurExecutable)
     IF(SC_INSTALL)
         ADD_DEPENDENCIES(alltests TransferLib)
     ENDIF()
