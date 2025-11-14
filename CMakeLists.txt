@@ -804,8 +804,6 @@ IF(SC_INSTALL)
             POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "$<TARGET_PROPERTY:${PNG_TO_LINK},IMPORTED_LOCATION>"
-                "$<TARGET_FILE_DIR:OurExecutable>"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "$<TARGET_PROPERTY:${ZLIB_TO_LINK},IMPORTED_LOCATION>"
                 "$<TARGET_FILE_DIR:OurExecutable>"
             COMMENT "Copying PNG and ZLIB DLLs to build directory"

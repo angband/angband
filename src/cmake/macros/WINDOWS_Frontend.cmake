@@ -1,60 +1,75 @@
-function(_deduce_dll_path lib_path dll_out)
-    # This function tries to deduce a DLL name from an import library (.dll.a or .lib)
-    # Works reliably for MSYS2/MinGW, also falls back to naive heuristic for others
+# Option to control verbosity of DLL deduction
+option(DLL_DEDUCE_VERBOSE "Show debug messages during DLL deduction" OFF)
 
+function(_deduce_dll_path lib_path dll_out dll_pattern)
+    # dll_pattern: optional glob pattern, e.g., "zlib*.dll"
     if(NOT EXISTS "${lib_path}")
+        if(DLL_DEDUCE_VERBOSE)
+            message(STATUS "[_deduce_dll_path] Library does not exist: ${lib_path}")
+        endif()
         set(${dll_out} "" PARENT_SCOPE)
         return()
     endif()
 
-    get_filename_component(_lib_dir "${lib_path}" DIRECTORY)
+    get_filename_component(_lib_dir  "${lib_path}" DIRECTORY)
     get_filename_component(_lib_name "${lib_path}" NAME_WE)
-
-    message(STATUS "---- DLL deduction start ----")
-    message(STATUS "Import lib path input: '${lib_path}'")
-    message(STATUS " Directory: ${_lib_dir}")
-    message(STATUS " Base name: ${_lib_name}")
-
     set(_dll_candidate "")
+    set(_pattern "${dll_pattern}")
 
-    # --- Detect MSYS2/MinGW automatically ---
-    if(EXISTS "${_lib_dir}/../bin")  # heuristic: MSYS2 places DLLs in /mingw32/bin
-        set(_bin_dir "${_lib_dir}/../bin")
-        message(STATUS "[MSYS2] Searching in: ${_bin_dir}")
-        file(GLOB _dlls "${_bin_dir}/*${_lib_name}*.dll")
-        if(_dlls)
-            list(GET _dlls 0 _dll_candidate)
-            message(STATUS "[MSYS2] Chosen DLL: ${_dll_candidate}")
+    if(NOT _pattern)
+        set(_pattern "${_lib_name}*.dll")
+        if(DLL_DEDUCE_VERBOSE)
+            message(STATUS "[_deduce_dll_path] Using derived pattern: ${_pattern}")
         endif()
     endif()
 
-    # --- fallback: naive heuristics ---
-    if(NOT _dll_candidate)
-        set(_candidates
-            "${_lib_dir}/${_lib_name}.dll"
-            "${_lib_dir}/../bin/${_lib_name}.dll"
-            "${_lib_dir}/../lib/${_lib_name}.dll"
-            "${_lib_dir}/../lib/${_lib_name}1.dll"
-            "${_lib_dir}/../bin/${_lib_name}1.dll"
-        )
-        foreach(_cand IN LISTS _candidates)
-            if(EXISTS "${_cand}")
-                set(_dll_candidate "${_cand}")
-                break()
-            endif()
-        endforeach()
+    set(_search_dirs
+        "${_lib_dir}"
+        "${_lib_dir}/../bin"
+        "${_lib_dir}/../lib"
+    )
+
+    if(DLL_DEDUCE_VERBOSE)
+        message(STATUS "[_deduce_dll_path] Searching DLLs using pattern '${_pattern}'")
     endif()
 
-    if(_dll_candidate)
-        message(STATUS "DLL deduced: ${_dll_candidate}")
-        set(${dll_out} "${_dll_candidate}" PARENT_SCOPE)
+    set(_all_found "")
+    foreach(_dir IN LISTS _search_dirs)
+        if(EXISTS "${_dir}")
+            file(GLOB _dlls "${_dir}/${_pattern}")
+            list(APPEND _all_found ${_dlls})
+        endif()
+    endforeach()
+
+    list(REMOVE_DUPLICATES _all_found)
+    list(SORT _all_found)
+
+    if(DLL_DEDUCE_VERBOSE)
+        message(STATUS "[_deduce_dll_path] Candidate DLLs:")
+        if(_all_found)
+            foreach(c ${_all_found})
+                message(STATUS "   - ${c}")
+            endforeach()
+        else()
+            message(STATUS "   (none found)")
+        endif()
+    endif()
+
+    # Pick the first candidate
+    list(GET _all_found 0 _picked_candidate)
+    if(_picked_candidate)
+        set(_dll_candidate "${_picked_candidate}")
+        if(DLL_DEDUCE_VERBOSE)
+            message(STATUS "[_deduce_dll_path] Selected DLL: ${_dll_candidate}")
+        endif()
     else()
-        message(WARNING "No DLL was found for '${lib_path}'")
-        set(${dll_out} "" PARENT_SCOPE)
+        if(DLL_DEDUCE_VERBOSE)
+            message(WARNING "[_deduce_dll_path] No DLL matched pattern '${_pattern}' for '${lib_path}'")
+        endif()
     endif()
-    message(STATUS "---- DLL deduction end ----")
-endfunction()
 
+    set(${dll_out} "${_dll_candidate}" PARENT_SCOPE)
+endfunction()
 MACRO(CONFIGURE_WINDOWS_FRONTEND _NAME_TARGET _ONLY_DEFINES)
     # --- PNG detection ---
     find_package(PNG QUIET)
@@ -65,14 +80,12 @@ MACRO(CONFIGURE_WINDOWS_FRONTEND _NAME_TARGET _ONLY_DEFINES)
             message(STATUS "  Include dirs: ${PNG_INCLUDE_DIRS}")
             message(STATUS "  Libraries:    ${PNG_LIBRARIES}")
 
-            # Try to extract the first library path for PNG
             list(GET PNG_LIBRARIES 0 PNG_IMPLIB_PATH)
-            message(STATUS "  Implib:       ${PNG_IMPLIB_PATH}")
+            message(STATUS "  PNG implib:   ${PNG_IMPLIB_PATH}")
 
-            _deduce_dll_path("${PNG_IMPLIB_PATH}" PNG_DLL_PATH)
-            message(STATUS "  DLL:          ${PNG_DLL_PATH}")
+            _deduce_dll_path("${PNG_IMPLIB_PATH}" PNG_DLL_PATH "")
+            message(STATUS "  PNG DLL:      ${PNG_DLL_PATH}")
 
-            # Create imported targets
             add_library(SystemPNG SHARED IMPORTED)
             set_target_properties(SystemPNG PROPERTIES
                 IMPORTED_IMPLIB "${PNG_IMPLIB_PATH}"
@@ -80,23 +93,21 @@ MACRO(CONFIGURE_WINDOWS_FRONTEND _NAME_TARGET _ONLY_DEFINES)
                 INTERFACE_INCLUDE_DIRECTORIES "${PNG_INCLUDE_DIRS}"
             )
 
-            # Detect ZLIB if present
-            if(ZLIB_FOUND)
-                message(STATUS "Using system ZLIB: ${ZLIB_LIBRARY}")
-                message(STATUS "  Version:      ${ZLIB_VERSION_STRING}")
-                message(STATUS "  Include dirs: ${ZLIB_INCLUDE_DIRS}")
-                message(STATUS "  Libraries:    ${ZLIB_LIBRARIES}")
-                list(GET ZLIB_LIBRARIES 0 ZLIB_IMPLIB_PATH)
-                message(STATUS "  Implib:       ${ZLIB_IMPLIB_PATH}")
-                _deduce_dll_path("${ZLIB_IMPLIB_PATH}" ZLIB_DLL_PATH)
-                message(STATUS "  DLL:          ${ZLIB_DLL_PATH}")
+            # ZLIB implib from PNG_LIBRARIES second element
+            list(LENGTH PNG_LIBRARIES PNG_LIB_COUNT)
+            if(PNG_LIB_COUNT GREATER 1)
+                list(GET PNG_LIBRARIES 1 ZLIB_IMPLIB_PATH)
+                message(STATUS "  ZLIB implib:  ${ZLIB_IMPLIB_PATH}")
+
+                _deduce_dll_path("${ZLIB_IMPLIB_PATH}" ZLIB_DLL_PATH "zlib*.dll")
+                message(STATUS "  ZLIB DLL:     ${ZLIB_DLL_PATH}")
 
                 add_library(SystemZLib SHARED IMPORTED)
                 set_target_properties(SystemZLib PROPERTIES
                     IMPORTED_IMPLIB "${ZLIB_IMPLIB_PATH}"
                     IMPORTED_LOCATION "${ZLIB_DLL_PATH}"
-                    INTERFACE_INCLUDE_DIRECTORIES "${ZLIB_INCLUDE_DIRS}"
                 )
+                # Make PNG target link zlib transitively
                 set_target_properties(SystemPNG PROPERTIES INTERFACE_LINK_LIBRARIES SystemZLib)
 
                 set(ZLIB_TO_LINK SystemZLib)
