@@ -1,5 +1,4 @@
 MACRO(CONFIGURE_WINDOWS_FRONTEND _NAME_TARGET _ONLY_DEFINES)
-    # Define imported libraries once globally
     if(NOT TARGET OurWindowsZLib)
         ADD_LIBRARY(OurWindowsZLib SHARED IMPORTED)
         SET_TARGET_PROPERTIES(OurWindowsZLib PROPERTIES
@@ -16,7 +15,6 @@ MACRO(CONFIGURE_WINDOWS_FRONTEND _NAME_TARGET _ONLY_DEFINES)
             "${CMAKE_CURRENT_SOURCE_DIR}/src/win/include")
     endif()
 
-    # Always link and define flags for this target
     if(NOT _ONLY_DEFINES)
         TARGET_LINK_LIBRARIES(${_NAME_TARGET}
             PRIVATE OurWindowsZLib OurWindowsPNGLib msimg32 winmm)
@@ -32,5 +30,9 @@ MACRO(CONFIGURE_WINDOWS_FRONTEND _NAME_TARGET _ONLY_DEFINES)
             -D _CRT_SECURE_NO_WARNINGS
     )
 
-    message(STATUS "Configured Windows front end for target ${_NAME_TARGET}")
+    IF(NOT CONFIGURE_WINDOWS_FRONTEND_INVOKED_PREVIOUSLY)
+        MESSAGE(STATUS "Support for Windows front end - Ready")
+        SET(CONFIGURE_WINDOWS_FRONTEND_INVOKED_PREVIOUSLY YES CACHE
+            INTERNAL "Mark if CONFIGURE_WINDOWS_FRONTEND called successfully" FORCE)
+    ENDIF()
 ENDMACRO()
