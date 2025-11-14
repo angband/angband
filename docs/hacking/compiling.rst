@@ -532,7 +532,7 @@ Using MSYS2 (with MinGW64)
 
 Install the dependencies by::
 
-	pacman -S make mingw-w64-x86_64-gcc
+	pacman -S make mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
 
 The additional dependency for ncurses is::
 
@@ -553,7 +553,9 @@ Then run the following to compile with ncurses::
 
 For SDL2, do::
 
-    cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON ..
+    cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON \
+        -DSUPPORT_SDL2_SOUND=ON \
+        ..
     ninja
 
 Once built, go to game/ subdirectory and start angband by::
