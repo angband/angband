@@ -1066,13 +1066,13 @@ ENDIF()
 ADD_DEPENDENCIES(alltests allunittests)
 
 # ----------------------------------------------------------------------
-# Workaround for MinGW/MSYS2 issue: the presence of .dll files in the
+# Workaround for MinGW/MSYS2 issue: the presence of the .dll files in the
 # build directory can cause the compiler to fail with exit code 1 and
 # no diagnostics. To prevent that, we remove the DLLs before each build.
 # ----------------------------------------------------------------------
 if(DEFINED ENV{MSYSTEM})
     ADD_CUSTOM_TARGET(clean_dlls
-        COMMAND ${CMAKE_COMMAND} -E echo "WORKAROUND: Remove DLLs before compilation to avoid failure of CC on MSYS2"
+        COMMAND ${CMAKE_COMMAND} -E echo "WORKAROUND: Remove DLLs before compilation to avoid failure of CC on MSYS2 because it has its own DLLs that are different"
         COMMAND ${CMAKE_COMMAND} -E remove -f "${CMAKE_CURRENT_BINARY_DIR}/zlib1.dll" "${CMAKE_CURRENT_BINARY_DIR}/libpng12.dll"
     )
     ADD_DEPENDENCIES(OurExecutable clean_dlls)
