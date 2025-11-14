@@ -768,7 +768,11 @@ IF(SC_INSTALL)
         # DATA_PERMISSIONS matches the permissions those files have in the
         # source tree, but should the installed permissions be
         # EXECUTABLE_PERMISSIONS?
-        INSTALL(FILES zlib1.dll libpng12.dll DESTINATION . PERMISSIONS ${DATA_PERMISSIONS})
+        INSTALL(FILES
+            $<TARGET_PROPERTY:${PNG_TO_LINK},IMPORTED_LOCATION>
+            $<TARGET_PROPERTY:${ZLIB_TO_LINK},IMPORTED_LOCATION> 
+            DESTINATION . PERMISSIONS ${DATA_PERMISSIONS}
+        )
     ENDIF()
     INSTALL(DIRECTORY lib/ DESTINATION lib)
     IF(BUILD_DOC)
@@ -793,18 +797,18 @@ IF(SC_INSTALL)
     )
 
     IF(SUPPORT_WINDOWS_FRONTEND)
-        # Transfer the packaged DLLs so there in the same directory as the
+        # Transfer the packaged DLLs so they're in the same directory as the
         # executable.
         ADD_CUSTOM_COMMAND(
             TARGET OurExecutable 
             POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${CMAKE_CURRENT_SOURCE_DIR}/src/win/dll/zlib1.dll"
-                "$<TARGET_FILE_DIR:OurExecutable>/zlib1.dll"
+                "$<TARGET_PROPERTY:${PNG_TO_LINK},IMPORTED_LOCATION>"
+                "$<TARGET_FILE_DIR:OurExecutable>"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${CMAKE_CURRENT_SOURCE_DIR}/src/win/dll/libpng12.dll"
-                "$<TARGET_FILE_DIR:OurExecutable>/libpng12.dll"
-            COMMENT "Copying required DLLs to the output directory"
+                "$<TARGET_PROPERTY:${ZLIB_TO_LINK},IMPORTED_LOCATION>"
+                "$<TARGET_FILE_DIR:OurExecutable>"
+            COMMENT "Copying PNG and ZLIB DLLs to build directory"
         )
     ENDIF()
 ENDIF()
@@ -1070,11 +1074,11 @@ ADD_DEPENDENCIES(alltests allunittests)
 # build directory can cause the compiler to fail with exit code 1 and
 # no diagnostics. To prevent that, we remove the DLLs before each build.
 # ----------------------------------------------------------------------
-if(DEFINED ENV{MSYSTEM})
-    ADD_CUSTOM_TARGET(clean_dlls
-        COMMAND ${CMAKE_COMMAND} -E echo "WORKAROUND: Remove DLLs before compilation to avoid failure of CC on MSYS2"
-        COMMAND ${CMAKE_COMMAND} -E remove -f "${CMAKE_CURRENT_BINARY_DIR}/zlib1.dll" "${CMAKE_CURRENT_BINARY_DIR}/libpng12.dll"
-    )
-    ADD_DEPENDENCIES(OurExecutable clean_dlls)
-    ADD_DEPENDENCIES(OurUnitTestLib clean_dlls)
-endif()
+# if(DEFINED ENV{MSYSTEM})
+#     ADD_CUSTOM_TARGET(clean_dlls
+#         COMMAND ${CMAKE_COMMAND} -E echo "WORKAROUND: Remove DLLs before compilation to avoid failure of CC on MSYS2"
+#         COMMAND ${CMAKE_COMMAND} -E remove -f "${CMAKE_CURRENT_BINARY_DIR}/zlib1.dll" "${CMAKE_CURRENT_BINARY_DIR}/libpng12.dll"
+#     )
+#     ADD_DEPENDENCIES(OurExecutable clean_dlls)
+#     ADD_DEPENDENCIES(OurUnitTestLib clean_dlls)
+# endif()
