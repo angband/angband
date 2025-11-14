@@ -1070,7 +1070,7 @@ ENDIF()
 ADD_DEPENDENCIES(alltests allunittests)
 
 # ----------------------------------------------------------------------
-# Workaround for MinGW/MSYS2 issue: the presence of .dll files in the
+# Workaround for MinGW/MSYS2 issue: the presence of the .dll files in the
 # build directory can cause the compiler to fail with exit code 1 and
 # no diagnostics. To prevent that, we remove the DLLs before each build.
 # ----------------------------------------------------------------------
