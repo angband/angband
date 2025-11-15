@@ -3,9 +3,6 @@
 # Takes one, optional argument, the executable to use.  If not set, will use
 # src/angband.
 
-# Fail if there is an error
-set -e
-
 if test $# -gt 0 ; then
 	if test $# -eq 1 ; then
 		angexe="$1"
@@ -18,11 +15,15 @@ else
 	angexe=src/angband
 fi
 
+if [ ! -d tests ]; then
+    echo "run-tests: error: tests/ directory not found" 2>&1
+    exit 1
+fi
+
 RAN=0
 OK=0
 
-TESTS=`find tests -mindepth 2 -maxdepth 2 -type d -print`
-for x in $TESTS; do
+for x in `find tests -mindepth 2 -maxdepth 2 -type d -print`; do
 	tests/run-test -x "$angexe" $x
 	if [ $? -eq 0 ]; then
 		OK=$(expr $OK + 1)
