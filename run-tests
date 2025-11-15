@@ -3,6 +3,9 @@
 # Takes one, optional argument, the executable to use.  If not set, will use
 # src/angband.
 
+# Fail if there is an error
+set -e
+
 if test $# -gt 0 ; then
 	if test $# -eq 1 ; then
 		angexe="$1"
@@ -18,7 +21,8 @@ fi
 RAN=0
 OK=0
 
-for x in `find tests -mindepth 2 -maxdepth 2 -type d -print`; do
+TESTS=`find tests -mindepth 2 -maxdepth 2 -type d -print`
+for x in $TESTS; do
 	tests/run-test -x "$angexe" $x
 	if [ $? -eq 0 ]; then
 		OK=$(expr $OK + 1)
