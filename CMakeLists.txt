@@ -904,13 +904,23 @@ SET(ANGBAND_TEST_CASE_SOURCES
 
 # First copy some scripts and, as necessary, test case data from the source
 # tree.
-IF(SUPPORT_TEST_FRONTEND)
-    FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
-ENDIF()
-FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/run-tests
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
-FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-test
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/tests)
+if (SUPPORT_TEST_FRONTEND)
+    add_custom_command(TARGET OurExecutable POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+            "$<TARGET_FILE_DIR:OurExecutable>/tests"
+    )
+endif()
+add_custom_command(TARGET OurExecutable POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_CURRENT_SOURCE_DIR}/run-tests"
+        "$<TARGET_FILE_DIR:OurExecutable>/run-tests"
+)
+add_custom_command(TARGET OurExecutable POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/run-test"
+        "$<TARGET_FILE_DIR:OurExecutable>/tests/run-test"
+)
 
 # Set up target for running all tests.  Those (from tests in the source tree)
 # using the test front end will be run directly.  The unit tests will be
@@ -918,8 +928,8 @@ FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-test
 # will always fail because the test case executables are not setgid.
 IF((NOT CMAKE_CROSSCOMPILING) AND SUPPORT_TEST_FRONTEND)
     ADD_CUSTOM_TARGET(alltests
-        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/run-tests ${TEST_EXECUTABLE}
-        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+        COMMAND "$<TARGET_FILE_DIR:OurExecutable>/run-tests" ${TEST_EXECUTABLE}
+        WORKING_DIRECTORY "$<TARGET_FILE_DIR:OurExecutable>")
     ADD_DEPENDENCIES(alltests OurExecutable)
     IF(SC_INSTALL)
         ADD_DEPENDENCIES(alltests TransferLib)
@@ -938,7 +948,7 @@ ENDIF()
 IF((READONLY_INSTALL) OR (SHARED_INSTALL))
     SET(TEST_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 ELSE()
-    SET(TEST_WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    SET(TEST_WORKING_DIRECTORY "$<TARGET_FILE_DIR:OurExecutable>")
 ENDIF()
 
 # Set up an object library with the shared code for unit tests.
