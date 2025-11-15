@@ -90,16 +90,10 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install gcc autoconf automake make libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev ninja-build
+          sudo apt-get install gcc make cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev ninja-build
 
       - name: Clone Project
         uses: actions/checkout@v4
-
-      - name: Build
-        run: |
-          ./autogen.sh
-          ./configure --with-no-install --enable-sdl2 --enable-sdl2-mixer
-          make -j$(nproc)
 
       - name: Build with CMake/Ninja
         run: |
