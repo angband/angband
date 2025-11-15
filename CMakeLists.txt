@@ -153,6 +153,9 @@ IF(READONLY_INSTALL)
     ENDIF()
 ENDIF()
 
+# Put all executables and lib resources (and DLLs on Windows) into build/game
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/game")
+
 ADD_LIBRARY(OurCoreLib OBJECT
         src/buildid.c
         src/cave-map.c
@@ -783,7 +786,7 @@ IF(SC_INSTALL)
         COMMAND "${CMAKE_COMMAND}" "-P"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/scripts/copy_with_exclude.cmake"
         "--"
-        "${CMAKE_CURRENT_BINARY_DIR}"
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
         "${CMAKE_CURRENT_SOURCE_DIR}/lib"
         "Makefile"
         ".deps"
@@ -935,7 +938,7 @@ ENDIF()
 IF((READONLY_INSTALL) OR (SHARED_INSTALL))
     SET(TEST_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 ELSE()
-    SET(TEST_WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    SET(TEST_WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 ENDIF()
 
 # Set up an object library with the shared code for unit tests.
@@ -1064,17 +1067,3 @@ ELSE()
     ADD_CUSTOM_TARGET(allunittests)
 ENDIF()
 ADD_DEPENDENCIES(alltests allunittests)
-
-# ----------------------------------------------------------------------
-# Workaround for MinGW/MSYS2 issue: the presence of the .dll files in the
-# build directory can cause the compiler to fail with exit code 1 and
-# no diagnostics. To prevent that, we remove the DLLs before each build.
-# ----------------------------------------------------------------------
-if(DEFINED ENV{MSYSTEM})
-    ADD_CUSTOM_TARGET(clean_dlls
-        COMMAND ${CMAKE_COMMAND} -E echo "WORKAROUND: Remove DLLs before compilation to avoid failure of CC on MSYS2 because it has its own DLLs that are different"
-        COMMAND ${CMAKE_COMMAND} -E remove -f "${CMAKE_CURRENT_BINARY_DIR}/zlib1.dll" "${CMAKE_CURRENT_BINARY_DIR}/libpng12.dll"
-    )
-    ADD_DEPENDENCIES(OurExecutable clean_dlls)
-    ADD_DEPENDENCIES(OurUnitTestLib clean_dlls)
-endif()

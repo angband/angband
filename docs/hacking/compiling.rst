@@ -312,9 +312,10 @@ To perform the build::
 	cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-i686-mingw32-cross.cmake ..
 	cmake --build . -- -j$(nproc)
 
-That will leave an angband.exe and the needed .dll files in the directory
-where cmake was run.  That executable can be run with wine:
+That will leave an angband.exe and the needed .dll files in the sub directory
+game/.  That executable can be run with wine:
 
+    cd game
 	wine angband.exe
 
 The unit test cases can also be run from cmake.
@@ -380,6 +381,19 @@ There is probably a way to get these tools to work on Windows. If you know how, 
 Test cases
 ~~~~~~~~~~
 
+To compile and run the unit tests and run the run-tests script while using
+CMake, do the following::
+
+    mkdir build && cd build
+    cmake -DSUPPORT_TEST_FRONTEND=ON ..
+    make alltests
+
+If you only want the unit tests while using CMake, it's a little simpler::
+
+    mkdir build && cd build
+    cmake ..
+    make allunittests
+
 To compile and run the unit tests if you used ./configure --with-no-install,
 do this::
 
@@ -403,19 +417,6 @@ directory::
     ./configure --with-no-install --enable-test
     make
     ./run-tests
-
-To compile and run the unit tests and run the run-tests script while using
-CMake, do the following::
-
-    mkdir build && cd build
-    cmake -DSUPPORT_TEST_FRONTEND=ON ..
-    make alltests
-
-If you only want the unit tests while using CMake, it's a little simpler::
-
-    mkdir build && cd build
-    cmake ..
-    make allunittests
 
 There is some support for measuring how well the test cases cover the code.
 If you use configure and have gcc, gcov, and perl, you can run this in src
@@ -543,6 +544,24 @@ Additional dependencies for the SDL2 client are::
 		mingw-w64-x86_64-SDL2_ttf
 
 Then run the following to compile with ncurses::
+
+    mkdir build && cd build
+    cmake -G Ninja -DSUPPORT_GCU_FRONTEND=ON \
+        -DCMAKE_TOOLCHAIN_FILE=../toolchains/msys2-mingw64-gcu.cmake \
+        ..
+    ninja
+
+For SDL2, do::
+
+    cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON ..
+    ninja
+
+Once built, go to game/ subdirectory and start angband by::
+
+    cd game
+    ./angband
+
+Alternatively it is possible to build with dedicated Makefiles::
 
 	cd src
 	make -f Makefile.msys2
