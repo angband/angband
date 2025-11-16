@@ -2045,15 +2045,22 @@ static errr Term_bigcurs_win(int x, int y)
 static errr Term_wipe_win_helper(int x, int y, int nc, int nr, COLORREF c)
 {
 	term_data *td = (term_data*)(Term->data);
-
+	int tile_wid, tile_hgt;
 	HDC hdc;
 	RECT rc;
 
 	/* Rectangle to erase in client coords */
-	rc.left = x * td->tile_wid + td->size_ow1;
-	rc.right = rc.left + nc * td->tile_wid;
-	rc.top = y * td->tile_hgt + td->size_oh1;
-	rc.bottom = rc.top + nr * td->tile_hgt;
+	if (td->map_active) {
+		tile_wid = td->map_tile_wid;
+		tile_hgt = td->map_tile_hgt;
+	} else {
+		tile_wid = td->tile_wid;
+		tile_hgt = td->tile_hgt;
+	}
+	rc.left = x * tile_wid + td->size_ow1;
+	rc.right = rc.left + nc * tile_wid;
+	rc.top = y * tile_hgt + td->size_oh1;
+	rc.bottom = rc.top + nr * tile_hgt;
 
 	hdc = GetDC(td->w);
 	SetBkColor(hdc, c);
@@ -2566,8 +2573,8 @@ static void windows_map_aux(void)
 	max_y = cave->height;
 
 	/* Draw the map */
-	for (x = min_x; x < max_x; x++) {
-		for (y = min_y; y < max_y; y++) {
+	for (y = min_y; y < max_y; y++) {
+		for (x = min_x; x < max_x; x++) {
 			struct grid_data g;
 
 			map_info(loc(x, y), &g);
@@ -2575,7 +2582,7 @@ static void windows_map_aux(void)
 
 			/* Ignore non-graphics */
 			if (a & 0x80)
-				Term_pict_win(x - min_x, y - min_y, 1, &a, &c, &ta, &tc);
+				(*td->t.pict_hook)(x - min_x, y - min_y, 1, &a, &c, &ta, &tc);
 		}
 	}
 
@@ -2622,6 +2629,21 @@ static void windows_map(void)
 }
 
 
+static void term_view_map_hook(term* t) {
+	(void)t;
+
+    if (!use_graphics) {
+		/* Fall back to default view of map */
+		Term->view_map_hook = NULL;
+		do_cmd_view_map();
+		Term->view_map_hook = term_view_map_hook;
+		return;
+	}
+
+	windows_map();
+}
+
+
 /**
  * ------------------------------------------------------------------------
  *  Other routines
@@ -2662,6 +2684,7 @@ static void term_data_link(term_data *td)
 	t->text_hook = Term_text_win;
 	t->pict_hook = Term_pict_win;
 	t->dblh_hook = NULL;
+	t->view_map_hook = term_view_map_hook;
 
 	/* Remember where we came from */
 	t->data = td;
@@ -3064,14 +3087,6 @@ static void setup_menus(void)
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	EnableMenuItem(hm, IDM_OPTIONS_LOW_PRIORITY,
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-
-	/* Menu "Options", Item "Map" */
-	if (inkey_flag && initialized && (use_graphics != GRAPHICS_NONE))
-		EnableMenuItem(GetMenu(data[0].w), IDM_OPTIONS_MAP,
-					   MF_BYCOMMAND | MF_ENABLED);
-	else
-		EnableMenuItem(GetMenu(data[0].w), IDM_OPTIONS_MAP,
-		               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
 	/* Menu "Options", update all */
 	mode = graphics_modes;
@@ -4078,18 +4093,6 @@ static void process_menus(WORD wCmd)
 			/* Toggle priority */
 			low_priority = !low_priority;
 
-			break;
-		}
-
-		case IDM_OPTIONS_MAP:
-		{
-			/* Paranoia */
-			if (!inkey_flag || !initialized) {
-				plog("You may not do that right now.");
-				break;
-			}
-
-			windows_map();
 			break;
 		}
 

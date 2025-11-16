@@ -65,7 +65,7 @@ extern errr borg_keypresses(const char *str);
 /*
  * Add a keypresses to history
  */
-extern void save_keypress_history(struct keypress *k);
+extern struct keypress save_keypress_history(struct keypress kp);
 
 /*
  * Dump keypress history

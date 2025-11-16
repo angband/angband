@@ -2290,12 +2290,15 @@ bool borg_think_dungeon(void)
     }
 
     /* Recall to town */
-    if (borg.trait[BI_CDEPTH] && (borg_recall())) {
-        /* Note */
-        borg_note("# Recalling (twitchy)");
+    if (borg.trait[BI_CDEPTH]) {
+        if (borg_recall()) {
 
-        /* Success */
-        return true;
+            /* Note */
+            borg_note("# Recalling (twitchy)");
+
+            /* Success */
+            return true;
+        }
     }
 
     /* Reset multiple factors to jumpstart the borg */

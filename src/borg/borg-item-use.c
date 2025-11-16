@@ -1202,9 +1202,6 @@ bool borg_recharging(void)
         if (!item->ident || !item->aware)
             continue;
 
-        if (item->note && strstr(item->note, "empty"))
-            continue;
-
         /* assume we can't charge it. */
         charge = false;
 
@@ -1250,10 +1247,6 @@ bool borg_recharging(void)
 
             /* Recharge the item */
             borg_keypress(all_letters_nohjkl[i]);
-
-            /* Remove the {empty} if present */
-            if (item->note && strstr(item->note, "empty"))
-                borg_deinscribe(i);
 
             /* Success */
             return true;

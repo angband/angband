@@ -63,7 +63,7 @@ type:player
 code:FAST_SHOT
 bindui:shots_ui_compact_0:0:special
 name:Extra Shots
-desc:Your shooting speed improves with tension bows every 10 levels.
+desc:Your shooting speed improves every 3 levels.
 
 type:player
 code:BRAVERY_30

@@ -157,6 +157,13 @@ ENDIF()
 # Put all executables and lib resources (and DLLs on Windows) into build/game
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/game")
 
+# Global compiler settings
+if(MSVC)
+    add_compile_options(/W4 /utf8)
+else()
+    add_compile_options(-Wall -Wextra -pedantic -Wno-unused-parameter)
+endif()
+
 ADD_LIBRARY(OurCoreLib OBJECT
         src/buildid.c
         src/cave-map.c
@@ -884,6 +891,7 @@ SET(ANGBAND_TEST_CASE_SOURCES
     player/birth.c
     player/calc-inventory.c
     player/combine-pack.c
+    player/digging.c
     player/history.c
     player/inven-carry-num.c
     player/inven-wield.c

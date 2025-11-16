@@ -235,7 +235,13 @@ static int compute_rubble_penalty(struct player *p)
 		}
 		p->body.slots[weapon_slot].obj = best_digger;
 		memcpy(&local_state, &p->state, sizeof(local_state));
-		calc_bonuses(p, &local_state, false, true);
+		/*
+		 * Avoid side effects from using update set to false with
+		 * calc_bonuses().
+		 */
+		local_state.stat_ind[STAT_STR] = 0;
+		local_state.stat_ind[STAT_DEX] = 0;
+		calc_bonuses(p, &local_state, false, false);
 		used_state = &local_state;
 	} else {
 		swapped_digger = false;
@@ -247,7 +253,6 @@ static int compute_rubble_penalty(struct player *p)
 			best_digger->number = num_digger;
 		}
 		p->body.slots[weapon_slot].obj = current_weapon;
-		calc_bonuses(p, &local_state, false, true);
 	}
 	if (digging_chances[DIGGING_RUBBLE] <= 0) {
 		/* Can not dig through rubble at all. */

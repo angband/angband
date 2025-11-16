@@ -578,8 +578,8 @@ void rand_fix(uint32_t val)
  */
 uint32_t Rand_simple(uint32_t m)
 {
-	static time_t seed;
-	time_t v = time(NULL);
+	static uint32_t seed;
+	uint32_t v = (uint32_t)time(NULL);
 
 #ifdef UNIX
 	seed = LCRNG(seed % m) + ((v << 16) ^ v ^ getpid());

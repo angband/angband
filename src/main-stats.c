@@ -65,6 +65,76 @@
  * variable power between individual items
  */
 
+/**
+ * Describe the contents of struct level_data and struct wearables_data so
+ * they can be looped over and written to the database.
+ */
+struct structure_introspection {
+	int (*inserter)(const struct structure_introspection*);
+				/**< inserts the values in the array into the
+					database */
+	int (*n0_extractor)(void);
+				/**< returns the number of elements in the
+					fastest varying dimension; may be NULL
+					if that is a compile-time constant
+					specified by n0 */
+	int (*n1_extractor)(void);
+				/**< returns the number of elements in the
+					second fastest varying dimension; may
+					be NULL if that is a compile-time
+					constant specified by n1 */
+	uint32_t (*value_extractor)(const uint8_t *, int, int, int);
+				/**< extracts the value from the array/pointer
+					given the address (start of the array
+					or address of pointer), fastest varying
+					index in the array, number of elements,
+					in the fastest varying dimension,
+					and second fastest varying index */
+	int (*index_converter)(int);
+				/**< currently only used when inserter is
+					stats_db_level_data_items(); if not
+					NULL, is called with the fastest
+					varying index to convert it to the
+					index used for insertipn into the
+					database */
+	const char *name;	/**< name of the table if from struct
+					level_data; the table name is
+					"wearables_" prepended to this name if
+					from struct wearables_data */
+	const char *tbl_cmd;	/**< string to pass to stats_db_exec() to
+					create the related table in the
+					database */
+	size_t offset;		/**< offset from the start of the structure for
+					the member */
+	int n0;			/**< number of elements in the fastest varying
+					dimension; ignored if n0_extractor is
+					not NULL */
+	int n1;			/**< number of elements in the second fastest
+					varying dimension; ignored if
+					n0_extractor is not NULL */
+};
+
+static int stats_write_db_wearables_array(
+		const struct structure_introspection* member_desc);
+static int stats_write_db_wearables_2d_array(
+		const struct structure_introspection* member_desc);
+static int stats_write_db_level_data(
+		const struct structure_introspection* member_desc);
+static int stats_write_db_level_data_items(
+		const struct structure_introspection* member_desc);
+static int get_artifact_count(void);
+static int get_consumables_count(void);
+static int get_ego_count(void);
+static int get_monster_race_count(void);
+static uint32_t extract_arr_long_long(const uint8_t *p, int i0, int n0, int i1);
+static uint32_t extract_arr_uint32(const uint8_t *p, int i0, int n0, int i1);
+static uint32_t extract_arr_arr_uint32(const uint8_t *p, int i0, int n0,
+		int i1);
+static uint32_t extract_arr_ptr_uint32(const uint8_t *p, int i0, int n0,
+		int i1);
+static uint32_t extract_ptr_uint32(const uint8_t *p, int i0, int n0, int i1);
+static int convert_to_consumables_index(int i0);
+
 static int randarts = 0;
 static int no_selling = 0;
 static uint32_t num_runs = 1;
@@ -90,6 +160,97 @@ struct wearables_data {
 	uint32_t *modifiers[TOP_MOD];
 };
 
+/*
+ * The elements here must match up with the array or pointer members of
+ * struct wearables_data that will be written to the database.
+ */
+static struct structure_introspection wearables_introspection[] = {
+	{
+		stats_write_db_wearables_2d_array,
+		NULL,
+		NULL,
+		extract_arr_arr_uint32,
+		NULL,
+		"dice",
+		"CREATE TABLE wearables_dice(level INT, count INT, k_idx INT, origin INT, dd INT, ds INT, UNIQUE (level, k_idx, origin, dd, ds) ON CONFLICT REPLACE);",
+		offsetof(struct wearables_data, dice),
+		TOP_SIDES,
+		TOP_DICE
+	},
+	{
+		stats_write_db_wearables_array,
+		NULL,
+		NULL,
+		extract_arr_uint32,
+		NULL,
+		"ac",
+		"CREATE TABLE wearables_ac(level INT, count INT, k_idx INT, origin INT, ac INT, UNIQUE (level, k_idx, origin, ac) ON CONFLICT REPLACE);",
+		offsetof(struct wearables_data, ac),
+		TOP_AC,
+		1
+	},
+	{
+		stats_write_db_wearables_array,
+		NULL,
+		NULL,
+		extract_arr_uint32,
+		NULL,
+		"hit",
+		"CREATE TABLE wearables_hit(level INT, count INT, k_idx INT, origin INT, to_h INT, UNIQUE (level, k_idx, origin, to_h) ON CONFLICT REPLACE);",
+		offsetof(struct wearables_data, hit),
+		TOP_PLUS,
+		1
+	},
+	{
+		stats_write_db_wearables_array,
+		NULL,
+		NULL,
+		extract_arr_uint32,
+		NULL,
+		"dam",
+		"CREATE TABLE wearables_dam(level INT, count INT, k_idx INT, origin INT, to_d INT, UNIQUE (level, k_idx, origin, to_d) ON CONFLICT REPLACE);",
+		offsetof(struct wearables_data, dam),
+		TOP_PLUS,
+		1
+	},
+	{
+		stats_write_db_wearables_array,
+		get_ego_count,
+		NULL,
+		extract_ptr_uint32,
+		NULL,
+		"egos",
+		"CREATE TABLE wearables_egos(level INT, count INT, k_idx INT, origin INT, e_idx INT, UNIQUE (level, k_idx, origin, e_idx) ON CONFLICT REPLACE);",
+		offsetof(struct wearables_data, egos),
+		0,
+		1
+	},
+	{
+		stats_write_db_wearables_array,
+		NULL,
+		NULL,
+		extract_arr_uint32,
+		NULL,
+		"flags",
+		"CREATE TABLE wearables_flags(level INT, count INT, k_idx INT, origin INT, of_idx INT, UNIQUE (level, k_idx, origin, of_idx) ON CONFLICT REPLACE);",
+		offsetof(struct wearables_data, flags),
+		OF_MAX,
+		1
+	},
+	{
+		stats_write_db_wearables_2d_array,
+		NULL,
+		NULL,
+		extract_arr_ptr_uint32,
+		NULL,
+		"mods",
+		"CREATE TABLE wearables_mods(level INT, count INT, k_idx INT, origin INT, mod INT, mod_idx INT, UNIQUE (level, k_idx, origin, mod, mod_idx) ON CONFLICT REPLACE);",
+		offsetof(struct wearables_data, modifiers),
+		OBJ_MOD_MAX + 1,
+		TOP_MOD
+	},
+};
+
 static struct level_data {
 	uint32_t *monsters;
 	/* uint32_t *vaults;  Add these later - requires passing into generate.c
@@ -101,6 +262,86 @@ static struct level_data {
 	uint32_t *consumables[ORIGIN_STATS];
 	struct wearables_data *wearables[ORIGIN_STATS];
 } level_data[LEVEL_MAX];
+
+/*
+ * The elements here must match up with the array or pointer members of
+ * struct level_data that will be written to the database.  The wearables
+ * member is handled as a special case and is not included here.
+ */
+static struct structure_introspection level_introspection[] = {
+	{
+		stats_write_db_level_data,
+		get_monster_race_count,
+		NULL,
+		extract_ptr_uint32,
+		NULL,
+		"monsters",
+		"CREATE TABLE monsters(level INT, count INT, k_idx INT, UNIQUE (level, k_idx) ON CONFLICT REPLACE);",
+		offsetof(struct level_data, monsters),
+		0,
+		1
+	},
+	{
+		stats_write_db_level_data,
+		NULL,
+		NULL,
+		extract_arr_uint32,
+		NULL,
+		"obj_feelings",
+		"CREATE TABLE obj_feelings(level INT, count INT, feeling INT, UNIQUE (level, feeling) ON CONFLICT REPLACE);",
+		offsetof(struct level_data, obj_feelings),
+		OBJ_FEEL_MAX,
+		1
+	},
+	{
+		stats_write_db_level_data,
+		NULL,
+		NULL,
+		extract_arr_uint32,
+		NULL,
+		"mon_feelings",
+		"CREATE TABLE mon_feelings(level INT, count INT, feeling INT, UNIQUE (level, feeling) ON CONFLICT REPLACE);",
+		offsetof(struct level_data, mon_feelings),
+		MON_FEEL_MAX,
+		1
+	},
+	{
+		stats_write_db_level_data,
+		NULL,
+		NULL,
+		extract_arr_long_long,
+		NULL,
+		"gold",
+		"CREATE TABLE gold(level INT, count INT, origin INT, UNIQUE (level, origin) ON CONFLICT REPLACE);",
+		offsetof(struct level_data, gold),
+		ORIGIN_STATS,
+		1
+	},
+	{
+		stats_write_db_level_data_items,
+		get_artifact_count,
+		NULL,
+		extract_arr_ptr_uint32,
+		NULL,
+		"artifacts",
+		"CREATE TABLE artifacts(level INT, count INT, a_idx INT, origin INT, UNIQUE (level, a_idx, origin) ON CONFLICT REPLACE);",
+		offsetof(struct level_data, artifacts),
+		0,
+		ORIGIN_STATS
+	},
+	{
+		stats_write_db_level_data_items,
+		get_consumables_count,
+		NULL,
+		extract_arr_ptr_uint32,
+		convert_to_consumables_index,
+		"consumables",
+		"CREATE TABLE consumables(level INT, count INT, k_idx INT, origin INT, UNIQUE (level, k_idx, origin) ON CONFLICT REPLACE);",
+		offsetof(struct level_data, consumables),
+		0,
+		ORIGIN_STATS
+	},
+};
 
 static void create_indices(void)
 {
@@ -992,7 +1233,7 @@ static int stats_dump_info(void)
 static bool stats_prep_db(void)
 {
 	bool status;
-	int err;
+	int err, i;
 
 	/* Open the database connection */
 	status = stats_db_open();
@@ -1068,47 +1309,18 @@ static bool stats_prep_db(void)
 	err = stats_db_exec("CREATE TABLE origin_flags_list(idx INT PRIMARY KEY, name TEXT);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE monsters(level INT, count INT, k_idx INT, UNIQUE (level, k_idx) ON CONFLICT REPLACE);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE obj_feelings(level INT, count INT, feeling INT, UNIQUE (level, feeling) ON CONFLICT REPLACE);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE mon_feelings(level INT, count INT, feeling INT, UNIQUE (level, feeling) ON CONFLICT REPLACE);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE gold(level INT, count INT, origin INT, UNIQUE (level, origin) ON CONFLICT REPLACE);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE artifacts(level INT, count INT, a_idx INT, origin INT, UNIQUE (level, a_idx, origin) ON CONFLICT REPLACE);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE consumables(level INT, count INT, k_idx INT, origin INT, UNIQUE (level, k_idx, origin) ON CONFLICT REPLACE);");
-	if (err) return false;
+	for (i = 0; i < (int)N_ELEMENTS(level_introspection); ++i) {
+		err = stats_db_exec(level_introspection[i].tbl_cmd);
+		if (err) return false;
+	}
 
 	err = stats_db_exec("CREATE TABLE wearables_count(level INT, count INT, k_idx INT, origin INT, UNIQUE (level, k_idx, origin) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE wearables_dice(level INT, count INT, k_idx INT, origin INT, dd INT, ds INT, UNIQUE (level, k_idx, origin, dd, ds) ON CONFLICT REPLACE);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE wearables_ac(level INT, count INT, k_idx INT, origin INT, ac INT, UNIQUE (level, k_idx, origin, ac) ON CONFLICT REPLACE);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE wearables_hit(level INT, count INT, k_idx INT, origin INT, to_h INT, UNIQUE (level, k_idx, origin, to_h) ON CONFLICT REPLACE);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE wearables_dam(level INT, count INT, k_idx INT, origin INT, to_d INT, UNIQUE (level, k_idx, origin, to_d) ON CONFLICT REPLACE);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE wearables_egos(level INT, count INT, k_idx INT, origin INT, e_idx INT, UNIQUE (level, k_idx, origin, e_idx) ON CONFLICT REPLACE);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE wearables_flags(level INT, count INT, k_idx INT, origin INT, of_idx INT, UNIQUE (level, k_idx, origin, of_idx) ON CONFLICT REPLACE);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE wearables_mods(level INT, count INT, k_idx INT, origin INT, mod INT, mod_idx INT, UNIQUE (level, k_idx, origin, mod, mod_idx) ON CONFLICT REPLACE);");
-	if (err) return false;
+	for (i = 0; i < (int)N_ELEMENTS(wearables_introspection); ++i) {
+		err = stats_db_exec(wearables_introspection[i].tbl_cmd);
+		if (err) return false;
+	}
 
 	err = stats_dump_info();
 	if (err) return false;
@@ -1117,62 +1329,10 @@ static bool stats_prep_db(void)
 }
 
 /**
- * Find the offset of the given member of the level_data struct. Not elegant.
- */
-static int stats_level_data_offsetof(const char *member)
-{
-	if (streq(member, "monsters"))
-		return offsetof(struct level_data, monsters);
-	else if (streq(member, "obj_feelings"))
-		return offsetof(struct level_data, obj_feelings);
-	else if (streq(member, "mon_feelings"))
-		return offsetof(struct level_data, mon_feelings);
-	else if (streq(member, "gold"))
-		return offsetof(struct level_data, gold);
-	else if (streq(member, "artifacts"))
-		return offsetof(struct level_data, artifacts);
-	else if (streq(member, "consumables"))
-		return offsetof(struct level_data, consumables);
-	else if (streq(member, "wearables"))
-		return offsetof(struct level_data, wearables);
-		
-	/* We should not get to this point. */
-	assert(0);
-}
-
-/**
- * Find the offset of the given member of the wearables_data struct. Not 
- * elegant.
- */
-static int stats_wearables_data_offsetof(const char *member)
-{
-	if (streq(member, "count"))
-		return offsetof(struct wearables_data, count);
-	else if (streq(member, "dice"))
-		return offsetof(struct wearables_data, dice);
-	else if (streq(member, "ac"))
-		return offsetof(struct wearables_data, ac);
-	else if (streq(member, "hit"))
-		return offsetof(struct wearables_data, hit);
-	else if (streq(member, "dam"))
-		return offsetof(struct wearables_data, dam);
-	else if (streq(member, "egos"))
-		return offsetof(struct wearables_data, egos);
-	else if (streq(member, "flags"))
-		return offsetof(struct wearables_data, flags);
-	else if (streq(member, "mods"))
-		return offsetof(struct wearables_data, modifiers);
-		
-	/* We should not get to this point. */
-	assert(0);
-}
-
-/**
  * Given a pointer to a dynamically allocated array and a value, look up
  * the index with that value; e.g. given wearables_index[k_idx], return k_idx.
  * If not found, return -1 * value.
  */
-
 static int stats_lookup_index(const int *index, int max_idx, int value)
 {
 	int idx;
@@ -1184,27 +1344,109 @@ static int stats_lookup_index(const int *index, int max_idx, int value)
 	return -1 * value;
 }
 
-static int stats_write_db_level_data(const char *table, int max_idx)
+static int get_artifact_count(void)
+{
+	return z_info->a_max;
+}
+
+static int get_consumables_count(void)
+{
+	return consumable_count + 1;
+}
+
+static int get_ego_count(void)
+{
+	return z_info->e_max;
+}
+
+static int get_monster_race_count(void)
+{
+	return z_info->r_max;
+}
+
+/**
+ * Intended for use as struct structure_introspection's value_extractor
+ * member when the structure member it is describing is declared as
+ * "long long member_name[n0]".  p is the address of the start of the array
+ * (i.e. address of the start of the structure + offsetof(structure type,
+ * member_name)).
+ */
+static uint32_t extract_arr_long_long(const uint8_t *p, int i0, int n0, int i1)
+{
+	return *((long long*)p + i0);
+}
+
+/**
+ * Intended for use as struct structure_introspection's value_extractor
+ * member when the structure member it is describing is declared as
+ * "uint32_t member_name[n0]".  p is the address of the start of the array
+ * (i.e. address of the start of the structure + offsetof(structure type,
+ * member_name)).
+ */
+static uint32_t extract_arr_uint32(const uint8_t *p, int i0, int n0, int i1)
+{
+	return *((uint32_t*)p + i0);
+}
+
+/**
+ * Intended for use as struct structure_introspection's value_extractor
+ * member when the structure member it is describing is declared as
+ * "uint32_t member_name[n1][n0]".  p is the address of the start of the array
+ * (i.e. address of the start of the structure + offsetof(structure type,
+ * member_name)).
+ */
+static uint32_t extract_arr_arr_uint32(const uint8_t *p, int i0, int n0, int i1)
+{
+	return *((uint32_t*)p + i1 * (size_t)n0 + i0);
+}
+
+/**
+ * Intended for use as struct structure_introspection's value_extractor
+ * member when the structure member it is describing is declared as
+ * "uint32_t *member_name[n1]".  p is the address of the start of the array
+ * (i.e. address of the start of the structure + offsetof(structure type,
+ * member_name)).
+ */
+static uint32_t extract_arr_ptr_uint32(const uint8_t *p, int i0, int n0, int i1)
+{
+	return *(*((uint32_t**)p + i1) + i0);
+}
+
+/**
+ * Intended for use as struct structure_introspection's value_extractor
+ * member when the structure member it is describing is declared as
+ * "uint32_t *member_name".  p is the address of the pointer (i.e. address of
+ * the start of the structure + offsetof(structure type, member_name)).
+ */
+static uint32_t extract_ptr_uint32(const uint8_t *p, int i0, int n0, int i1)
+{
+	return *(*((uint32_t**)p) + i0);
+}
+
+static int convert_to_consumables_index(int i0)
+{
+	return stats_lookup_index(consumables_index, z_info->k_max, i0);
+}
+
+static int stats_write_db_level_data(
+		const struct structure_introspection* member_desc)
 {
 	char sql_buf[256];
 	sqlite3_stmt *sql_stmt;
-	int err, level, i, offset;
+	int n = (member_desc->n0_extractor)
+		? (*member_desc->n0_extractor)() : member_desc->n0;
+	int err, level, i;
 
-	strnfmt(sql_buf, 256, "INSERT INTO %s VALUES(?,?,?);", table);
+	strnfmt(sql_buf, 256, "INSERT INTO %s VALUES(?,?,?);",
+		member_desc->name);
 	err = stats_db_stmt_prep(&sql_stmt, sql_buf);
 	if (err) return err;
 
-	offset = stats_level_data_offsetof(table);
-
 	for (level = 1; level < LEVEL_MAX; level++)
-		for (i = 0; i < max_idx; i++) {
-	/* This arcane expression finds the value of 
-			 * level_data[level].<table>[i] */
-			uint32_t count;
-			if (streq(table, "gold"))
-				count = *((long long *)((uint8_t *)&level_data[level] + offset) + i);
-			else
-				count = *((uint32_t *)((uint8_t *)&level_data[level] + offset) + i);
+		for (i = 0; i < n; i++) {
+			uint32_t count = (*member_desc->value_extractor)(
+				(const uint8_t*)&level_data[level]
+				+ member_desc->offset, i, n, 0);
 
 			if (!count) continue;
 
@@ -1218,28 +1460,36 @@ static int stats_write_db_level_data(const char *table, int max_idx)
 	return sqlite3_finalize(sql_stmt);
 }
 
-static int stats_write_db_level_data_items(const char *table, int max_idx, 
-	bool translate_consumables)
+static int stats_write_db_level_data_items(
+		const struct structure_introspection* member_desc)
 {
 	char sql_buf[256];
 	sqlite3_stmt *sql_stmt;
-	int err, level, origin, i, offset;
+	int nj = (member_desc->n1_extractor) ?
+		(*member_desc->n1_extractor)() : member_desc->n1;
+	int ni = (member_desc->n0_extractor) ?
+		(*member_desc->n0_extractor)() : member_desc->n0;
+	int err, level, j, i;
 
-	strnfmt(sql_buf, 256, "INSERT INTO %s VALUES(?,?,?,?);", table);
+	strnfmt(sql_buf, 256, "INSERT INTO %s VALUES(?,?,?,?);",
+		member_desc->name);
 	err = stats_db_stmt_prep(&sql_stmt, sql_buf);
 	if (err) return err;
 
-	offset = stats_level_data_offsetof(table);
-
 	for (level = 1; level < LEVEL_MAX; level++)
-		for (origin = 0; origin < ORIGIN_STATS; origin++)
-			for (i = 0; i < max_idx; i++) {
-				/* This arcane expression finds the value of 
-				 * level_data[level].<table>[origin][i] */
-				uint32_t count = ((uint32_t **)((uint8_t *)&level_data[level] + offset))[origin][i];
+		for (j = 0; j < nj; j++)
+			for (i = 0; i < ni; i++) {
+				uint32_t count =
+					(*member_desc->value_extractor)(
+					(const uint8_t*)&level_data[level]
+					+ member_desc->offset, i, ni, j);
+
 				if (!count) continue;
-				
-				err = stats_db_bind_ints(sql_stmt, 4, 0, level, count, translate_consumables ? stats_lookup_index(consumables_index, z_info->k_max, i) : i, origin);
+
+				err = stats_db_bind_ints(sql_stmt, 4, 0, level,
+					count, (member_desc->index_converter)
+					? (*member_desc->index_converter)(i) : i,
+					j);
 				if (err) return err;
 
 				STATS_DB_STEP_RESET(sql_stmt)
@@ -1280,23 +1530,19 @@ static int stats_write_db_wearables_count(void)
 	return sqlite3_finalize(sql_stmt);
 }
 
-/**
- * Unfortunately, the arcane expression used to find the value of an array 
- * member of a struct differs depending on whether the member is declared
- * as an array or as a pointer. Pass in true if the member is an array, and
- * false if the member is a pointer.
- */
-static int stats_write_db_wearables_array(const char *field, int max_val, bool array_p)
+static int stats_write_db_wearables_array(
+		const struct structure_introspection* member_desc)
 {
 	char sql_buf[256];
 	sqlite3_stmt *sql_stmt;
-	int err, level, origin, idx, k_idx, i, offset;
+	int n = (member_desc->n0_extractor)
+		? (*member_desc->n0_extractor)() : member_desc->n0;
+	int err, level, origin, idx, k_idx, i;
 
-	strnfmt(sql_buf, 256, "INSERT INTO wearables_%s VALUES(?,?,?,?,?);", field);
+	strnfmt(sql_buf, 256, "INSERT INTO wearables_%s VALUES(?,?,?,?,?);",
+		member_desc->name);
 	err = stats_db_stmt_prep(&sql_stmt, sql_buf);
 	if (err) return err;
-
-	offset = stats_wearables_data_offsetof(field);
 
 	for (level = 1; level < LEVEL_MAX; level++)
 		for (origin = 0; origin < ORIGIN_STATS; origin++)
@@ -1307,14 +1553,11 @@ static int stats_write_db_wearables_array(const char *field, int max_val, bool a
 				/* Skip if pile */
 				if (! k_idx) continue;
 
-				for (i = 0; i < max_val; i++) {
-					/* This arcane expression finds the value of
-					 * level_data[level].wearables[origin][idx].<field>[i] */
-					uint32_t count;
-					if (array_p)
-						count = ((uint32_t *)((uint8_t *)&level_data[level].wearables[origin][idx] + offset))[i];
-					else
-						count = ((uint32_t *)*((uint32_t **)((uint8_t *)&level_data[level].wearables[origin][idx] + offset)))[i];
+				for (i = 0; i < n; i++) {
+					uint32_t count =
+						(*member_desc->value_extractor)(
+						(const uint8_t*)&level_data[level].wearables[origin][idx]
+						+ member_desc->offset, i, n, 0);
 
 					if (!count) continue;
 
@@ -1329,25 +1572,21 @@ static int stats_write_db_wearables_array(const char *field, int max_val, bool a
 	return sqlite3_finalize(sql_stmt);
 }
 
-/**
- * Unfortunately, the arcane expression used to find the value of an array 
- * member of a struct differs depending on whether the member is declared
- * as an array or as a pointer. Pass in true if the member is an array, and
- * false if the member is a pointer.
- */
-static int stats_write_db_wearables_2d_array(const char *field, 
-	int max_val1, int max_val2, bool array_p)
+static int stats_write_db_wearables_2d_array(
+		const struct structure_introspection* member_desc)
 {
 	char sql_buf[256];
 	sqlite3_stmt *sql_stmt;
-	int err, level, origin, idx, k_idx, i, j, offset;
+	int nj = (member_desc->n1_extractor) ?
+		(*member_desc->n1_extractor)() : member_desc->n1;
+	int ni = (member_desc->n0_extractor) ?
+		(*member_desc->n0_extractor)() : member_desc->n0;
+	int err, level, origin, idx, k_idx, i, j;
 
 	strnfmt(sql_buf, 256, "INSERT INTO wearables_%s VALUES(?,?,?,?,?,?);",
-			field);
+		member_desc->name);
 	err = stats_db_stmt_prep(&sql_stmt, sql_buf);
 	if (err) return err;
-
-	offset = stats_wearables_data_offsetof(field);
 
 	for (level = 1; level < LEVEL_MAX; level++)
 		for (origin = 0; origin < ORIGIN_STATS; origin++)
@@ -1358,25 +1597,22 @@ static int stats_write_db_wearables_2d_array(const char *field,
 				/* Skip if pile */
 				if (! k_idx) continue;
 
-				for (i = 0; i < max_val1; i++)
-					for (j = 0; j < max_val2; j++) {
-						/* This arcane expression finds the value of
-				 		* level_data[level].wearables[origin][idx].<field>[i][j]
-						*/
+				for (j = 0; j < nj; j++)
+					for (i = 0; i < ni; i++) {
 						uint32_t count;
 
 						if (i == 0 && j == 0) continue;
 
-						if (array_p)
-							count = ((uint32_t *)((uint8_t *)&level_data[level].wearables[origin][idx] + offset))[i * max_val2 + j];
-						else
-							count = *(*((uint32_t **)((uint8_t *)&level_data[level].wearables[origin][idx] + offset) + i) + j);
+						count = (*member_desc->value_extractor)(
+							(const uint8_t*)&level_data[level].wearables[origin][idx]
+							+ member_desc->offset,
+							i, ni, j);
 
 						if (!count) continue;
 
 						err = stats_db_bind_ints(sql_stmt, 6, 0,
 							level, count, k_idx, origin, 
-							i, j);
+							j, i);
 						if (err) return err;
 
 						STATS_DB_STEP_RESET(sql_stmt)
@@ -1389,7 +1625,7 @@ static int stats_write_db_wearables_2d_array(const char *field,
 static int stats_write_db(uint32_t run)
 {
 	char sql_buf[256];
-	int err;
+	int err, i;
 
 	/* Wrap entire write into a transaction */
 	err = stats_db_exec("BEGIN TRANSACTION;");
@@ -1400,50 +1636,20 @@ static int stats_write_db(uint32_t run)
 	err = stats_db_exec(sql_buf);
 	if (err) return err;
 
-	err = stats_write_db_level_data("monsters", z_info->r_max);
-	if (err) return err;
-
-	err = stats_write_db_level_data("obj_feelings", OBJ_FEEL_MAX);
-	if (err) return err;
-
-	err = stats_write_db_level_data("mon_feelings", MON_FEEL_MAX);
-	if (err) return err;
-
-	err = stats_write_db_level_data("gold", ORIGIN_STATS);
-	if (err) return err;
-
-	err = stats_write_db_level_data_items("artifacts", z_info->a_max, 
-		false);
-	if (err) return err;
-
-	err = stats_write_db_level_data_items("consumables", 
-		consumable_count + 1, true);
-	if (err) return err;
+	for (i = 0; i < (int)N_ELEMENTS(level_introspection); ++i) {
+		err = (*level_introspection[i].inserter)(
+			&level_introspection[i]);
+		if (err) return err;
+	}
 
 	err = stats_write_db_wearables_count();
 	if (err) return err;
 
-	err = stats_write_db_wearables_2d_array("dice", TOP_DICE, TOP_SIDES, true);
-	if (err) return err;
-
-	err = stats_write_db_wearables_array("ac", TOP_AC, true);
-	if (err) return err;
-
-	err = stats_write_db_wearables_array("hit", TOP_PLUS, true);
-	if (err) return err;
-
-	err = stats_write_db_wearables_array("dam", TOP_PLUS, true);
-	if (err) return err;
-
-	err = stats_write_db_wearables_array("egos", z_info->e_max, false);
-	if (err) return err;
-
-	err = stats_write_db_wearables_array("flags", OF_MAX, true);
-	if (err) return err;
-
-	err = stats_write_db_wearables_2d_array("mods", TOP_MOD, OBJ_MOD_MAX + 1,
-											false);
-	if (err) return err;
+	for (i = 0; i < (int)N_ELEMENTS(wearables_introspection); ++i) {
+		err = (*wearables_introspection[i].inserter)(
+			&wearables_introspection[i]);
+		if (err) return err;
+	}
 
 	/* Commit transaction */
 	err = stats_db_exec("COMMIT;");
@@ -1507,8 +1713,8 @@ static void stats_cleanup_angband_run(void)
 static errr run_stats(void)
 {
 	uint32_t run;
-	struct artifact *a_info_save;
-	struct artifact_upkeep *aup_info_save;
+	struct artifact *a_info_save = NULL;
+	struct artifact_upkeep *aup_info_save = NULL;
 	unsigned int i;
 	int err;
 	bool status; 
