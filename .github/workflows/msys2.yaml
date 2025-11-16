@@ -21,10 +21,10 @@ jobs:
           update: true
           install: >-
             make
-            mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-ncurses
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-ncurses
 
       - name: Clone Project
         uses: actions/checkout@v4
@@ -59,13 +59,13 @@ jobs:
           update: true
           install: >-
             make
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-SDL2
             mingw-w64-x86_64-SDL2_ttf
             mingw-w64-x86_64-SDL2_image
             mingw-w64-x86_64-SDL2_mixer
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-ninja
 
       - name: Clone Project
         uses: actions/checkout@v4
@@ -139,7 +139,7 @@ jobs:
           make install
           make tests
 
-  cmake-win:
+  cmake-win32:
     runs-on: windows-latest
     defaults:
       run:
@@ -152,9 +152,51 @@ jobs:
           # The libraries in src/win/lib and src/win/dll are 32-bit.
           msystem: MINGW32
           install: >-
-            mingw-w64-i686-gcc
             mingw-w64-i686-cmake
             mingw-w64-i686-ninja
+            mingw-w64-i686-gcc
+
+      - name: Clone Project
+        uses: actions/checkout@v4
+
+      - name: Configure with CMake/Ninja
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON ..
+
+      - name: Build with Ninja
+        run: |
+          cd build
+          ninja -j$(nproc)
+
+      - name: Run Tests
+        run: |
+          cd build
+          ninja -j$(nproc) alltests
+
+      - name: Configure and build with bundled PNG
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_BUNDLED_PNG=ON ..
+          ninja -j$(nproc)
+
+  cmake-win64:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Set up prerequisites
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          msystem: MINGW64
+          install: >-
+            mingw-w64-i686-cmake
+            mingw-w64-i686-ninja
+            mingw-w64-i686-gcc
 
       - name: Clone Project
         uses: actions/checkout@v4
