@@ -1,38 +1,25 @@
-MACRO(CONFIGURE_WINDOWS_FRONTEND _NAME_TARGET _ONLY_DEFINES)
-    if(NOT TARGET OurWindowsZLib)
-        ADD_LIBRARY(OurWindowsZLib SHARED IMPORTED)
-        SET_TARGET_PROPERTIES(OurWindowsZLib PROPERTIES
-            IMPORTED_IMPLIB "${CMAKE_CURRENT_SOURCE_DIR}/src/win/lib/zlib.lib")
-        TARGET_INCLUDE_DIRECTORIES(OurWindowsZLib INTERFACE
-            "${CMAKE_CURRENT_SOURCE_DIR}/src/win/include")
-    endif()
-
-    if(NOT TARGET OurWindowsPNGLib)
-        ADD_LIBRARY(OurWindowsPNGLib SHARED IMPORTED)
-        SET_TARGET_PROPERTIES(OurWindowsPNGLib PROPERTIES
-            IMPORTED_IMPLIB "${CMAKE_CURRENT_SOURCE_DIR}/src/win/lib/libpng.lib")
-        TARGET_INCLUDE_DIRECTORIES(OurWindowsPNGLib INTERFACE
-            "${CMAKE_CURRENT_SOURCE_DIR}/src/win/include")
-    endif()
-
+macro(CONFIGURE_WINDOWS_FRONTEND _NAME_TARGET _ONLY_DEFINES)
     if(NOT _ONLY_DEFINES)
-        TARGET_LINK_LIBRARIES(${_NAME_TARGET}
-            PRIVATE OurWindowsZLib OurWindowsPNGLib msimg32 winmm)
-        SET_TARGET_PROPERTIES(${_NAME_TARGET} PROPERTIES WIN32_EXECUTABLE ON)
+        if(NOT TARGET ${PNG_TARGET})
+            message(FATAL_ERROR "CONFIGURE_WINDOWS_FRONTEND: PNG_TARGET '${PNG_TARGET}' is not a valid target")
+        endif()
+
+        if(NOT TARGET ${ZLIB_TARGET})
+            message(FATAL_ERROR "CONFIGURE_WINDOWS_FRONTEND: ZLIB_TARGET '${ZLIB_TARGET}' is not a valid target")
+        endif()
+
+        target_link_libraries(${_NAME_TARGET}
+            PRIVATE ${PNG_TARGET} ${ZLIB_TARGET} msimg32 winmm
+        )
+        set_target_properties(${_NAME_TARGET} PROPERTIES WIN32_EXECUTABLE ON)
     endif()
 
-    TARGET_COMPILE_DEFINITIONS(${_NAME_TARGET} 
+    target_compile_definitions(${_NAME_TARGET}
         PRIVATE 
-            -D USE_WIN
-            -D USE_PRIVATE_PATHS
-            -D SOUND
-            -D WINDOWS
-            -D _CRT_SECURE_NO_WARNINGS
+            USE_WIN
+            USE_PRIVATE_PATHS
+            SOUND
+            WINDOWS
+            _CRT_SECURE_NO_WARNINGS
     )
-
-    IF(NOT CONFIGURE_WINDOWS_FRONTEND_INVOKED_PREVIOUSLY)
-        MESSAGE(STATUS "Support for Windows front end - Ready")
-        SET(CONFIGURE_WINDOWS_FRONTEND_INVOKED_PREVIOUSLY YES CACHE
-            INTERNAL "Mark if CONFIGURE_WINDOWS_FRONTEND called successfully" FORCE)
-    ENDIF()
-ENDMACRO()
+endmacro()

@@ -21,6 +21,7 @@ OPTION(SUPPORT_SPOIL_FRONTEND "Support for spoiler front end." ${SPOIL_DEFAULT})
 OPTION(SUPPORT_STATS_FRONTEND "Support for statistics front end; requires sqlite3 development library." OFF)
 OPTION(SUPPORT_TEST_FRONTEND "Support for test front end." OFF)
 OPTION(SUPPORT_WINDOWS_FRONTEND "Support for windows front end." OFF)
+OPTION(SUPPORT_BUNDLED_PNG "Use bundled windows PNG+Zlib (32-bit only)" OFF)
 OPTION(SUPPORT_STATS_BACKEND "Enable backend support for statistics and related debugging commands.  Implied by SUPPORT_STATS_FRONTEND." OFF)
 OPTION(SUPPORT_BORG "Support for Borg." ON)
 OPTION(SUPPORT_BORG_HIGH_SCORES "Borg characters allowed in high scores." OFF)
@@ -446,6 +447,9 @@ ELSEIF(SUPPORT_SDL2_FRONTEND)
     CONFIGURE_SDL2_FRONTEND(OurExecutable)
 ENDIF()
 IF(SUPPORT_WINDOWS_FRONTEND)
+    INCLUDE(src/cmake/modules/PNG_Detection.cmake)
+    DETERMINE_PNG_ZLIB(PNG_TARGET ZLIB_TARGET ${SUPPORT_BUNDLED_PNG})
+
     INCLUDE(src/cmake/macros/WINDOWS_Frontend.cmake)
     CONFIGURE_WINDOWS_FRONTEND(OurExecutable NO)
     CONFIGURE_WINDOWS_FRONTEND(OurCoreLib YES)
@@ -771,7 +775,11 @@ IF(SC_INSTALL)
         # DATA_PERMISSIONS matches the permissions those files have in the
         # source tree, but should the installed permissions be
         # EXECUTABLE_PERMISSIONS?
-        INSTALL(FILES zlib1.dll libpng12.dll DESTINATION . PERMISSIONS ${DATA_PERMISSIONS})
+        INSTALL(FILES
+            $<TARGET_PROPERTY:${PNG_TARGET},IMPORTED_LOCATION>
+            $<TARGET_PROPERTY:${ZLIB_TARGET},IMPORTED_LOCATION> 
+            DESTINATION . PERMISSIONS ${DATA_PERMISSIONS}
+        )
     ENDIF()
     INSTALL(DIRECTORY lib/ DESTINATION lib)
     IF(BUILD_DOC)
@@ -796,18 +804,16 @@ IF(SC_INSTALL)
     )
 
     IF(SUPPORT_WINDOWS_FRONTEND)
-        # Transfer the packaged DLLs so there in the same directory as the
+        # Transfer the packaged DLLs so they're in the same directory as the
         # executable.
         ADD_CUSTOM_COMMAND(
             TARGET OurExecutable 
             POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${CMAKE_CURRENT_SOURCE_DIR}/src/win/dll/zlib1.dll"
-                "$<TARGET_FILE_DIR:OurExecutable>/zlib1.dll"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${CMAKE_CURRENT_SOURCE_DIR}/src/win/dll/libpng12.dll"
-                "$<TARGET_FILE_DIR:OurExecutable>/libpng12.dll"
-            COMMENT "Copying required DLLs to the output directory"
+                "$<TARGET_PROPERTY:${PNG_TARGET},IMPORTED_LOCATION>"
+                "$<TARGET_PROPERTY:${ZLIB_TARGET},IMPORTED_LOCATION>"
+                "$<TARGET_FILE_DIR:OurExecutable>"
+            COMMENT "Copying PNG and ZLIB DLLs to build directory"
         )
     ENDIF()
 ENDIF()
