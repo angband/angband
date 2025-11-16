@@ -174,7 +174,7 @@ Compilation with CMake
 The compilation process with CMake requires a version greater than 3,
 by default the compilation process uses the X11 front end unless
 one or more of the other graphical front ends are selected. The graphical front
-ends are: GCU, SDL, SDL2 and X11.  All of the following generate a
+ends are: GCU, SDL, SDL2, X11 and Windows.  All of the following generate a
 self-contained directory, build/game, that you can move elsewhere or rename.  To 
 run the result, change directories to build/game or whatever you renamed it to) and
 run ./angband .
@@ -204,6 +204,12 @@ To build Angband with the GCU front end::
 
     mkdir build && cd build
     cmake -DSUPPORT_GCU_FRONTEND=ON ..
+    make
+
+To build Angband with the Windows front end::
+
+    mkdir build && cd build
+    cmake -DSUPPORT_WINDOWS_FRONTEND=ON ..
     make
 
 On OpenBSD (at least with OpenBSD 6.9), there's known issues with detecting
@@ -534,6 +540,10 @@ Install the dependencies by::
 
 	pacman -S make mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
 
+Additional dependency for the native Windows client is::
+
+    pacman -S mingw-w64-x86_64-libpng
+
 The additional dependency for ncurses is::
 
 	pacman -S mingw-w64-x86_64-ncurses
@@ -543,7 +553,13 @@ Additional dependencies for the SDL2 client are::
 	pacman -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image \
 		mingw-w64-x86_64-SDL2_ttf
 
-Then run the following to compile with ncurses::
+Then run the following to compile for native Windows::
+
+    cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON \
+        ..
+    ninja
+
+For ncurses, do::
 
     mkdir build && cd build
     cmake -G Ninja -DSUPPORT_GCU_FRONTEND=ON \
@@ -555,12 +571,6 @@ For SDL2, do::
 
     cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON \
         -DSUPPORT_SDL2_SOUND=ON \
-        ..
-    ninja
-
-For native Windows (recommended), do::
-
-    cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON \
         ..
     ninja
 

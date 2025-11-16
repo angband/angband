@@ -155,6 +155,7 @@ jobs:
             mingw-w64-i686-cmake
             mingw-w64-i686-ninja
             mingw-w64-i686-gcc
+            mingw-w64-i686-libpng
 
       - name: Clone Project
         uses: actions/checkout@v4
@@ -197,6 +198,7 @@ jobs:
             mingw-w64-i686-cmake
             mingw-w64-i686-ninja
             mingw-w64-i686-gcc
+            mingw-w64-x86_64-libpng
 
       - name: Clone Project
         uses: actions/checkout@v4
