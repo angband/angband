@@ -178,7 +178,7 @@ jobs:
 
       - name: Configure and build with bundled PNG
         run: |
-          mkdir build
+          mkdir -p build
           cd build
           cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_BUNDLED_PNG=ON ..
           ninja -j$(nproc)
@@ -195,9 +195,9 @@ jobs:
           update: true
           msystem: MINGW64
           install: >-
-            mingw-w64-i686-cmake
-            mingw-w64-i686-ninja
-            mingw-w64-i686-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-gcc
             mingw-w64-x86_64-libpng
 
       - name: Clone Project
