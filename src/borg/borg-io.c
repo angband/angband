@@ -336,12 +336,12 @@ errr borg_keypress(keycode_t k)
 /*
  * Add a keypress to the history of what has been passed back to the game
  */
-void save_keypress_history(struct keypress *kp)
+struct keypress save_keypress_history(struct keypress kp)
 {
     /* Note the keypress */
     if (borg_cfg[BORG_VERBOSE]) {
-        if (kp->type == EVT_KBRD) {
-            keycode_t k = kp->code;
+        if (kp.type == EVT_KBRD) {
+            keycode_t k = kp.code;
             if (k >= 32 && k <= 126) {
                 borg_note(format("& Key <%c> (0x%02lX)", (char)k, (unsigned long)k));
             } else {
@@ -353,20 +353,21 @@ void save_keypress_history(struct keypress *kp)
                     borg_note(format("& Key <0x%02lX>", (unsigned long)k));
             }
         } else {
-            borg_note(format("& non-Keyboard <0x%02X>", kp->type));
+            borg_note(format("& non-Keyboard <0x%02X>", kp.type));
         }
-
     }
 
     /* Store the char, advance the queue */
-    borg_key_history[borg_key_history_head].code = kp->code;
-    borg_key_history[borg_key_history_head++].type = kp->type;
+    borg_key_history[borg_key_history_head].code = kp.code;
+    borg_key_history[borg_key_history_head++].type = kp.type;
 
     /* on full array, keep the last 100 */
     if (borg_key_history_head == KEY_SIZE) {
         memcpy(borg_key_history, &borg_key_history[KEY_SIZE - 101], sizeof(struct keypress) * 100);
         borg_key_history_head = 100;
     }
+
+    return kp;
 }
 
 

@@ -1596,14 +1596,14 @@ static int32_t borg_power_inventory(void)
         || borg.trait[BI_CLASS] == CLASS_WARRIOR) {
         k = 0;
         for (; k < 40 && k < borg.trait[BI_AMISSILES]; k++)
-            value += 1000L;
+            value += 100L;
         if (borg.trait[BI_STR] > 15 && borg.trait[BI_STR] <= 18) {
             for (; k < 80 && k < borg.trait[BI_AMISSILES]; k++)
-                value += 100L;
+                value += 10L;
         }
         if (borg.trait[BI_STR] > 18) {
             for (; k < 180 && k < borg.trait[BI_AMISSILES]; k++)
-                value += 80L;
+                value += 8L;
         }
 
         /* penalize use of too many quiver slots */
@@ -1613,10 +1613,10 @@ static int32_t borg_power_inventory(void)
     } else {
         k = 0;
         for (; k < 20 && k < borg.trait[BI_AMISSILES]; k++)
-            value += 1000L;
+            value += 100L;
         if (borg.trait[BI_STR] > 15) {
             for (; k < 50 && k < borg.trait[BI_AMISSILES]; k++)
-                value += 100L;
+                value += 10L;
         }
         /* Don't carry too many */
         if (borg.trait[BI_STR] <= 15 && borg.trait[BI_AMISSILES] > 20)

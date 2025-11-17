@@ -184,8 +184,9 @@ bool borg_think_dungeon_light(void)
             return true;
 
         /* Can I recall out with a spell */
-        if (!borg.goal.recalling && borg_recall())
-            return true;
+        if (!borg.goal.recalling)
+            if (borg_recall()) 
+                return true;
 
         /* Test for stairs */
         if (!OPT(player, birth_force_descend)) {
@@ -920,15 +921,19 @@ bool borg_leave_level(bool bored)
 
             /* Recall if going to town */
             if (borg.goal.rising && ((borg_time_town + (borg_t - borg_began)) > 200)
-                && (borg.trait[BI_CDEPTH] >= 5) && borg_recall()) {
-                borg_note("# Recalling to town (goal rising)");
-                return true;
+                && (borg.trait[BI_CDEPTH] >= 5)) {
+                if (borg_recall()) {
+                    borg_note("# Recalling to town (goal rising)");
+                    return true;
+                }
             }
 
             /* Recall if needing to Restock */
-            if (need_restock && borg.trait[BI_CDEPTH] >= 5 && borg_recall()) {
-                borg_note("# Recalling to town (need to restock)");
-                return true;
+            if (need_restock && borg.trait[BI_CDEPTH] >= 5) {
+                if (borg_recall()) {
+                    borg_note("# Recalling to town (need to restock)");
+                    return true;
+                }
             }
         }
 

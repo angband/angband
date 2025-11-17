@@ -23,6 +23,7 @@
 #include "game-world.h"
 #include "generate.h"
 #include "init.h"
+#include "mon-predicate.h"
 #include "obj-chest.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
@@ -1712,4 +1713,21 @@ void search(struct player *p)
 			}
 		}
 	}
+}
+
+/**
+ * Test if there are any monsters the player knows about in the field of view.
+ */
+bool player_has_monster_in_view(const struct player *p)
+{
+	int n = cave_monster_max(cave), i;
+
+	for (i = 1; i < n; ++i) {
+		const struct monster *mon = cave_monster(cave, i);
+
+		if (monster_is_obvious(mon) && monster_is_in_view(mon)) {
+			return true;
+		}
+	}
+	return false;
 }

@@ -158,9 +158,6 @@ bool borg_think(void)
 
         /* Cheat the "equip" screen */
         borg_cheat_equip();
-
-        /* Done */
-        return false;
     }
 
     /* Cheat */
@@ -173,9 +170,6 @@ bool borg_think(void)
 
         /* Do a quick cheat of the shops */
         borg_cheat_store();
-
-        /* Done */
-        return false;
     }
 
     /* save the items.  safe_items, from here on, should never be changed, */
@@ -225,11 +219,11 @@ bool borg_think(void)
         return true;
     }
 
-    /* Parse "equip" mode */
+    /* Parse equipment mode */
+    /* this shouldn't happen because we now pull equipment information */
+    /* directly from the game */
     if ((0 == borg_what_text(0, 0, 10, &t_a, buf))
         && (streq(buf, "(Equipment) "))) {
-        /* Parse the "equip" screen */
-        /* borg_parse_equip(); */
 
         /* Leave this mode */
         borg_keypress(ESCAPE);
@@ -238,11 +232,11 @@ bool borg_think(void)
         return true;
     }
 
-    /* Parse "inven" mode */
+    /* Parse Inventory mode */
+    /* this shouldn't happen because we now pull inventory information */
+    /* directly from the game */
     if ((0 == borg_what_text(0, 0, 10, &t_a, buf))
         && (streq(buf, "(Inventory) "))) {
-        /* Parse the "inven" screen */
-        /* borg_parse_inven(); */
 
         /* Leave this mode */
         borg_keypress(ESCAPE);
@@ -251,7 +245,9 @@ bool borg_think(void)
         return true;
     }
 
-    /* Parse "inven" mode */
+    /* Parse worn equipment mode */
+    /* this shouldn't happen because we now pull worn equipment information */
+    /* directly from the game */
     if ((0 == borg_what_text(0, 0, 6, &t_a, buf)) && (streq(buf, "Wear o"))) {
         /* Leave this mode */
         borg_keypress(ESCAPE);
@@ -266,15 +262,11 @@ bool borg_think(void)
         borg_do_spell = false;
     }
 
-
     /* Check for "browse" mode */
+    /* this shouldn't happen because we now pull spell information */
+    /* directly from the game */
     if ((0 == borg_what_text(COL_SPELL, ROW_SPELL, -12, &t_a, buf))
         && (streq(buf, "Lv Mana Fail"))) {
-        /* Parse the "spell" screen */
-        /* borg_parse_spell(borg_do_spell_aux); */
-
-        /* Advance to the next book */
-        /* borg_do_spell_aux++; */
 
         /* Leave that mode */
         borg_keypress(ESCAPE);
@@ -308,6 +300,8 @@ bool borg_think(void)
             reincarnate_borg();
 
             borg_flush();
+
+            return false;
 #endif /* bablos */
         }
     }

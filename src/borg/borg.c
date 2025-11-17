@@ -178,6 +178,19 @@ uint16_t borg_step = 0;
 struct borg_save_init borg_init_save;
 
 
+static struct keypress internal_borg_inkey(int flush_first);
+
+/*
+ * **START HERE FOR BORG PROCESSING**
+ *
+ * This routine is what captures control from Angband and feeds back keystrokes
+ * It wraps the main keypress routine to enable capture of the keys generated
+ */
+static struct keypress borg_inkey_hack(int flush_first)
+{
+    return save_keypress_history(internal_borg_inkey(flush_first));
+}
+
 /*
  * This function lets the Borg "steal" control from the user.
  *
@@ -512,16 +525,6 @@ static struct keypress internal_borg_inkey(int flush_first)
 
     key.code = ESCAPE;
     return key;
-}
-
-/* wrapper around keypress capture */
-static struct keypress borg_inkey_hack(int flush_first)
-{
-    struct keypress k = internal_borg_inkey(flush_first);
-
-    save_keypress_history(&k);
-
-    return k;
 }
 
 
