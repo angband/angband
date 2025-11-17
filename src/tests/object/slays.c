@@ -1150,7 +1150,7 @@ static int test_react_to_slay(void *state)
 
 	memset(ts->slays, 0, z_info->slay_max * sizeof(*ts->slays));
 	for (i1 = 1; i1 < z_info->slay_max; ++i1) {
-		char *old_base;
+		char *old_base = NULL;
 		bool *old_slays;
 
 		if (!slays[i1].base || !slays[i1].race_flag) continue;
