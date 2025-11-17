@@ -270,11 +270,27 @@ jobs:
         run: |
           tar -xf ${{ env.DOC_ARTIFACT_PATH }}
 
-      # Override the default CFLAGS, -g -O2, to get a smaller executable (~2
-      # MB versus ~7 MB), all due to compiling without debugging symbols.
-      # Adding the option to strip symbols and relocation information, -s,
-      # or the option to optimize for size, -Os, didn't further reduce the
-      # size of the executable when using mingw 6.0.0 on Debian buster.
+      # Override the default CFLAGS (-g -O2) to get a smaller executable.
+      # Using -O2 instead of -g -O2 reduces the unstripped executable from ~12 MB to ~3 MB
+      # with MinGW-w64 GCC 10-win32 (i686-w64-mingw32) on Ubuntu 22.04 LTS.
+      # Alternatively, we could keep -g -O2 for debugging and apply `strip`
+      # (or link with -s) afterwards to achieve the same reduced size.
+      #
+      # The main size reduction comes from removing -g.
+      # Defining NDEBUG has no measurable effect on the size.
+      # Optimizing for size (-Os) gives an additional ~13–18 % reduction after stripping.
+      #
+      # Example measurements:
+      #
+      #   | Flags            | Size (bytes) | Stripped size | Δ vs -O2  |
+      #   |------------------|--------------|---------------|-----------|
+      #   | -g -O2           | 11,843,443   | 2,163,214     | +302.6%   |
+      #   | -O2              | 2,942,051    | 2,163,214     | —         |
+      #   | -O2 -s           | 2,163,200    | 2,163,200     | −26.5%    |
+      #   | -Os              | 2,558,723    | 1,777,678     | −13.0%    |
+      #
+      # Conclusion: removing -g or stripping the binary are the main ways to reduce size,
+      # while -Os yields a modest further reduction if minimal binary size is desired.
       - name: Create Windows Archive
         id: create_windows_archive
         run: |

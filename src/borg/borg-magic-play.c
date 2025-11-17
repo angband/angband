@@ -87,7 +87,7 @@ static bool borg_can_play_spell(borg_magic *as)
 bool borg_play_magic(bool bored)
 {
     int r, b_r = -1;
-    int spell_num, b_spell_num;
+    int spell_num, b_spell_num = -1;
 
     /* Must use magic or prayers */
     /* !FIX !TODO add to borg struct and check that */
@@ -138,7 +138,7 @@ bool borg_play_magic(bool bored)
     }
 
     /* Study */
-    if (borg.trait[BI_ISSTUDY] && (b_r > 0)) {
+    if (borg.trait[BI_ISSTUDY] && (b_r > 0) && (b_spell_num >= 0)) {
         borg_magic *as = &borg_magics[b_spell_num];
 
         /* Debugging Info */
