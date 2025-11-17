@@ -26,7 +26,7 @@ function(DETERMINE_PNG_ZLIB PNG_OUT ZLIB_OUT USE_BUNDLED)
     find_package(PNG QUIET)
     if(NOT PNG_FOUND)
         message(FATAL_ERROR
-            "System PNG not found. If you are building a 32-bit Windows binary, "
+            "System PNG not found. If you are building a 32-bit x86 Windows binary, "
             "enable -DSUPPORT_BUNDLED_PNG=ON"
         )
     endif()
