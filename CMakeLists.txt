@@ -801,7 +801,7 @@ IF(SC_INSTALL)
         COMMAND "${CMAKE_COMMAND}" "-P"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/scripts/copy_with_exclude.cmake"
         "--"
-        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+        "$<TARGET_FILE_DIR:OurExecutable>"
         "${CMAKE_CURRENT_SOURCE_DIR}/lib"
         "Makefile"
         ".deps"
