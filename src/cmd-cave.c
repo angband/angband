@@ -1143,15 +1143,18 @@ void move_player(int dir, bool disarm)
 		if (old_dtrap != new_dtrap)
 			player->upkeep->redraw |= (PR_DTRAP);
 
-		/* Disturb player if the player is about to leave the area */
-		if (player->upkeep->running
-				&& !player->upkeep->running_firststep
-				&& old_dtrap && !new_dtrap) {
-			disturb(player);
-			/* No move made so no energy spent. */
-			player->upkeep->energy_use = 0;
-			return;
-		}
+		/* Leaving a detected-trap area */
+        if (!player->upkeep->running_firststep && old_dtrap && !new_dtrap) {
+            if (player->upkeep->running) {
+                msg("You are leaving an area previously checked for traps.");
+                disturb(player);
+                player->upkeep->energy_use = 0;
+                return;
+            } else {
+                /* Optional info message for walking */
+                msg("You are leaving an area previously checked for traps.");
+            }
+        }
 
 		/*
 		 * If not confused, allow check before moving into damaging
