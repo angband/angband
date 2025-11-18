@@ -172,15 +172,14 @@ Compilation with CMake
 ~~~~~~~~~~~~~~~~~~~~~~
 
 The compilation process with CMake requires a version greater than 3,
-by default the compilation process uses the Windows front end on Windows and
-the X11 front end on everything but Windows unless one or more of the other
-graphical front ends are selected.  The graphical front ends are: GCU, SDL,
-SDL2, X11 and Windows.  All of the following generate a self-contained
-directory, build/game, that you can move elsewhere or rename.  To run the
-result, change directories to build/game or whatever you renamed it to) and
+by default the compilation process uses the X11 front end unless
+one or more of the other graphical front ends are selected. The graphical front
+ends are: GCU, SDL, SDL2 and X11.  All of the following generate a 
+self-contained directory, build/game, that you can move elsewhere or rename.  To
+run the result, change directories to build/game or whatever you renamed it to) and
 run ./angband .
 
-To build Angband with the Windows/X11 front end::
+To build Angband with the X11 front end::
 
     mkdir build && cd build
     cmake ..
@@ -205,12 +204,6 @@ To build Angband with the GCU front end::
 
     mkdir build && cd build
     cmake -DSUPPORT_GCU_FRONTEND=ON ..
-    make
-
-To build Angband with the Windows front end::
-
-    mkdir build && cd build
-    cmake -DSUPPORT_WINDOWS_FRONTEND=ON ..
     make
 
 On OpenBSD (at least with OpenBSD 6.9), there's known issues with detecting
