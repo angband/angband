@@ -346,6 +346,10 @@ static void borg_flow_direct(int y, int x)
             x = (x2 < x1) ? (x1 - n) : (x1 + n);
         }
 
+        /* Ensure that gcc's stringop-overflow on -O2 does not complain about data[y][x] = true */
+        if (!(x >= 0 && y >= 0 && x < AUTO_MAX_X && y < AUTO_MAX_Y))
+            return;
+
         /* Access the grid */
         ag = &borg_grids[y][x];
 
