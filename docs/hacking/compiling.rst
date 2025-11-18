@@ -174,7 +174,7 @@ Compilation with CMake
 The compilation process with CMake requires a version greater than 3,
 by default the compilation process uses the X11 front end unless
 one or more of the other graphical front ends are selected. The graphical front
-ends are: GCU, SDL, SDL2 and X11.  All of the following generate a 
+ends are: GCU, SDL, SDL2 and X11.  All of the following generate a
 self-contained directory, build/game, that you can move elsewhere or rename.  To
 run the result, change directories to build/game or whatever you renamed it to) and
 run ./angband .
