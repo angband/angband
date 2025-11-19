@@ -113,8 +113,8 @@ extern int teardown_tests(void *data);
 			showfail(); \
 			printf("    %s:%d: requirement '%s' == '%s' failed\n", suite_name, \
 		           __LINE__, #x, #y); \
-			printf("      %s: 0x%08lx\n", #x, (unsigned long)(x)); \
-			printf("      %s: 0x%08lx\n", #y, (unsigned long)(y)); \
+			printf("      %s: %p\n", #x, (void*)(x)); \
+			printf("      %s: %p\n", #y, (void*)(y)); \
 		} \
 		return 1; \
 	}
@@ -125,7 +125,7 @@ extern int teardown_tests(void *data);
 			showfail(); \
 			printf("    %s:%d: requirement '%s' == NULL failed\n", suite_name, \
 		           __LINE__, #x); \
-			printf("      %s: 0x%08lxn", #x, (unsigned long)(x)); \
+			printf("      %s: %p\n", #x, (void*)(x)); \
 		} \
 		return 1; \
 	}
@@ -136,7 +136,7 @@ extern int teardown_tests(void *data);
 			showfail(); \
 			printf("    %s:%d: requirement '%s' != NULL failed\n", suite_name, \
 		           __LINE__, #x); \
-			printf("      %s: 0x%08lx\n", #x, (unsigned long)(x)); \
+			printf("      %s: %p\n", #x, (void*)(x)); \
 		} \
 		return 1; \
 	}
