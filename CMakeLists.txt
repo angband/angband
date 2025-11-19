@@ -162,7 +162,23 @@ if(MSVC)
     add_compile_options(/W4 /utf8)
 else()
     add_compile_options(-Wall -Wextra -pedantic -Wno-unused-parameter)
+
+    option(ENABLE_ASAN "Enable AddressSanitizer + UBSan (needs CLANG64 on MSYS2)" OFF)
+    if(ENABLE_ASAN)
+        message(STATUS "ASan/UBSan enabled")
+        set(SAN_FLAGS
+            -fsanitize=address,undefined
+            -fno-omit-frame-pointer
+        )
+        add_compile_options(${SAN_FLAGS})
+        add_link_options(${SAN_FLAGS})
+        # Recommended for UBSan: keep symbols
+        add_compile_options(-g)
+        # Prevent LTO, since ASan and UBSan don't work well with it
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+    endif()
 endif()
+
 
 ADD_LIBRARY(OurCoreLib OBJECT
         src/buildid.c
@@ -801,7 +817,7 @@ IF(SC_INSTALL)
         COMMAND "${CMAKE_COMMAND}" "-P"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/scripts/copy_with_exclude.cmake"
         "--"
-        "$<TARGET_FILE_DIR:OurExecutable>"
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
         "${CMAKE_CURRENT_SOURCE_DIR}/lib"
         "Makefile"
         ".deps"

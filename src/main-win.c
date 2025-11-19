@@ -5253,6 +5253,23 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	/* Unused parameter */
 	(void)nCmdShow;
 
+    // FILE *fp = fopen("angband.log", "w");
+	// fprintf(fp, "Log created\n"); fflush(fp);
+	// if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+    //     // Reopen stdout/stderr so printf works
+    //     freopen("CONOUT$", "w", stdout);
+    //     freopen("CONOUT$", "w", stderr);
+	//     fprintf(fp, "Reattached console\n"); fflush(fp);
+    //     fprintf(stdout, "Test printf(stdout)\n"); fflush(stdout);
+    //     printf("Test printf()\n"); fflush(stdout);
+    // }
+	// fclose(fp); fp = NULL;
+
+	int *p;
+	printf("%p\n", p);
+	printf("%d\n", *p);
+
+
 #ifdef USE_SAVER
 	if (lpCmdLine && ((*lpCmdLine == '-') || (*lpCmdLine == '/'))) {
 		lpCmdLine++;

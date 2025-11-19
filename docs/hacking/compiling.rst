@@ -376,7 +376,34 @@ When debugging crashes it can be very useful to get more information about *what
 
 Note that compiling with these tools will require installing additional dependencies: libubsan libasan (names of the packages might be different in your distribution).
 
-There is probably a way to get these tools to work on Windows. If you know how, please add the information to this file.
+To use ASan and UBSan on Windows, you need MSYS2 CLANG64 since other shells and compilers do not properly support ASan/UBSan at the time of this writing.
+
+Run:
+
+    C:/msys64/clang64.exe
+
+Install dependencies and build with:
+
+    pacman -S \
+        mingw-w64-clang-x86_64-clang \
+        mingw-w64-clang-x86_64-compiler-rt \
+        mingw-w64-clang-x86_64-cmake \
+        mingw-w64-clang-x86_64-ninja \
+        mingw-w64-clang-x86_64-libpng
+
+    mkdir build && cd build
+    cmake -G Ninja \
+        -DCMAKE_BUILD_TYPE=Debug \
+        -DCMAKE_C_FLAGS="-fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -g" \
+        ..
+    ninja
+
+Set ASAN_OPTIONS and UBSAN_OPTIONS to log to file since a Windows application in an MSYS2 terminal cannot print to the terminal. Then start the game:
+
+    cd game
+    export ASAN_OPTIONS=log_path=asan.log:abort_on_error=1
+    export UBSAN_OPTIONS=log_path=ubsan.log:print_stacktrace=1
+    ./angband
 
 Test cases
 ~~~~~~~~~~
