@@ -73,7 +73,7 @@ jobs:
       - name: Build
         run: |
           cd src
-          make -f Makefile.msys2.sdl2 SOUND=yes -j$(nproc)
+          make -f Makefile.msys2.sdl2 -j$(nproc) SOUND=yes
 
       - name: Build with CMake/Ninja
         run: |
@@ -107,7 +107,7 @@ jobs:
       - name: Build
         run: |
           cd src
-          make -f Makefile.win MINGW=yes -j$(nproc)
+          make -f Makefile.win -j$(nproc) MINGW=yes
 
   configure-win:
     runs-on: windows-latest
@@ -137,7 +137,7 @@ jobs:
           ./autogen.sh
           ./configure --enable-win
           make install
-          make tests
+          make -j$(nproc) tests
 
   cmake-win32:
     runs-on: windows-latest

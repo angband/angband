@@ -820,7 +820,7 @@ IF(SC_INSTALL)
                 "$<TARGET_PROPERTY:${PNG_TARGET},IMPORTED_LOCATION>"
                 "$<TARGET_PROPERTY:${ZLIB_TARGET},IMPORTED_LOCATION>"
                 "$<TARGET_FILE_DIR:OurExecutable>"
-            COMMENT "Copying PNG and ZLIB DLLs to build directory"
+            COMMENT "Copying PNG and ZLIB DLLs to executable directory"
         )
     ENDIF()
 ENDIF()
