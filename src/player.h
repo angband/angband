@@ -479,8 +479,8 @@ struct player_upkeep {
 
 	int resting;			/* Resting counter */
 
-	int running;				/* Running counter */
-	bool running_firststep;		/* Is this our first step running? */
+	int running;			/* Running counter */
+	bool running_firststep;		/* Is this our first step running or following a precomputed path? */
 
 	struct object **quiver;	/* Quiver objects */
 	struct object **inven;	/* Inventory objects */
