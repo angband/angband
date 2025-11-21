@@ -309,8 +309,11 @@ A build using Mingw cross-compiler is possible with CMake.
 To perform the build::
 
 	mkdir build && cd build
-	cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-i686-mingw32-cross.cmake ..
-	cmake --build . -- -j$(nproc)
+	cmake -G Ninja \
+        -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-i686-mingw32-cross.cmake \
+        -DSUPPORT_BUNDLED_PNG=ON \
+        ..
+	ninja
 
 That will leave an angband.exe and the needed .dll files in the sub directory
 game/.  That executable can be run with wine:

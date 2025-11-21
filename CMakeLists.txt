@@ -455,11 +455,11 @@ ELSEIF(SUPPORT_SDL2_FRONTEND)
 ENDIF()
 IF(SUPPORT_WINDOWS_FRONTEND)
     INCLUDE(src/cmake/modules/PNG_Detection.cmake)
-    DETERMINE_PNG_ZLIB(PNG_TARGET ZLIB_TARGET ${SUPPORT_BUNDLED_PNG})
+    DETERMINE_PNG(PNG_TARGET PNG_DLLS ${SUPPORT_BUNDLED_PNG})
 
     INCLUDE(src/cmake/macros/WINDOWS_Frontend.cmake)
-    CONFIGURE_WINDOWS_FRONTEND(OurExecutable NO)
-    CONFIGURE_WINDOWS_FRONTEND(OurCoreLib YES)
+    CONFIGURE_WINDOWS_FRONTEND(OurExecutable ${PNG_TARGET})
+    CONFIGURE_WINDOWS_FRONTEND(OurCoreLib "")
     IF(SUPPORT_BORG)
         TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D ALLOW_BORG)
     ENDIF()
@@ -778,15 +778,11 @@ IF(SC_INSTALL)
     # Provide an install rule which copies the self-contained form to another
     # location.
     INSTALL(TARGETS OurExecutable DESTINATION . PERMISSIONS ${EXECUTABLE_PERMISSIONS})
-    IF(SUPPORT_WINDOWS_FRONTEND)
+    IF(SUPPORT_WINDOWS_FRONTEND AND PNG_DLLS)
         # DATA_PERMISSIONS matches the permissions those files have in the
         # source tree, but should the installed permissions be
         # EXECUTABLE_PERMISSIONS?
-        INSTALL(FILES
-            $<TARGET_PROPERTY:${PNG_TARGET},IMPORTED_LOCATION>
-            $<TARGET_PROPERTY:${ZLIB_TARGET},IMPORTED_LOCATION> 
-            DESTINATION . PERMISSIONS ${DATA_PERMISSIONS}
-        )
+        INSTALL(FILES ${PNG_DLLS} DESTINATION . PERMISSIONS ${DATA_PERMISSIONS})
     ENDIF()
     INSTALL(DIRECTORY lib/ DESTINATION lib)
     IF(BUILD_DOC)
@@ -810,18 +806,19 @@ IF(SC_INSTALL)
         VERBATIM
     )
 
-    IF(SUPPORT_WINDOWS_FRONTEND)
-        # Transfer the packaged DLLs so they're in the same directory as the
+    IF(SUPPORT_WINDOWS_FRONTEND AND PNG_DLLS)
+        # Transfer the packaged DLLs so there in the same directory as the
         # executable.
-        ADD_CUSTOM_COMMAND(
-            TARGET OurExecutable 
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "$<TARGET_PROPERTY:${PNG_TARGET},IMPORTED_LOCATION>"
-                "$<TARGET_PROPERTY:${ZLIB_TARGET},IMPORTED_LOCATION>"
-                "$<TARGET_FILE_DIR:OurExecutable>"
-            COMMENT "Copying PNG and ZLIB DLLs to executable directory"
-        )
+        FOREACH(dll ${PNG_DLLS})
+            ADD_CUSTOM_COMMAND(
+                TARGET OurExecutable
+                POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${dll}"
+                    "$<TARGET_FILE_DIR:OurExecutable>"
+                COMMENT "Copying ${dll} to executable directory"
+            )
+        ENDFOREACH()
     ENDIF()
 ENDIF()
 
@@ -989,7 +986,7 @@ IF((READONLY_INSTALL) OR (SHARED_INSTALL))
     TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D TEST_OVERRIDE_PATHS)
 ENDIF()
 IF(SUPPORT_WINDOWS_FRONTEND)
-    CONFIGURE_WINDOWS_FRONTEND(OurUnitTestLib YES)
+    CONFIGURE_WINDOWS_FRONTEND(OurUnitTestLib "")
 ENDIF()
 
 # Set up targets for exercising the unit tests (from src/tests in the source
@@ -1035,7 +1032,7 @@ FOREACH(ANGBAND_TEST_CASE_SOURCE ${ANGBAND_TEST_CASE_SOURCES})
         CONFIGURE_SDL2_SOUND(${ANGBAND_TEST_CASE_NAME} NO)
     ENDIF()
     IF(SUPPORT_WINDOWS_FRONTEND)
-        CONFIGURE_WINDOWS_FRONTEND(${ANGBAND_TEST_CASE_NAME} YES)
+        CONFIGURE_WINDOWS_FRONTEND(${ANGBAND_TEST_CASE_NAME} "")
         # Guarantee that it is not marked as having a WinMain entry point
         # regardless of the setting of CMAKE_WIN32_EXECUTABLE.
         SET_TARGET_PROPERTIES(${ANGBAND_TEST_CASE_NAME} PROPERTIES
