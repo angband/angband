@@ -13,18 +13,18 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install gcc make cmake libx11-dev
+          sudo apt-get install gcc cmake ninja-build libx11-dev 
 
       - name: Clone Project
         uses: actions/checkout@v4
 
-      - name: Build
+      - name: Build with Ninja
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake -DSUPPORT_TEST_FRONTEND=ON ..
-          cmake --build .
-          cmake --build . --target alltests
+          env CFLAGS=-Wall cmake -G Ninja -DSUPPORT_TEST_FRONTEND=ON ..
+          ninja -j$(nproc)
+          ninja -j$(nproc) alltests
 
   x11:
     name: X11
@@ -33,17 +33,17 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install gcc make cmake libx11-dev
+          sudo apt-get install gcc cmake ninja-build libx11-dev
 
       - name: Clone Project
         uses: actions/checkout@v4
 
-      - name: Build
+      - name: Build with Ninja
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake ..
-          make
+          env CFLAGS=-Wall cmake -G Ninja ..
+          ninja -j$(nproc)
 
   ncurses:
     name: NCurses
@@ -52,17 +52,17 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install gcc make cmake libncursesw5-dev
+          sudo apt-get install gcc cmake ninja-build libncursesw5-dev
 
       - name: Clone Project
         uses: actions/checkout@v4
 
-      - name: Build
+      - name: Build with Ninja
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake -DSUPPORT_GCU_FRONTEND=ON ..
-          make
+          env CFLAGS=-Wall cmake -G Ninja -DSUPPORT_GCU_FRONTEND=ON ..
+          ninja -j$(nproc)
 
   sdl:
     name: SDL
@@ -71,17 +71,17 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install gcc make cmake libsdl-image1.2-dev libsdl-ttf2.0-dev libsdl-mixer1.2-dev
+          sudo apt-get install gcc cmake ninja-build libsdl-image1.2-dev libsdl-ttf2.0-dev libsdl-mixer1.2-dev
 
       - name: Clone Project
         uses: actions/checkout@v4
 
-      - name: Build
+      - name: Build with Ninja
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake -DSUPPORT_SDL_FRONTEND=ON -DSUPPORT_SDL_SOUND=ON ..
-          make
+          env CFLAGS=-Wall cmake -G Ninja -DSUPPORT_SDL_FRONTEND=ON -DSUPPORT_SDL_SOUND=ON ..
+          ninja -j$(nproc)
 
   sdl2:
     name: SDL2
@@ -90,16 +90,17 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install gcc autoconf automake make libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
+          sudo apt-get install gcc cmake ninja-build libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
 
       - name: Clone Project
         uses: actions/checkout@v4
 
-      - name: Build
+      - name: Build with CMake/Ninja
         run: |
-          ./autogen.sh
-          ./configure --with-no-install --enable-sdl2 --enable-sdl2-mixer
-          make
+          mkdir build
+          cd build
+          env CFLAGS=-Wall cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON -DSUPPORT_SDL2_SOUND=ON ..
+          ninja -j$(nproc)
 
   statbuild:
     name: Statistics Build
@@ -119,7 +120,7 @@ jobs:
         run: |
           ./autogen.sh
           env CFLAGS="-Wvla -Wlogical-op" ./configure --with-no-install --enable-stats --enable-test --enable-sdl-mixer
-          make
+          make -j$(nproc)
 
   makefilestd:
     name: Makefile.std
@@ -137,7 +138,7 @@ jobs:
         run: |
           cd src
           sed -e 's/^# SYS_x11 =/SYS_x11 =/' -e 's/^# SYS_sdl =/SYS_sdl=/' -e 's/^# SYS_stats =/SYS_stats =/' -e 's/^# SYS_stats_objs =/SYS_stats_objs =/' -e 's/^#SOUND_sdl =/SOUND_sdl =/' -e 's/^#SOUND_sdl_objs =/SOUND_sdl_objs =/' <Makefile.std >Makefile.std.modified
-          make -f Makefile.std.modified
+          make -f Makefile.std.modified -j$(nproc)
           make -f Makefile.std.modified clean
           sed -e 's/^# SYS_sdl2 =/SYS_sdl2 =/' -e 's/^# SYS_sdl2_objs =/SYS_sdl2_objs =/' -e 's/^#SOUND_sdl2 =/SOUND_sdl2 =/' -e 's/^#SOUND_sdl_objs =/SOUND_sdl_objs =/' <Makefile.std >Makefile.std.modified
-          make -f Makefile.std.modified
+          make -f Makefile.std.modified -j$(nproc)

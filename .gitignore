@@ -70,3 +70,4 @@ src/config
 src/stats/db.dep
 src/tests/ran-already
 src/version.h
+build*/

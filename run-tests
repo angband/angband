@@ -15,6 +15,11 @@ else
 	angexe=src/angband
 fi
 
+if [ ! -d tests ]; then
+    echo "run-tests: error: tests/ directory not found" 2>&1
+    exit 1
+fi
+
 RAN=0
 OK=0
 

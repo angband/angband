@@ -25,7 +25,7 @@ jobs:
         shell: bash
         run: |
           pushd src/
-          make -f Makefile.3ds
+          make -f Makefile.3ds -j$(nproc)
           popd
 
       - name: Setup cxitool
@@ -76,7 +76,7 @@ jobs:
         shell: bash
         run: |
           pushd src/
-          make -f Makefile.blocksds
+          make -f Makefile.blocksds -j$(nproc)
           popd
 
 #  nds:
