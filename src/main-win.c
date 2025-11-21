@@ -5253,6 +5253,12 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	/* Unused parameter */
 	(void)nCmdShow;
 
+	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+        /* Reopen stdout/stderr so printf works */
+        freopen("CONOUT$", "w", stdout);
+        freopen("CONOUT$", "w", stderr);
+    }
+
 #ifdef USE_SAVER
 	if (lpCmdLine && ((*lpCmdLine == '-') || (*lpCmdLine == '/'))) {
 		lpCmdLine++;
