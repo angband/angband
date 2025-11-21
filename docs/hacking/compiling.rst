@@ -389,6 +389,7 @@ Run:
 Install dependencies and build with:
 
     pacman -S \
+        mingw-w64-clang-x86_64-clang \
         mingw-w64-clang-x86_64-compiler-rt \
         mingw-w64-clang-x86_64-cmake \
         mingw-w64-clang-x86_64-ninja \
@@ -397,18 +398,9 @@ Install dependencies and build with:
 
     mkdir build && cd build
     cmake -G Ninja \
-        -DCMAKE_BUILD_TYPE=Debug \
-        -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
-        -DCMAKE_C_FLAGS="-fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-lto -g" \
+        -DCMAKE_C_FLAGS="-fsanitize=address -fsanitize=undefined" \
         ..
     ninja
-
-Note that UBSAN detection relies somewhat on Debug builds because some
-undefined behavior is otherwise optimized out before it can be detected
-and it relies on -g to get readable stack traces. ASAN can and probably should
-be done with a Release binary though.
-Note that LTO (CMAKE_INTERPROCEDURAL_OPTIMIZATION / -fno-lto) should be OFF in
-particular for Release builds where it is switched on by default.
 
 Run the tests or the game from winpty because Windows won't printf to an MSYS2 
 terminal. We also still need the path from the MSYS2 shell so that it can find
