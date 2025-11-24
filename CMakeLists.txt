@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5...3.26 FATAL_ERROR)
 PROJECT(Angband LANGUAGES C)
-SET(OUR_EXECUTABLE_NAME ${PROJECT_NAME})
+STRING(TOLOWER ${PROJECT_NAME} OUR_EXECUTABLE_NAME)
 
 # Append the custom modules to the search path.
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/modules")
@@ -21,6 +21,7 @@ OPTION(SUPPORT_SPOIL_FRONTEND "Support for spoiler front end." ${SPOIL_DEFAULT})
 OPTION(SUPPORT_STATS_FRONTEND "Support for statistics front end; requires sqlite3 development library." OFF)
 OPTION(SUPPORT_TEST_FRONTEND "Support for test front end." OFF)
 OPTION(SUPPORT_WINDOWS_FRONTEND "Support for windows front end." OFF)
+OPTION(SUPPORT_BUNDLED_PNG "Use bundled Windows PNG+Zlib (32-bit x86 only)" OFF)
 OPTION(SUPPORT_STATS_BACKEND "Enable backend support for statistics and related debugging commands.  Implied by SUPPORT_STATS_FRONTEND." OFF)
 OPTION(SUPPORT_BORG "Support for Borg." ON)
 OPTION(SUPPORT_BORG_HIGH_SCORES "Borg characters allowed in high scores." OFF)
@@ -123,8 +124,7 @@ IF(SUPPORT_WINDOWS_FRONTEND)
         SET(SUPPORT_SDL2_SOUND OFF)
     ENDIF()
     # Set up the path for the source of the resource file.
-    STRING(TOLOWER ${OUR_EXECUTABLE_NAME} OUR_WINDOWS_RC_BASE)
-    STRING(CONCAT OUR_WINDOWS_RC src/win/ ${OUR_WINDOWS_RC_BASE} .rc)
+    STRING(CONCAT OUR_WINDOWS_RC src/win/ ${OUR_EXECUTABLE_NAME} .rc)
     # Enable compilation of resource files.
     ENABLE_LANGUAGE(RC)
 ENDIF()
@@ -153,6 +153,9 @@ IF(READONLY_INSTALL)
         MESSAGE(FATAL_ERROR "Conflicting options, READONLY_INSTALL and SUPPORT_WINDOWS_FRONTEND, enabled")
     ENDIF()
 ENDIF()
+
+# Put all executables and lib resources (and DLLs on Windows) into build/game
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/game")
 
 # Global compiler settings
 if(MSVC)
@@ -451,9 +454,12 @@ ELSEIF(SUPPORT_SDL2_FRONTEND)
     CONFIGURE_SDL2_FRONTEND(OurExecutable)
 ENDIF()
 IF(SUPPORT_WINDOWS_FRONTEND)
+    INCLUDE(src/cmake/modules/PNG_Detection.cmake)
+    DETERMINE_PNG(PNG_TARGET PNG_DLLS ${SUPPORT_BUNDLED_PNG})
+
     INCLUDE(src/cmake/macros/WINDOWS_Frontend.cmake)
-    CONFIGURE_WINDOWS_FRONTEND(OurExecutable NO)
-    CONFIGURE_WINDOWS_FRONTEND(OurCoreLib YES)
+    CONFIGURE_WINDOWS_FRONTEND(OurExecutable ${PNG_TARGET})
+    CONFIGURE_WINDOWS_FRONTEND(OurCoreLib "")
     IF(SUPPORT_BORG)
         TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D ALLOW_BORG)
     ENDIF()
@@ -772,11 +778,11 @@ IF(SC_INSTALL)
     # Provide an install rule which copies the self-contained form to another
     # location.
     INSTALL(TARGETS OurExecutable DESTINATION . PERMISSIONS ${EXECUTABLE_PERMISSIONS})
-    IF(SUPPORT_WINDOWS_FRONTEND)
+    IF(SUPPORT_WINDOWS_FRONTEND AND PNG_DLLS)
         # DATA_PERMISSIONS matches the permissions those files have in the
         # source tree, but should the installed permissions be
         # EXECUTABLE_PERMISSIONS?
-        INSTALL(FILES zlib1.dll libpng12.dll DESTINATION . PERMISSIONS ${DATA_PERMISSIONS})
+        INSTALL(FILES ${PNG_DLLS} DESTINATION . PERMISSIONS ${DATA_PERMISSIONS})
     ENDIF()
     INSTALL(DIRECTORY lib/ DESTINATION lib)
     IF(BUILD_DOC)
@@ -791,7 +797,7 @@ IF(SC_INSTALL)
         COMMAND "${CMAKE_COMMAND}" "-P"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/scripts/copy_with_exclude.cmake"
         "--"
-        "${CMAKE_CURRENT_BINARY_DIR}"
+        "$<TARGET_FILE_DIR:OurExecutable>"
         "${CMAKE_CURRENT_SOURCE_DIR}/lib"
         "Makefile"
         ".deps"
@@ -800,11 +806,19 @@ IF(SC_INSTALL)
         VERBATIM
     )
 
-    IF(SUPPORT_WINDOWS_FRONTEND)
+    IF(SUPPORT_WINDOWS_FRONTEND AND PNG_DLLS)
         # Transfer the packaged DLLs so there in the same directory as the
         # executable.
-        FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/win/dll/zlib1.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
-        FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/win/dll/libpng12.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+        FOREACH(dll ${PNG_DLLS})
+            ADD_CUSTOM_COMMAND(
+                TARGET OurExecutable
+                POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${dll}"
+                    "$<TARGET_FILE_DIR:OurExecutable>"
+                COMMENT "Copying ${dll} to executable directory"
+            )
+        ENDFOREACH()
     ENDIF()
 ENDIF()
 
@@ -901,13 +915,23 @@ SET(ANGBAND_TEST_CASE_SOURCES
 
 # First copy some scripts and, as necessary, test case data from the source
 # tree.
-IF(SUPPORT_TEST_FRONTEND)
-    FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
-ENDIF()
-FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/run-tests
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
-FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-test
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/tests)
+if (SUPPORT_TEST_FRONTEND)
+    add_custom_command(TARGET OurExecutable POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+            "$<TARGET_FILE_DIR:OurExecutable>/tests"
+    )
+endif()
+add_custom_command(TARGET OurExecutable POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_CURRENT_SOURCE_DIR}/run-tests"
+        "$<TARGET_FILE_DIR:OurExecutable>/run-tests"
+)
+add_custom_command(TARGET OurExecutable POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/run-test"
+        "$<TARGET_FILE_DIR:OurExecutable>/tests/run-test"
+)
 
 # Set up target for running all tests.  Those (from tests in the source tree)
 # using the test front end will be run directly.  The unit tests will be
@@ -915,8 +939,8 @@ FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-test
 # will always fail because the test case executables are not setgid.
 IF((NOT CMAKE_CROSSCOMPILING) AND SUPPORT_TEST_FRONTEND)
     ADD_CUSTOM_TARGET(alltests
-        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/run-tests ${TEST_EXECUTABLE}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+        COMMAND "$<TARGET_FILE_DIR:OurExecutable>/run-tests" ${TEST_EXECUTABLE}
+        WORKING_DIRECTORY "$<TARGET_FILE_DIR:OurExecutable>")
     ADD_DEPENDENCIES(alltests OurExecutable)
     IF(SC_INSTALL)
         ADD_DEPENDENCIES(alltests TransferLib)
@@ -935,7 +959,7 @@ ENDIF()
 IF((READONLY_INSTALL) OR (SHARED_INSTALL))
     SET(TEST_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 ELSE()
-    SET(TEST_WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    SET(TEST_WORKING_DIRECTORY "$<TARGET_FILE_DIR:OurExecutable>")
 ENDIF()
 
 # Set up an object library with the shared code for unit tests.
@@ -962,7 +986,7 @@ IF((READONLY_INSTALL) OR (SHARED_INSTALL))
     TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D TEST_OVERRIDE_PATHS)
 ENDIF()
 IF(SUPPORT_WINDOWS_FRONTEND)
-    CONFIGURE_WINDOWS_FRONTEND(OurUnitTestLib YES)
+    CONFIGURE_WINDOWS_FRONTEND(OurUnitTestLib "")
 ENDIF()
 
 # Set up targets for exercising the unit tests (from src/tests in the source
@@ -1008,7 +1032,7 @@ FOREACH(ANGBAND_TEST_CASE_SOURCE ${ANGBAND_TEST_CASE_SOURCES})
         CONFIGURE_SDL2_SOUND(${ANGBAND_TEST_CASE_NAME} NO)
     ENDIF()
     IF(SUPPORT_WINDOWS_FRONTEND)
-        CONFIGURE_WINDOWS_FRONTEND(${ANGBAND_TEST_CASE_NAME} YES)
+        CONFIGURE_WINDOWS_FRONTEND(${ANGBAND_TEST_CASE_NAME} "")
         # Guarantee that it is not marked as having a WinMain entry point
         # regardless of the setting of CMAKE_WIN32_EXECUTABLE.
         SET_TARGET_PROPERTIES(${ANGBAND_TEST_CASE_NAME} PROPERTIES

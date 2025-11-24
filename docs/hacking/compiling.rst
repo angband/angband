@@ -175,9 +175,9 @@ The compilation process with CMake requires a version greater than 3,
 by default the compilation process uses the X11 front end unless
 one or more of the other graphical front ends are selected. The graphical front
 ends are: GCU, SDL, SDL2 and X11.  All of the following generate a
-self-contained directory, build, that you can move elsewhere or rename.  To
-run the result, change directories to build (or whatever you renamed it to) and
-run ./Angband .
+self-contained directory, build/game, that you can move elsewhere or rename.  To
+run the result, change directories to build/game or whatever you renamed it to) and
+run ./angband .
 
 To build Angband with the X11 front end::
 
@@ -266,6 +266,37 @@ hardwired in the executable, setting the destination directory when running
 make (i.e. by setting DESTDIR) is not supported and will not work in general:
 set the destination when running cmake by setting the variables mentioned above.
 
+Speeding up CMake with Ninja and multiple cores
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ For faster builds, you can switch from the default Makefile generator to Ninja, 
+which is optimized for parallel compilation.  
+Instead of:
+
+    mkdir build && cd build
+    cmake ..
+    make
+
+you can do: 
+
+    mkdir build && cd build
+    cmake -G Ninja ..
+    ninja -j16
+
+The option `-j16` tells Ninja to use 16 cores. It’s best to set this to the number 
+of CPU cores available on your machine.  
+On Linux, you can do that automatically with `ninja -j$(nproc)`.  
+On macOS, use `ninja -j$(sysctl -n hw.ncpu)`.  
+In PowerShell, use `ninja -j${env:NUMBER_OF_PROCESSORS}`.
+
+This can also be done with Make (`make -j$(nproc)`), but Ninja is often faster.  
+
+Instead of `ninja -j$(nproc)`, you can also use:
+
+    cmake --build . -- -j$(nproc)
+
+which works regardless of the generator used (Ninja, Makefiles, etc.).
+
 Cross-building for Windows with Mingw
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -273,7 +304,26 @@ Many developers (as well as the auto-builder) build Angband for Windows using
 Mingw on Linux. This requires that the necessary Mingw packages are all
 installed.
 
-This type of build now also uses autotools so the overall procedure is very
+A build using Mingw cross-compiler is possible with CMake.
+
+To perform the build::
+
+	mkdir build && cd build
+	cmake -G Ninja \
+        -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-i686-mingw32-cross.cmake \
+        -DSUPPORT_BUNDLED_PNG=ON \
+        ..
+	ninja
+
+That will leave an angband.exe and the needed .dll files in the sub directory
+game/.  That executable can be run with wine:
+
+    cd game
+	wine angband.exe
+
+The unit test cases can also be run from cmake.
+
+This type of build can also use autotools to make the overall procedure very
 similar to that for a native build.  The key difference is setting up to
 cross-compile when running configure.
 
@@ -317,41 +367,6 @@ process to fail when linking angband.exe (the error message will likely be
 The ones that are okay are --with-private-dirs (on by default),
 --with-gamedata-in-lib (has no effect), and --enable-release.
 
-A build using Mingw cross-compiler is also possible with CMake.  You will
-need to have a toolchain file appropriate for Mingw on your system.  Some
-information on toolchain files can be found at https://cmake.org/cmake/help/book/mastering-cmake/chapter/Cross%20Compiling%20With%20CMake.html .
-On a Debian 11 system using Mingw from the gcc-mingw-w64 package (that puts
-the Mingw executables in /usr/bin with the prefix, i686-w64-mingw32-, and
-has the other files for cross-compiling in /usr/i686-w64-mingw32), this
-worked as the contents of a minimal toolchain file::
-
-	set(CMAKE_SYSTEM_NAME Windows)
-	set(CMAKE_C_COMPILER i686-w64-mingw32-gcc)
-	set(CMAKE_RC_COMPILER i686-w64-mingw32-windres)
-	set(CMAKE_FIND_ROOT_PATH /usr/i686-w64-mingw32)
-	set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-	set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-	set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-
-With Wine installed on that system, you could add this to the toolchain file::
-
-	set(CMAKE_CROSSCOMPILING_EMULATOR wine)
-
-so the unit test cases could be run from cmake (for instance with
-"cmake --build . --target allunittests").
-
-If the toolchain file was saved as /home/user/mingw-cross.cmake, then you could
-use this to perform the build::
-
-	mkdir build && cd build
-	cmake -DCMAKE_TOOLCHAIN_FILE=/home/user/mingw-cross.cmake ..
-	cmake --build .
-
-That will leave an Angband.exe and the needed .dll files in the directory
-where cmake was run.  That executable can be run with wine:
-
-	wine Angband.exe
-
 Debug build
 ~~~~~~~~~~~
 
@@ -368,6 +383,19 @@ There is probably a way to get these tools to work on Windows. If you know how, 
 
 Test cases
 ~~~~~~~~~~
+
+To compile and run the unit tests and run the run-tests script while using
+CMake, do the following::
+
+    mkdir build && cd build
+    cmake -DSUPPORT_TEST_FRONTEND=ON ..
+    make alltests
+
+If you only want the unit tests while using CMake, it's a little simpler::
+
+    mkdir build && cd build
+    cmake ..
+    make allunittests
 
 To compile and run the unit tests if you used ./configure --with-no-install,
 do this::
@@ -392,19 +420,6 @@ directory::
     ./configure --with-no-install --enable-test
     make
     ./run-tests
-
-To compile and run the unit tests and run the run-tests script while using
-CMake, do the following::
-
-    mkdir build && cd build
-    cmake -DSUPPORT_TEST_FRONTEND=ON ..
-    make alltests
-
-If you only want the unit tests while using CMake, it's a little simpler::
-
-    mkdir build && cd build
-    cmake ..
-    make allunittests
 
 There is some support for measuring how well the test cases cover the code.
 If you use configure and have gcc, gcov, and perl, you can run this in src
@@ -520,7 +535,11 @@ Using MSYS2 (with MinGW64)
 
 Install the dependencies by::
 
-	pacman -S make mingw-w64-x86_64-gcc
+	pacman -S make mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
+
+Additional dependency for the native Windows client is::
+
+    pacman -S mingw-w64-x86_64-libpng
 
 The additional dependency for ncurses is::
 
@@ -531,7 +550,33 @@ Additional dependencies for the SDL2 client are::
 	pacman -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image \
 		mingw-w64-x86_64-SDL2_ttf
 
-Then run the following to compile with ncurses::
+Then run the following to compile for native Windows::
+
+    cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON \
+        ..
+    ninja
+
+For ncurses, do::
+
+    mkdir build && cd build
+    cmake -G Ninja -DSUPPORT_GCU_FRONTEND=ON \
+        -DCMAKE_TOOLCHAIN_FILE=../toolchains/msys2-mingw64-gcu.cmake \
+        ..
+    ninja
+
+For SDL2, do::
+
+    cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON \
+        -DSUPPORT_SDL2_SOUND=ON \
+        ..
+    ninja
+
+Once built, go to game/ subdirectory and start angband by::
+
+    cd game
+    ./angband
+
+Alternatively it is possible to build with dedicated Makefiles::
 
 	cd src
 	make -f Makefile.msys2

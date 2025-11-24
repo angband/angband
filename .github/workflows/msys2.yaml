@@ -21,6 +21,8 @@ jobs:
           update: true
           install: >-
             make
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-ncurses
 
@@ -30,7 +32,17 @@ jobs:
       - name: Build
         run: |
           cd src
-          make -f Makefile.msys2
+          make -f Makefile.msys2 -j$(nproc)
+
+      - name: Build with CMake/Ninja
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja \
+            -DSUPPORT_GCU_FRONTEND=ON \
+            -DCMAKE_TOOLCHAIN_FILE=../toolchains/msys2-mingw64-gcu.cmake \
+            ..
+          ninja -j$(nproc)
 
   sdl:
     name: SDL2
@@ -47,6 +59,8 @@ jobs:
           update: true
           install: >-
             make
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-SDL2
             mingw-w64-x86_64-SDL2_ttf
@@ -59,7 +73,14 @@ jobs:
       - name: Build
         run: |
           cd src
-          make -f Makefile.msys2.sdl2 SOUND=yes
+          make -f Makefile.msys2.sdl2 -j$(nproc) SOUND=yes
+
+      - name: Build with CMake/Ninja
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON ..
+          ninja -j$(nproc)
 
   makefile-win:
     name: Makefile-win
@@ -86,7 +107,7 @@ jobs:
       - name: Build
         run: |
           cd src
-          make -f Makefile.win MINGW=yes
+          make -f Makefile.win -j$(nproc) MINGW=yes
 
   configure-win:
     runs-on: windows-latest
@@ -116,4 +137,84 @@ jobs:
           ./autogen.sh
           ./configure --enable-win
           make install
-          make tests
+          make -j$(nproc) tests
+
+  cmake-win32:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Set up prerequisites
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          # The libraries in src/win/lib and src/win/dll are 32-bit.
+          msystem: MINGW32
+          install: >-
+            mingw-w64-i686-cmake
+            mingw-w64-i686-ninja
+            mingw-w64-i686-gcc
+            mingw-w64-i686-libpng
+
+      - name: Clone Project
+        uses: actions/checkout@v4
+
+      - name: Configure with CMake/Ninja
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON ..
+
+      - name: Build with Ninja
+        run: |
+          cd build
+          ninja -j$(nproc)
+
+      - name: Run Tests
+        run: |
+          cd build
+          ninja -j$(nproc) alltests
+
+      - name: Configure and build with bundled PNG
+        run: |
+          mkdir -p build
+          cd build
+          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_BUNDLED_PNG=ON ..
+          ninja -j$(nproc)
+
+  cmake-win64:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Set up prerequisites
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          msystem: MINGW64
+          install: >-
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-libpng
+
+      - name: Clone Project
+        uses: actions/checkout@v4
+
+      - name: Configure with CMake/Ninja
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON ..
+
+      - name: Build with Ninja
+        run: |
+          cd build
+          ninja -j$(nproc)
+
+      - name: Run Tests
+        run: |
+          cd build
+          ninja -j$(nproc) alltests
