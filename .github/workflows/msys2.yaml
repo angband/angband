@@ -218,3 +218,40 @@ jobs:
         run: |
           cd build
           ninja -j$(nproc) alltests
+
+  asan-ubsan-clang64:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Set up prerequisites
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          msystem: CLANG64
+          install: >-
+            mingw-w64-clang-x86_64-clang
+            mingw-w64-clang-x86_64-compiler-rt
+            mingw-w64-clang-x86_64-cmake
+            mingw-w64-clang-x86_64-ninja
+            mingw-w64-clang-x86_64-libpng
+
+      - name: Clone Project
+        uses: actions/checkout@v4
+
+      - name: Build with ASAN/UBSAN
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
+            -DCMAKE_C_FLAGS="-fsanitize=address -fsanitize=undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer -fno-lto -g" \
+            ..
+          ninja -j$(nproc) --verbose
+
+      - name: Run Tests with ASAN/UBSAN
+        run: |
+          cd build
+          ninja -j$(nproc) --verbose alltests

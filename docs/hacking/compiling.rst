@@ -379,7 +379,38 @@ When debugging crashes it can be very useful to get more information about *what
 
 Note that compiling with these tools will require installing additional dependencies: libubsan libasan (names of the packages might be different in your distribution).
 
-There is probably a way to get these tools to work on Windows. If you know how, please add the information to this file.
+To use ASan and UBSan on Windows, you need MSYS2 CLANG64 since other shells and
+compilers do not properly support ASan/UBSan at the time of this writing.
+
+Run:
+
+    C:/msys64/clang64.exe
+
+Install dependencies and build with:
+
+    pacman -S \
+        mingw-w64-clang-x86_64-clang \
+        mingw-w64-clang-x86_64-compiler-rt \
+        mingw-w64-clang-x86_64-cmake \
+        mingw-w64-clang-x86_64-ninja \
+        mingw-w64-clang-x86_64-libpng \
+        winpty
+
+    mkdir build && cd build
+    cmake -G Ninja \
+        -DCMAKE_C_FLAGS="-fsanitize=address -fsanitize=undefined" \
+        ..
+    ninja
+
+Run the tests or the game from winpty because Windows won't printf to an MSYS2 
+terminal. We also still need the path from the MSYS2 shell so that it can find
+the required DLLs (libclang_rt.asan_dynamic-x86_64.dll and libc++.dll),
+although we can also copy those.
+
+    winpty ninja alltests
+
+    cd game
+    winpty ./angband.exe
 
 Test cases
 ~~~~~~~~~~
