@@ -49,8 +49,6 @@
 # include <curses.h>
 #endif
 
-#include <term.h>
-
 #undef term
 
 /**
@@ -100,12 +98,6 @@ static struct termios  norm_termios;
 static struct termios  game_termios;
 
 #endif
-
-/**
- * The TERM environment variable; used for terminal capabilities.
- */
-static char *termtype;
-static bool loaded_terminfo;
 
 /**
  * Simple rectangle type
@@ -1289,10 +1281,6 @@ static void hook_quit(const char *str) {
  */
 errr init_gcu(int argc, char **argv) {
 	int i;
-
-	/* Initialize info about terminal capabilities */
-	termtype = getenv("TERM");
-	loaded_terminfo = termtype && tgetent(0, termtype) == 1;
 
 	/* Parse args */
 	for (i = 1; i < argc; i++) {
