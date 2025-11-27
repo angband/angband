@@ -321,6 +321,15 @@ static errr Term_xtra_gcu_alive(int v) {
 	return 0;
 }
 
+/**
+ * Usage:
+ *
+ * angband -mgcu
+ *
+ * or
+ *
+ * angband -mgcu -- [one or more options described in help_gcu below]
+ */
 const char help_gcu[] = "Text mode, subopts\n"
 	"              -B     Use brighter bold characters\n"
 	"              -D     Use terminal default background color\n"
@@ -342,16 +351,6 @@ const char help_gcu[] = "Text mode, subopts\n"
 	"                   NOTE: order of arguments matters\n"
 	"                   if top and bottom specified first then entire row is given to them, if they are specified after left, then margin is left for terminal and then the top and bottom terminal starts\n"
 	;
-
-/**
- * Usage:
- *
- * angband -mgcu -- [-B] [-D] [-nN]
- *
- *   -B      Use brighter bold characters
- *   -D      Use terminal default background color
- *   -nN     Use N terminals (up to 6)
- */
 
 #ifdef MSYS2_ENCODING_WORKAROUND
 /*
