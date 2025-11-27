@@ -584,7 +584,7 @@ static void Term_init_gcu(term *t) {
 	/* Count init's, handle first */
 	if (active++ != 0) return;
 
-	#if defined(USE_NCURSES) && defined(KEY_MOUSE)
+	#if defined(NCURSES_MOUSE_VERSION) && defined(KEY_MOUSE)
 	/* Turn on the mouse. */
 	mousemask(ALL_MOUSE_EVENTS, NULL);
 	#endif
@@ -815,8 +815,12 @@ static errr Term_xtra_gcu_event(int v) {
 		if (i == EOF) return (1);
 	}
 
-	/* Not sure if this is portable to non-ncurses platforms */
-	#ifdef USE_NCURSES
+	/*
+	 * Both NCurses and PDCurses define KEY_RESIZE.  According to
+	 * PDCurses User's Guide, KEY_RESIZE is not part of the X/Open
+	 * specification so this generally will not work with Curses.
+	 */
+	#ifdef KEY_RESIZE
 	if (i == KEY_RESIZE) {
 		/* wait until we go one second (10 deci-seconds) before actually
 		 * doing the resizing. users often end up triggering multiple
@@ -831,7 +835,7 @@ static errr Term_xtra_gcu_event(int v) {
 	}
 	#endif
 
-	#if defined(USE_NCURSES) && defined(KEY_MOUSE)
+	#if defined(NCURSES_MOUSE_VERSION) && defined(KEY_MOUSE)
 	if (i == KEY_MOUSE) {
 		MEVENT m;
 		if (getmouse(&m) != OK) return (0);
