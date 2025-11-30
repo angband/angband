@@ -1,0 +1,105 @@
+name: cygwin
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  stock:
+    name: Stock
+    runs-on: windows-latest
+
+    steps:
+      - name: Set up Cygwin
+        uses: egor-tensin/setup-cygwin@v4
+        with:
+          packages: cmake ninja mingw64-i686-gcc-core
+        
+      - name: Force LF line endings
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+          
+      - uses: actions/checkout@v4
+
+      - name: Build (MinGW32 cross, inside Cygwin)
+        shell: C:\tools\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
+        run: |
+          pwd
+          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+          echo "PATH=$PATH"
+          cd "$(cygpath -u "$GITHUB_WORKSPACE")"
+          mkdir build && cd build
+          cmake -G Ninja \
+            -DCMAKE_C_COMPILER=/usr/bin/i686-w64-mingw32-gcc \
+            -DCMAKE_RC_COMPILER=/usr/bin/i686-w64-mingw32-windres \
+            -DSUPPORT_WINDOWS_FRONTEND=ON \
+            -DSUPPORT_BUNDLED_PNG=ON \
+            ..
+          ninja -j$(nproc) --verbose
+
+      - name: Run angband (MinGW32 cross, inside Cygwin)
+        shell: C:\tools\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
+        run: |
+          cd "$(cygpath -u "$GITHUB_WORKSPACE")"
+          cd build/game
+          set +e
+          timeout 1 ./angband.exe
+          EXIT_CODE=$?
+          set -e
+          if [ $EXIT_CODE -eq 124 ]; then
+              # 124 = timeout expired
+              echo "Angband ran for at least 1 second and was killed by timeout. ✅ Success."
+          else
+              # Exited before timeout
+              echo "Angband exited too early (exit code $EXIT_CODE). ❌ Failure."
+              exit 1
+          fi
+
+  autotools:
+    name: Autotools
+    runs-on: windows-latest
+
+    steps:
+      - name: Set up Cygwin
+        uses: egor-tensin/setup-cygwin@v4
+        with:
+          packages: autoconf automake make mingw64-i686-gcc-core
+
+      - name: Force LF line endings
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+          
+      - uses: actions/checkout@v4
+
+      - name: Build & Test (MinGW32 cross, inside Cygwin)
+        shell: C:\tools\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
+        run: |
+          pwd
+          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+          echo "PATH=$PATH"
+          cd "$(cygpath -u "$GITHUB_WORKSPACE")"
+          ./autogen.sh
+          ./configure --enable-win --host=i686-w64-mingw32
+          make -j$(nproc) VERBOSE=1
+
+      - name: Run angband (MinGW32 cross, inside Cygwin)
+        shell: C:\tools\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
+        run: |
+          cd "$(cygpath -u "$GITHUB_WORKSPACE")"
+          set +e
+          timeout 1 ./angband.exe
+          EXIT_CODE=$?
+          set -e
+          if [ $EXIT_CODE -eq 124 ]; then
+              # 124 = timeout expired
+              echo "Angband ran for at least 1 second and was killed by timeout. ✅ Success."
+          else
+              # Exited before timeout
+              echo "Angband exited too early (exit code $EXIT_CODE). ❌ Failure."
+              exit 1
+          fi
+
+
