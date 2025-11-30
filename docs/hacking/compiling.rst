@@ -558,7 +558,7 @@ automake, make, and ming64-i686-gcc-core:
 
 	./autogen.sh
 	./configure --enable-win --host=i686-w64-mingw32
-	make
+	make install
 
 And run:
 

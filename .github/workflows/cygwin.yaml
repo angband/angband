@@ -83,7 +83,7 @@ jobs:
           cd "$(cygpath -u "$GITHUB_WORKSPACE")"
           ./autogen.sh
           ./configure --enable-win --host=i686-w64-mingw32
-          make -j$(nproc) VERBOSE=1
+          make -j$(nproc) install
 
       - name: Run angband (MinGW32 cross, inside Cygwin)
         shell: C:\tools\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
