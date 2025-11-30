@@ -67,8 +67,37 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON ..
-          ninja -j$(nproc)
+          cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON -DSUPPORT_SDL2_SOUND=ON ..
+          ninja -j$(nproc) --verbose
+
+  sdl-makefile:
+    name: SDL2 Makefile
+    runs-on: windows-latest
+    defaults:
+      # Reduce verbosity and always run with msys2 as the default shell.
+      # See https://github.com/marketplace/actions/setup-msys2 .
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Set up prerequisites
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            make
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-SDL2
+            mingw-w64-x86_64-SDL2_ttf
+            mingw-w64-x86_64-SDL2_image
+            mingw-w64-x86_64-SDL2_mixer
+
+      - name: Clone Project
+        uses: actions/checkout@v4
+
+      - name: Build with Makefile.msys2.sdl2
+        run: |
+          cd src
+          make -f Makefile.msys2.sdl2 -j$(nproc) SOUND=yes install args
 
   configure-win:
     runs-on: windows-latest
