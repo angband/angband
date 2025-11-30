@@ -544,7 +544,7 @@ Build with:
         -DCMAKE_C_COMPILER=/usr/bin/i686-w64-mingw32-gcc \
         -DCMAKE_RC_COMPILER=/usr/bin/i686-w64-mingw32-windres \
         -DSUPPORT_WINDOWS_FRONTEND=ON \
-        -DSUPPORT_BUNDLED_PNG=ON 
+        -DSUPPORT_BUNDLED_PNG=ON \
         ..
     ninja
 
