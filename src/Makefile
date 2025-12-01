@@ -125,7 +125,7 @@ install-extra:
 		done ; \
 		for i in zlib1.dll libpng12.dll ; do \
 			${INSTALL_STATUS}; \
-			if ${INSTALL} -m 644 win/dll/$$i ../$$i ; then \
+			if ${INSTALL} -m 755 win/dll/$$i ../$$i ; then \
 				${INSTALL_OK}; \
 			else \
 				${INSTALL_FAILED}; \

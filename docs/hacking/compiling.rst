@@ -536,30 +536,37 @@ Using Cygwin (with MinGW)
 Use this option if you want to build a native Windows executable that
 can run with or without Cygwin.
 
-Use the Cygwin setup.exe to install the mingw-gcc-core package and any
-dependencies suggested by the installer.
+Use the Cygwin setup.exe to install cmake, ninja, and ming64-i686-gcc-core.
+Build with:
 
-If your source files are from rephial.org, from a "Source code" link on the
-github releases page, or from cloning the git repository, you'll first need to
-run this to create the configure script::
+    mkdir build && cd build
+    cmake -G Ninja \
+        -DCMAKE_C_COMPILER=/usr/bin/i686-w64-mingw32-gcc \
+        -DCMAKE_RC_COMPILER=/usr/bin/i686-w64-mingw32-windres \
+        -DSUPPORT_WINDOWS_FRONTEND=ON \
+        -DSUPPORT_BUNDLED_PNG=ON \
+        ..
+    ninja
+
+Run with:
+
+    cd game
+    ./angband.exe
+
+Alternatively you can use autotools, for which we need the autoconf,
+automake, make, and ming64-i686-gcc-core:
 
 	./autogen.sh
-
-That is not necessary for source files that are from the github releases page
-but not from a "Source code" link on that page.
-
-Then run these commands::
-
-	./configure --enable-win --host=i686-pc-mingw32
+	./configure --enable-win --host=i686-w64-mingw32
 	make install
 
-The last step only works with very recent versions.  For older ones, use
-"make" rather than "make install" and copy src/angband.exe,
-src/win/dll/libpng12.dll, and src/win/zlib1.dll to the top-level directory.
+And run:
+
+    ./angband.exe
 
 If you want to build the Unix version of Angband that uses X11 or
 Curses and run it under Cygwin, then follow the native build
-instructions (./autogen.sh; ./configure; make; make install).
+instructions.
 
 Using MSYS2 (with MinGW64) 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -579,7 +586,7 @@ The additional dependency for ncurses is::
 Additional dependencies for the SDL2 client are::
 
 	pacman -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image \
-		mingw-w64-x86_64-SDL2_ttf
+		mingw-w64-x86_64-SDL2_ttf mingw-w64-x86_64-SDL2_mixer
 
 Then run the following to compile for native Windows::
 
@@ -607,12 +614,7 @@ Once built, go to game/ subdirectory and start angband by::
     cd game
     ./angband
 
-Alternatively it is possible to build with dedicated Makefiles::
-
-	cd src
-	make -f Makefile.msys2
-
-For SDL2, do::
+Alternatively it is possible to build SDL2 with dedicated Makefiles::
 
 	cd src
 	make -f Makefile.msys2.sdl2
