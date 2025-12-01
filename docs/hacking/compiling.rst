@@ -591,6 +591,7 @@ Additional dependencies for the SDL2 client are::
 Then run the following to compile for native Windows::
 
     cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON \
+        -DSUPPORT_STATIC_LINKING=ON \
         ..
     ninja
 
@@ -606,6 +607,7 @@ For SDL2, do::
 
     cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON \
         -DSUPPORT_SDL2_SOUND=ON \
+        -DSUPPORT_STATIC_LINKING=ON \
         ..
     ninja
 
@@ -613,35 +615,6 @@ Once built, go to game/ subdirectory and start angband by::
 
     cd game
     ./angband
-
-Alternatively it is possible to build SDL2 with dedicated Makefiles::
-
-	cd src
-	make -f Makefile.msys2.sdl2
-
-Very recent versions of Makefile.msys2.sdl2 allow use of SDL2 sound; to build
-with that you'll need SDL2_mixer installed in addition to the other SDL2
-libraries mentioned above::
-
-	pacman -S mingw-w64-x86_64-SDL2_mixer
-
-Then the executable with SDL2 sound support can be built with::
-
-	cd src
-	make -f Makefile.msys2.sdl2 SOUND=yes
-
-Once built, go to the root of the source directory and start angband by::
-
-	./angband.exe -uPLAYER
-
-The ncurses client may not be able to start properly from msys2 shell, try::
-
-	start bash
-
-and run::
-
-	export TERM=
-	./angband.exe -uPLAYER
 
 Using eclipse (Indigo) on Windows (with MinGW)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
