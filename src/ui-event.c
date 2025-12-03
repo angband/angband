@@ -351,7 +351,7 @@ void keypress_to_readable(char *buf, size_t len, struct keypress src)
  */
 bool char_matches_key(wchar_t c, keycode_t key)
 {
-	wchar_t keychar[2];
+	wchar_t keychar[2] = {L'\0', L'\0'};
 	char k[2] = {'\0', '\0'};
 
 	k[0] = (char)key;
