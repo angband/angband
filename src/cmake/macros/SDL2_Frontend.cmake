@@ -11,7 +11,7 @@ MACRO(CONFIGURE_SDL2_FRONTEND _NAME_TARGET)
         IF(SUPPORT_STATIC_LINKING)
             message(STATUS "Support for SDL2 front end - Configuring static linking")
 
-            if (NOT TARGET PkgConfig::SDL2_STATIC) # Also defined in SDL2_Sound.cmake
+            if(NOT TARGET PkgConfig::SDL2_STATIC) # Also defined in SDL2_Sound.cmake
                 add_library(PkgConfig::SDL2_STATIC INTERFACE IMPORTED)
                 set_target_properties(PkgConfig::SDL2_STATIC PROPERTIES
                     INTERFACE_LINK_LIBRARIES      "${SDL2_STATIC_LIBRARIES}"
@@ -21,22 +21,26 @@ MACRO(CONFIGURE_SDL2_FRONTEND _NAME_TARGET)
                 )
             endif()
 
-            add_library(PkgConfig::SDL2_TTF_STATIC INTERFACE IMPORTED)
-            set_target_properties(PkgConfig::SDL2_TTF_STATIC PROPERTIES
-                INTERFACE_LINK_LIBRARIES      "${SDL2_TTF_STATIC_LIBRARIES}"
-                INTERFACE_INCLUDE_DIRECTORIES "${SDL2_TTF_STATIC_INCLUDE_DIRS}"
-                INTERFACE_COMPILE_OPTIONS     "${SDL2_TTF_STATIC_CFLAGS}"
-                INTERFACE_LINK_OPTIONS        "${SDL2_TTF_STATIC_LDFLAGS}"
-            )
+            if(NOT TARGET PkgConfig::SDL2_TTF_STATIC)
+                add_library(PkgConfig::SDL2_TTF_STATIC INTERFACE IMPORTED)
+                set_target_properties(PkgConfig::SDL2_TTF_STATIC PROPERTIES
+                    INTERFACE_LINK_LIBRARIES      "${SDL2_TTF_STATIC_LIBRARIES}"
+                    INTERFACE_INCLUDE_DIRECTORIES "${SDL2_TTF_STATIC_INCLUDE_DIRS}"
+                    INTERFACE_COMPILE_OPTIONS     "${SDL2_TTF_STATIC_CFLAGS}"
+                    INTERFACE_LINK_OPTIONS        "${SDL2_TTF_STATIC_LDFLAGS}"
+                )
+            endif()
 
-            # pkg-config is missing another -lstdc++ after -lLerc on MSYS2
-            add_library(PkgConfig::SDL2_IMAGE_STATIC INTERFACE IMPORTED)
-            set_target_properties(PkgConfig::SDL2_IMAGE_STATIC PROPERTIES
-                INTERFACE_LINK_LIBRARIES      "${SDL2_IMAGE_STATIC_LIBRARIES};stdc++"
-                INTERFACE_INCLUDE_DIRECTORIES "${SDL2_IMAGE_STATIC_INCLUDE_DIRS}"
-                INTERFACE_COMPILE_OPTIONS     "${SDL2_IMAGE_STATIC_CFLAGS}"
-                INTERFACE_LINK_OPTIONS        "${SDL2_IMAGE_STATIC_LDFLAGS};-lstdc++"
-            )
+            if(NOT TARGET PkgConfig::SDL2_IMAGE_STATIC)
+                # pkg-config is missing another -lstdc++ after -lLerc on MSYS2
+                add_library(PkgConfig::SDL2_IMAGE_STATIC INTERFACE IMPORTED)
+                set_target_properties(PkgConfig::SDL2_IMAGE_STATIC PROPERTIES
+                    INTERFACE_LINK_LIBRARIES      "${SDL2_IMAGE_STATIC_LIBRARIES};stdc++"
+                    INTERFACE_INCLUDE_DIRECTORIES "${SDL2_IMAGE_STATIC_INCLUDE_DIRS}"
+                    INTERFACE_COMPILE_OPTIONS     "${SDL2_IMAGE_STATIC_CFLAGS}"
+                    INTERFACE_LINK_OPTIONS        "${SDL2_IMAGE_STATIC_LDFLAGS};-lstdc++"
+                )
+            endif()
 
             target_link_options(${_NAME_TARGET} PRIVATE -static)
             target_link_libraries(${_NAME_TARGET} PRIVATE
