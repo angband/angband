@@ -355,8 +355,7 @@ bool char_matches_key(wchar_t c, keycode_t key)
 	char k[2] = {'\0', '\0'};
 
 	k[0] = (char)key;
-	text_mbstowcs(keychar, k, 1);
-	return (c == keychar[0]);
+	return text_mbstowcs(keychar, k, 1) != (size_t)-1 && c == keychar[0];
 }
 
 /**
