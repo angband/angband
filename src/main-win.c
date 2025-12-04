@@ -2371,9 +2371,15 @@ size_t Term_mbstowcs_win(wchar_t *dest, const char *src, int n)
 			if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
 				required = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS,
 											   src, -1, NULL, 0);
+				if (required <= 0)
+					return (size_t)-1;
 				tmp = malloc(required * sizeof(wchar_t));
-				MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, src, -1, tmp,
+				res = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, src, -1, tmp,
 									required);
+				if (res <= 0) {
+					free(tmp);
+					return (size_t)-1;
+				}
 				memcpy(dest, tmp, n * sizeof(wchar_t));
 				free(tmp);
 				return n;
