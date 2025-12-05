@@ -1118,7 +1118,7 @@ static bool project_m_player_attack(project_monster_handler_context_t *context)
 	 * ensures it doesn't print any death message and allows correct ordering
 	 * of messages. */
 	if (dam > mon->hp) {
-		/* Shapechanged mnsters revert oon death */
+		/* Shapechanged monsters revert on death */
 		if (mon->original_race) {
 			monster_revert_shape(mon);
 		}
