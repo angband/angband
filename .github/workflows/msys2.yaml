@@ -7,7 +7,7 @@ on:
 
 jobs:
   stock:
-    name: Stock
+    name: GCU
     runs-on: windows-latest
     defaults:
       # Reduce verbosity and always run with msys2 as the default shell.
@@ -52,7 +52,6 @@ jobs:
         with:
           update: true
           install: >-
-            make
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-gcc
@@ -64,16 +63,11 @@ jobs:
       - name: Clone Project
         uses: actions/checkout@v4
 
-      - name: Build
+      - name: Build with CMake/Ninja including sound and static linking
         run: |
-          cd src
-          make -f Makefile.msys2.sdl2 -j$(nproc) SOUND=yes
-
-      - name: Build with CMake/Ninja
-        run: |
-          mkdir build
-          cd build
-          cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON -DSUPPORT_SDL2_SOUND=ON ..
+          mkdir build-sound
+          cd build-sound
+          cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON -DSUPPORT_SDL2_SOUND=ON -DSUPPORT_STATIC_LINKING=ON ..
           ninja -j$(nproc)
 
   configure-win:
@@ -127,11 +121,11 @@ jobs:
       - name: Clone Project
         uses: actions/checkout@v4
 
-      - name: Configure with CMake/Ninja
+      - name: Configure with CMake/Ninja and static linking
         run: |
           mkdir build
           cd build
-          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON ..
+          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_STATIC_LINKING=ON ..
 
       - name: Build with Ninja
         run: |
@@ -145,8 +139,8 @@ jobs:
 
       - name: Configure and build with bundled PNG
         run: |
-          mkdir -p build
-          cd build
+          mkdir build-bundled-png
+          cd build-bundled-png
           cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_BUNDLED_PNG=ON ..
           ninja -j$(nproc)
 
@@ -185,6 +179,13 @@ jobs:
         run: |
           cd build
           ninja -j$(nproc) alltests
+
+      - name: Configure and build with static linking
+        run: |
+          mkdir build-static
+          cd build-static
+          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_STATIC_LINKING=ON ..
+          ninja -j$(nproc)
 
   asan-ubsan-clang64:
     runs-on: windows-latest

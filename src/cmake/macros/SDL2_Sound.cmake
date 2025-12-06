@@ -1,14 +1,34 @@
 MACRO(CONFIGURE_SDL2_SOUND _NAME_TARGET _ONLY_DEFINES)
     SET(PREVIOUS_INVOCATION ${CONFIGURE_SDL2_SOUND_INVOKED_PREVIOUSLY})
-    INCLUDE(FindPkgConfig)
-    PKG_SEARCH_MODULE(SDL2 sdl2)
-    PKG_SEARCH_MODULE(SDL2_MIXER SDL2_mixer>=2.0.0)
+    FIND_PACKAGE(PkgConfig REQUIRED)
+    PKG_CHECK_MODULES(SDL2 QUIET IMPORTED_TARGET sdl2)
+    PKG_CHECK_MODULES(SDL2_MIXER QUIET IMPORTED_TARGET SDL2_mixer>=2.0.0)
     IF(SDL2_FOUND AND SDL2_MIXER_FOUND)
         IF(NOT _ONLY_DEFINES)
-            TARGET_LINK_LIBRARIES(${_NAME_TARGET} PRIVATE ${SDL2_LIBRARIES} ${SDL2_MIXER_LIBRARIES})
-            TARGET_INCLUDE_DIRECTORIES(${_NAME_TARGET} PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_MIXER_INCLUDE_DIRS})
-            TARGET_COMPILE_OPTIONS(${_NAME_TARGET} PRIVATE ${SDL2_CFLAGS} ${SDL2_MIXER_CFLAGS})
-            TARGET_LINK_OPTIONS(${_NAME_TARGET} PRIVATE ${SDL2_LDFLAGS} ${SDL2_MIXER_LDFLAGS})
+            if (SUPPORT_STATIC_LINKING)
+                if (NOT TARGET PkgConfig::SDL2_STATIC) # Also defined in SDL2_Frontend.cmake
+                    add_library(PkgConfig::SDL2_STATIC INTERFACE IMPORTED)
+                    set_target_properties(PkgConfig::SDL2_STATIC PROPERTIES
+                        INTERFACE_LINK_LIBRARIES      "${SDL2_STATIC_LIBRARIES}"
+                        INTERFACE_INCLUDE_DIRECTORIES "${SDL2_STATIC_INCLUDE_DIRS}"
+                        INTERFACE_COMPILE_OPTIONS     "${SDL2_STATIC_CFLAGS}"
+                        INTERFACE_LINK_OPTIONS        "${SDL2_STATIC_LDFLAGS}"
+                    )
+                endif()
+                if (NOT TARGET PkgConfig::SDL2_MIXER_STATIC)
+                    add_library(PkgConfig::SDL2_MIXER_STATIC INTERFACE IMPORTED)
+                    set_target_properties(PkgConfig::SDL2_MIXER_STATIC PROPERTIES
+                        INTERFACE_LINK_LIBRARIES      "${SDL2_MIXER_STATIC_LIBRARIES}"
+                        INTERFACE_INCLUDE_DIRECTORIES "${SDL2_MIXER_STATIC_INCLUDE_DIRS}"
+                        INTERFACE_COMPILE_OPTIONS     "${SDL2_MIXER_STATIC_CFLAGS}"
+                        INTERFACE_LINK_OPTIONS        "${SDL2_MIXER_STATIC_LDFLAGS}"
+                    )
+                endif()
+                target_link_options(${_NAME_TARGET} PRIVATE -static)
+                target_link_libraries(${_NAME_TARGET} PRIVATE PkgConfig::SDL2_STATIC PkgConfig::SDL2_MIXER_STATIC)
+            else()
+                target_link_libraries(${_NAME_TARGET} PRIVATE PkgConfig::SDL2 PkgConfig::SDL2_MIXER)
+            endif()
         ENDIF()
         TARGET_COMPILE_DEFINITIONS(${_NAME_TARGET} PRIVATE -D SOUND_SDL2)
         TARGET_COMPILE_DEFINITIONS(${_NAME_TARGET} PRIVATE -D SOUND)
