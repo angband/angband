@@ -23,16 +23,13 @@
 #include "snd-sdl.h"
 #include "sound.h"
 
-#ifdef SOUND_SDL
-#  include <SDL/SDL.h>
-#  include <SDL/SDL_mixer.h>
-#endif /* SOUND_SDL */
-
-#ifdef SOUND_SDL2
-#  include <SDL.h>
-#  include <SDL_mixer.h>
-#  include <SDL_revision.h>
-#endif /* SOUND_SDL2 */
+#if defined(SOUND_SDL) || defined(SOUND_SDL2)
+#include "SDL.h"
+#include "SDL_mixer.h"
+#if defined(SOUND_SDL2)
+#include "SDL_revision.h"
+#endif
+#endif
 
 /**
  * Struct representing all data about an event sample
