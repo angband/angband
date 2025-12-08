@@ -346,17 +346,16 @@ void keypress_to_readable(char *buf, size_t len, struct keypress src)
 
 /**
  * Return whether the given display char matches an entered symbol
- *
- * Horrible hack. TODO UTF-8 find some way of entering mb chars
  */
 bool char_matches_key(wchar_t c, keycode_t key)
 {
-	wchar_t keychar[2];
-	char k[2] = {'\0', '\0'};
+    char kutf8[5];
+    wchar_t kw[2];
 
-	k[0] = (char)key;
-	text_mbstowcs(keychar, k, 1);
-	return (c == keychar[0]);
+    if (!utf32_to_utf8(kutf8, sizeof(kutf8), &key, 1, NULL)) {
+        return false;
+    }
+    return text_mbstowcs(kw, kutf8, 1) == 1 && kw[0] == c;
 }
 
 /**
