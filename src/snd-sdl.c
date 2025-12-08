@@ -24,8 +24,8 @@
 #include "sound.h"
 
 #ifdef SOUND_SDL
-#  include <SDL/SDL.h>
-#  include <SDL/SDL_mixer.h>
+#  include <SDL.h>
+#  include <SDL_mixer.h>
 #endif /* SOUND_SDL */
 
 #ifdef SOUND_SDL2
