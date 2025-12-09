@@ -119,7 +119,7 @@ dependencies (e.g. ncurses, SDL libraries, etc).
 
 Some sets of source code (e.g. downloads from Rephial.org) will contain a
 "configure" script in the root directory of the unpacked files, while other
-filesets (e.g. the "Source code (tar.gz)" links on the Releases pages) 
+filesets (e.g. the "Source code (tar.gz)" links on the Releases pages)
 will not contain the "configure" script.
 
 If the code you download doesn't contain the "configure" script, then you'll
@@ -269,29 +269,28 @@ set the destination when running cmake by setting the variables mentioned above.
 Speeding up CMake with Ninja and multiple cores
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- For faster builds, you can switch from the default Makefile generator to Ninja, 
-which is optimized for parallel compilation.  
-Instead of:
+For faster builds, you can switch from the default Makefile generator to Ninja,
+which is optimized for parallel compilation.  Instead of::
 
     mkdir build && cd build
     cmake ..
     make
 
-you can do: 
+you can do::
 
     mkdir build && cd build
     cmake -G Ninja ..
     ninja -j16
 
-The option `-j16` tells Ninja to use 16 cores. It’s best to set this to the number 
-of CPU cores available on your machine.  
-On Linux, you can do that automatically with `ninja -j$(nproc)`.  
-On macOS, use `ninja -j$(sysctl -n hw.ncpu)`.  
-In PowerShell, use `ninja -j${env:NUMBER_OF_PROCESSORS}`.
+The option `-j16` tells Ninja to use 16 cores. It’s best to set this to the
+number of CPU cores available on your machine.  On Linux, you can do that
+automatically with `ninja -j$(nproc)`.  On macOS, use
+`ninja -j$(sysctl -n hw.ncpu)`.  In PowerShell, use
+`ninja -j${env:NUMBER_OF_PROCESSORS}`.
 
-This can also be done with Make (`make -j$(nproc)`), but Ninja is often faster.  
+This can also be done with Make (`make -j$(nproc)`), but Ninja is often faster.
 
-Instead of `ninja -j$(nproc)`, you can also use:
+Instead of `ninja -j$(nproc)`, you can also use::
 
     cmake --build . -- -j$(nproc)
 
@@ -308,18 +307,18 @@ A build using Mingw cross-compiler is possible with CMake.
 
 To perform the build::
 
-	mkdir build && cd build
-	cmake -G Ninja \
+    mkdir build && cd build
+    cmake -G Ninja \
         -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-i686-mingw32-cross.cmake \
         -DSUPPORT_BUNDLED_PNG=ON \
         ..
-	ninja
+    ninja
 
 That will leave an angband.exe and the needed .dll files in the sub directory
-game/.  That executable can be run with wine:
+game/.  That executable can be run with wine::
 
     cd game
-	wine angband.exe
+    wine angband.exe
 
 The unit test cases can also be run from cmake.
 
@@ -331,15 +330,15 @@ If your source files are from rephial.org, from a "Source code" link on the
 github releases page, or from cloning the git repository, you'll first need to
 run this to create the configure script::
 
-	./autogen.sh
+    ./autogen.sh
 
 That is not necessary for source files that are from the github releases page
 but not from a "Source code" link on that page.
 
 Then configure the cross-compilation and perform the compilation itself::
 
-	./configure --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32
-	make install
+    ./configure --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32
+    make install
 
 You may need to change the --build and --host options there to match your
 system. Mingw installs commands like 'i686-w64-mingw32-gcc'. The value of --host
@@ -350,13 +349,13 @@ gory details of how these triplets are arrived at).  The 'make install' step
 only works with very recent version.  For older ones, use this instead of the
 last step::
 
-	make
-	cp src/angband.exe .
-	cp src/win/dll/*.dll .
+    make
+    cp src/angband.exe .
+    cp src/win/dll/*.dll .
 
 To run the result, you can use wine like this::
 
-	wine angband.exe
+    wine angband.exe
 
 TODO: except for recent versions (after Angband 4.2.3) you likely need to
 manually disable curses (add --disable-curses to the options passed to
@@ -378,39 +377,6 @@ When debugging crashes it can be very useful to get more information about *what
     SANITIZE_FLAGS="-fsanitize=undefined -fsanitize=address" make
 
 Note that compiling with these tools will require installing additional dependencies: libubsan libasan (names of the packages might be different in your distribution).
-
-To use ASan and UBSan on Windows, you need MSYS2 CLANG64 since other shells and
-compilers do not properly support ASan/UBSan at the time of this writing.
-
-Run:
-
-    C:/msys64/clang64.exe
-
-Install dependencies and build with:
-
-    pacman -S \
-        mingw-w64-clang-x86_64-clang \
-        mingw-w64-clang-x86_64-compiler-rt \
-        mingw-w64-clang-x86_64-cmake \
-        mingw-w64-clang-x86_64-ninja \
-        mingw-w64-clang-x86_64-libpng \
-        winpty
-
-    mkdir build && cd build
-    cmake -G Ninja \
-        -DCMAKE_C_FLAGS="-fsanitize=address -fsanitize=undefined" \
-        ..
-    ninja
-
-Run the tests or the game from winpty because Windows won't printf to an MSYS2 
-terminal. We also still need the path from the MSYS2 shell so that it can find
-the required DLLs (libclang_rt.asan_dynamic-x86_64.dll and libc++.dll),
-although we can also copy those.
-
-    winpty ninja alltests
-
-    cd game
-    winpty ./angband.exe
 
 Test cases
 ~~~~~~~~~~
@@ -461,7 +427,7 @@ directory after running configure::
 That cleans the directories (removing object files, intermediates generated
 for code coverage, and coverage reports), rebuilds the game with code coverage
 profiling enabled, runs the unit tests, generates coverage reports for
-individual source files (*.gcov in the src directory), and then writes a
+individual source files (.gcov files in the src directory), and then writes a
 summary of those reports to standard output.  The gen-coverage Perl script in
 the src directory is what is used to generate the summary.
 
@@ -469,11 +435,11 @@ If you use CMake, have perl, and have either gcc and gcov or clang and
 llvm-cov, then you can configure code coverage support by including
 -DSUPPORT_COVERAGE=ON in the options to cmake.  That adds three targets for
 manipulating coverage results.  "make reportcoverage" generates per-file
-coverage reports (*.gcov in the directory where you are building) using
+coverage reports (.gcov files in the directory where you are building) using
 the current accumulated coverage data and then writes a summary of those
 reports to standard output.  The gen-coverage Perl script in the src directory
 is what is used to generate the summary.  "make resetcoverage" removes the
-accumulated coverage data (*.gcda files) and any per-file coverage reports.
+accumulated coverage data (.gcda files) and any per-file coverage reports.
 "make coverage" is equivalent to "make resetcoverage; make alltests;
 make reportcverage":  clear accumulated coverage information, run the unit
 tests (and, if -DSUPPORT_TEST_FRONTEND=ON was supplied to cmake, the end-to-end
@@ -537,7 +503,7 @@ Use this option if you want to build a native Windows executable that
 can run with or without Cygwin.
 
 Use the Cygwin setup.exe to install cmake, ninja, and ming64-i686-gcc-core.
-Build with:
+Build with::
 
     mkdir build && cd build
     cmake -G Ninja \
@@ -548,19 +514,19 @@ Build with:
         ..
     ninja
 
-Run with:
+Run with::
 
     cd game
     ./angband.exe
 
 Alternatively you can use autotools, for which we need the autoconf,
-automake, make, and ming64-i686-gcc-core:
+automake, make, and ming64-i686-gcc-core::
 
-	./autogen.sh
-	./configure --enable-win --host=i686-w64-mingw32
-	make install
+    ./autogen.sh
+    ./configure --enable-win --host=i686-w64-mingw32
+    make install
 
-And run:
+And run::
 
     ./angband.exe
 
@@ -568,12 +534,12 @@ If you want to build the Unix version of Angband that uses X11 or
 Curses and run it under Cygwin, then follow the native build
 instructions.
 
-Using MSYS2 (with MinGW64) 
+Using MSYS2 (with MinGW64)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Install the dependencies by::
 
-	pacman -S make mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
+    pacman -S make mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
 
 Additional dependency for the native Windows client is::
 
@@ -581,12 +547,12 @@ Additional dependency for the native Windows client is::
 
 The additional dependency for ncurses is::
 
-	pacman -S mingw-w64-x86_64-ncurses
+    pacman -S mingw-w64-x86_64-ncurses
 
 Additional dependencies for the SDL2 client are::
 
-	pacman -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image \
-		mingw-w64-x86_64-SDL2_ttf mingw-w64-x86_64-SDL2_mixer
+    pacman -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image \
+        mingw-w64-x86_64-SDL2_ttf mingw-w64-x86_64-SDL2_mixer
 
 Then run the following to compile for native Windows::
 
@@ -641,6 +607,44 @@ Using Visual Studio
 Blue Baron has detailed instructions for setting this up at:
 
     src/win/angband_visual_studio_step_by_step.txt
+
+Debug build
+~~~~~~~~~~~
+
+To compile with the address and undefined behavior sanitizer on Windows,
+similar to what's done for the debugging build on Linux, you need MSYS2 CLANG64
+since other shells and compilers do not properly support those sanitizers
+at the time this was written.
+
+Run::
+
+    C:/msys64/clang64.exe
+
+Install dependencies and build with::
+
+    pacman -S \
+        mingw-w64-clang-x86_64-clang \
+        mingw-w64-clang-x86_64-compiler-rt \
+        mingw-w64-clang-x86_64-cmake \
+        mingw-w64-clang-x86_64-ninja \
+        mingw-w64-clang-x86_64-libpng \
+        winpty
+    mkdir build && cd build
+    cmake -G Ninja \
+        -DCMAKE_C_FLAGS="-fsanitize=address -fsanitize=undefined" \
+        ..
+    ninja
+
+Run the tests or the game from winpty because Windows won't printf to an MSYS2
+terminal::
+
+    winpty ninja alltests
+    cd game
+    winpty ./angband.exe
+
+We also still need the path from the MSYS2 shell so that it can find the
+required DLLs (libclang_rt.asan_dynamic-x86_64.dll and libc++.dll), although
+we can also copy those.
 
 Statistics build
 ~~~~~~~~~~~~~~~~
@@ -704,26 +708,26 @@ Cross-building for DOS with DJGPP
 ---------------------------------
 These instructions were written using a Slackware64-15.0 host.
 
-Install the following cross-compiler:
-https://github.com/andrewwutw/build-djgpp
+Install the following cross-compiler,
+https://github.com/andrewwutw/build-djgpp , by running::
 
-	git clone https://github.com/andrewwutw/build-djgpp.git
-	cd build-djgpp
-	DJGPP_PREFIX=$HOME/local/cross-djgpp ./build-djgpp.sh 10.3.0
+    git clone https://github.com/andrewwutw/build-djgpp.git
+    cd build-djgpp
+    DJGPP_PREFIX=$HOME/local/cross-djgpp ./build-djgpp.sh 10.3.0
 
-Then build angband using the cross-compiler:
+Then build angband using the cross-compiler::
 
-	cd angband/src
-	PATH=$PATH:$HOME/local/cross-djgpp/bin
-	make -f Makefile.ibm
+    cd angband/src
+    PATH=$PATH:$HOME/local/cross-djgpp/bin
+    make -f Makefile.ibm
 
-Optionally build the documentation (requires Sphinx):
+Optionally build the documentation (requires Sphinx)::
 
-	make -f Makefile.ibm docs
+    make -f Makefile.ibm docs
 
-To create the angband.zip distribution
+To create the angband.zip distribution, run::
 
-	make -f Makefile.ibm dist
+    make -f Makefile.ibm dist
 
 User Documentation
 ------------------
@@ -733,7 +737,7 @@ and, unless you change the theme in the documentation configuration, the
 sphinx-better-theme ( https://pypi.org/project/sphinx-better-theme/ ; which
 can be installed via pip using::
 
-	pip install sphinx-better-theme
+    pip install sphinx-better-theme
 
 ).
 
@@ -742,7 +746,7 @@ including ``--with-sphinx`` in the options to configure.  If you want to
 override the default theme, specify the theme's name in the DOC_HTML_THEME
 variable.  For instance, running this at the top level of the distribution::
 
-        ./configure --with-no-install --with-sphinx DOC_HTML_THEME=alabaster
+    ./configure --with-no-install --with-sphinx DOC_HTML_THEME=alabaster
 
 would use one of the themes always included with Sphinx and avoid the need
 to install the sphinx-better-theme.  When running make or ``make manual``
@@ -754,9 +758,9 @@ If you are using CMake, you can tell it to build the manual in HTML by including
 default theme, specify the theme's name in the DOC_HTML_THEME variable.  For
 instance running this at the top level of the distribution::
 
-        mkdir build
-        cd build
-        cmake -DBUILD_DOC=ON -DDOC_HTML_THEME=alabaster ..
+    mkdir build
+    cd build
+    cmake -DBUILD_DOC=ON -DDOC_HTML_THEME=alabaster ..
 
 would behave much like the earlier example using configure.  After building
 with CMake (i.e. ``cmake --build .`` or ``cmake --build . -t OurManual``), the
@@ -765,7 +769,7 @@ generated user manual will be in manual-output-html in the build directory.
 To build the user manual without configure or CMake, make sure sphinx-build
 is in your path and then run::
 
-	make html
+    make html
 
 in the docs subdirectory of the top-level directory in the source files.
 That will generate a _build/html directory with the result of the conversion;
@@ -773,7 +777,7 @@ _build/html/index.html is the top-level help with links to everything else.
 
 Other output formats besides HTML are possible.  Run::
 
-	make
+    make
 
 without any arguments in the docs subdirectory to see the formats that Sphinx
 can generate.

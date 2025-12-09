@@ -1,4 +1,4 @@
-function(DETERMINE_PNG PNG_TARGET PNG_DLLS USE_BUNDLED)
+function(determine_png PNG_TARGET PNG_DLLS USE_BUNDLED)
     if(USE_BUNDLED)
         message(STATUS "Using bundled PNG and ZLIB")
 
@@ -35,7 +35,7 @@ function(DETERMINE_PNG PNG_TARGET PNG_DLLS USE_BUNDLED)
         )
     endif()
 
-    if (SUPPORT_STATIC_LINKING)
+    if(SUPPORT_STATIC_LINKING)
         message(STATUS "Configuring static linking for system PNG and ZLIB")
         message(STATUS "  PNG static libraries    : ${PNG_STATIC_LIBRARIES}")
         message(STATUS "  PNG static include dirs : ${PNG_STATIC_INCLUDE_DIRS}")
