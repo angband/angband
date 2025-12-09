@@ -9,7 +9,7 @@
 # Example:
 #   angband_pkgconfig_select_target(CURSES CURSES_SELECTED)
 function(angband_pkgconfig_select_target PKG_NAME OUT_TARGET)
-    set(DYN_TARGET "PkgConfig::${PKG_NAME}")
+    set(DYN_TARGET    "PkgConfig::${PKG_NAME}")
     set(STATIC_TARGET "PkgConfig::${PKG_NAME}_STATIC")
 
     if(SUPPORT_STATIC_LINKING)
@@ -21,9 +21,13 @@ function(angband_pkgconfig_select_target PKG_NAME OUT_TARGET)
                 INTERFACE_COMPILE_OPTIONS     "${${PKG_NAME}_STATIC_CFLAGS_OTHER}"
                 INTERFACE_LINK_OPTIONS        "${${PKG_NAME}_STATIC_LDFLAGS_OTHER}"
             )
-            # On Windows/Mingw, force static linking
-            if(WIN32 OR MINGW)
-                target_link_options(${STATIC_TARGET} INTERFACE -static)
+
+            target_link_options(${STATIC_TARGET} INTERFACE -static)
+
+            # Work around missing transitive dependency:
+            # SDL2_image → Lerc → C++ runtime (not declared in pkg-config)
+            if(MINGW)
+                target_link_libraries(${STATIC_TARGET} INTERFACE stdc++)
             endif()
         endif()
         set(${OUT_TARGET} ${STATIC_TARGET} PARENT_SCOPE)

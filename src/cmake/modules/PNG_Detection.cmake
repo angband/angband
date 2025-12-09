@@ -35,31 +35,20 @@ function(determine_png PNG_TARGET PNG_DLLS USE_BUNDLED)
         )
     endif()
 
+    include(PkgConfigHelpers)
+    angband_pkgconfig_select_target(PNG PNG_SELECTED)
+
     if(SUPPORT_STATIC_LINKING)
-        message(STATUS "Configuring static linking for system PNG and ZLIB")
+        message(STATUS "Using system PNG and ZLIB (static)")
         message(STATUS "  PNG static libraries    : ${PNG_STATIC_LIBRARIES}")
         message(STATUS "  PNG static include dirs : ${PNG_STATIC_INCLUDE_DIRS}")
-        message(STATUS "  PNG static cflags       : ${PNG_STATIC_CFLAGS}")
-        message(STATUS "  PNG static ldflags      : ${PNG_STATIC_LDFLAGS}")
-
-        add_library(PkgConfig::PNG_STATIC INTERFACE IMPORTED)
-        set_target_properties(PkgConfig::PNG_STATIC PROPERTIES
-            INTERFACE_LINK_LIBRARIES      "${PNG_STATIC_LIBRARIES}"
-            INTERFACE_INCLUDE_DIRECTORIES "${PNG_STATIC_INCLUDE_DIRS}"
-            INTERFACE_COMPILE_OPTIONS     "${PNG_STATIC_CFLAGS}"
-            INTERFACE_LINK_OPTIONS        "${PNG_STATIC_LDFLAGS}"
-        )
-        set(${PNG_TARGET} PkgConfig::PNG_STATIC PARENT_SCOPE)
-        set(${PNG_DLLS} "" PARENT_SCOPE)
-        return()
+    else()
+        message(STATUS "Using system PNG and ZLIB (dynamic)")
+        message(STATUS "  PNG include dirs        : ${PNG_INCLUDE_DIRS}")
+        message(STATUS "  PNG libraries           : ${PNG_LIBRARIES}")
     endif()
 
-    message(STATUS "Using system PNG and ZLIB:")
-    message(STATUS "  PNG include dirs        : ${PNG_INCLUDE_DIRS}")
-    message(STATUS "  PNG libraries           : ${PNG_LIBRARIES}")
-
-    # Note: at this point we do not know which DLLs are involved.
-    # There is no easy way to figure that out, so we return an empty list.
-    set(${PNG_TARGET} PkgConfig::PNG PARENT_SCOPE)
-    set(${PNG_DLLS}   ""             PARENT_SCOPE)
+    # For system libraries, we do not attempt to guess runtime DLLs
+    set(${PNG_TARGET} ${PNG_SELECTED} PARENT_SCOPE)
+    set(${PNG_DLLS}   ""              PARENT_SCOPE)
 endfunction()
