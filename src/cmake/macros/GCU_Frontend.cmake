@@ -17,22 +17,21 @@ macro(configure_gcu_frontend _NAME_TARGET)
                 INTERFACE_COMPILE_OPTIONS     "${CURSES_STATIC_CFLAGS_OTHER}"
                 INTERFACE_LINK_OPTIONS        "${CURSES_STATIC_LDFLAGS_OTHER}"
             )
+            if(WIN32 OR MINGW)
+                target_link_options(PkgConfig::CURSES_STATIC INTERFACE -static)
+            endif()
         endif()
-        target_link_options(${_NAME_TARGET} PRIVATE -static)
         target_link_libraries(${_NAME_TARGET} PRIVATE PkgConfig::CURSES_STATIC)
     else()
         target_link_libraries(${_NAME_TARGET} PRIVATE PkgConfig::CURSES)
     endif()
 
-    target_compile_definitions(${_NAME_TARGET} PRIVATE USE_GCU USE_NCURSES)
-
-    if(WIN32)
-        target_compile_definitions(${_NAME_TARGET} PRIVATE WIN32_CONSOLE_MODE)
-    endif()
-
-    if(MINGW)
-        target_compile_definitions(${_NAME_TARGET} PRIVATE MSYS2_ENCODING_WORKAROUND )
-    endif()
+    target_compile_definitions(${_NAME_TARGET} PRIVATE
+        USE_GCU
+        USE_NCURSES
+        $<$<BOOL:${WIN32}>:WIN32_CONSOLE_MODE>
+        $<$<BOOL:${MINGW}>:MSYS2_ENCODING_WORKAROUND>
+    )
 
     include(CheckSymbolExists)
     set(CMAKE_REQUIRED_LIBRARIES PkgConfig::CURSES)
