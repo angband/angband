@@ -8,23 +8,9 @@ macro(configure_gcu_frontend _NAME_TARGET)
         pkg_check_modules(CURSES REQUIRED IMPORTED_TARGET ncursesw)
     endif()
 
-    if(SUPPORT_STATIC_LINKING)
-        if(NOT TARGET PkgConfig::CURSES_STATIC)
-            add_library(PkgConfig::CURSES_STATIC INTERFACE IMPORTED)
-            set_target_properties(PkgConfig::CURSES_STATIC PROPERTIES
-                INTERFACE_LINK_LIBRARIES      "${CURSES_STATIC_LIBRARIES}"
-                INTERFACE_INCLUDE_DIRECTORIES "${CURSES_STATIC_INCLUDE_DIRS}"
-                INTERFACE_COMPILE_OPTIONS     "${CURSES_STATIC_CFLAGS_OTHER}"
-                INTERFACE_LINK_OPTIONS        "${CURSES_STATIC_LDFLAGS_OTHER}"
-            )
-            if(WIN32 OR MINGW)
-                target_link_options(PkgConfig::CURSES_STATIC INTERFACE -static)
-            endif()
-        endif()
-        target_link_libraries(${_NAME_TARGET} PRIVATE PkgConfig::CURSES_STATIC)
-    else()
-        target_link_libraries(${_NAME_TARGET} PRIVATE PkgConfig::CURSES)
-    endif()
+    include(PkgConfigHelpers)
+    angband_pkgconfig_select_target(CURSES CURSES_SELECTED)
+    target_link_libraries(${_NAME_TARGET} PRIVATE ${CURSES_SELECTED})
 
     target_compile_definitions(${_NAME_TARGET} PRIVATE
         USE_GCU
@@ -33,8 +19,9 @@ macro(configure_gcu_frontend _NAME_TARGET)
         $<$<BOOL:${MINGW}>:MSYS2_ENCODING_WORKAROUND>
     )
 
+    # Check if use_default_colors() exists
     include(CheckSymbolExists)
-    set(CMAKE_REQUIRED_LIBRARIES PkgConfig::CURSES)
+    set(CMAKE_REQUIRED_LIBRARIES ${CURSES_SELECTED})
     set(CMAKE_REQUIRED_INCLUDES ${CURSES_INCLUDE_DIRS})
     check_symbol_exists(use_default_colors "curses.h" ANGBAND_NCURSESW_HAS_USE_DEFAULT_COLORS)
     unset(CMAKE_REQUIRED_LIBRARIES)
