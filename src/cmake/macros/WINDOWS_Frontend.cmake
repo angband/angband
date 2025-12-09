@@ -1,4 +1,4 @@
-macro(CONFIGURE_WINDOWS_FRONTEND _NAME_TARGET _PNG_TARGET)
+macro(configure_windows_frontend _NAME_TARGET _PNG_TARGET)
     if(TARGET "${_PNG_TARGET}")
         if(SUPPORT_STATIC_LINKING)
             target_link_options(${_NAME_TARGET} PRIVATE -static)

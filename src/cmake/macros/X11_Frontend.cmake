@@ -1,18 +1,14 @@
-MACRO(CONFIGURE_X11_FRONTEND _NAME_TARGET)
+macro(configure_x11_frontend _NAME_TARGET)
+    find_package(X11)
 
-    FIND_PACKAGE(X11)
+    if(X11_FOUND)
+        target_link_libraries(${_NAME_TARGET} PRIVATE ${X11_LIBRARIES})
+        target_include_directories(${_NAME_TARGET} PRIVATE ${X11_INCLUDE_DIR})
+        target_compile_definitions(${_NAME_TARGET} PRIVATE -D USE_X11)
+        message(STATUS "Support for X11 front end - Ready")
 
-    IF (X11_FOUND)
+    else()
+        message(FATAL_ERROR "Support for X11 front end - Failed")
 
-        TARGET_LINK_LIBRARIES(${_NAME_TARGET} PRIVATE ${X11_LIBRARIES})
-        TARGET_INCLUDE_DIRECTORIES(${_NAME_TARGET} PRIVATE ${X11_INCLUDE_DIR})
-        TARGET_COMPILE_DEFINITIONS(${_NAME_TARGET} PRIVATE -D USE_X11)
-        MESSAGE(STATUS "Support for X11 front end - Ready")
-
-    ELSE()
-
-        MESSAGE(FATAL_ERROR "Support for X11 front end - Failed")
-
-    ENDIF()
-
-ENDMACRO()
+    endif()
+endmacro()

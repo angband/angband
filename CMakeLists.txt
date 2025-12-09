@@ -1,31 +1,31 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.7...3.26 FATAL_ERROR)
-PROJECT(Angband LANGUAGES C)
-STRING(TOLOWER ${PROJECT_NAME} OUR_EXECUTABLE_NAME)
+cmake_minimum_required(VERSION 3.7...3.26 FATAL_ERROR)
+project(Angband LANGUAGES C)
+string(TOLOWER ${PROJECT_NAME} OUR_EXECUTABLE_NAME)
 
 # Append the custom modules to the search path.
-LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/modules")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/modules")
 
-OPTION(SUPPORT_GCU_FRONTEND "Support for GCU front end." OFF)
-OPTION(SUPPORT_NCURSES_FRONTEND "Synonym for SUPPORT_GCU_FRONTEND for backwards compatibility." OFF)
-OPTION(SUPPORT_SDL_FRONTEND "Support for SDL front end." OFF)
-OPTION(SUPPORT_SDL2_FRONTEND "Support for SDL2 front end." OFF)
-OPTION(SUPPORT_X11_FRONTEND "Support for X11 Frontend." OFF)
-OPTION(SUPPORT_SDL_SOUND "Support for sound with SDL." OFF)
-OPTION(SUPPORT_SDL2_SOUND "Support for sound with SDL2." OFF)
-IF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    SET(SPOIL_DEFAULT OFF)
-ELSE()
-    SET(SPOIL_DEFAULT ON)
-ENDIF()
-OPTION(SUPPORT_SPOIL_FRONTEND "Support for spoiler front end." ${SPOIL_DEFAULT})
-OPTION(SUPPORT_STATS_FRONTEND "Support for statistics front end; requires sqlite3 development library." OFF)
-OPTION(SUPPORT_TEST_FRONTEND "Support for test front end." OFF)
-OPTION(SUPPORT_WINDOWS_FRONTEND "Support for windows front end." OFF)
-OPTION(SUPPORT_BUNDLED_PNG "Use bundled Windows PNG+Zlib (32-bit x86 only)" OFF)
-OPTION(SUPPORT_STATIC_LINKING "Enable static linking where possible" OFF)
-OPTION(SUPPORT_STATS_BACKEND "Enable backend support for statistics and related debugging commands.  Implied by SUPPORT_STATS_FRONTEND." OFF)
-OPTION(SUPPORT_BORG "Support for Borg." ON)
-OPTION(SUPPORT_BORG_HIGH_SCORES "Borg characters allowed in high scores." OFF)
+option(SUPPORT_GCU_FRONTEND "Support for GCU front end." OFF)
+option(SUPPORT_NCURSES_FRONTEND "Synonym for SUPPORT_GCU_FRONTEND for backwards compatibility." OFF)
+option(SUPPORT_SDL_FRONTEND "Support for SDL front end." OFF)
+option(SUPPORT_SDL2_FRONTEND "Support for SDL2 front end." OFF)
+option(SUPPORT_X11_FRONTEND "Support for X11 Frontend." OFF)
+option(SUPPORT_SDL_SOUND "Support for sound with SDL." OFF)
+option(SUPPORT_SDL2_SOUND "Support for sound with SDL2." OFF)
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(SPOIL_DEFAULT OFF)
+else()
+    set(SPOIL_DEFAULT ON)
+endif()
+option(SUPPORT_SPOIL_FRONTEND "Support for spoiler front end." ${SPOIL_DEFAULT})
+option(SUPPORT_STATS_FRONTEND "Support for statistics front end; requires sqlite3 development library." OFF)
+option(SUPPORT_TEST_FRONTEND "Support for test front end." OFF)
+option(SUPPORT_WINDOWS_FRONTEND "Support for windows front end." OFF)
+option(SUPPORT_BUNDLED_PNG "Use bundled Windows PNG+Zlib (32-bit x86 only)" OFF)
+option(SUPPORT_STATIC_LINKING "Enable static linking where possible" OFF)
+option(SUPPORT_STATS_BACKEND "Enable backend support for statistics and related debugging commands.  Implied by SUPPORT_STATS_FRONTEND." OFF)
+option(SUPPORT_BORG "Support for Borg." ON)
+option(SUPPORT_BORG_HIGH_SCORES "Borg characters allowed in high scores." OFF)
 
 # By default, generate a self-contained build left where the build was run.
 # If not using the Windows front end, the executable will have hardwired
@@ -46,114 +46,114 @@ OPTION(SUPPORT_BORG_HIGH_SCORES "Borg characters allowed in high scores." OFF)
 # running "make install" will always require superuser privileges because
 # the owner of some of the installed files and directories is set to
 # root:${INSTALL_GROUP_ID}.
-OPTION(SC_INSTALL "Generate a self-contained build that could be left as is or moved elsewhere.  Conflicts with SHARED_INSTALL and READONLY_INSTALL." OFF)
-OPTION(SHARED_INSTALL "Install for shared use with a setgid executable.  Conflicts with SC_INSTALL, READONLY_INSTALL, and SUPPORT_WINOOWS_FRONTEND." OFF)
-SET(INSTALL_GROUP_ID "games" CACHE STRING "Group ID (either name or number) to use if SHARED_INSTALL is on.")
-OPTION(READONLY_INSTALL "Install for shared use with variable persistent data stored in the user's directories.  Conflicts with SC_INSTALL, SHARED_INSTALL, and SUPPORT_WINDOWS_FRONTEND." OFF)
-INCLUDE(GNUInstallDirs)
+option(SC_INSTALL "Generate a self-contained build that could be left as is or moved elsewhere.  Conflicts with SHARED_INSTALL and READONLY_INSTALL." OFF)
+option(SHARED_INSTALL "Install for shared use with a setgid executable.  Conflicts with SC_INSTALL, READONLY_INSTALL, and SUPPORT_WINOOWS_FRONTEND." OFF)
+set(INSTALL_GROUP_ID "games" CACHE STRING "Group ID (either name or number) to use if SHARED_INSTALL is on.")
+option(READONLY_INSTALL "Install for shared use with variable persistent data stored in the user's directories.  Conflicts with SC_INSTALL, SHARED_INSTALL, and SUPPORT_WINDOWS_FRONTEND." OFF)
+include(GNUInstallDirs)
 
 # Allow building the documentation if sphinx-build is available.
-INCLUDE(CMakeDependentOption)
+include(CMakeDependentOption)
 find_package(Sphinx)
-CMAKE_DEPENDENT_OPTION(BUILD_DOC "Build the documentation" OFF "Sphinx_FOUND" OFF)
-SET(DOC_HTML_THEME "" CACHE STRING "If set and not an empty string, it is the builtin Sphinx HTML theme to use in place of the default theme in conf.py (currently the better theme).")
+cmake_dependent_option(BUILD_DOC "Build the documentation" OFF "Sphinx_FOUND" OFF)
+set(DOC_HTML_THEME "" CACHE STRING "If set and not an empty string, it is the builtin Sphinx HTML theme to use in place of the default theme in conf.py (currently the better theme).")
 
 # Allow the user to enable code coverage if the system supports it.
-INCLUDE(src/cmake/modules/CheckCoverage.cmake)
-CHECK_COVERAGE(Coverage_FOUND)
-CMAKE_DEPENDENT_OPTION(SUPPORT_COVERAGE "Compile for reporting code coverage" OFF "Coverage_FOUND" OFF)
+include(src/cmake/modules/CheckCoverage.cmake)
+check_coverage(Coverage_FOUND)
+cmake_dependent_option(SUPPORT_COVERAGE "Compile for reporting code coverage" OFF "Coverage_FOUND" OFF)
 
-IF ((SUPPORT_NCURSES_FRONTEND) AND (NOT SUPPORT_GCU_FRONTEND))
-    SET(SUPPORT_GCU_FRONTEND ON)
-ENDIF()
-IF((SUPPORT_STATS_FRONTEND) AND (NOT SUPPORT_STATS_BACKEND))
-    SET(SUPPORT_STATS_BACKEND ON)
-ENDIF()
+if((SUPPORT_NCURSES_FRONTEND) AND (NOT SUPPORT_GCU_FRONTEND))
+    set(SUPPORT_GCU_FRONTEND ON)
+endif()
+if((SUPPORT_STATS_FRONTEND) AND (NOT SUPPORT_STATS_BACKEND))
+    set(SUPPORT_STATS_BACKEND ON)
+endif()
 # If none of the graphical front ends will be configured, configure the one for
 # Windows if that's the target plaform or the X11 one for anything else.
-IF((NOT SUPPORT_GCU_FRONTEND) AND (NOT SUPPORT_SDL_FRONTEND) AND (NOT SUPPORT_SDL2_FRONTEND) AND (NOT SUPPORT_WINDOWS_FRONTEND) AND (NOT SUPPORT_X11_FRONTEND))
-    IF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-        SET(SUPPORT_WINDOWS_FRONTEND ON)
-    ELSE()
-        SET(SUPPORT_X11_FRONTEND ON)
-    ENDIF()
-ENDIF()
+if((NOT SUPPORT_GCU_FRONTEND) AND (NOT SUPPORT_SDL_FRONTEND) AND (NOT SUPPORT_SDL2_FRONTEND) AND (NOT SUPPORT_WINDOWS_FRONTEND) AND (NOT SUPPORT_X11_FRONTEND))
+    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        set(SUPPORT_WINDOWS_FRONTEND ON)
+    else()
+        set(SUPPORT_X11_FRONTEND ON)
+    endif()
+endif()
 # Can not have support for SDL and SDL2 at the same time.
-IF (SUPPORT_SDL2_FRONTEND OR SUPPORT_SDL2_SOUND)
-    IF (SUPPORT_SDL_FRONTEND OR SUPPORT_SDL_SOUND)
-        MESSAGE(FATAL_ERROR "Can not configure with support for both SDL and SDL2")
-    ENDIF()
-ENDIF()
-IF(SUPPORT_WINDOWS_FRONTEND)
+if(SUPPORT_SDL2_FRONTEND OR SUPPORT_SDL2_SOUND)
+    if(SUPPORT_SDL_FRONTEND OR SUPPORT_SDL_SOUND)
+        message(FATAL_ERROR "Can not configure with support for both SDL and SDL2")
+    endif()
+endif()
+if(SUPPORT_WINDOWS_FRONTEND)
     # The Windows front end bypasses main.c so can't use any of the other front
     # ends when it is used.  For somewhat similar reasons, disable SDL or SDL2
     # sound with the Windows front end.
-    IF(SUPPORT_GCU_FRONTEND)
-        MESSAGE(WARNING "Disabling GCU front end because Windows front end is enabled")
-        SET(SUPPORT_GCU_FRONTEND OFF)
-    ENDIF()
-    IF(SUPPORT_SDL_FRONTEND)
-        MESSAGE(WARNING "Disabling SDL front end because Windows front end is enabled")
-        SET(SUPPORT_SDL_FRONTEND OFF)
-    ENDIF()
-    IF(SUPPORT_SDL2_FRONTEND)
-        MESSAGE(WARNING "Disabling SDL2 front end because Windows front end is enabled")
-        SET(SUPPORT_SDL2_FRONTEND OFF)
-    ENDIF()
-    IF(SUPPORT_SPOIL_FRONTEND)
-        MESSAGE(WARNING "Disabling spoiler front end because Windows front end is enabled")
-        SET(SUPPORT_SPOIL_FRONTEND OFF)
-    ENDIF()
-    IF(SUPPORT_STATS_FRONTEND)
-        MESSAGE(WARNING "Disabling statistics front end because Windows front end is enabled")
-        SET(SUPPORT_STATS_FRONTEND OFF)
-    ENDIF()
-    IF(SUPPORT_TEST_FRONTEND)
-        MESSAGE(WARNING "Disabling test front end because Windows front end is enabled")
-        SET(SUPPORT_TEST_FRONTEND OFF)
-    ENDIF()
-    IF(SUPPORT_X11_FRONTEND)
-        MESSAGE(WARNING "Disabling X11 front end because Windows front end is enabled")
-        SET(SUPPORT_X11_FRONTEND OFF)
-    ENDIF()
-    IF(SUPPORT_SDL_SOUND)
-        MESSAGE(WARNING "Disabling SDL sound because Windows front end is enabled")
-        SET(SUPPORT_SDL_SOUND OFF)
-    ENDIF()
-    IF(SUPPORT_SDL2_SOUND)
-        MESSAGE(WARNING "Disabling SDL2 sound because Windows front end is enabled")
-        SET(SUPPORT_SDL2_SOUND OFF)
-    ENDIF()
+    if(SUPPORT_GCU_FRONTEND)
+        message(WARNING "Disabling GCU front end because Windows front end is enabled")
+        set(SUPPORT_GCU_FRONTEND OFF)
+    endif()
+    if(SUPPORT_SDL_FRONTEND)
+        message(WARNING "Disabling SDL front end because Windows front end is enabled")
+        set(SUPPORT_SDL_FRONTEND OFF)
+    endif()
+    if(SUPPORT_SDL2_FRONTEND)
+        message(WARNING "Disabling SDL2 front end because Windows front end is enabled")
+        set(SUPPORT_SDL2_FRONTEND OFF)
+    endif()
+    if(SUPPORT_SPOIL_FRONTEND)
+        message(WARNING "Disabling spoiler front end because Windows front end is enabled")
+        set(SUPPORT_SPOIL_FRONTEND OFF)
+    endif()
+    if(SUPPORT_STATS_FRONTEND)
+        message(WARNING "Disabling statistics front end because Windows front end is enabled")
+        set(SUPPORT_STATS_FRONTEND OFF)
+    endif()
+    if(SUPPORT_TEST_FRONTEND)
+        message(WARNING "Disabling test front end because Windows front end is enabled")
+        set(SUPPORT_TEST_FRONTEND OFF)
+    endif()
+    if(SUPPORT_X11_FRONTEND)
+        message(WARNING "Disabling X11 front end because Windows front end is enabled")
+        set(SUPPORT_X11_FRONTEND OFF)
+    endif()
+    if(SUPPORT_SDL_SOUND)
+        message(WARNING "Disabling SDL sound because Windows front end is enabled")
+        set(SUPPORT_SDL_SOUND OFF)
+    endif()
+    if(SUPPORT_SDL2_SOUND)
+        message(WARNING "Disabling SDL2 sound because Windows front end is enabled")
+        set(SUPPORT_SDL2_SOUND OFF)
+    endif()
     # Set up the path for the source of the resource file.
-    STRING(CONCAT OUR_WINDOWS_RC src/win/ ${OUR_EXECUTABLE_NAME} .rc)
+    string(CONCAT OUR_WINDOWS_RC src/win/ ${OUR_EXECUTABLE_NAME} .rc)
     # Enable compilation of resource files.
-    ENABLE_LANGUAGE(RC)
-ENDIF()
+    enable_language(RC)
+endif()
 
 # If none of SC_INSTALL, SHARED_INSTALL, and READONLY_INSTALL are set, use
 # SC_INSTALL.
-IF((NOT SC_INSTALL) AND (NOT SHARED_INSTALL) AND (NOT READONLY_INSTALL))
-    SET(SC_INSTALL ON)
-ENDIF()
-IF(SHARED_INSTALL)
-    IF(SC_INSTALL)
-        MESSAGE(FATAL_ERROR "Conflicting options, SHARED_INSTALL and SC_INSTALL, enabled")
-    ENDIF()
-    IF(READONLY_INSTALL)
-        MESSAGE(FATAL_ERROR "Conflicting options, SHARED_INSTALL and READONLY_INSTALL, enabled")
-    ENDIF()
-    IF(SUPPORT_WINDOWS_FRONTEND)
-        MESSAGE(FATAL_ERROR "Conflicting options, SHARED_INSTALL and SUPPORT_WINDOWS_FRONTEND, enabled")
-    ENDIF()
-ENDIF()
-IF(READONLY_INSTALL)
-    IF(SC_INSTALL)
-        MESSAGE(FATAL_ERROR "Conflicting options, READONLY_INSTALL and SC_INSTALL, enabled")
-    ENDIF()
-    IF(SUPPORT_WINDOWS_FRONTEND)
-        MESSAGE(FATAL_ERROR "Conflicting options, READONLY_INSTALL and SUPPORT_WINDOWS_FRONTEND, enabled")
-    ENDIF()
-ENDIF()
+if((NOT SC_INSTALL) AND (NOT SHARED_INSTALL) AND (NOT READONLY_INSTALL))
+    set(SC_INSTALL ON)
+endif()
+if(SHARED_INSTALL)
+    if(SC_INSTALL)
+        message(FATAL_ERROR "Conflicting options, SHARED_INSTALL and SC_INSTALL, enabled")
+    endif()
+    if(READONLY_INSTALL)
+        message(FATAL_ERROR "Conflicting options, SHARED_INSTALL and READONLY_INSTALL, enabled")
+    endif()
+    if(SUPPORT_WINDOWS_FRONTEND)
+        message(FATAL_ERROR "Conflicting options, SHARED_INSTALL and SUPPORT_WINDOWS_FRONTEND, enabled")
+    endif()
+endif()
+if(READONLY_INSTALL)
+    if(SC_INSTALL)
+        message(FATAL_ERROR "Conflicting options, READONLY_INSTALL and SC_INSTALL, enabled")
+    endif()
+    if(SUPPORT_WINDOWS_FRONTEND)
+        message(FATAL_ERROR "Conflicting options, READONLY_INSTALL and SUPPORT_WINDOWS_FRONTEND, enabled")
+    endif()
+endif()
 
 # Put all executables and lib resources (and DLLs on Windows) into build/game
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/game")
@@ -165,7 +165,7 @@ else()
     add_compile_options(-Wall -Wextra -pedantic -Wno-unused-parameter)
 endif()
 
-ADD_LIBRARY(OurCoreLib OBJECT
+add_library(OurCoreLib OBJECT
         src/buildid.c
         src/cave-map.c
         src/cave-square.c
@@ -376,38 +376,38 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/borg/borg.c
 )
 
-SET_TARGET_PROPERTIES(OurCoreLib PROPERTIES C_STANDARD 99)
-SET(ANGBAND_CORE_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src")
-SET(ANGBAND_CORE_LINK_LIBRARIES "")
+set_target_properties(OurCoreLib PROPERTIES C_STANDARD 99)
+set(ANGBAND_CORE_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src")
+set(ANGBAND_CORE_LINK_LIBRARIES "")
 
-IF(SUPPORT_BORG)
-    TARGET_INCLUDE_DIRECTORIES(OurCoreLib PRIVATE
+if(SUPPORT_BORG)
+    target_include_directories(OurCoreLib PRIVATE
         ${ANGBAND_CORE_INCLUDE_DIRS}
     )
-    TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE -D ALLOW_BORG)
-    IF(SUPPORT_BORG_HIGH_SCORES)
-        TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE -D SCORE_BORGS)
-    ENDIF()
-ENDIF()
+    target_compile_definitions(OurCoreLib PRIVATE -D ALLOW_BORG)
+    if(SUPPORT_BORG_HIGH_SCORES)
+        target_compile_definitions(OurCoreLib PRIVATE -D SCORE_BORGS)
+    endif()
+endif()
 
-IF(SUPPORT_COVERAGE)
-    CONFIGURE_TARGET_FOR_COVERAGE(OurCoreLib)
-ENDIF()
+if(SUPPORT_COVERAGE)
+    configure_target_for_coverage(OurCoreLib)
+endif()
 
-IF(SUPPORT_SDL_SOUND OR SUPPORT_SDL2_SOUND)
-    ADD_LIBRARY(OurSoundSupportLib OBJECT
+if(SUPPORT_SDL_SOUND OR SUPPORT_SDL2_SOUND)
+    add_library(OurSoundSupportLib OBJECT
             src/snd-sdl.c
     )
-    SET_TARGET_PROPERTIES(OurSoundSupportLib PROPERTIES C_STANDARD 99)
-    SET(SOUND_SUPPORT_LIB OurSoundSupportLib)
-    IF(SUPPORT_COVERAGE)
-        CONFIGURE_TARGET_FOR_COVERAGE(OurSoundSupportLib)
-    ENDIF()
-ELSE()
-    SET(SOUND_SUPPORT_LIB "")
-ENDIF()
+    set_target_properties(OurSoundSupportLib PROPERTIES C_STANDARD 99)
+    set(SOUND_SUPPORT_LIB OurSoundSupportLib)
+    if(SUPPORT_COVERAGE)
+        configure_target_for_coverage(OurSoundSupportLib)
+    endif()
+else()
+    set(SOUND_SUPPORT_LIB "")
+endif()
 
-ADD_EXECUTABLE(OurExecutable
+add_executable(OurExecutable
         $<TARGET_OBJECTS:OurCoreLib>
         $<$<BOOL:${SOUND_SUPPORT_LIB}>:$<TARGET_OBJECTS:${SOUND_SUPPORT_LIB}>>
         $<$<BOOL:${SUPPORT_GCU_FRONTEND}>:src/main-gcu.c>
@@ -430,121 +430,119 @@ ADD_EXECUTABLE(OurExecutable
         $<$<NOT:$<BOOL:${SUPPORT_WINDOWS_FRONTEND}>>:src/main.c>
 )
 
-SET_TARGET_PROPERTIES(OurExecutable PROPERTIES
+set_target_properties(OurExecutable PROPERTIES
     C_STANDARD 99
     OUTPUT_NAME ${OUR_EXECUTABLE_NAME}
 )
-TARGET_INCLUDE_DIRECTORIES(OurExecutable PRIVATE
+target_include_directories(OurExecutable PRIVATE
     ${ANGBAND_CORE_INCLUDE_DIRS}
 )
-TARGET_LINK_LIBRARIES(OurExecutable PRIVATE ${ANGBAND_CORE_LINK_LIBRARIES})
+target_link_libraries(OurExecutable PRIVATE ${ANGBAND_CORE_LINK_LIBRARIES})
 
-IF (SUPPORT_X11_FRONTEND)
-    INCLUDE(src/cmake/macros/X11_Frontend.cmake)
-    CONFIGURE_X11_FRONTEND(OurExecutable)
-ENDIF()
-IF(SUPPORT_GCU_FRONTEND)
-    INCLUDE(src/cmake/macros/GCU_Frontend.cmake)
-    CONFIGURE_GCU_FRONTEND(OurExecutable)
-ENDIF()
-IF(SUPPORT_SDL_FRONTEND)
-    INCLUDE(src/cmake/macros/SDL_Frontend.cmake)
-    CONFIGURE_SDL_FRONTEND(OurExecutable)
-ELSEIF(SUPPORT_SDL2_FRONTEND)
-    INCLUDE(src/cmake/macros/SDL2_Frontend.cmake)
-    CONFIGURE_SDL2_FRONTEND(OurExecutable)
-ENDIF()
-IF(SUPPORT_WINDOWS_FRONTEND)
-    INCLUDE(src/cmake/modules/PNG_Detection.cmake)
-    DETERMINE_PNG(PNG_TARGET PNG_DLLS ${SUPPORT_BUNDLED_PNG})
+if(SUPPORT_X11_FRONTEND)
+    include(src/cmake/macros/X11_Frontend.cmake)
+    configure_x11_frontend(OurExecutable)
+endif()
+if(SUPPORT_GCU_FRONTEND)
+    include(src/cmake/macros/GCU_Frontend.cmake)
+    configure_gcu_frontend(OurExecutable)
+endif()
+if(SUPPORT_SDL_FRONTEND)
+    include(src/cmake/macros/SDL_Frontend.cmake)
+    configure_sdl_frontend(OurExecutable)
+elseif(SUPPORT_SDL2_FRONTEND)
+    include(src/cmake/macros/SDL2_Frontend.cmake)
+    configure_sdl2_frontend(OurExecutable)
+endif()
+if(SUPPORT_WINDOWS_FRONTEND)
+    include(src/cmake/modules/PNG_Detection.cmake)
+    determine_png(PNG_TARGET PNG_DLLS ${SUPPORT_BUNDLED_PNG})
 
-    INCLUDE(src/cmake/macros/WINDOWS_Frontend.cmake)
-    CONFIGURE_WINDOWS_FRONTEND(OurExecutable ${PNG_TARGET})
-    CONFIGURE_WINDOWS_FRONTEND(OurCoreLib "")
-    IF(SUPPORT_BORG)
+    include(src/cmake/macros/WINDOWS_Frontend.cmake)
+    configure_windows_frontend(OurExecutable ${PNG_TARGET})
+    configure_windows_frontend(OurCoreLib "")
+    if(SUPPORT_BORG)
         TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D ALLOW_BORG)
-    ENDIF()
-ENDIF()
+    endif()
+endif()
 
-IF(SUPPORT_SDL_SOUND)
-    INCLUDE(src/cmake/macros/SDL_Sound.cmake)
-    CONFIGURE_SDL_SOUND(OurExecutable NO)
-    CONFIGURE_SDL_SOUND(OurCoreLib YES)
-    CONFIGURE_SDL_SOUND(${SOUND_SUPPORT_LIB} NO)
-ENDIF()
+if(SUPPORT_SDL_SOUND)
+    include(src/cmake/macros/SDL_Sound.cmake)
+    configure_sdl_sound(OurExecutable NO)
+    configure_sdl_sound(OurCoreLib YES)
+    configure_sdl_sound(${SOUND_SUPPORT_LIB} NO)
+endif()
 
-IF (SUPPORT_SDL2_SOUND)
-    INCLUDE(src/cmake/macros/SDL2_Sound.cmake)
-    CONFIGURE_SDL2_SOUND(OurExecutable NO)
-    CONFIGURE_SDL2_SOUND(OurCoreLib YES)
-    CONFIGURE_SDL2_SOUND(${SOUND_SUPPORT_LIB} NO)
-ENDIF()
+if(SUPPORT_SDL2_SOUND)
+    include(src/cmake/macros/SDL2_Sound.cmake)
+    configure_sdl2_sound(OurExecutable NO)
+    configure_sdl2_sound(OurCoreLib YES)
+    configure_sdl2_sound(${SOUND_SUPPORT_LIB} NO)
+endif()
 
-IF (SUPPORT_SPOIL_FRONTEND)
+if(SUPPORT_SPOIL_FRONTEND)
+    include(src/cmake/macros/SPOIL_Frontend.cmake)
+    configure_spoil_frontend(OurExecutable)
+endif()
 
-    INCLUDE(src/cmake/macros/SPOIL_Frontend.cmake)
-    CONFIGURE_SPOIL_FRONTEND(OurExecutable)
+if(SUPPORT_STATS_FRONTEND)
+    include(src/cmake/macros/STATS_Frontend.cmake)
+    configure_stats_frontend(OurExecutable)
+endif()
 
-ENDIF()
+if(SUPPORT_STATS_BACKEND)
+    include(src/cmake/macros/STATS_Backend.cmake)
+    if(SUPPORT_STATS_FRONTEND)
+        configure_stats_backend(OurExecutable)
+    endif()
+    configure_stats_backend(OurCoreLib)
+endif()
 
-IF(SUPPORT_STATS_FRONTEND)
-    INCLUDE(src/cmake/macros/STATS_Frontend.cmake)
-    CONFIGURE_STATS_FRONTEND(OurExecutable)
-ENDIF()
+if(SUPPORT_TEST_FRONTEND)
+    include(src/cmake/macros/TEST_Frontend.cmake)
+    configure_test_frontend(OurExecutable)
+endif()
 
-IF(SUPPORT_STATS_BACKEND)
-    INCLUDE(src/cmake/macros/STATS_Backend.cmake)
-    IF(SUPPORT_STATS_FRONTEND)
-        CONFIGURE_STATS_BACKEND(OurExecutable)
-    ENDIF()
-    CONFIGURE_STATS_BACKEND(OurCoreLib)
-ENDIF()
-
-IF(SUPPORT_TEST_FRONTEND)
-    INCLUDE(src/cmake/macros/TEST_Frontend.cmake)
-    CONFIGURE_TEST_FRONTEND(OurExecutable)
-ENDIF()
-
-IF(SUPPORT_COVERAGE)
-    CONFIGURE_TARGET_FOR_COVERAGE(OurExecutable)
-ENDIF()
+if(SUPPORT_COVERAGE)
+    configure_target_for_coverage(OurExecutable)
+endif()
 
 # Set the build ID.
-IF(NOT CMAKE_HOST_UNIX)
+if(NOT CMAKE_HOST_UNIX)
     # Just check for the version file left in a snapshot.  If not in a snapshot,
     # don't bother to set the build ID.
-    IF(EXISTS ./version)
-        EXECUTE_PROCESS(COMMAND type version WORKING_DIRECTORY . OUTPUT_VARIABLE ANGBAND_BUILD_ID)
-        IF(ANGBAND_BUILD_ID MATCHES "^[ \t\n\r]*$")
-            SET(ANGBAND_BUILD_ID "")
-        ENDIF()
-    ELSE()
-        SET(ANGBAND_BUILD_ID "")
-    ENDIF()
-ELSE()
+    if(EXISTS ./version)
+        execute_process(COMMAND type version WORKING_DIRECTORY . OUTPUT_VARIABLE ANGBAND_BUILD_ID)
+        if(ANGBAND_BUILD_ID MATCHES "^[ \t\n\r]*$")
+            set(ANGBAND_BUILD_ID "")
+        endif()
+    else()
+        set(ANGBAND_BUILD_ID "")
+    endif()
+else()
     # Assumes a Unix-like environment.
-    EXECUTE_PROCESS(COMMAND "${CMAKE_SOURCE_DIR}/scripts/version.sh" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/scripts" OUTPUT_VARIABLE ANGBAND_BUILD_ID)
-    IF(ANGBAND_BUILD_ID MATCHES "^[ \t\n\r]*$")
-        SET(ANGBAND_BUILD_ID "")
-    ENDIF()
-ENDIF()
-IF(NOT (ANGBAND_BUILD_ID STREQUAL ""))
-    SET(ANGBAND_BUILD_ID_OPTION "BUILD_ID=${ANGBAND_BUILD_ID}")
-ELSE()
-    SET(ANGBAND_BUILD_ID_OPTION "")
-ENDIF()
-TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
-TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
+    execute_process(COMMAND "${CMAKE_SOURCE_DIR}/scripts/version.sh" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/scripts" OUTPUT_VARIABLE ANGBAND_BUILD_ID)
+    if(ANGBAND_BUILD_ID MATCHES "^[ \t\n\r]*$")
+        set(ANGBAND_BUILD_ID "")
+    endif()
+endif()
+if(NOT (ANGBAND_BUILD_ID STREQUAL ""))
+    set(ANGBAND_BUILD_ID_OPTION "BUILD_ID=${ANGBAND_BUILD_ID}")
+else()
+    set(ANGBAND_BUILD_ID_OPTION "")
+endif()
+target_compile_definitions(OurExecutable PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
+target_compile_definitions(OurCoreLib PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
 
 # Set up to generate documentation if requested.
-IF(BUILD_DOC)
-    INCLUDE(src/cmake/modules/SphinxDocument.cmake)
+if(BUILD_DOC)
+    include(src/cmake/modules/SphinxDocument.cmake)
 
     # Use a custom target to rewrite some of the configuration information
     # for sphinx-build.  Need to bring over the rest of the configuration
     # information from the source directories because of that.
-    SET(_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/manual-conf")
-    ADD_CUSTOM_TARGET(
+    set(_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/manual-conf")
+    add_custom_target(
         OurManualConf ALL
         "${CMAKE_COMMAND}" "-E" "make_directory" "${_OUTDIR}"
         COMMAND "${CMAKE_COMMAND}" "-E" "copy_directory"
@@ -555,11 +553,11 @@ IF(BUILD_DOC)
         "${_OUTDIR}/_templates"
         VERBATIM
     )
-    SET_TARGET_PROPERTIES(OurManualConf PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${_OUTDIR}")
-    SET(_SCRIPT "src/cmake/scripts/rewrite.cmake")
-    SET(_IN "docs/conf.py")
-    SET(_OUT "conf.py")
-    ADD_CUSTOM_COMMAND(
+    set_target_properties(OurManualConf PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${_OUTDIR}")
+    set(_SCRIPT "src/cmake/scripts/rewrite.cmake")
+    set(_IN "docs/conf.py")
+    set(_OUT "conf.py")
+    add_custom_command(
         TARGET OurManualConf POST_BUILD
         COMMAND "${CMAKE_COMMAND}"
         "-P" "${CMAKE_CURRENT_SOURCE_DIR}/${_SCRIPT}" --
@@ -567,13 +565,12 @@ IF(BUILD_DOC)
         "${CMAKE_CURRENT_SOURCE_DIR}/${_IN}"
         "DOC_VERSION" "${ANGBAND_BUILD_ID}"
         "DOC_HTML_THEME" "${DOC_HTML_THEME}"
-        DEPENDS "${_IN}" "${_SCRIPT}"
         BYPRODUCTS "${_OUTDIR}/${_OUT}"
         VERBATIM
     )
 
     # Add the target to generate the documentation.
-    ADD_SPHINX_DOCUMENT(
+    add_sphinx_document(
         OurManual
         SOURCE_DIR docs
         CONF_TARGET OurManualConf
@@ -583,216 +580,216 @@ IF(BUILD_DOC)
         BUILD_FAIL_NO_SPHINX
     )
 
-    IF(SC_INSTALL)
+    if(SC_INSTALL)
         # Add another target to transfer the built documentation to the
         # self-contained installation.  Don't do that as an install target
         # since everything else will be put in place by the build process
         # without an install step.
-        SPHINX_DOCUMENT_GET_OUTPUT_DIRECTORY(_DOC OurManual)
-        SPHINX_DOCUMENT_GET_OUTPUT_FORMATS(_FORMATS OurManual)
-        IF(_DOC STREQUAL "_DOC-NOTFOUND")
-            MESSAGE(FATAL_ERROR "logic error:  Sphinx output directory not set for OurManual target")
-        ENDIF()
-        IF(_FORMATS STREQUAL "_FORMATS-NOTFOUND")
-            MESSAGE(FATAL_ERROR "logic error:  Sphinx output formats not set for OurManual target")
-        ENDIF()
-        IF(NOT (_DOC MATCHES "/$"))
-            SET(_DOC "${_DOC}/")
-        ENDIF()
-        SET(_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/docs")
-        UNSET(_COMMANDS)
-        FOREACH(_X ${_FORMATS})
+        sphinx_document_get_output_directory(_DOC OurManual)
+        sphinx_document_get_output_formats(_FORMATS OurManual)
+        if(_DOC STREQUAL "_DOC-NOTFOUND")
+            message(FATAL_ERROR "logic error:  Sphinx output directory not set for OurManual target")
+        endif()
+        if(_FORMATS STREQUAL "_FORMATS-NOTFOUND")
+            message(FATAL_ERROR "logic error:  Sphinx output formats not set for OurManual target")
+        endif()
+        if(NOT (_DOC MATCHES "/$"))
+            set(_DOC "${_DOC}/")
+        endif()
+        set(_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/docs")
+        unset(_COMMANDS)
+        foreach(_X ${_FORMATS})
             # Strip out the format-specific subdirectory when transferring
             # so there's less nesting.  Works okay with only HTML output;
             # will there be name conflicts if multiple formats are used?
-            LIST(
+            list(
                 APPEND
                 _COMMANDS
                 "COMMAND" "${CMAKE_COMMAND}" "-E" "copy_directory"
                 "${_DOC}${_X}/"
                 "${_OUTDIR}"
             )
-        ENDFOREACH()
-        ADD_CUSTOM_TARGET(
+        endforeach()
+        add_custom_target(
             OurManualTransfer ALL
             "${CMAKE_COMMAND}" "-E" "make_directory" "${_OUTDIR}"
             ${_COMMANDS}
             VERBATIM
         )
-        ADD_DEPENDENCIES(OurManualTransfer OurManual)
-    ENDIF()
-ENDIF()
+        add_dependencies(OurManualTransfer OurManual)
+    endif()
+endif()
 
-SET(EXECUTABLE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-SET(DIR_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-SET(VARDATADIR_PERMISSIONS ${DIR_PERMISIONS})
-SET(DATA_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+set(EXECUTABLE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+set(DIR_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+set(VARDATADIR_PERMISSIONS ${DIR_PERMISIONS})
+set(DATA_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 
-IF(SHARED_INSTALL)
-    INCLUDE(src/cmake/macros/GID_Handling.cmake)
-    CONFIGURE_GID_HANDLING(OurExecutable)
-    CONFIGURE_GID_HANDLING(OurCoreLib)
-    TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D SETGID)
-    TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE -D SETGID)
-    SET(EXECUTABLE_PERMISSIONS ${EXECUTABLE_PERMISSIONS} SETGID)
+if(SHARED_INSTALL)
+    include(src/cmake/macros/GID_Handling.cmake)
+    configure_gid_handling(OurExecutable)
+    configure_gid_handling(OurCoreLib)
+    target_compile_definitions(OurExecutable PRIVATE -D SETGID)
+    target_compile_definitions(OurCoreLib PRIVATE -D SETGID)
+    set(EXECUTABLE_PERMISSIONS ${EXECUTABLE_PERMISSIONS} SETGID)
     # Override so the world has no access (read access for directory listing
     # would be okay but leads to confusing messages, for instance from ls,
     # when search access is not allowed; so disallow read access as well) and
     # group can do anything.  Means the world has to use the elevated
     # privileges of the setgid executatble to do stuff.
-    SET(
+    set(
         VARDATADIR_PERMISSIONS
         OWNER_READ OWNER_WRITE OWNER_EXECUTE
         GROUP_READ GROUP_WRITE GROUP_EXECUTE
     )
-ENDIF()
+endif()
 
-IF(READONLY_INSTALL)
-    TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D USE_PRIVATE_PATHS)
-    TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE -D USE_PRIVATE_PATHS)
-ENDIF()
+if(READONLY_INSTALL)
+    target_compile_definitions(OurExecutable PRIVATE -D USE_PRIVATE_PATHS)
+    target_compile_definitions(OurCoreLib PRIVATE -D USE_PRIVATE_PATHS)
+endif()
 
 # This is the executable to be used for the end-to-end tests; those will
 # be run with the current working direcctory set to CMAKE_CURRENT_BINARY_DIR.
 # Builds using an installation step will override this.
-SET(TEST_EXECUTABLE ./${OUR_EXECUTABLE_NAME})
+set(TEST_EXECUTABLE ./${OUR_EXECUTABLE_NAME})
 
-IF((SHARED_INSTALL) OR (READONLY_INSTALL))
+if((SHARED_INSTALL) OR (READONLY_INSTALL))
     # When hardwiring paths, assume lib/gamedata from the source directories
     # is in DEFAULT_LIB_PATH rather than DEFAULT_CONFIG_PATH.  If not set,
     # have to change the installation of lib/gamedata so it's parent is the
     # same as lib/customize.
-    TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D GAMEDATA_IN_LIB)
-    TARGET_COMPILE_DEFINITIONS(OurCoreLib PRIVATE -D GAMEDATA_IN_LIB)
+    target_compile_definitions(OurExecutable PRIVATE -D GAMEDATA_IN_LIB)
+    target_compile_definitions(OurCoreLib PRIVATE -D GAMEDATA_IN_LIB)
     # The paths set here should end in a path separator and must match up with
     # the paths passed to INSTALL().
-    SET(ANGBAND_CONFIG_PATH ${CMAKE_INSTALL_FULL_SYSCONFDIR}/${PROJECT_NAME}/)
-    SET(ANGBAND_LIB_PATH ${CMAKE_INSTALL_FULL_DATAROOTDIR}/${PROJECT_NAME}/)
-    SET(ANGBAND_DATA_PATH ${CMAKE_INSTALL_FULL_SHAREDSTATEDIR}/${PROJECT_NAME}/)
-    TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D DEFAULT_CONFIG_PATH="${ANGBAND_CONFIG_PATH}")
-    TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D DEFAULT_LIB_PATH="${ANGBAND_LIB_PATH}")
+    set(ANGBAND_CONFIG_PATH ${CMAKE_INSTALL_FULL_SYSCONFDIR}/${PROJECT_NAME}/)
+    set(ANGBAND_LIB_PATH ${CMAKE_INSTALL_FULL_DATAROOTDIR}/${PROJECT_NAME}/)
+    set(ANGBAND_DATA_PATH ${CMAKE_INSTALL_FULL_SHAREDSTATEDIR}/${PROJECT_NAME}/)
+    target_compile_definitions(OurExecutable PRIVATE -D DEFAULT_CONFIG_PATH="${ANGBAND_CONFIG_PATH}")
+    target_compile_definitions(OurExecutable PRIVATE -D DEFAULT_LIB_PATH="${ANGBAND_LIB_PATH}")
     # This is always passed to init_file_paths() but is ignored internally when
     # the USE_PRIVATE_PATHS preprocessor macro is set (i.e. for READONLY_INSTALL
     # builds).
-    TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D DEFAULT_DATA_PATH="${ANGBAND_DATA_PATH}")
+    target_compile_definitions(OurExecutable PRIVATE -D DEFAULT_DATA_PATH="${ANGBAND_DATA_PATH}")
 
     # Set up for installation.
-    INSTALL(TARGETS OurExecutable RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} PERMISSIONS ${EXECUTABLE_PERMISSIONS})
-    SET(INSTALLED_EXECUTABLE ${CMAKE_INSTALL_FULL_BINDIR}/${OUR_EXECUTABLE_NAME})
-    SET(TEST_EXECUTABLE ${INSTALLED_EXECUTABLE})
-    SET(ANGBAND_CHANGE_OWNER ${INSTALLED_EXECUTABLE})
-    SET(ANGBAND_DIRS gamedata help screens)
-    IF((SUPPORT_SDL_FRONTEND) OR (SUPPORT_SDL2_FRONTEND) OR (SUPPORT_WINDOWS_FRONTEND))
-        SET(ANGBAND_DIRS ${ANGBAND_DIRS} fonts icons tiles)
-    ENDIF()
-    IF((SUPPORT_WINDOWS_FRONTEND) OR (SUPPORT_SDL_SOUND) OR (SUPPORT_SDL2_SOUND))
-        SET(ANGBAND_DIRS ${ANGBAND_DIRS} sounds)
-    ENDIF()
-    FOREACH(ANGBAND_DIR ${ANGBAND_DIRS})
-        SET(ANGBAND_DEST ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME})
-        INSTALL(DIRECTORY lib/${ANGBAND_DIR} DESTINATION ${ANGBAND_DEST} FILE_PERMISSIONS ${DATA_PERMISSIONS} DIRECTORY_PERMISSIONS ${DIR_PERMISSIONS} PATTERN Makefile EXCLUDE PATTERN .deps EXCLUDE)
-    ENDFOREACH()
-    FOREACH(ANGBAND_DIR customize)
-        SET(ANGBAND_DEST ${CMAKE_INSTALL_SYSCONFDIR}/${PROJECT_NAME})
-        INSTALL(DIRECTORY lib/${ANGBAND_DIR} DESTINATION ${ANGBAND_DEST} FILE_PERMISSIONS ${DATA_PERMISSIONS} DIRECTORY_PERMISSIONS ${DIR_PERMISSIONS} PATTERN Makefile EXCLUDE PATTERN .deps EXCLUDE)
-    ENDFOREACH()
+    install(TARGETS OurExecutable RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} PERMISSIONS ${EXECUTABLE_PERMISSIONS})
+    set(INSTALLED_EXECUTABLE ${CMAKE_INSTALL_FULL_BINDIR}/${OUR_EXECUTABLE_NAME})
+    set(TEST_EXECUTABLE ${INSTALLED_EXECUTABLE})
+    set(ANGBAND_CHANGE_OWNER ${INSTALLED_EXECUTABLE})
+    set(ANGBAND_DIRS gamedata help screens)
+    if((SUPPORT_SDL_FRONTEND) OR (SUPPORT_SDL2_FRONTEND) OR (SUPPORT_WINDOWS_FRONTEND))
+        set(ANGBAND_DIRS ${ANGBAND_DIRS} fonts icons tiles)
+    endif()
+    if((SUPPORT_WINDOWS_FRONTEND) OR (SUPPORT_SDL_SOUND) OR (SUPPORT_SDL2_SOUND))
+        set(ANGBAND_DIRS ${ANGBAND_DIRS} sounds)
+    endif()
+    foreach(ANGBAND_DIR ${ANGBAND_DIRS})
+        set(ANGBAND_DEST ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME})
+        install(DIRECTORY lib/${ANGBAND_DIR} DESTINATION ${ANGBAND_DEST} FILE_PERMISSIONS ${DATA_PERMISSIONS} DIRECTORY_PERMISSIONS ${DIR_PERMISSIONS} PATTERN Makefile EXCLUDE PATTERN .deps EXCLUDE)
+    endforeach()
+    foreach(ANGBAND_DIR customize)
+        set(ANGBAND_DEST ${CMAKE_INSTALL_SYSCONFDIR}/${PROJECT_NAME})
+        install(DIRECTORY lib/${ANGBAND_DIR} DESTINATION ${ANGBAND_DEST} FILE_PERMISSIONS ${DATA_PERMISSIONS} DIRECTORY_PERMISSIONS ${DIR_PERMISSIONS} PATTERN Makefile EXCLUDE PATTERN .deps EXCLUDE)
+    endforeach()
     # If installing into a centralized location and at least one of the SDL,
     # SDL2, or X11 front ends has been configured, install the desktop and icon
     # files into the paths expected by https://freedesktop.org/software/appstream/docs/chap-Metadata.html#spec-component-location
     # (see also https://github.com/angband/angband/pull/5302 ).
-    IF((SHARED_INSTALL) OR (READONLY_INSTALL))
-        SET(ANGBAND_DESKTOP_SRC_DIR lib/icons)
-        IF(SUPPORT_SDL2_FRONTEND)
-            SET(ANGBAND_DESKTOP_SRC_FILE ${ANGBAND_DESKTOP_SRC_DIR}/angband-sdl2.desktop)
-        ELSEIF(SUPPORT_SDL_FRONTEND)
-            SET(ANGBAND_DESKTOP_SRC_FILE ${ANGBAND_DESKTOP_SRC_DIR}/angband-sdl.desktop)
-        ELSEIF(SUPPORT_X11_FRONTEND)
-            SET(ANGBAND_DESKTOP_SRC_FILE ${ANGBAND_DESKTOP_SRC_DIR}/angband-x11.desktop)
-        ELSE()
-            SET(ANGBAND_DESKTOP_SRC_FILE "")
-        ENDIF()
-        IF(NOT(ANGBAND_DESKTOP_SRC_FILE STREQUAL ""))
-            SET(ANGBAND_DESKTOP_DEST_DIR ${CMAKE_INSTALL_DATAROOTDIR})
-            INSTALL(FILES ${ANGBAND_DESKTOP_SRC_FILE} DESTINATION ${ANGBAND_DESKTOP_DEST_DIR}/applications PERMISSIONS ${DATA_PERMISSIONS} RENAME angband.desktop)
-            INSTALL(FILES ${ANGBAND_DESKTOP_SRC_DIR}/angband.metainfo.xml DESTINATION ${ANGBAND_DESKTOP_DEST_DIR}/metainfo PERMISSIONS ${DATA_PERMISSIONS})
-            FOREACH(ANGBAND_ICON_RES 16 32 128 256 512)
-                INSTALL(FILES ${ANGBAND_DESKTOP_SRC_DIR}/att-${ANGBAND_ICON_RES}.png DESTINATION ${ANGBAND_DESKTOP_DEST_DIR}/icons/hicolor/apps/${ANGBAND_ICON_RES}x${ANGBAND_ICON_RES} PERMISSIONS ${DATA_PERMISSIONS} RENAME angband.png)
-            ENDFOREACH()
-        ENDIF()
-    ENDIF()
-    IF(SHARED_INSTALL)
-        FOREACH(ANGBAND_DIR panic save scores)
-            SET(ANGBAND_DEST ${CMAKE_INSTALL_SHAREDSTATEDIR}/${PROJECT_NAME})
-            INSTALL(DIRECTORY lib/user/${ANGBAND_DIR} DESTINATION ${ANGBAND_DEST} FILE_PERMISSIONS ${DATA_PERMISSIONS} DIRECTORY_PERMISSIONS ${VARDATADIR_PERMISSIONS} PATTERN Makefile EXCLUDE PATTERN .deps EXCLUDE)
-            SET(ANGBAND_CHANGE_OWNER ${ANGBAND_CHANGE_OWNER} ${CMAKE_INSTALL_FULL_SHAREDSTATEDIR}/${PROJECT_NAME}/${ANGBAND_DIR})
-        ENDFOREACH()
-        INSTALL(CODE "EXECUTE_PROCESS(COMMAND chown root:${INSTALL_GROUP_ID} ${ANGBAND_CHANGE_OWNER} RESULT_VARIABLE ANGBAND_RESULT)\nIF(NOT ANGBAND_RESULT EQUAL 0)\nMESSAGE(FATAL_ERROR \"Changing ownership to root:${INSTALL_GROUP_ID} on ${ANGBAND_CHANGE_OWNER} failed\")\nENDIF()")
+    if((SHARED_INSTALL) OR (READONLY_INSTALL))
+        set(ANGBAND_DESKTOP_SRC_DIR lib/icons)
+        if(SUPPORT_SDL2_FRONTEND)
+            set(ANGBAND_DESKTOP_SRC_FILE ${ANGBAND_DESKTOP_SRC_DIR}/angband-sdl2.desktop)
+        elseif(SUPPORT_SDL_FRONTEND)
+            set(ANGBAND_DESKTOP_SRC_FILE ${ANGBAND_DESKTOP_SRC_DIR}/angband-sdl.desktop)
+        elseif(SUPPORT_X11_FRONTEND)
+            set(ANGBAND_DESKTOP_SRC_FILE ${ANGBAND_DESKTOP_SRC_DIR}/angband-x11.desktop)
+        else()
+            set(ANGBAND_DESKTOP_SRC_FILE "")
+        endif()
+        if(NOT(ANGBAND_DESKTOP_SRC_FILE STREQUAL ""))
+            set(ANGBAND_DESKTOP_DEST_DIR ${CMAKE_INSTALL_DATAROOTDIR})
+            install(FILES ${ANGBAND_DESKTOP_SRC_FILE} DESTINATION ${ANGBAND_DESKTOP_DEST_DIR}/applications PERMISSIONS ${DATA_PERMISSIONS} RENAME angband.desktop)
+            install(FILES ${ANGBAND_DESKTOP_SRC_DIR}/angband.metainfo.xml DESTINATION ${ANGBAND_DESKTOP_DEST_DIR}/metainfo PERMISSIONS ${DATA_PERMISSIONS})
+            foreach(ANGBAND_ICON_RES 16 32 128 256 512)
+                install(FILES ${ANGBAND_DESKTOP_SRC_DIR}/att-${ANGBAND_ICON_RES}.png DESTINATION ${ANGBAND_DESKTOP_DEST_DIR}/icons/hicolor/apps/${ANGBAND_ICON_RES}x${ANGBAND_ICON_RES} PERMISSIONS ${DATA_PERMISSIONS} RENAME angband.png)
+            endforeach()
+        endif()
+    endif()
+    if(SHARED_INSTALL)
+        foreach(ANGBAND_DIR panic save scores)
+            set(ANGBAND_DEST ${CMAKE_INSTALL_SHAREDSTATEDIR}/${PROJECT_NAME})
+            install(DIRECTORY lib/user/${ANGBAND_DIR} DESTINATION ${ANGBAND_DEST} FILE_PERMISSIONS ${DATA_PERMISSIONS} DIRECTORY_PERMISSIONS ${VARDATADIR_PERMISSIONS} PATTERN Makefile EXCLUDE PATTERN .deps EXCLUDE)
+            set(ANGBAND_CHANGE_OWNER ${ANGBAND_CHANGE_OWNER} ${CMAKE_INSTALL_FULL_SHAREDSTATEDIR}/${PROJECT_NAME}/${ANGBAND_DIR})
+        endforeach()
+        install(CODE "execute_process(COMMAND chown root:${INSTALL_GROUP_ID} ${ANGBAND_CHANGE_OWNER} RESULT_VARIABLE ANGBAND_RESULT)\nif(NOT ANGBAND_RESULT EQUAL 0)\nmessage(FATAL_ERROR \"Changing ownership to root:${INSTALL_GROUP_ID} on ${ANGBAND_CHANGE_OWNER} failed\")\nendif()")
         # Since chown can reset the setgid bit that CMake set when installing,
         # turn that bit back on.
-        INSTALL(CODE "EXECUTE_PROCESS(COMMAND chmod g+s ${INSTALLED_EXECUTABLE} RESULT_VARIABLE ANGBAND_RESULT)\nIF(NOT ANGBAND_RESULT EQUAL 0)\nMESSAGE(FATAL ERROR \"Resetting setgid bit on ${INSTALLED_EXECUTABLE} failed\")\nENDIF()")
-    ENDIF()
+        install(CODE "execute_process(COMMAND chmod g+s ${INSTALLED_EXECUTABLE} RESULT_VARIABLE ANGBAND_RESULT)\nif(NOT ANGBAND_RESULT EQUAL 0)\nmessage(FATAL ERROR \"Resetting setgid bit on ${INSTALLED_EXECUTABLE} failed\")\nendif()")
+    endif()
 
-    IF(BUILD_DOC)
+    if(BUILD_DOC)
         # Install the built documentation.
-        SPHINX_DOCUMENT_GET_OUTPUT_DIRECTORY(_DOC OurManual)
-        SPHINX_DOCUMENT_GET_OUTPUT_FORMATS(_FORMATS OurManual)
-        IF(_DOC STREQUAL "_DOC-NOTFOUND")
-            MESSAGE(FATAL_ERROR "logic error:  Sphinx output directory not set for OurManual target")
-        ENDIF()
-        IF(_FORMATS STREQUAL "_FORMATS-NOTFOUND")
-            MESSAGE(FATAL_ERROR "logic error:  Sphinx output formats not set for OurManual target")
-        ENDIF()
-        IF(NOT (_DOC MATCHES "/$"))
-            SET(_DOC "${_DOC}/")
-        ENDIF()
-        FOREACH(_X ${_FORMATS})
+        sphinx_document_get_output_directory(_DOC OurManual)
+        sphinx_document_get_output_formats(_FORMATS OurManual)
+        if(_DOC STREQUAL "_DOC-NOTFOUND")
+            message(FATAL_ERROR "logic error:  Sphinx output directory not set for OurManual target")
+        endif()
+        if(_FORMATS STREQUAL "_FORMATS-NOTFOUND")
+            message(FATAL_ERROR "logic error:  Sphinx output formats not set for OurManual target")
+        endif()
+        if(NOT (_DOC MATCHES "/$"))
+            set(_DOC "${_DOC}/")
+        endif()
+        foreach(_X ${_FORMATS})
             # Remove the format subdirectory when installing for one less
             # level of nesting.  Works okay with just HTML output; may have
             # conflicting names with multiple output types.
-            INSTALL(
+            install(
                 DIRECTORY "${_DOC}${_X}/"
                 DESTINATION "${CMAKE_INSTALL_DOCDIR}"
                 FILE_PERMISSIONS ${DATA_PERMISSIONS}
                 DIRECTORY_PERMISSIONS ${DIR_PERMISSIONS}
                 PATTERN .buildinfo  EXCLUDE
             )
-        ENDFOREACH()
-    ENDIF()
-ENDIF()
+        endforeach()
+    endif()
+endif()
 
-IF(SC_INSTALL)
-    SET(ANGBAND_CONFIG_PATH ./lib/)
-    SET(ANGBAND_LIB_PATH ./lib/)
+if(SC_INSTALL)
+    set(ANGBAND_CONFIG_PATH ./lib/)
+    set(ANGBAND_LIB_PATH ./lib/)
     # Would use lib/user here to match up with the preexisting structure from
     # the source directory, but previous CMake builds used this (because of
     # the default setting in config.h).  So, to be compatible if people
     # rebuild on an existing copy, use this.  When there's backward
     # incompatible changes to the save files, could change this since
     # compatiblity with something already on disk will be less of a concern.
-    SET(ANGBAND_DATA_PATH ./lib/)
+    set(ANGBAND_DATA_PATH ./lib/)
     # The Windows front end doesn't access these so don't set them in that case.
-    IF(NOT SUPPORT_WINDOWS_FRONTEND)
-        TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D DEFAULT_CONFIG_PATH="${ANGBAND_CONFIG_PATH}")
-        TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D DEFAULT_LIB_PATH="${ANGBAND_LIB_PATH}")
-        TARGET_COMPILE_DEFINITIONS(OurExecutable PRIVATE -D DEFAULT_DATA_PATH="${ANGBAND_DATA_PATH}")
-    ENDIF()
+    if(NOT SUPPORT_WINDOWS_FRONTEND)
+        target_compile_definitions(OurExecutable PRIVATE -D DEFAULT_CONFIG_PATH="${ANGBAND_CONFIG_PATH}")
+        target_compile_definitions(OurExecutable PRIVATE -D DEFAULT_LIB_PATH="${ANGBAND_LIB_PATH}")
+        target_compile_definitions(OurExecutable PRIVATE -D DEFAULT_DATA_PATH="${ANGBAND_DATA_PATH}")
+    endif()
     # Provide an install rule which copies the self-contained form to another
     # location.
-    INSTALL(TARGETS OurExecutable DESTINATION . PERMISSIONS ${EXECUTABLE_PERMISSIONS})
-    IF(SUPPORT_WINDOWS_FRONTEND AND PNG_DLLS)
+    install(TARGETS OurExecutable DESTINATION . PERMISSIONS ${EXECUTABLE_PERMISSIONS})
+    if(SUPPORT_WINDOWS_FRONTEND AND PNG_DLLS)
         # DATA_PERMISSIONS matches the permissions those files have in the
         # source tree, but should the installed permissions be
         # EXECUTABLE_PERMISSIONS?
-        INSTALL(FILES ${PNG_DLLS} DESTINATION . PERMISSIONS ${DATA_PERMISSIONS})
-    ENDIF()
-    INSTALL(DIRECTORY lib/ DESTINATION lib)
-    IF(BUILD_DOC)
-        INSTALL(DIRECTORY docs/ DESTINATION docs)
-    ENDIF()
+        install(FILES ${PNG_DLLS} DESTINATION . PERMISSIONS ${DATA_PERMISSIONS})
+    endif()
+    install(DIRECTORY lib/ DESTINATION lib)
+    if(BUILD_DOC)
+        install(DIRECTORY docs/ DESTINATION docs)
+    endif()
 
     # Set up a target to transfer the files in lib/ at build time.
-    ADD_CUSTOM_TARGET(TransferLib ALL)
-    ADD_CUSTOM_COMMAND(
+    add_custom_target(TransferLib ALL)
+    add_custom_command(
         TARGET TransferLib
         PRE_BUILD
         COMMAND "${CMAKE_COMMAND}" "-P"
@@ -807,11 +804,11 @@ IF(SC_INSTALL)
         VERBATIM
     )
 
-    IF(SUPPORT_WINDOWS_FRONTEND AND PNG_DLLS)
+    if(SUPPORT_WINDOWS_FRONTEND AND PNG_DLLS)
         # Transfer the packaged DLLs so there in the same directory as the
         # executable.
-        FOREACH(dll ${PNG_DLLS})
-            ADD_CUSTOM_COMMAND(
+        foreach(dll ${PNG_DLLS})
+            add_custom_command(
                 TARGET OurExecutable
                 POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -819,15 +816,15 @@ IF(SC_INSTALL)
                     "$<TARGET_FILE_DIR:OurExecutable>"
                 COMMENT "Copying ${dll} to executable directory"
             )
-        ENDFOREACH()
-    ENDIF()
-ENDIF()
+        endforeach()
+    endif()
+endif()
 
 # This is the list of the unit test case source files relative to src/tests in
 # the source tree, one per test case executable.  List them alphabetically to
 # make maintenance easier though, when running them, it would be preferable to
 # run the lower level ones first.
-SET(ANGBAND_TEST_CASE_SOURCES
+set(ANGBAND_TEST_CASE_SOURCES
     artifact/name.c
     cave/find.c
     cave/scatter.c
@@ -916,7 +913,7 @@ SET(ANGBAND_TEST_CASE_SOURCES
 
 # First copy some scripts and, as necessary, test case data from the source
 # tree.
-if (SUPPORT_TEST_FRONTEND)
+if(SUPPORT_TEST_FRONTEND)
     add_custom_command(TARGET OurExecutable POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/tests"
@@ -938,154 +935,154 @@ add_custom_command(TARGET OurExecutable POST_BUILD
 # using the test front end will be run directly.  The unit tests will be
 # handled through a dependency.  In the SHARED_INSTALL case, some unit tests
 # will always fail because the test case executables are not setgid.
-IF((NOT CMAKE_CROSSCOMPILING) AND SUPPORT_TEST_FRONTEND)
-    ADD_CUSTOM_TARGET(alltests
+if((NOT CMAKE_CROSSCOMPILING) AND SUPPORT_TEST_FRONTEND)
+    add_custom_target(alltests
         COMMAND "$<TARGET_FILE_DIR:OurExecutable>/run-tests" ${TEST_EXECUTABLE}
         WORKING_DIRECTORY "$<TARGET_FILE_DIR:OurExecutable>")
-    ADD_DEPENDENCIES(alltests OurExecutable)
-    IF(SC_INSTALL)
+    add_dependencies(alltests OurExecutable)
+    if(SC_INSTALL)
         ADD_DEPENDENCIES(alltests TransferLib)
-    ENDIF()
-ELSE()
-    ADD_CUSTOM_TARGET(alltests)
-ENDIF()
-IF(SUPPORT_COVERAGE)
-    ADD_COVERAGE_TARGETS(resetcoverage reportcoverage coverage
+    endif()
+else()
+    add_custom_target(alltests)
+endif()
+if(SUPPORT_COVERAGE)
+    add_coverage_targets(resetcoverage reportcoverage coverage
         COMBINED_SUBTARGETS alltests)
-ENDIF()
+endif()
 
 # For unit tests, use a working directory so the data files can be found.
 # This complements how DEFAULT_CONFIG_PATH, DEFAULT_LIB_PATH, DEFAULT_DATA_PATH,
 # and TEST_OVERRIDE_PATHS are set below.
-IF((READONLY_INSTALL) OR (SHARED_INSTALL))
-    SET(TEST_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
-ELSE()
-    SET(TEST_WORKING_DIRECTORY "$<TARGET_FILE_DIR:OurExecutable>")
-ENDIF()
+if((READONLY_INSTALL) OR (SHARED_INSTALL))
+    set(TEST_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+else()
+    set(TEST_WORKING_DIRECTORY "$<TARGET_FILE_DIR:OurExecutable>")
+endif()
 
 # Set up an object library with the shared code for unit tests.
-ADD_LIBRARY(OurUnitTestLib OBJECT EXCLUDE_FROM_ALL
+add_library(OurUnitTestLib OBJECT EXCLUDE_FROM_ALL
         src/tests/test-utils.c
         src/tests/unit-test.c
 )
-SET_TARGET_PROPERTIES(OurUnitTestLib PROPERTIES C_STANDARD 99)
-SET(ANGBAND_UNIT_TEST_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/tests")
-TARGET_INCLUDE_DIRECTORIES(OurUnitTestLib PRIVATE
+set_target_properties(OurUnitTestLib PROPERTIES C_STANDARD 99)
+set(ANGBAND_UNIT_TEST_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/tests")
+target_include_directories(OurUnitTestLib PRIVATE
     ${ANGBAND_CORE_INCLUDE_DIRS}
 )
-TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
+target_compile_definitions(OurUnitTestLib PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
 # Use the same definitions for the hardwired paths as were used (or would
 # be used if it wasn't the Windows front end) for the executable.
-TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D DEFAULT_CONFIG_PATH="${ANGBAND_CONFIG_PATH}")
-TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D DEFAULT_LIB_PATH="${ANGBAND_LIB_PATH}")
-TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D DEFAULT_DATA_PATH="${ANGBAND_DATA_PATH}")
+target_compile_definitions(OurUnitTestLib PRIVATE -D DEFAULT_CONFIG_PATH="${ANGBAND_CONFIG_PATH}")
+target_compile_definitions(OurUnitTestLib PRIVATE -D DEFAULT_LIB_PATH="${ANGBAND_LIB_PATH}")
+target_compile_definitions(OurUnitTestLib PRIVATE -D DEFAULT_DATA_PATH="${ANGBAND_DATA_PATH}")
 # If building for installation elsewhere allows those paths to be overridden
 # so the test cases can be run before installation.  To run the cases after
 # installation with the installed data files, set the environment variable
 # FORCE_PATH to be non-empty prior to running the tests.
-IF((READONLY_INSTALL) OR (SHARED_INSTALL))
-    TARGET_COMPILE_DEFINITIONS(OurUnitTestLib PRIVATE -D TEST_OVERRIDE_PATHS)
-ENDIF()
-IF(SUPPORT_WINDOWS_FRONTEND)
-    CONFIGURE_WINDOWS_FRONTEND(OurUnitTestLib "")
-ENDIF()
+if((READONLY_INSTALL) OR (SHARED_INSTALL))
+    target_compile_definitions(OurUnitTestLib PRIVATE -D TEST_OVERRIDE_PATHS)
+endif()
+if(SUPPORT_WINDOWS_FRONTEND)
+    configure_windows_frontend(OurUnitTestLib "")
+endif()
 
 # Set up targets for exercising the unit tests (from src/tests in the source
 # tree).  Create the directories needed to hold the test case executables.
-SET(ANGBAND_TEST_CASE_PATHS "")
-SET(ANGBAND_TEST_CASE_TARGETS "")
-FOREACH(ANGBAND_TEST_CASE_SOURCE ${ANGBAND_TEST_CASE_SOURCES})
-    STRING(REGEX REPLACE "/[^/]*$" "" ANGBAND_TEST_CASE_DIR ${ANGBAND_TEST_CASE_SOURCE})
-    STRING(REGEX REPLACE "\.[^\./]*$" "" ANGBAND_TEST_CASE_PATH ${ANGBAND_TEST_CASE_SOURCE})
-    STRING(REGEX REPLACE "^${ANGBAND_TEST_CASE_DIR}/" "" ANGBAND_TEST_CASE_FILE ${ANGBAND_TEST_CASE_PATH})
-    IF(ANGBAND_TEST_CASE_FILE STREQUAL "")
-        MESSAGE(FATAL_ERROR "Misconfigured test case source file, ${ANGBAND_TEST_CASE_SOURCE}: no file name")
-    ENDIF()
-    STRING(REGEX REPLACE "/" "-" ANGBAND_TEST_CASE_NAME
+set(ANGBAND_TEST_CASE_PATHS "")
+set(ANGBAND_TEST_CASE_TARGETS "")
+foreach(ANGBAND_TEST_CASE_SOURCE ${ANGBAND_TEST_CASE_SOURCES})
+    string(REGEX REPLACE "/[^/]*$" "" ANGBAND_TEST_CASE_DIR ${ANGBAND_TEST_CASE_SOURCE})
+    string(REGEX REPLACE "\.[^\./]*$" "" ANGBAND_TEST_CASE_PATH ${ANGBAND_TEST_CASE_SOURCE})
+    string(REGEX REPLACE "^${ANGBAND_TEST_CASE_DIR}/" "" ANGBAND_TEST_CASE_FILE ${ANGBAND_TEST_CASE_PATH})
+    if(ANGBAND_TEST_CASE_FILE STREQUAL "")
+        message(FATAL_ERROR "Misconfigured test case source file, ${ANGBAND_TEST_CASE_SOURCE}: no file name")
+    endif()
+    string(REGEX REPLACE "/" "-" ANGBAND_TEST_CASE_NAME
         unittest- ${ANGBAND_TEST_CASE_PATH})
-    SET(ANGBAND_TEST_CASE_PATH "unittests/${ANGBAND_TEST_CASE_PATH}")
-    FILE(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/unittests/${ANGBAND_TEST_CASE_DIR}")
-    ADD_EXECUTABLE(${ANGBAND_TEST_CASE_NAME} EXCLUDE_FROM_ALL
+    set(ANGBAND_TEST_CASE_PATH "unittests/${ANGBAND_TEST_CASE_PATH}")
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/unittests/${ANGBAND_TEST_CASE_DIR}")
+    add_executable(${ANGBAND_TEST_CASE_NAME} EXCLUDE_FROM_ALL
             "src/tests/${ANGBAND_TEST_CASE_SOURCE}"
             $<TARGET_OBJECTS:OurUnitTestLib>
             $<TARGET_OBJECTS:OurCoreLib>
             $<$<BOOL:${SOUND_SUPPORT_LIB}>:$<TARGET_OBJECTS:${SOUND_SUPPORT_LIB}>>
     )
-    SET_TARGET_PROPERTIES(${ANGBAND_TEST_CASE_NAME} PROPERTIES
+    set_target_properties(${ANGBAND_TEST_CASE_NAME} PROPERTIES
         C_STANDARD 99
         OUTPUT_NAME "${ANGBAND_TEST_CASE_FILE}"
         RUNTIME_OUTPUT_DIRECTORY "${ANGBAND_TEST_CASE_PATH}")
-    TARGET_INCLUDE_DIRECTORIES(${ANGBAND_TEST_CASE_NAME} PRIVATE
+    target_include_directories(${ANGBAND_TEST_CASE_NAME} PRIVATE
         ${ANGBAND_CORE_INCLUDE_DIRS}
         ${ANGBAND_UNIT_TEST_INCLUDE_DIRS}
     )
-    TARGET_COMPILE_DEFINITIONS(${ANGBAND_TEST_CASE_NAME} PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
-    TARGET_LINK_LIBRARIES(${ANGBAND_TEST_CASE_NAME} PRIVATE
+    target_compile_definitions(${ANGBAND_TEST_CASE_NAME} PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
+    target_link_libraries(${ANGBAND_TEST_CASE_NAME} PRIVATE
         ${ANGBAND_CORE_LINK_LIBRARIES}
     )
-    IF(SUPPORT_STATS_BACKEND)
-        CONFIGURE_STATS_BACKEND(${ANGBAND_TEST_CASE_NAME})
-    ENDIF()
-    IF(SUPPORT_SDL_SOUND)
-        CONFIGURE_SDL_SOUND(${ANGBAND_TEST_CASE_NAME} NO)
-    ENDIF()
-    IF(SUPPORT_SDL2_SOUND)
-        CONFIGURE_SDL2_SOUND(${ANGBAND_TEST_CASE_NAME} NO)
-    ENDIF()
-    IF(SUPPORT_WINDOWS_FRONTEND)
-        CONFIGURE_WINDOWS_FRONTEND(${ANGBAND_TEST_CASE_NAME} "")
+    if(SUPPORT_STATS_BACKEND)
+        configure_stats_backend(${ANGBAND_TEST_CASE_NAME})
+    endif()
+    if(SUPPORT_SDL_SOUND)
+        configure_sdl_sound(${ANGBAND_TEST_CASE_NAME} NO)
+    endif()
+    if(SUPPORT_SDL2_SOUND)
+        configure_sdl2_sound(${ANGBAND_TEST_CASE_NAME} NO)
+    endif()
+    if(SUPPORT_WINDOWS_FRONTEND)
+        configure_windows_frontend(${ANGBAND_TEST_CASE_NAME} "")
         # Guarantee that it is not marked as having a WinMain entry point
         # regardless of the setting of CMAKE_WIN32_EXECUTABLE.
-        SET_TARGET_PROPERTIES(${ANGBAND_TEST_CASE_NAME} PROPERTIES
+        set_target_properties(${ANGBAND_TEST_CASE_NAME} PROPERTIES
             WIN32_EXECUTABLE OFF)
-        IF(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+        if(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
             # Despite the guarantee above, the Visual Studio generator still
             # needs this to avoid a linker error about missing WinMain.
-            TARGET_LINK_OPTIONS(${ANGBAND_TEST_CASE_NAME} PRIVATE "/SUBSYSTEM:CONSOLE")
-        ENDIF()
-    ENDIF()
-    IF(SUPPORT_COVERAGE)
-        CONFIGURE_TARGET_FOR_COVERAGE(${ANGBAND_TEST_CASE_NAME} LINKONLY)
-    ENDIF()
+            target_link_options(${ANGBAND_TEST_CASE_NAME} PRIVATE "/SUBSYSTEM:CONSOLE")
+        endif()
+    endif()
+    if(SUPPORT_COVERAGE)
+        configure_target_for_coverage(${ANGBAND_TEST_CASE_NAME} LINKONLY)
+    endif()
     # Very few of the test cases use the math library, but it is easier to
     # have all use it.
-    FIND_LIBRARY(MATH_LIBRARY m)
-    IF(MATH_LIBRARY)
-        TARGET_LINK_LIBRARIES(${ANGBAND_TEST_CASE_NAME} PRIVATE ${MATH_LIBRARY})
-    ENDIF()
+    find_library(MATH_LIBRARY m)
+    if(MATH_LIBRARY)
+        target_link_libraries(${ANGBAND_TEST_CASE_NAME} PRIVATE ${MATH_LIBRARY})
+    endif()
     # Add a shortcut for running (and compiling if necessary) this test case.
-    ADD_CUSTOM_TARGET(run-${ANGBAND_TEST_CASE_NAME}
+    add_custom_target(run-${ANGBAND_TEST_CASE_NAME}
         COMMAND ${ANGBAND_TEST_CASE_NAME}
         WORKING_DIRECTORY "${TEST_WORKING_DIRECTORY}")
-    ADD_DEPENDENCIES(run-${ANGBAND_TEST_CASE_NAME} ${ANGBAND_TEST_CASE_NAME})
-    IF(SC_INSTALL)
-        ADD_DEPENDENCIES(run-${ANGBAND_TEST_CASE_NAME} TransferLib)
-    ENDIF()
+    add_dependencies(run-${ANGBAND_TEST_CASE_NAME} ${ANGBAND_TEST_CASE_NAME})
+    if(SC_INSTALL)
+        add_dependencies(run-${ANGBAND_TEST_CASE_NAME} TransferLib)
+    endif()
     # Add it to the list that will be run by the target for all unit tests.
-    LIST(APPEND ANGBAND_TEST_CASE_PATHS "$<TARGET_FILE:${ANGBAND_TEST_CASE_NAME}>")
-    LIST(APPEND ANGBAND_TEST_CASE_TARGETS "${ANGBAND_TEST_CASE_NAME}")
-ENDFOREACH()
+    list(APPEND ANGBAND_TEST_CASE_PATHS "$<TARGET_FILE:${ANGBAND_TEST_CASE_NAME}>")
+    list(APPEND ANGBAND_TEST_CASE_TARGETS "${ANGBAND_TEST_CASE_NAME}")
+endforeach()
 
 # Set up a target to run all the test cases.
-IF((NOT CMAKE_CROSSCOMPILING) OR (DEFINED CMAKE_CROSSCOMPILING_EMULATOR))
-    IF(DEFINED CMAKE_CROSSCOMPILING_EMULATOR)
-        ADD_CUSTOM_TARGET(allunittests
+if((NOT CMAKE_CROSSCOMPILING) OR (DEFINED CMAKE_CROSSCOMPILING_EMULATOR))
+    if(DEFINED CMAKE_CROSSCOMPILING_EMULATOR)
+        add_custom_target(allunittests
             COMMAND "${CMAKE_COMMAND}"
                 -DTOOL="${CMAKE_CROSSCOMPILING_EMULATOR}" -P
                 "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/scripts/run_tests.cmake"
                 -- ${ANGBAND_TEST_CASE_PATHS}
             WORKING_DIRECTORY "${TEST_WORKING_DIRECTORY}")
-    ELSE()
-        ADD_CUSTOM_TARGET(allunittests
+    else()
+        add_custom_target(allunittests
             COMMAND "${CMAKE_COMMAND}" -P
                 "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/scripts/run_tests.cmake"
                 -- ${ANGBAND_TEST_CASE_PATHS}
             WORKING_DIRECTORY "${TEST_WORKING_DIRECTORY}")
-    ENDIF()
-    IF(SC_INSTALL)
-        ADD_DEPENDENCIES(allunittests TransferLib ${ANGBAND_TEST_CASE_TARGETS})
-    ENDIF()
-ELSE()
-    ADD_CUSTOM_TARGET(allunittests)
-ENDIF()
-ADD_DEPENDENCIES(alltests allunittests)
+    endif()
+    if(SC_INSTALL)
+        add_dependencies(allunittests TransferLib ${ANGBAND_TEST_CASE_TARGETS})
+    endif()
+else()
+    add_custom_target(allunittests)
+endif()
+add_dependencies(alltests allunittests)

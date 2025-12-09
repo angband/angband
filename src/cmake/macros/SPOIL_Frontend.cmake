@@ -1,6 +1,6 @@
-MACRO(CONFIGURE_SPOIL_FRONTEND _NAME_TARGET)
+macro(configure_spoil_frontend _NAME_TARGET)
 
-    TARGET_COMPILE_DEFINITIONS(${_NAME_TARGET} PRIVATE -D USE_SPOIL)
-    MESSAGE(STATUS "Support for spoiler front end - Ready")
+    target_compile_definitions(${_NAME_TARGET} PRIVATE -D USE_SPOIL)
+    message(STATUS "Support for spoiler front end - Ready")
 
-ENDMACRO()
+endmacro()

@@ -1,14 +1,14 @@
-MACRO(CONFIGURE_SDL2_FRONTEND _NAME_TARGET)
+macro(configure_sdl2_frontend _NAME_TARGET)
 
-    FIND_PACKAGE(PkgConfig REQUIRED)
+    find_package(PkgConfig REQUIRED)
 
-    PKG_CHECK_MODULES(SDL2 QUIET IMPORTED_TARGET sdl2)
-    PKG_CHECK_MODULES(SDL2_TTF QUIET IMPORTED_TARGET SDL2_ttf>=2.0.0)
-    PKG_CHECK_MODULES(SDL2_IMAGE QUIET IMPORTED_TARGET SDL2_image>=2.0.0)
+    pkg_check_modules(SDL2 QUIET IMPORTED_TARGET sdl2)
+    pkg_check_modules(SDL2_TTF QUIET IMPORTED_TARGET SDL2_ttf>=2.0.0)
+    pkg_check_modules(SDL2_IMAGE QUIET IMPORTED_TARGET SDL2_image>=2.0.0)
 
-    IF(SDL2_FOUND AND SDL2_IMAGE_FOUND AND SDL2_TTF_FOUND)
+    if(SDL2_FOUND AND SDL2_IMAGE_FOUND AND SDL2_TTF_FOUND)
 
-        IF(SUPPORT_STATIC_LINKING)
+        if(SUPPORT_STATIC_LINKING)
             message(STATUS "Support for SDL2 front end - Configuring static linking")
 
             if(NOT TARGET PkgConfig::SDL2_STATIC) # Also defined in SDL2_Sound.cmake
@@ -48,21 +48,21 @@ MACRO(CONFIGURE_SDL2_FRONTEND _NAME_TARGET)
                 PkgConfig::SDL2_TTF_STATIC
                 PkgConfig::SDL2_IMAGE_STATIC
             )
-        ELSE()
+        else()
             TARGET_LINK_LIBRARIES(${_NAME_TARGET} PRIVATE
                 PkgConfig::SDL2
                 PkgConfig::SDL2_TTF
                 PkgConfig::SDL2_IMAGE
             )
-        ENDIF()
-        TARGET_COMPILE_DEFINITIONS(${_NAME_TARGET} PRIVATE USE_SDL2)
+        endif()
+        target_compile_definitions(${_NAME_TARGET} PRIVATE USE_SDL2)
 
-        MESSAGE(STATUS "Support for SDL2 front end - Ready")
+        message(STATUS "Support for SDL2 front end - Ready")
 
-    ELSE()
+    else()
 
-        MESSAGE(FATAL_ERROR "Support for SDL2 front end - Failed")
+        message(FATAL_ERROR "Support for SDL2 front end - Failed")
 
-    ENDIF()
+    endif()
 
-ENDMACRO()
+endmacro()
