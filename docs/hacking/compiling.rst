@@ -599,7 +599,7 @@ For ncurses, do::
 
     mkdir build && cd build
     cmake -G Ninja -DSUPPORT_GCU_FRONTEND=ON \
-        -DCMAKE_TOOLCHAIN_FILE=../toolchains/msys2-mingw64-gcu.cmake \
+        -DSUPPORT_STATIC_LINKING=ON \
         ..
     ninja
 

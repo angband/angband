@@ -1,37 +1,48 @@
-MACRO(CONFIGURE_GCU_FRONTEND _NAME_TARGET)
+macro(configure_gcu_frontend _NAME_TARGET)
+    find_package(PkgConfig REQUIRED)
 
-    # 3.10 required for CURSES_NEED_WIDE
-    CMAKE_MINIMUM_REQUIRED(VERSION 3.10...3.26 FATAL_ERROR)
-    SET(CURSES_NEED_WIDE TRUE)
-    # Only ncurses provides wide character support so require that as well.
-    SET(CURSES_NEED_NCURSES TRUE)
-    FIND_PACKAGE(Curses)
+    if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+        # OpenBSD ships ncursesw by default; only 'ncurses.pc' exists
+        pkg_check_modules(CURSES REQUIRED IMPORTED_TARGET ncurses)
+    else()
+        pkg_check_modules(CURSES REQUIRED IMPORTED_TARGET ncursesw)
+    endif()
 
-    IF (CURSES_FOUND)
-        # Ensure #include <ncurses.h> works if it is in a subdirectory (on MSYS2)
-        IF (EXISTS "${CURSES_INCLUDE_DIRS}/ncursesw/ncurses.h")
-            SET(CURSES_INCLUDE_DIRS "${CURSES_INCLUDE_DIRS}/ncursesw")
-        ENDIF()
-        message(STATUS "CURSES_INCLUDE_DIRS=${CURSES_INCLUDE_DIRS}")
+    if(SUPPORT_STATIC_LINKING)
+        if(NOT TARGET PkgConfig::CURSES_STATIC)
+            add_library(PkgConfig::CURSES_STATIC INTERFACE IMPORTED)
+            set_target_properties(PkgConfig::CURSES_STATIC PROPERTIES
+                INTERFACE_LINK_LIBRARIES      "${CURSES_STATIC_LIBRARIES}"
+                INTERFACE_INCLUDE_DIRECTORIES "${CURSES_STATIC_INCLUDE_DIRS}"
+                INTERFACE_COMPILE_OPTIONS     "${CURSES_STATIC_CFLAGS_OTHER}"
+                INTERFACE_LINK_OPTIONS        "${CURSES_STATIC_LDFLAGS_OTHER}"
+            )
+        endif()
+        target_link_options(${_NAME_TARGET} PRIVATE -static)
+        target_link_libraries(${_NAME_TARGET} PRIVATE PkgConfig::CURSES_STATIC)
+    else()
+        target_link_libraries(${_NAME_TARGET} PRIVATE PkgConfig::CURSES)
+    endif()
 
-        TARGET_LINK_LIBRARIES(${_NAME_TARGET} PRIVATE ${CURSES_LIBRARIES})
-        TARGET_INCLUDE_DIRECTORIES(${_NAME_TARGET} PRIVATE ${CURSES_INCLUDE_DIRS})
-        TARGET_COMPILE_DEFINITIONS(${_NAME_TARGET} PRIVATE -D USE_GCU)
-        TARGET_COMPILE_DEFINITIONS(${_NAME_TARGET} PRIVATE -D USE_NCURSES)
+    target_compile_definitions(${_NAME_TARGET} PRIVATE USE_GCU USE_NCURSES)
 
-        INCLUDE(CheckLibraryExists)
-        CHECK_LIBRARY_EXISTS(${CURSES_LIBRARY} use_default_colors "" ANGBAND_CURSES_NCURSES_HAS_USE_DEFAULT_COLORS)
-        IF (ANGBAND_CURSES_NCURSES_HAS_USE_DEFAULT_COLORS)
-            TARGET_COMPILE_DEFINITIONS(${_NAME_TARGET} PRIVATE -D HAVE_USE_DEFAULT_COLORS)
-            MESSAGE(STATUS "Using use_default_colors() with GCU front end")
-        ENDIF()
+    if(WIN32)
+        target_compile_definitions(${_NAME_TARGET} PRIVATE WIN32_CONSOLE_MODE)
+    endif()
 
-        MESSAGE(STATUS "Support for GCU front end - Ready")
+    if(MINGW)
+        target_compile_definitions(${_NAME_TARGET} PRIVATE MSYS2_ENCODING_WORKAROUND )
+    endif()
 
-    ELSE()
+    include(CheckSymbolExists)
+    set(CMAKE_REQUIRED_LIBRARIES PkgConfig::CURSES)
+    set(CMAKE_REQUIRED_INCLUDES ${CURSES_INCLUDE_DIRS})
+    check_symbol_exists(use_default_colors "curses.h" ANGBAND_NCURSESW_HAS_USE_DEFAULT_COLORS)
+    unset(CMAKE_REQUIRED_LIBRARIES)
+    unset(CMAKE_REQUIRED_INCLUDES)
+    if(ANGBAND_NCURSESW_HAS_USE_DEFAULT_COLORS)
+        target_compile_definitions(${_NAME_TARGET} PRIVATE HAVE_USE_DEFAULT_COLORS)
+    endif()
 
-        MESSAGE(FATAL_ERROR "Support for GCU front end - Failed")
-
-    ENDIF()
-
-ENDMACRO()
+    message(STATUS "Support for GCU front end - Ready")
+endmacro()
