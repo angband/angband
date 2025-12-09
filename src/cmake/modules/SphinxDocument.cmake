@@ -2,41 +2,41 @@
 
 # Is a helper macro for add_sphinx_document() to add the arguments passed to
 # the macro to all the commands that will be passed to add_custom_target().
-MACRO(sphinx_helper_add_to_commands)
-    IF(Sphinx_FOUND)
-        LIST(APPEND _COMMAND ${ARGV})
-        FOREACH(_X ${_EXTRA_COMMANDS})
-            LIST(APPEND ${_X} ${ARGV})
-        ENDFOREACH()
-    ENDIF()
-ENDMACRO()
+macro(sphinx_helper_add_to_commands)
+    if(Sphinx_FOUND)
+        list(APPEND _COMMAND ${ARGV})
+        foreach(_X ${_EXTRA_COMMANDS})
+            list(APPEND ${_X} ${ARGV})
+        endforeach()
+    endif()
+endmacro()
 
 
 # Is a helper macro for add_sphinx_document() to set the first argument to
 # the path in the second argument with the third argument used as the base
 # for relative paths.  If the fourth argument evaluates to be true, the
 # path will be converted to the native format.
-MACRO(sphinx_helper_convert_path _OUT _IN _BASE _NATIVE)
-    IF("${_IN}" MATCHES "^[/~]")
-        IF(${_NATIVE})
-            FILE(TO_NATIVE_PATH "${_IN}" ${_OUT})
-        ELSE()
-            SET(${_OUT} "${_IN}")
-        ENDIF()
-    ELSEIF("${_BASE}" MATCHES "/$")
-        IF(${_NATIVE})
-            FILE(TO_NATIVE_PATH "${_BASE}${_IN}" ${_OUT})
-        ELSE()
-            SET(${_OUT} "${_BASE}${_IN}")
-        ENDIF()
-    ELSE()
-        IF(${_NATIVE})
-            FILE(TO_NATIVE_PATH "${_BASE}/${_IN}" ${_OUT})
-        ELSE()
-            SET(${_OUT} "${_BASE}/${_IN}")
-        ENDIF()
-    ENDIF()
-ENDMACRO()
+macro(sphinx_helper_convert_path _OUT _IN _BASE _NATIVE)
+    if("${_IN}" MATCHES "^[/~]")
+        if(${_NATIVE})
+            file(TO_NATIVE_PATH "${_IN}" ${_OUT})
+        else()
+            set(${_OUT} "${_IN}")
+        endif()
+    elseif("${_BASE}" MATCHES "/$")
+        if(${_NATIVE})
+            file(TO_NATIVE_PATH "${_BASE}${_IN}" ${_OUT})
+        else()
+            set(${_OUT} "${_BASE}${_IN}")
+        endif()
+    else()
+        if(${_NATIVE})
+            file(TO_NATIVE_PATH "${_BASE}/${_IN}" ${_OUT})
+        else()
+            set(${_OUT} "${_BASE}/${_IN}")
+        endif()
+    endif()
+endmacro()
 
 
 # add_sphinx_document(
@@ -94,7 +94,7 @@ ENDMACRO()
 # OUTPUT_FORMATS specifies the output formats that the target will generate.
 #     Each output format must be an allowed value for the "-b" option to
 #     sphinx-build.  One a target is created, use
-#     sphinx_document_get_output_formats() on it to get the formts it will
+#     sphinx_document_get_output_formats() on it to get the formats it will
 #     generate.
 # OUTPUT_DIR specifies that <output_dir> is the base directory for where
 #     results and intermediates will be written.  If <output_dir> is a relative
@@ -129,17 +129,17 @@ ENDMACRO()
 # "-j", "-A", "-n", "-N", "-v", "-q", "-Q", "-w", "-W", "--keep-going",
 # "-T", or "-P" options to sphinx-build.
 #
-FUNCTION(add_sphinx_document _TARGET_NAME)
-    FIND_PACKAGE(Sphinx)
+function(add_sphinx_document _TARGET_NAME)
+    find_package(Sphinx)
 
     # Parse the arguments.
-    SET(
+    set(
         _OPTIONS
         NOCONF
         ALL
         BUILD_FAIL_NO_SPHINX
     )
-    SET(
+    set(
         _ONE_VALUE_ARGS
         SOURCE_DIR
         SOURCE_TARGET
@@ -149,297 +149,297 @@ FUNCTION(add_sphinx_document _TARGET_NAME)
         CONF_TARGET_DIR
         OUTPUT_DIR
     )
-    SET(
+    set(
         _MULT_VALUE_ARGS
         OUTPUT_FORMATS
         CONF_OPTIONS
         BUILD_MESSAGE_NO_SPHINX
     )
-    CMAKE_PARSE_ARGUMENTS(_IN "${_OPTIONS}" "${_ONE_VALUE_ARGS}" "${_MULT_VALUE_ARGS}" ${ARGN})
-    IF(DEFINED _IN_UNPARSED_ARGUMENTS)
-        MESSAGE(FATAL_ERROR "add_sphinx_document() was called with one or more unrecognized arguments: ${_IN_UNPARSED_ARGUMENTS}")
-    ENDIF()
+    cmake_parse_arguments(_IN "${_OPTIONS}" "${_ONE_VALUE_ARGS}" "${_MULT_VALUE_ARGS}" ${ARGN})
+    if(DEFINED _IN_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "add_sphinx_document() was called with one or more unrecognized arguments: ${_IN_UNPARSED_ARGUMENTS}")
+    endif()
 
     # Initialize a list of the target dependencies.
-    UNSET(_TARGET_DEPENDS)
+    unset(_TARGET_DEPENDS)
     # Initialize the list, _COMMAND, that will be the first command passed to
     # add_custom_target().  Also initialize the list of the other commands that
     # will be passed.
-    UNSET(_EXTRA_COMMANDS)
-    SET(_EXTRA_INDEX -1)
-    IF(Sphinx_FOUND)
-        SET(_COMMAND "${SPHINX_EXECUTABLE}")
-    ELSE()
-        IF(DEFINED _IN_BUILD_MESSAGE_NO_SPHINX)
-            IF(NOT _IN_BUILD_MESSAGE_NO_SPHINX STREQUAL "")
-                SET(
+    unset(_EXTRA_COMMANDS)
+    set(_EXTRA_INDEX -1)
+    if(Sphinx_FOUND)
+        set(_COMMAND "${SPHINX_EXECUTABLE}")
+    else()
+        if(DEFINED _IN_BUILD_MESSAGE_NO_SPHINX)
+            if(NOT _IN_BUILD_MESSAGE_NO_SPHINX STREQUAL "")
+                set(
                     _COMMAND
                     "${CMAKE_COMMAND}" "-E" "echo"
                     ${_IN_BUILD_MESSAGE_NO_SPHINX}
                 )
-            ELSE()
-                UNSET(_COMMAND)
-            ENDIF()
-        ELSE()
-            SET(
+            else()
+                unset(_COMMAND)
+            endif()
+        else()
+            set(
                 _COMMAND
                 "${CMAKE_COMMAND}" "-E" "echo"
                 "sphinx-build not found; cannot build ${_TARGET_NAME}"
             )
-        ENDIF()
-        IF(_IN_BUILD_FAIL_NO_SPHINX)
-            IF(DEFINED _COMMAND)
-                MATH(EXPR _EXTRA_INDEX "${_EXTRA_INDEX} + 1")
-                SET(_Y "_EXTRA_COMMAND_${_EXTRA_INDEX}")
-                LIST(APPEND _EXTRA_COMMANDS ${_Y})
-                SET(${_Y} "${CMAKE_COMMAND}" "-E" "false")
-            ELSE()
-                SET(_COMMAND "${CMAKE_COMMAND}" "-E" "false")
-            ENDIF()
-        ENDIF()
-    ENDIF()
+        endif()
+        if(_IN_BUILD_FAIL_NO_SPHINX)
+            if(DEFINED _COMMAND)
+                math(EXPR _EXTRA_INDEX "${_EXTRA_INDEX} + 1")
+                set(_Y "_EXTRA_COMMAND_${_EXTRA_INDEX}")
+                list(APPEND _EXTRA_COMMANDS ${_Y})
+                set(${_Y} "${CMAKE_COMMAND}" "-E" "false")
+            else()
+                set(_COMMAND "${CMAKE_COMMAND}" "-E" "false")
+            endif()
+        endif()
+    endif()
 
-    IF((DEFINED _IN_OUTPUT_FORMATS) AND Sphinx_FOUND)
-        FOREACH(_X ${_IN_OUTPUT_FORMATS})
-            IF(_EXTRA_INDEX EQUAL -1)
-                LIST(APPEND _COMMAND "-b" "${_X}")
-            ELSE()
-                SET(_Y "_EXTRA_COMMAND_${_EXTRA_INDEX}")
-                LIST(APPEND _EXTRA_COMMANDS "${_Y}")
-                SET(${_Y} "${SPHINX_EXECUTABLE}" "-b" "${_X}")
-            ENDIF()
-            MATH(EXPR _EXTRA_INDEX "${_EXTRA_INDEX} + 1")
-        ENDFOREACH()
-    ENDIF()
+    if((DEFINED _IN_OUTPUT_FORMATS) AND Sphinx_FOUND)
+        foreach(_X ${_IN_OUTPUT_FORMATS})
+            if(_EXTRA_INDEX EQUAL -1)
+                list(APPEND _COMMAND "-b" "${_X}")
+            else()
+                set(_Y "_EXTRA_COMMAND_${_EXTRA_INDEX}")
+                list(APPEND _EXTRA_COMMANDS "${_Y}")
+                set(${_Y} "${SPHINX_EXECUTABLE}" "-b" "${_X}")
+            endif()
+            math(EXPR _EXTRA_INDEX "${_EXTRA_INDEX} + 1")
+        endforeach()
+    endif()
 
     # Handle the source directory.
-    IF(DEFINED _IN_SOURCE_DIR)
-        IF((DEFINED _IN_SOURCE_TARGET) OR (DEFINED _IN_SOURCE_TARGET_DIR))
-            MESSAGE(FATAL_ERROR "add_sphinx_document() was called with SOURCE_DIR and one or more of SOURCE_TARGET and SOURCE_TARGET_DIR")
-        ENDIF()
-        SPHINX_HELPER_CONVERT_PATH(
+    if(DEFINED _IN_SOURCE_DIR)
+        if((DEFINED _IN_SOURCE_TARGET) OR (DEFINED _IN_SOURCE_TARGET_DIR))
+            message(FATAL_ERROR "add_sphinx_document() was called with SOURCE_DIR and one or more of SOURCE_TARGET and SOURCE_TARGET_DIR")
+        endif()
+        sphinx_helper_convert_path(
             _NATIVE_SOURCE_DIR
             "${_IN_SOURCE_DIR}"
             "${CMAKE_CURRENT_SOURCE_DIR}"
             YES
         )
-    ELSEIF(DEFINED _IN_SOURCE_TARGET)
-        IF(NOT DEFINED _IN_SOURCE_TARGET_DIR)
-            SET(_IN_SOURCE_TARGET_DIR "")
-        ENDIF()
-        GET_PROPERTY(
+    elseif(DEFINED _IN_SOURCE_TARGET)
+        if(NOT DEFINED _IN_SOURCE_TARGET_DIR)
+            set(_IN_SOURCE_TARGET_DIR "")
+        endif()
+        get_property(
             _X
             TARGET ${_IN_SOURCE_TARGET}
             PROPERTY "RUNTIME_OUTPUT_DIRECTORY"
         )
-        SPHINX_HELPER_CONVERT_PATH(
+        sphinx_helper_convert_path(
             _NATIVE_SOURCE_TARGET_DIR
             "${_IN_SOURCE_TARGET_DIR}"
             "${_X}"
             YES
         )
-        LIST(APPEND _TARGET_DEPENDS "${_IN_SOURCE_TARGET}")
-    ELSE()
-        MESSAGE(FATAL_ERROR "add_sphinx_document() was called without either SOURCE_DIR or SOURCE_TARGET")
-    ENDIF()
+        list(APPEND _TARGET_DEPENDS "${_IN_SOURCE_TARGET}")
+    else()
+        message(FATAL_ERROR "add_sphinx_document() was called without either SOURCE_DIR or SOURCE_TARGET")
+    endif()
 
     # Handle the configuration file.
-    IF(_IN_NOCONF)
-        IF((DEFINED _IN_CONF_DIR) OR (DEFINED _IN_CONF_TARGET)
+    if(_IN_NOCONF)
+        if((DEFINED _IN_CONF_DIR) OR (DEFINED _IN_CONF_TARGET)
                 OR (DEFINED _IN_CONF_TARGET_DIR))
-            MESSAGE(FATAL_ERROR "add_sphinx_document() was called with NOCONF and one or more of CONF_DIR, CONF_TARGET, or CONF_TARGET_DIR")
-        ENDIF()
-        SPHINX_HELPER_ADD_TO_COMMANDS("-C")
-    ELSEIF(DEFINED _IN_CONF_DIR)
-        IF(DEFINED _IN_CONF_TARGET)
-            MESSAGE(FATAL_ERROR "add_sphinx_document() was called with both CONF_DIR and CONF_TARGET")
-        ENDIF()
-        SPHINX_HELPER_CONVERT_PATH(
+            message(FATAL_ERROR "add_sphinx_document() was called with NOCONF and one or more of CONF_DIR, CONF_TARGET, or CONF_TARGET_DIR")
+        endif()
+        sphinx_helper_add_to_commands("-C")
+    elseif(DEFINED _IN_CONF_DIR)
+        if(DEFINED _IN_CONF_TARGET)
+            message(FATAL_ERROR "add_sphinx_document() was called with both CONF_DIR and CONF_TARGET")
+        endif()
+        sphinx_helper_convert_path(
             _NATIVE_CONF_DIR
             "${_IN_CONF_DIR}"
             "${CMAKE_CURRENT_SOURCE_DIR}"
             YES
         )
-    ELSEIF(DEFINED _IN_CONF_TARGET)
-        IF(NOT DEFINED _IN_CONF_TARGET_DIR)
-            SET(_IN_CONF_TARGET_DIR "")
-        ENDIF()
-        GET_PROPERTY(
+    elseif(DEFINED _IN_CONF_TARGET)
+        if(NOT DEFINED _IN_CONF_TARGET_DIR)
+            set(_IN_CONF_TARGET_DIR "")
+        endif()
+        get_property(
             _X
             TARGET ${_IN_CONF_TARGET}
             PROPERTY "RUNTIME_OUTPUT_DIRECTORY"
         )
-        SPHINX_HELPER_CONVERT_PATH(
+        sphinx_helper_convert_path(
             _NATIVE_CONF_TARGET_DIR
             "${_IN_CONF_TARGET_DIR}"
             "${_X}"
             YES
         )
-        LIST(APPEND _TARGET_DEPENDS "${_IN_CONF_TARGET}")
-        SPHINX_HELPER_ADD_TO_COMMANDS("-c" "${_NATIVE_CONF_TARGET_DIR}")
-    ELSE()
-        IF(DEFINED _IN_SOURCE_DIR)
-            SET(_IN_CONF_DIR "${_IN_SOURCE_DIR}")
-            SET(_X "${CMAKE_CURRENT_SOURCE_DIR}")
-        ELSE()
-            SET(_IN_CONF_DIR "${_IN_SOURCE_TARGET_DIR}")
-            GET_PROPERTY(
+        list(APPEND _TARGET_DEPENDS "${_IN_CONF_TARGET}")
+        sphinx_helper_add_to_commands("-c" "${_NATIVE_CONF_TARGET_DIR}")
+    else()
+        if(DEFINED _IN_SOURCE_DIR)
+            set(_IN_CONF_DIR "${_IN_SOURCE_DIR}")
+            set(_X "${CMAKE_CURRENT_SOURCE_DIR}")
+        else()
+            set(_IN_CONF_DIR "${_IN_SOURCE_TARGET_DIR}")
+            get_property(
                 _X
                 TARGET ${_IN_CONF_TARGET}
                 PROPERTY "RUNTIME_OUTPUT_DIRECTORY"
             )
-        ENDIF()
-        SPHINX_HELPER_CONVERT_PATH(
+        endif()
+        sphinx_helper_convert_path(
             _NATIVE_CONF_DIR
             "${_IN_CONF_DIR}"
             "${_X}"
             YES
         )
-    ENDIF()
+    endif()
 
     # Handle the output directory.
-    IF(NOT (DEFINED _IN_OUTPUT_DIR))
-        SET(_IN_OUTPUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-    ENDIF()
-    SPHINX_HELPER_CONVERT_PATH(
+    if(NOT (DEFINED _IN_OUTPUT_DIR))
+        set(_IN_OUTPUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    endif()
+    sphinx_helper_convert_path(
         _OUT_OUTPUT_BASE_DIR
         "${_IN_OUTPUT_DIR}"
         "${CMAKE_CURRENT_BINARY_DIR}"
         NO
     )
-    SPHINX_HELPER_CONVERT_PATH(
+    sphinx_helper_convert_path(
         _NATIVE_OUTPUT_CACHE_DIR
         "_doctree"
         "${_OUT_OUTPUT_BASE_DIR}"
         YES
     )
-    SPHINX_HELPER_ADD_TO_COMMANDS("-d" "${_NATIVE_OUTPUT_CACHE_DIR}")
+    sphinx_helper_add_to_commands("-d" "${_NATIVE_OUTPUT_CACHE_DIR}")
 
     # Handle the overrides for values set in the configuration file.
-    IF(DEFINED _IN_CONF_OPTIONS)
-        FOREACH(_X ${_IN_CONF_OPTIONS})
-            SPHINX_HELPER_ADD_TO_COMMANDS("-D" "${_X}")
-        ENDFOREACH()
-    ENDIF()
+    if(DEFINED _IN_CONF_OPTIONS)
+        foreach(_X ${_IN_CONF_OPTIONS})
+            sphinx_helper_add_to_commands("-D" "${_X}")
+        endforeach()
+    endif()
 
     # Add the source directory as the first non-option to the command.
-    IF(DEFINED _IN_SOURCE_DIR)
-        SPHINX_HELPER_ADD_TO_COMMANDS("${_NATIVE_SOURCE_DIR}")
-    ELSE()
-        SPHINX_HELPER_ADD_TO_COMMANDS("${_NATIVE_SOURCE_TARGET_DIR}")
-    ENDIF()
+    if(DEFINED _IN_SOURCE_DIR)
+        sphinx_helper_add_to_commands("${_NATIVE_SOURCE_DIR}")
+    else()
+        sphinx_helper_add_to_commands("${_NATIVE_SOURCE_TARGET_DIR}")
+    endif()
 
     # Add the output directory for documents as the second non-option to the
     # the command.  Put each format in a separate directory, like the make
     # mode for sphinx-build does.
-    IF((DEFINED _IN_OUTPUT_FORMATS) AND Sphinx_FOUND)
-        SET(_EXTRA_INDEX -1)
-        FOREACH(_X ${_IN_OUTPUT_FORMATS})
-            SPHINX_HELPER_CONVERT_PATH(
+    if((DEFINED _IN_OUTPUT_FORMATS) AND Sphinx_FOUND)
+        set(_EXTRA_INDEX -1)
+        foreach(_X ${_IN_OUTPUT_FORMATS})
+            sphinx_helper_convert_path(
                 _NATIVE_OUTPUT_DOC_DIR
                 "${_X}"
                 "${_OUT_OUTPUT_BASE_DIR}"
                 YES
             )
-            IF(_EXTRA_INDEX EQUAL -1)
-                LIST(APPEND _COMMAND "${_NATIVE_OUTPUT_DOC_DIR}")
-            ELSE()
-                SET(_Y "_EXTRA_COMMAND_${_EXTRA_INDEX}")
-                LIST(APPEND ${_Y} "${_NATIVE_OUTPUT_DOC_DIR}")
-            ENDIF()
-            MATH(EXPR _EXTRA_INDEX "${_EXTRA_INDEX} + 1")
-        ENDFOREACH()
-    ELSEIF(Sphinx_FOUND)
+            if(_EXTRA_INDEX EQUAL -1)
+                list(APPEND _COMMAND "${_NATIVE_OUTPUT_DOC_DIR}")
+            else()
+                set(_Y "_EXTRA_COMMAND_${_EXTRA_INDEX}")
+                list(APPEND ${_Y} "${_NATIVE_OUTPUT_DOC_DIR}")
+            endif()
+            math(EXPR _EXTRA_INDEX "${_EXTRA_INDEX} + 1")
+        endforeach()
+    elseif(Sphinx_FOUND)
         # There were no formats specified so use the bare output directory.
-        SPHINX_HELPER_CONVERT_PATH(
+        sphinx_helper_convert_path(
             _NATIVE_OUTPUT_DOC_DIR
             "${_OUT_OUTPUT_BASE_DIR}"
             ""
             YES
         )
-        SPHINX_HELPER_ADD_TO_COMMANDS("${_NATIVE_OUTPUT_DOC_DIR}")
-    ENDIF()
+        sphinx_helper_add_to_commands("${_NATIVE_OUTPUT_DOC_DIR}")
+    endif()
 
     # Convert some variables for convenient expansion in create_custom_target().
-    IF(_IN_ALL)
-        SET(_IN_ALL "ALL")
-    ELSE()
-        SET(_IN_ALL "")
-    ENDIF()
-    SET(_EXTRA "")
-    IF (NOT (_EXTRA_COMMANDS STREQUAL ""))
-        FOREACH(_X ${_EXTRA_COMMANDS})
-            SET(_EXTRA ${_EXTRA} "COMMAND" ${${_X}})
-        ENDFOREACH()
-    ENDIF()
+    if(_IN_ALL)
+        set(_IN_ALL "ALL")
+    else()
+        set(_IN_ALL "")
+    endif()
+    set(_EXTRA "")
+    if(NOT (_EXTRA_COMMANDS STREQUAL ""))
+        foreach(_X ${_EXTRA_COMMANDS})
+            set(_EXTRA ${_EXTRA} "COMMAND" ${${_X}})
+        endforeach()
+    endif()
 
     # Create the target.  Modify and restore CMAKE_RUNTIME_OUTPUT_DIRECTORY
     # so that the target's RUNTIME_OUTPUT_DIRECTORY property reflects what
     # was set by the OUTPUT_DIR argument.
-    IF(DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-        SET(_OLD "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-    ELSE()
-        UNSET(_OLD)
-    ENDIF()
-    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${_OUT_OUTPUT_BASE_DIR}")
-    ADD_CUSTOM_TARGET(${_TARGET_NAME} ${_IN_ALL} ${_COMMAND} ${_EXTRA} VERBATIM)
-    IF(DEFINED _OLD)
-        SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${_OLD}")
-    ELSE()
-        UNSET(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-    ENDIF()
+    if(DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+        set(_OLD "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    else()
+        unset(_OLD)
+    endif()
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${_OUT_OUTPUT_BASE_DIR}")
+    add_custom_target(${_TARGET_NAME} ${_IN_ALL} ${_COMMAND} ${_EXTRA} VERBATIM)
+    if(DEFINED _OLD)
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${_OLD}")
+    else()
+        unset(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    endif()
 
     # Add the target dependencies.
-    IF(NOT ("${_TARGET_DEPENDS}" STREQUAL ""))
+    if(NOT ("${_TARGET_DEPENDS}" STREQUAL ""))
         ADD_DEPENDENCIES(${_TARGET_NAME} ${_TARGET_DEPENDS})
-    ENDIF()
+    endif()
 
     # Define properties on the target to describe the placement of the output.
     # That's to allow downstream targets (installation or packaging, for
     # instance) to query it with sphinx_document_get_output_directory() and
     # sphinx_document_get_output_formats().
-    GET_PROPERTY(
+    get_property(
         _PROP_DEFINED
         TARGET ${_TARGET_NAME}
         PROPERTY "SPHINX_OUTPUT_DIRECTORY"
         DEFINED
     )
-    IF(NOT _PROP_DEFINED)
-        DEFINE_PROPERTY(
+    if(NOT _PROP_DEFINED)
+        define_property(
             TARGET
             PROPERTY "SPHINX_OUTPUT_DIRECTORY"
             BRIEF_DOCS "output directory for documention generated by sphinx-build"
             FULL_DOCS "Is the output directory associated with a target for documentation generated by sphinx-build.  The path is a full one and is in CMake's format.  The property reflects the directory configure into the target; changing the property won't affect the behavior of the target."
         )
-    ENDIF()
-    SET_PROPERTY(
+    endif()
+    set_property(
         TARGET ${_TARGET_NAME}
         PROPERTY "SPHINX_OUTPUT_DIRECTORY"
         "${_OUT_OUTPUT_BASE_DIR}"
     )
 
-    GET_PROPERTY(
+    get_property(
         _PROP_DEFINED
         TARGET ${_TARGET_NAME}
         PROPERTY "SPHINX_OUTPUT_FORMATS"
         DEFINED
     )
-    IF(NOT _PROP_DEFINED)
-        DEFINE_PROPERTY(
+    if(NOT _PROP_DEFINED)
+        define_property(
             TARGET
             PROPERTY "SPHINX_OUTPUT_FORMATS"
             BRIEF_DOCS "list of output formats generated by sphinx-build"
             FULL_DOCS "Is the list of output formats generate by sphinx-build for a target.  The output for each format will be in its own subdirectory of the directory named by the target's SPHINX_OUTPUT_DIRECTORY property.  The name of the subdirectory will be the same as the name of the format.  The property reflects which formats were configured into the target; changing the property won't affect the behavior of the target."
         )
-    ENDIF()
-    IF(DEFINED _IN_OUTPUT_FORMATS)
-        SET_PROPERTY(
+    endif()
+    if(DEFINED _IN_OUTPUT_FORMATS)
+        set_property(
             TARGET ${_TARGET_NAME}
             PROPERTY "SPHINX_OUTPUT_FORMATS"
             ${_IN_OUTPUT_FORMATS}
         )
-    ENDIF()
-ENDFUNCTION()
+    endif()
+endfunction()
 
 
 # sphinx_document_get_output_directory(<VAR> target)
@@ -447,10 +447,10 @@ ENDFUNCTION()
 # generated by sphinx-build.  If that has not been set, it will set <VAR>
 # to <VAR>-NOTFOUND.  Otherwise it will set <VAR> to the path to the
 # directory.
-FUNCTION(sphinx_document_get_output_directory _OUT _TARGET)
-    GET_TARGET_PROPERTY(_RESULT ${_TARGET} "SPHINX_OUTPUT_DIRECTORY")
-    SET(${_OUT} "${_RESULT}" PARENT_SCOPE)
-ENDFUNCTION()
+function(sphinx_document_get_output_directory _OUT _TARGET)
+    get_target_property(_RESULT ${_TARGET} "SPHINX_OUTPUT_DIRECTORY")
+    set(${_OUT} "${_RESULT}" PARENT_SCOPE)
+endfunction()
 
 
 # sphinx_document_get_output_formats(<VAR> target)
@@ -460,7 +460,7 @@ ENDFUNCTION()
 # The location of the documentation generated for a particular format will
 # be a subdirectory, with the same name as the name of the format, of the
 # directory returned by sphinx_document_get_output_directory().
-FUNCTION(sphinx_document_get_output_formats _OUT _TARGET)
-    GET_TARGET_PROPERTY(_RESULT ${_TARGET} "SPHINX_OUTPUT_FORMATS")
-    SET(${_OUT} "${_RESULT}" PARENT_SCOPE)
-ENDFUNCTION()
+function(sphinx_document_get_output_formats _OUT _TARGET)
+    get_target_property(_RESULT ${_TARGET} "SPHINX_OUTPUT_FORMATS")
+    set(${_OUT} "${_RESULT}" PARENT_SCOPE)
+endfunction()
