@@ -27,7 +27,7 @@ jobs:
       - name: Build with Flags Used for Release
         run: |
           cd src
-          env OPT="-O2 -DNDEBUG" make -f Makefile.osx -j$(sysctl -n hw.cpu)
+          env OPT="-O2 -DNDEBUG" make -f Makefile.osx -j$(sysctl -n hw.ncpu)
 
   autoconf:
     runs-on: macos-latest
