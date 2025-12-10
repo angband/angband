@@ -49,7 +49,7 @@ default: edit install
 include Makefile.inc
 
 # Version info
-EXE = angband.exe
+EXE = $(PROGNAME).exe
 
 
 #
@@ -93,7 +93,7 @@ DIRS = lib/gamedata lib/customiz lib/help lib/screens lib/fonts lib/tiles/old \
        lib/sounds lib/icons lib/user lib/save lib/scores lib/info lib/archive \
        docs
 
-TMPDIR = ./angband
+TMPDIR = ./$(PROGNAME)
 dist:
 	@-rm -rf $(TMPDIR)
 	@echo making directories...
@@ -128,7 +128,7 @@ dist:
 	@iconv -f UTF-8 -t CP437//TRANSLIT -o $(TMPDIR)/changes.txt ../changes.txt
 	@cp ../README.md $(TMPDIR)
 	@cp $(EXE) $(TMPDIR)
-	zip -r ../angband.zip $(TMPDIR)
+	zip -r ../$(PROGNAME).zip $(TMPDIR)
 	rm -rf $(TMPDIR)
 
 
