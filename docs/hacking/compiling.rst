@@ -206,18 +206,6 @@ To build Angband with the GCU front end::
     cmake -DSUPPORT_GCU_FRONTEND=ON ..
     make
 
-On OpenBSD (at least with OpenBSD 6.9), there's known issues with detecting
-the software needed for the GCU front end.  As a workaround, you could use
-this instead::
-
-    mkdir build && cd build
-    mkdir -p ncursesw/include/ncursesw
-    ln -s /usr/include/ncurses.h ncursesw/include/ncursesw
-    mkdir -p ncursesw/lib
-    ln -s /usr/lib/libncursesw.so* ncursesw/lib
-    cmake -DCMAKE_PREFIX_PATH=`pwd`/ncursesw -DSUPPORT_GCU_FRONTEND=ON ..
-    make
-
 You can build support for more than one of the graphical front ends by setting
 all the desired SUPPORT_*_FRONTEND options when running cmake (the exception to
 this are the SDL and SDL2 which can not be built at the same time).  If you
@@ -565,7 +553,7 @@ For ncurses, do::
 
     mkdir build && cd build
     cmake -G Ninja -DSUPPORT_GCU_FRONTEND=ON \
-        -DCMAKE_TOOLCHAIN_FILE=../toolchains/msys2-mingw64-gcu.cmake \
+        -DSUPPORT_STATIC_LINKING=ON \
         ..
     ninja
 
