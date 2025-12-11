@@ -239,6 +239,15 @@ example::
 
 Angband uses a few built-in keymaps.  These are for the movement keys (they are mapped to ``;`` plus the number, e.g. ``5`` -> ``;5``), amongst others.  You can see the full list in pref.prf, but they shouldn't impact you in any way.
 
+A keymap's action can include multiple commands.  For instance, a priest who has inscribed the first spellbook with '@m1' could have a keymap with the action
+of 'm1dm1f' to cast Bless and Heroism.  Such keymaps can abort early without completing the remaining commands if:
+
+* The player is disturbed before the next command in the keymap.
+* (new since 4.2.5-460-... in Vanilla) The next key to be processed in the keymap does not correspond to a command.  Note that if the next key is a space, ESCAPE, or the alert key (ASCII 7), those correspond to the NULL command:  do nothing, successfully, without requiring any input.
+* (new since 4.2.5-460-... in Vanilla) The next command has a prerequisite that is not met.  For instance, firing a missile requires an equipped launcher and using a scroll requires being able to read (not blind, not confused, not subject to amnesia, and the current grid is seen).
+* (new since 4.2.5-460-... in Vanilla) A scan of the equipped items found an inscription requiring a confirmation (either '^*' to confirm for any action or '^' followed by the next command's key) and that confirmation was denied.
+
+Since 4.2.5-455-... in Vanilla, if the first key in a keymap's action is ESCAPE, the keymap's trigger can break out of a prompt for a direction, a target, an object, a spell, a curse, or an effect.  It will not break out of a prompt for a string (for instance when inscribing an object or adding a note) or prompts for a key (for instance, yes/no prompts, the symbol for monsters to banish, the symbol to identify with ``/``, or the key specified for ``^`` to pass along with the control modifier).  The rest of the keymap's action will not be used after breaking out of the prompt.  As an example, a mage has F1 as the trigger for the action '[ESCAPE]m1a'.  If the game is prompting for a direction, that mage can press F1 to break out of the prompt, but the Magic Missile spell will not be cast.  The mage would have to press F1 again, for the spell to be cast.
 
 Colours
 =======
