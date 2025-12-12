@@ -587,7 +587,7 @@ adjusted for constitution).
    single: intelligence; racial bonus
    single: wisdom; racial bonus
    single: dexterity; racial bonus
-   single: consistution; racial bonus
+   single: constitution; racial bonus
    single: hit dice; base from race
    single: infravision; racial bonus
 
@@ -613,7 +613,7 @@ adjusted for constitution).
    single: intelligence; class bonus
    single: wisdom; class bonus
    single: dexterity; class bonus
-   single: consistution; class bonus
+   single: constitution; class bonus
    single: hit dice; class bonus
 
 ================= ===  ===  ===  ===  ===  ==========
