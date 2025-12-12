@@ -85,7 +85,7 @@ int target_dir(struct keypress ch)
  * \return an integer that is either in 0 to 4, inclusive, or 6 to 9, inclusive,
  * indicating the direction extracted.  If it was not possible to extract a
  * direction, return 0.  If allow_5 is true, the returned value can be 5 as
- * well when the extracted direction is 5.  If allow_esc is true, the retured
+ * well when the extracted direction is 5.  If allow_esc is true, the returned
  * value can be ESCAPE as well if ch is the trigger for a keymap whose first
  * character in the action is ESCAPE.
  *
