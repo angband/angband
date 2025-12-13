@@ -333,6 +333,54 @@ upper case is used, then the particular option is described, and you are
 given the option of confirming or retracting that choice. Upper case
 selection is thus safer, but requires an extra key stroke.
 
+.. _pathfinding-player:
+.. index::
+   single: pathfinding; details
+
+Pathfinding
+===========
+
+If you use 'g' from targeting or looking to move to a location, click with
+the first mouse button on the map, click with the second mouse button on the
+map and select the option to pathfind, or use '<', '>', or 'p' when the
+:ref:`Autoexplore Commands Option <autoexplore-commands-option>` is on, the
+game computes a path to the destination and then launches you along that path.
+The computation of the path looks for a path which will take the minimum amount
+of turns to traverse.  In doing so, it uses your current state to compute how
+many turns would be needed to open a locked door or tunnel through impassable
+rubble.  It optimistically assumes that any grid with unknown terrain is
+passable.  It pessimistically assumes that any locked doors have the hardest
+to open locks since the game does not indicate the difficulty of the lock when
+you look at the door.  The game considers paths in this order using the first
+path that is feasible given your knowledge of the map:
+
+#. Look for paths that only go through know terrain without known traps.  Skip this class of paths if the terrain in the starting grid or destination is unknown or you are immune to traps.  When not finding a path for the autoexploration commands, also skip this class if the destination contains a known trap.
+#. Look for paths that only go through known terrain.  The paths can cross known traps.  Skip this class of paths if the terrain in the starting grid or destination is unknown.  When not finding a path for the autoexploration command and the previous class of paths was considered and did not reject a potentially shorter path that has a known trap, also skip this class.
+#. Look for paths that can pass through either known or unknown terrain and do contain known traps.  Skip this class of paths if you are immune to traps or the destination contains a known trap and not finding a path for the autoexploration commands.
+#. Look for paths that can pass through known or unknown terrain.  The paths can cross known traps.  Skip this class of paths when not finding a path for the autoexploration commands and the previous class of paths was considered and did reject a potentially shorter path that has a known trap.
+
+Note that magic mapping and enlightment do not mark floor grids as known
+terrain.  So, unless you have also also seen a floor that was revealed by
+magic mapping or enlightment, pathfinding treats that floor as unknown terrain.
+Paths are never allowed to cross passable, but damaging terrain, like lava.
+
+When the game move you along the selected path, you can interrupt the process
+with a keypress (space or ESCAPE are recommended as they can not be interpreted
+as a command) or, when the front end supports it, pressing a mouse button.  The
+process will also be interrupted by other events that disturb.  If following
+the path was interrupted and you have not issued another command, repeating
+the previous command (``n`` in the original keyset, ``^v`` in the roguelike
+keyset) will recompute the path (if the path was from '<', '>', or 'p', it
+will find the nearest up staircase, down staircase, or unknown location,
+respectively, and compute a path to it from your current location; otherwise,
+it will compute a path to the original destination from your current location)
+and start along that path.
+
+Following a path can automatically open a door or dig out impassable rubble
+that is in the path.  It will only do so if you know the terrain in all the
+neighbors of the door or rubble.  If any neighbors have unknown terrain, you
+stop at the grid before the door or rubble.
+
 Shape Changes
 =============
 
