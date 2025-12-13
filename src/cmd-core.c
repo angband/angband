@@ -113,7 +113,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_STASH, "stash", do_cmd_stash, false, false, 0 },
 	{ CMD_BUY, "buy", do_cmd_buy, false, false, 0 },
 	{ CMD_RETRIEVE, "retrieve", do_cmd_retrieve, false, false, 0 },
-	{ CMD_USE, "use", do_cmd_use, true, true, 99 },
+	{ CMD_USE, "use", do_cmd_use, true, true, 0 },
 	{ CMD_RETIRE, "retire character", do_cmd_retire, false, false, 0 },
 	{ CMD_HELP, "help", NULL, false, false, 0 },
 	{ CMD_REPEAT, "repeat", NULL, false, false, 0 },

@@ -940,7 +940,6 @@ void do_cmd_use(struct command *cmd)
 	struct object *obj;
 
 	if (!player_get_resume_normal_shape(player, cmd)) {
-		cmd_set_repeat(0);
 		return;
 	}
 
@@ -955,42 +954,47 @@ void do_cmd_use(struct command *cmd)
 	}
 
 	/*
-	 * If this is not a staff, wand, rod, or activatable item, always
-	 * disable autorepetition.  The functions for handling a staff, wand
-	 * rod, or activatable item take care of autorepetition for those
-	 * objects.
+	 * For staves, rods, wands, or equipped item activation, act as if the
+	 * item-specific command had been invoked directly:  cmd-core.c
+	 * automatically enables repetition for those commands if a repeat
+	 * count was not manually set.
 	 */
 	if (tval_is_ammo(obj)) {
 		do_cmd_fire(cmd);
-		cmd_set_repeat(0);
 	} else if (tval_is_potion(obj)) {
 		do_cmd_quaff_potion(cmd);
-		cmd_set_repeat(0);
 	} else if (tval_is_edible(obj)) {
 		do_cmd_eat_food(cmd);
-		cmd_set_repeat(0);
 	} else if (tval_is_rod(obj)) {
+		if (cmd->nrepeats == 0) {
+			cmd->nrepeats = 99;
+		}
 		do_cmd_zap_rod(cmd);
 	} else if (tval_is_wand(obj)) {
+		if (cmd->nrepeats == 0) {
+			cmd->nrepeats = 99;
+		}
 		do_cmd_aim_wand(cmd);
 	} else if (tval_is_staff(obj)) {
+		if (cmd->nrepeats == 0) {
+			cmd->nrepeats = 99;
+		}
 		do_cmd_use_staff(cmd);
 	} else if (tval_is_scroll(obj)) {
 		do_cmd_read_scroll(cmd);
-		cmd_set_repeat(0);
 	} else if (obj_can_refill(obj)) {
 		do_cmd_refill(cmd);
-		cmd_set_repeat(0);
 	} else if (obj_is_activatable(obj)) {
 		if (object_is_equipped(player->body, obj)) {
+			if (cmd->nrepeats == 0) {
+				cmd->nrepeats = 99;
+			}
 			do_cmd_activate(cmd);
 		} else {
 			msg("Equip the item to use it.");
-			cmd_set_repeat(0);
 		}
 	} else {
 		msg("The item cannot be used at the moment");
-		cmd_set_repeat(0);
 	}
 }
 
