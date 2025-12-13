@@ -34,13 +34,6 @@
 #define KEY_GRID_X(K) \
 	((int) (((K.mouse.x - COL_MAP) / tile_width) + Term->offset_x))
 
-
-/**
- * Height of the help screen; any higher than 4 will overlap the health
- * bar which we want to keep in targeting mode.
- */
-#define HELP_HEIGHT 3
-
 /**
  * Size of the array that is used for object names during targeting.
  */
@@ -48,9 +41,8 @@
 
 int target_dir(struct keypress ch);
 int target_dir_allow(struct keypress ch, bool allow_5, bool allow_esc);
-void target_display_help(bool monster, bool object, bool free);
 void textui_target(void);
 void textui_target_closest(void);
-bool target_set_interactive(int mode, int x, int y);
+bool target_set_interactive(int mode, int x, int y, bool allow_pathfinding);
 
 #endif /* UI_TARGET_H */

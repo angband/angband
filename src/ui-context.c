@@ -396,7 +396,7 @@ int context_menu_player(int mx, int my)
 			break;
 
 		case MENU_VALUE_LOOK:
-			if (target_set_interactive(TARGET_LOOK, player->grid.x, player->grid.y))
+			if (target_set_interactive(TARGET_LOOK, player->grid.x, player->grid.y, true))
 				msg("Target Selected.");
 			break;
 
@@ -599,7 +599,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 	switch (selected) {
 		case MENU_VALUE_LOOK:
 			/* Look at the spot */
-			if (target_set_interactive(TARGET_LOOK, x, y)) {
+			if (target_set_interactive(TARGET_LOOK, x, y, true)) {
 				msg("Target Selected.");
 			}
 			break;
@@ -1061,7 +1061,7 @@ void textui_process_click(ui_event e)
 									  motion_dir(player->grid, loc(x, y)));
 			} else if (e.mouse.mods & KC_MOD_ALT) {
 				/* alt-click - look */
-				if (target_set_interactive(TARGET_LOOK, x, y)) {
+				if (target_set_interactive(TARGET_LOOK, x, y, true)) {
 					msg("Target Selected.");
 				}
 			} else {
