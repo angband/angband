@@ -333,6 +333,206 @@ upper case is used, then the particular option is described, and you are
 given the option of confirming or retracting that choice. Upper case
 selection is thus safer, but requires an extra key stroke.
 
+.. _targeting:
+.. index::
+   single: targeting; details
+
+Targeting
+=========
+
+You will use the targeting interface when you use the targeting command, ``*``,
+the look command, ``l`` or ``x``, or the options in context menus to look
+at a grid.  When other commands prompt for a target, they will automatically
+use the current target, if there is one, when the
+:ref:`Use old target by default <old-target-option>` option is on.  Otherwise,
+you will be asked for a target:  ESCAPE or a mouse click with the second mouse
+button breaks out of the prompt; ``5``, if there is a current target, will use
+that target; ``'`` will target the nearest monster; a direction key targets
+that direction rather than a specific monster or location; ``*`` or a mouse
+click on the map with the first mouse button will bring up the targeting
+interface to select a new target.
+
+When the targeting interface starts, it always clears the current target.  So,
+in the cases when you want to forget the current target, bring up the targeting
+interface, ``*``, and then break out if it with ``q`` or ESCAPE.
+
+The targeting interface maintains a list of locations that it thinks you will
+find interesting.  When started by the targeting command, ``*``, or from a
+command prompting for a target, that list only contains locations with monsters
+that could be reached by a "projectable" spell, missiles, or thrown objects.
+When started from the look command, the list includes locations with monsters,
+regardless of whether they could be hit by a spell or missile, the player's
+location, objects, traps, or interesting terrain (staircases, doors, rubble,
+or stores).  The list of interesting locations can be empty if there is
+nothing appropriate nearby.
+
+The targeting interface has two modes:  one, interested targeting, restricts
+the grid under the targeting cursor to be one of the interesting locations and
+another, free targeting, that allows the cursor to move to any grid.  When
+started without a specified location (invoked by the targeting command, the
+look command, or by answering another commmand's targeting prompt with ``*``),
+the targeting interface will use interested targeting if there is any
+interesting locations (that is always the case when started from the look
+command since the player's location is interesting) or free targeting when
+there are no interesting locations.  When started with a specified location
+(by answering a command's target prompt with a mouse click or when invoked
+from a context menu), the targeting interface uses free targeting.  From
+within the targeting interface, you can explicitly change the targeting mode
+by these keys:
+
+``o``
+  Switch to free targeting.  Leave the cursor at its previous location.
+
+``p``
+  Switch to free targeting.  Move the cursor to the player's location.
+
+``m``
+  This only does something when in free targeting and there are interesting
+  locations.  If that is the case, switch to interested targeting and move
+  the cursor to the interesting location nearest to the cursor's location.
+
+Some keys or mouse input can implicitly change the targeting mode:
+
+``<``, ``>``, ``x``
+  These are described further below. If the new location selected by one of
+  those actions is interesting, switch to interested targeting.  If the new
+  location is not interesting, switch to free targeting.
+
+Mouse click with the first mouse button
+  This will be described further below.  Shifts the location of the cursor.
+  If the new location is interesting, switch to interested targeting;
+  otherwise, switch to free targeting.
+
+The targeting interface will display a description of what is at the targeting
+cursor.  That will either be a very brief summary, or, for a monster or object,
+a more elaborate description.  You can toggle between those by pressing ``r``
+or clicking with the first mouse button on the cursor's location in the map.
+When the target interface is first started or the cursor moves to a new
+location, what is described will be the highest priority thing present.  A
+monster has the highest priority, followed by a trap, object, and the
+underlying terrain.  To cycle through the descriptions of the other things
+in the grid, press ENTER.
+
+At any point, you can break out of the targeting interface and not select
+a target by pressing ``q`` or ESCAPE, or, with the mouse, use the second
+mouse button and click on a position that is not the cursor's current position.
+
+Use the following keys to operate on what is at the targeting cursor:
+
+``t``, ``5``, ``0``, or ``.``
+  In free targeting, sets the target to the location at the cursor
+  and breaks out of the targeting interface.  Targeting a location is
+  slightly "dangerous", as the target is maintained even if you are far
+  away.  In interested targeting, does nothing besides trigger a warning
+  bell when the location does not have a targetable monster.  When the
+  location has a targetable monster, sets the target to that monster
+  and breaks out of the targeting interface.
+
+``g``
+  Does nothing if the target interface was invoked by the targeting prompt for
+  a command.  Otherwise, break out of the targeting interface and initiate
+  :ref:`pathfinding <pathfinding-player>` to move the player to that location.
+
+``k`` (original keyset) or ``^d`` (roguelike keyset)
+  Does nothing when the targeting interface was invoked by the targeting command
+  or another command's targeting prompt or the currently tracked object is
+  not at the cursor's position.  Otherwise, bring up a menu to change the
+  ignore settings for the tracked object.
+
+Use the following keys to change the position of the targeting cursor:
+
+direction keys
+  In interested targeting, move to an interesting location that approximately
+  lies in the key's direction from the current cursor location.  In free
+  targeting, move (by ten grids if the key is a trigger for a running keymap;
+  by one grid otherwise) the cursor in the key's direction.
+
+space or ``+``
+  Does nothing in free targeting.  In interested targeting, go to the next
+  interesting location.
+
+``-``
+  Does nothing in free targeting.  In interested targeting, go to the previous
+  interesting location.
+
+``<``
+  Look for the nearest, by number of turns needed to move there, down
+  staircase.  If there is one, move the targeting cursor there.  As noted
+  above, can change the targeting mode.
+
+``>``
+  Look for the nearest, by number of turns needed to move there, up
+  staircase.  If there is one, move the targeting cursor there.  As noted
+  above, can change the targeting mode.
+
+``x``
+  Look for the nearest, by number of turns needed to move there, passable
+  grid that has an unknown neighbor.  If one is not found, look for the
+  nearest passable grid that is next to a closed door or impassable rubble
+  and that door or rubble has an unknown neighbor.  If a grid was found,
+  move the targeting cursor there.  As noted above, can change the targeting
+  mode.
+
+Besides the previously mentioned ways of using the mouse, you also use the
+mouse as follows from the targeting interface:
+
+Click with first mouse button
+  Moves the targeting cursor.  If the click is on the edge of the map, the
+  new location is one past the edge, coerced to the bounds of the level.
+  That can shift the map.  Otherwise, the new location is the click's location
+  coerced to the bounds of the level.  As noted above, can change the
+  targeting mode.
+
+Click with second mouse button
+  Breaks out of targeting.  If using free targeting and the targeting interface
+  was invoked from the targeting command or another command's targeting prompt,
+  will set the target to the cursor's location if the click is on the cursor.
+
+Control + click with second mouse button
+  In free targeting, targets the click's location and breaks out of targeting.
+  In interested targeting, does nothing besides trigger a warning bell if the
+  click's location does not have a targetable monster.  Otherwise, targets
+  the monster and breaks out of targeting.
+
+Alt (Option with the Mac front end) + click with second mouse button
+  Does nothing if the target interface was invoked by the targeting prompt for
+  a command.  Otherwise, break out of the targeting interface and initiate
+  :ref:`pathfinding <pathfinding-player>` to move the player to the click's
+  location.
+
+When targeting, it can sometimes be useful to target a grid or monster that
+is not the target you intend to hit.  The direct path a missile would follow
+to the monster could be blocked by a wall or other obstacle.  The path to
+the other location could avoid that obstacle while still hitting the intended
+target.  When invoked from the targeting command or another command's targeting
+prompt, the targeting interface will show the path a beam spell or missile
+would follow to the targeting cursor and beyond with coloring to indicate
+what is known about the path:
+
+dark gray
+  used for any grid whose terrain is unknown and the grids beyond it; because
+  of the unknown terrain, what happens to a missile or spell is unclear
+
+red
+  known monster; would be hit by and block a bolt spell or missile that gets
+  that far
+
+yellow
+  known and not ignored object
+
+blue
+  terrain that would block a spell or missile
+
+white
+  no known monster or object; terrain does not affect a spell or missile
+
+Targeting for a ball spell or breath weapon is another case where you may
+want to target a location other than the most dangerous monster.  Aiming
+a ball spell at the center of a group of monsters can be more effective than
+having the ball target a monster in that group.  Also with a ball spell,
+targeting a location near where a wall bends away can be way of attacking
+monsters shielded by that wall that are safe from other attacks.
+
 .. _pathfinding-player:
 .. index::
    single: pathfinding; details

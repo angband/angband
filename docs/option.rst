@@ -54,6 +54,10 @@ Show damage player deals to monsters ``show_damage``
   Shows the damage that the player deals to monsters for melee and ranged 
   combat in the messages.
 
+.. _old-target-option:
+.. index::
+   single: targeting; old target option
+
 Use old target by default ``use_old_target``
   Forces all commands which normally ask for a "direction" to use the
   current "target" if there is one. Use of this option can be dangerous if

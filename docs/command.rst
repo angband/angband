@@ -408,59 +408,11 @@ Throw an item (``v``)
   'Direction?' prompt. This command takes some energy.
 
 Targeting Mode (``*``)
-  This will allow you to aim your ranged attacks at a specific monster or
-  grid, so that you can point directly towards that monster or grid (even
-  if this is not a "compass" direction) when you are asked for a direction.
-  You can set a target using this command, or you can set a new target at
-  the "Direction?" prompt when appropriate. At the targeting prompt, you
-  have many options. First of all, targeting mode starts targeting nearby
-  monsters which can be reached by "projectable" spells and thrown objects.
-  In this mode, you can press ``t``, ``5``, ``0``, or ``.`` to select the
-  current monster, space or ``+``to advance to the next monster, ``-`` to back
-  up to the previous monster, direction keys to advance to a monster more or
-  less in that direction, ``r`` to "recall" the current monster, ``q`` or
-  ESCAPE to exit targeting mode, and ``p`` (or ``o``) to stop targeting
-  monsters and enter the mode for targeting a location on the floor or in a
-  wall. Note that if there are no nearby monsters, you will automatically
-  enter this mode. Note that hitting ``o`` is just like ``p``, except that the
-  location cursor starts on the last examined monster instead of on the
-  player. To leave open targeting, press ``m`` when there is a targetable
-  monster in the viewport. In open targeting, you use the "direction" keys to
-  move around (if the key is a trigger for a running keymap, the cursor moves
-  10 grids for each keystroke; otherwise it moves one grid), ESCAPE or ``q``
-  to quit, and ``t``, ``5``, ``0``, or ``.`` to target the cursor location.
-  Note that targeting a location is slightly "dangerous", as the target is
-  maintained even if you are far away. To cancel an old target, simply start
-  targeting and then immediately break out (``*`` and then ESCAPE or ``q``).
-  Note that when you cast a spell or throw an object at the target
-  location, the path chosen is the "optimal" path towards that location,
-  which may or may not be the path you want. Sometimes, by clever choice of
-  a location on the floor for your target, you may be able to convince a
-  thrown object or cast spell to squeeze through a hole or corridor that is
-  blocking direct access to a different grid. Launching a ball spell or
-  breath weapon at a location in the middle of a group of monsters can
-  often improve the effects of that attack, since ball attacks are not
-  stopped by interposed monsters if the ball is launched at a target.
-  In either targeting mode, pressing ``<`` move the cursor to the nearest
-  down staircase (if any), ``>`` moves the cursor to the nearest up
-  staircase (if any), and ``x`` moves the cursor to the nearest known
-  passable grid that has an unknown neighbor (if there is no such grid, it
-  will look for nearest known passable grid that is next to a closed door or
-  impassable rubble and that door or rubble has an unknown neighbor). Those
-  three keys can change the mode. If the new location does not have a
-  targetable monster, the mode will be open targeting. In either targeting
-  mode, pressing ``g`` breaks out of targeting and initiates pathfinding
-  to the location under the cursor. If the front end allows mouse input,
-  these mouse actions are useful while targeting: a click with the first mouse
-  button moves the cursor to the mouse's position and switches the targeting
-  mode as necessary, a click with the second mouse button while in open
-  targeting breaks out of targeting and sets the target to the mouse's location,
-  a click with the second mouse button while also pressing Control or a click
-  with the third mouse button breaks out of targeting and sets the target to
-  the mouse's location (if not in open targeting, that only works if the mouse
-  is over a targetable monster) and a click with the second mouse button while
-  also pressing Alt (Option in the Mac front end) breaks out of targeting and
-  initiates pathfinding to the mouse's location.
+  This will allow you to change or clear the current target.  That target
+  can be recalled when other commands ask for a target.  When the
+  current target is a monster, the status of that monster is tracked in the
+  sidebar.  For more details about the targeting interface that this
+  command uses, see :ref:`Targeting <targeting>`.
 
 Looking Commands
 ================
@@ -484,45 +436,10 @@ Look around (``l``) or Examine things (``x``)
   This command is used to look around at nearby monsters (to determine 
   their type and health) and objects (to determine their type). It is also 
   used to find out if a monster is currently inside a wall, and what is 
-  under the player. There are two modes when looking. The first, interested
-  targeting, only allows the cursor to be placed on interesting things (grids
-  with monsters, the player, objects, staircases, doors, rubble, or stores). The
-  other, open targeting, allows the cursor to be placed on any grid. Looking
-  always starts in interested targeting with the cursor on the player. Pressing
-  ``o`` switches to open targeting. Pressing ``p`` moves the cursor to the
-  player and switches to open targeting.  Pressing ``m`` switches to
-  interested targeting if there are any interesting grids in the current
-  viewport. In interested targeting mode, pressing space, ``+``, or ``*``
-  cycles forward to the next interesting grid and pressing ``-`` cycles
-  backward. Pressing a direction key in the interested targeting mode
-  moves the cursor to an interesting grid in that direction. Pressing a
-  direction key in the open targeting mode moves the cursor one grid (or
-  ten grids, if the key is the trigger for a running keymap) in that direction.
-  In either mode, pressing ``<`` moves the cursor to the nearest known down
-  staircase (if any), pressing ``>`` moves the cursor to the nearest known up
-  staircase (if any), and pressing ``x`` moves the cursor to the nearest known
-  passable grid that has an unknown neighbor (if there is no such grid, it will
-  look for the nearest known passable grid that is next to a closed door or
-  impassable rubble and that door or rubble has an unknown neighbor). Those
-  three keys can change the mode. If the new location is interesting, the mode
-  will be the interested targeting mode. If the new location is not
-  interesting, the mode will be the open targeting mode. Pressing ``t``, ``5``,
-  ``0``, or ``.`` marks the current cursor position as the target and breaks
-  out of looking (in interested targeting mode, that only works if the cursor
-  is on a monster). Pressing ``r`` recalls details about the monster or object
-  under the cursor. Pressing 'g' breaks out of looking and initiates
-  pathfinding to the location under the cursor. Pressing ``k`` (if you use the
-  original keyset) or ``^d`` (if you use the roguelike keyset) will allow
-  changing the ignore settings for the object under the cursor. Pressing ``q``
-  or ESCAPE breaks out of looking. If the front end allows mouse input,
-  these mouse actions are usefule while looking: a click with the first mouse
-  button moves the cursor to the mouse's position and switches the mode as
-  necessary, a click with the second mouse button while also pressing Control
-  or a click with the third mouse button breaks out of looking and sets the
-  target to the mouse's location (if not in open targeting, that only works
-  if the mouse is over a targetable monster), and a click with the second
-  mouse button while also pressing Alt (Option in the Mac front end) breaks
-  out of looking and initiates pathfinding to the mouse's location.
+  under the player. You could also use it to set the current target, but,
+  when you want to target a monster, the targeting command, ``*``, will be
+  more useful.  For more information about the targeting interface that
+  this command uses, see :ref:`Targeting <targeting>`.
 
 Inspect an item (``I``)
   This command lets you inspect an item. This will tell you things about
