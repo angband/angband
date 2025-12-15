@@ -4057,7 +4057,7 @@ void do_cmd_quiver(void)
 void do_cmd_look(void)
 {
 	/* Look around */
-	if (target_set_interactive(TARGET_LOOK, -1, -1))
+	if (target_set_interactive(TARGET_LOOK, -1, -1, true))
 	{
 		msg("Target Selected.");
 	}

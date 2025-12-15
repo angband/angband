@@ -158,9 +158,16 @@ int target_dir_allow(struct keypress ch, bool allow_5, bool allow_esc)
 }
 
 /**
+ * Height of the help screen; any higher than 4 will overlap the health
+ * bar which we want to keep in targeting mode.
+ */
+#define HELP_HEIGHT 3
+
+/**
  * Display targeting help at the bottom of the screen.
  */
-void target_display_help(bool monster, bool object, bool free)
+static void target_display_help(bool monster, bool object, bool free,
+		bool allow_pathfinding)
 {
 	/* Determine help location */
 	int wid, hgt, help_loc;
@@ -180,8 +187,10 @@ void target_display_help(bool monster, bool object, bool free)
 	text_out(" and ");
 	text_out_c(COLOUR_L_GREEN, "<click>");
 	text_out(" look around. '");
-	text_out_c(COLOUR_L_GREEN, "g");
-	text_out("' moves to selection. '");
+	if (allow_pathfinding) {
+		text_out_c(COLOUR_L_GREEN, "g");
+		text_out("' moves to selection. '");
+	}
 	text_out_c(COLOUR_L_GREEN, "p");
 	text_out("' selects player. '");
 	text_out_c(COLOUR_L_GREEN, "q");
@@ -1013,7 +1022,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
  */
 void textui_target(void)
 {
-	if (target_set_interactive(TARGET_KILL, -1, -1))
+	if (target_set_interactive(TARGET_KILL, -1, -1, true))
 		msg("Target Selected.");
 	else
 		msg("Target Aborted.");
@@ -1205,6 +1214,18 @@ static bool pile_has_known(const struct object *obj) {
 /**
  * Handle "target" and "look". May be called from commands or "get_aim_dir()".
  *
+ * \param mode is either TARGET_LOOK (the list of interesting targets can
+ * include the player, monsters, objects, traps, and interesting terrain) or
+ * TARGET_KILL (the list of interesting targets only includes targetable
+ * monsters).
+ * \param x is the initial x position of the targeting cursor.  Use -1 to
+ * have this function determine the initial position.
+ * \param y is the initial y position of the targeting cursor.  Use -1 to
+ * have this function determine the initial position.
+ * \param allow_pathfinding will, if true, allow the player to initiate
+ * pathfinding to a location.
+ * \return true if a target has been successfully set, false otherwise.
+ *
  * Currently, when "interesting" grids are being used, and a directional key is
  * pressed, we only scroll by a single panel, in the direction requested, and
  * check for any interesting grids on that panel.  The "correct" solution would
@@ -1239,14 +1260,8 @@ static bool pile_has_known(const struct object *obj) {
  *
  * This command will cancel any old target, even if used from
  * inside the "look" command.
- *
- *
- * 'mode' is one of TARGET_LOOK or TARGET_KILL.
- * 'x' and 'y' are the initial position of the target to be highlighted,
- * or -1 if no location is specified.
- * Returns true if a target has been successfully set, false otherwise.
  */
-bool target_set_interactive(int mode, int x, int y)
+bool target_set_interactive(int mode, int x, int y, bool allow_pathfinding)
 {
 	int path_n;
 	struct loc path_g[256];
@@ -1311,7 +1326,8 @@ bool target_set_interactive(int mode, int x, int y)
 			bool has_target = target_able(square_monster(cave, loc(x, y)));
 			bool has_object = !(mode & TARGET_KILL)
 					&& pile_has_known(square_object(cave, loc(x, y)));
-			target_display_help(has_target, has_object, use_free_mode);
+			target_display_help(has_target, has_object,
+				use_free_mode, allow_pathfinding);
 		}
 
 		/* Find the path. */
@@ -1357,7 +1373,8 @@ bool target_set_interactive(int mode, int x, int y)
 				}
 			}
 
-		} else if (event_is_mouse_m(press, 2, KC_MOD_ALT)) {
+		} else if (allow_pathfinding
+				&& event_is_mouse_m(press, 2, KC_MOD_ALT)) {
 			/* Navigate to location and done */
 			y = KEY_GRID_Y(press);
 			x = KEY_GRID_X(press);
@@ -1468,7 +1485,7 @@ bool target_set_interactive(int mode, int x, int y)
 				done = true;
 			}
 
-		} else if (event_is_key(press, 'g')) {
+		} else if (allow_pathfinding && event_is_key(press, 'g')) {
 			/* Navigate to a location and done */
 			cmdq_push(CMD_PATHFIND);
 			cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
