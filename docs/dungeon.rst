@@ -243,7 +243,7 @@ The Black Market (``7``)
 
 .. index::
    single: home
-   seealse: store; home
+   seealso: store; home
 
 Your Home (``8``)
   This is your house where you can store objects that you cannot carry on
