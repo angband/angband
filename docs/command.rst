@@ -625,10 +625,12 @@ Save ('Ctrl-s')
   if you are paranoid about having your computer crash (or your power go
   out) while you are playing.
 
-Quit (``Q``)
-  Kills your character and exits Angband. You will be prompted to make sure
-  you really want to do this, and then asked to verify that choice. Note
-  that dead characters are dead forever.
+Retire (``Q``)
+  Retires your character and exits Angband. You will be prompted to make sure
+  you really want to do this, and then asked to verify that choice. The
+  only thing that can be done with a retired character's save file is to
+  start the game from the beginning.  You will have the option to reuse
+  the same options and birth choices as the retired character when you do so.
 
 User Pref File Commands
 =======================

@@ -585,10 +585,10 @@ creature alive, there is really not much point. Unless you wish to listen
 to the rumors of a powerful ring buried somewhere in the dungeon, or a suit
 of dragon scale mail that resists everything...
 
-When you are ready to retire, simply kill your character (using the ``Q`` key)
-to have your character entered into the high score list as a winner. Note
-that until you retire, you can still be killed, so you may want to retire
-before wandering into yet another horde of greater demons.
+When you are ready to retire, press the ``Q`` key to have your character
+entered into the high score list as a winner. Note that until you retire,
+you can still be killed, so you may want to retire before wandering into
+yet another horde of greater demons.
 
 .. index::
    single: dying
