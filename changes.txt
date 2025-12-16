@@ -1,6 +1,91 @@
 Welcome to the changelog for Angband 4. This file tracks the changes made since
 3.5.1.
 
+Angband 4.2.6
+=============
+
+This version includes changes to device activation, many corrections and
+improvements to the borg automatic player, and several bug fixes.  Changes
+affecting gameplay are:
+
+ - Like digging, failure to activate a magical device automatically retries
+   the activation until successful or disturbed.  Make utility devices,
+   elemental rings, and dragon armor easier to activate.  Devices to slow
+   monsters, wands of fire balls and dragon's flame, rods of fire bolts,
+   and rods of treasure location are now more difficult to activate.  Change
+   the activation difficulties for artifacts so they are better aligned with
+   the nature of the activation.  Change a constant in the failure rate
+   calculation to tighten the transition from high to low failure rates:
+   effects that change a player's device skill will have more of an impact
+   if the skill is close to the activation difficulty for the device.
+ - When following a precomputed path (moving to a grid designated by the mouse,
+   targeting interface, or autoexplore commands) automatically open doors or
+   clear impassable rubble and continue moving when the neighbors of the door
+   or rubble are known.
+ - Object descriptions now include the effect of curses in the displayed hit,
+   damage, and armor class values.
+ - Messages for detection now distinguish between gold on the floor and
+   other objects (thanks to PowerDiver).
+ - Objects and spells that used SPOT effects with LIGHT_WEAK or DARK_WEAK
+   now use SPHERE instead so they can not damage the player.
+ - Change the target handling for a druid's Lightning Strike:  do not require
+   a known grid and target the player if the target is given as a direction or
+   is not a passable grid in the line of sight.
+ - If a necromancer's Command spell is resisted, deduct mana and take a
+   turn (thanks to RegalStar).
+ - Mithril arrows and shots weigh 50% less; mithril shots ignore acid and fire
+   (thanks to edz314).
+ - Increase the curse removal power of staves of remove curse to distinguish
+   them from scrolls of remove curse (thanks to Mitze).
+ - Increase the escorts for Grishnákh and Golfimbul:  both can also have cave
+   orcs as escorts.
+ - Change the edges of the Cracks of Doom vault so magic mapping clearly
+   identifies the entrances (thanks to Mikolaj).
+ - Change handling of keymaps so the keymap aborts when the next key does not
+   correspond to a command, a command fails due to a missing prerequisite or
+   to a player confirmation from an inscription check.  Rework how directions
+   are extracted from a keymap.  Allow for a keymap trigger whose action
+   starts with ESCAPE to break out of many prompts (thanks to PowerWyrm).
+ - Add an option, autoexplore_commands, to have 'p' move to the player to
+   the nearest unexplored location and modify the existing '>' and '<' commands
+   to move the player to the nearest staircase of the appropriate type when
+   not on a staircase (thanks to memmaker).  Whether or not that option is
+   set, add to the looking or targeting interface so '>' or '<' move the
+   cursor to the nearest appropriate staircase from where the cursor was and
+   'x' moves the cursor to the nearest unexplored location to where the cursor
+   was (thanks to Gwarl).
+ - The notifications shown when the show_damage option is on now include
+   information about damage due to effects from spells or magic devices.
+   Notifications about damage to the player now take into account damage
+   reduction and invulnerability.
+
+There are a handful of notable changes to the Windows front end (thanks to
+Klaas van Aarsen):
+
+ - With tiles, the map displayed by 'M' now uses the algorithm that
+   Options->Map used.  Options->Map has been removed.
+ - Subwindows can have more than 256 rows or columns without drawing artifacts.
+
+The handling of the SDL2 frontend's menus has been rewritten.  Game controller
+events are now mapped to keystrokes to invoke commands in the game (thanks to
+Alberto Mardegan).
+
+The changes for the borg automatic player are too numerous to list
+individually.  They correct many crashes, instances where manual intervention
+was needed to allow the borg to make progress, jumping into lava, or cases
+where the borg misused a spell (thanks to Adam Goodman, Aodhlin, Jordan
+Philyaw, and NetBrian).
+
+There is one change that can break compatibility with a game in progress
+or prevent reuse of a randart file from earlier versions of 4.2:  the misnamed
+FIRE_BOLT72 activation is now FIRE_BALL72.  If a game in progress uses
+randarts and an artifact has that activation, the randart file will fail to
+load.  A workaround is to edit the randart file and replace FIRE_BOLT72 with
+FIRE_BALL72.
+
+Prebuilt binaries for NDS and 3ds are no longer available.  Patches to restore
+building Angband for those systems are welcome.
+
 Angband 4.2.5
 =============
 
