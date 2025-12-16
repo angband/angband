@@ -10,6 +10,7 @@ Code contribution:
 * Adam Goodman (agoodman)
 * Adriankhl
 * Adrian Siekierka (asiekierka)
+* Alberto Mardegan (mardy)
 * Alex Mooney
 * Alexandre Detiste
 * Andre Maroneze
@@ -32,37 +33,47 @@ Code contribution:
 * Derakon
 * Diego Herrera
 * Eastwind921
+* edz314
 * Elly Fong-Jones (elly)
 * Eric Branlund (backwardsEric)
 * Erik Osheim (d_m)
 * fizzix (Aaron Bader)
 * floyza
 * fruviad
+* hardfau1t
 * jdholbrook81
 * jefetienne
 * Joan Andrés
 * John Weismiller (emar)
+* Jordan Philyaw (philyawj)
 * Justin Chua
+* Justin Holbrook (jdholbrook81)
+* Klaas van Aarsen
 * kleo
 * Kusunose Toru
 * Lars Haugseth
+* Lemon Rush (ThirdLemon)
 * magnate (Chris Carr)
 * MarbleDice
+* memmaker
 * Michael Courtney (wobbly)
 * Mikolaj Konarski
 * Nima Hoda
 * Paul Johnson
+* pav1388
 * piels
 * PowerWyrm
 * pwinckles (moosferatu)
 * Rodent/Sideways/sulkasormi
 * Ryan Schmidt
+* Sean Dewar (seandewar)
 * Shanoah Alkire
 * spenserblack
 * Stefan Strogin
 * tangar
 * Tim Schumacher (timschumi)
 * Tom Morton (tom)
+* Tykhon Tarnavsky (tikhont)
 * Vic K
 * wkmanire
 * wobbly
@@ -77,7 +88,9 @@ you ought to be included:
 * Anarchic Fox
 * animal_waves
 * AnonymousHero
+* Anthon van der Neut (AvdN)
 * Antoine
+* Aodhlin
 * archolewa
 * Aszazin
 * Atriel
@@ -85,6 +98,7 @@ you ought to be included:
 * Bogatyr
 * bughunter
 * bunnies
+* cacheflood
 * Capn_Carpaccio
 * Carg
 * Carnivean
@@ -96,13 +110,17 @@ you ought to be included:
 * clouded
 * Cold_Heart
 * Combatereak
+* damerell
 * Darin
+* David Chmelik (dchmelik)
 * debo (cyberdemons pls)
+* Den XingJing (MicroMilo)
 * desstorm
 * dionysian
 * Djbanete
 * dos350
 * Dragget
+* dr-kraemer-everett
 * drquicksilver
 * Ed_47569
 * Egavactip
@@ -141,6 +159,7 @@ you ought to be included:
 * jml34
 * jsv
 * Julian (jl8e)
+* juliusyang
 * Jungle_Boy
 * kandrc
 * kaypy
@@ -182,6 +201,7 @@ you ought to be included:
 * Quirk
 * Raerick
 * Raxmei
+* RegalStar
 * renato
 * robinjohnson
 * Rydel
@@ -189,6 +209,7 @@ you ought to be included:
 * Scatha
 * schatz
 * scrarth
+* Sebastian Jensen (gonX)
 * Selkie
 * shirish
 * Sinquen
@@ -197,8 +218,10 @@ you ought to be included:
 * spara
 * Sparrow the Dunadan
 * Sphara
+* superuser-does
 * swaggert
 * the Invisible Stalker
+* Sylvain frOOm (froom)
 * Therem Harth
 * Thraalbee
 * Tibarius
@@ -207,6 +230,8 @@ you ought to be included:
 * TJS
 * topazg
 * Torr
+* Turmfalke2
+* tyreforhyred
 * Ugramoth
 * Vivit
 * Voovus
