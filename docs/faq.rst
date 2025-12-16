@@ -33,7 +33,7 @@ Is there a way to disable that thing that pops up when you hit the enter key?
 
 Go into the options menu, choose "Edit keymaps", then "Create a keymap".  Press Enter at the "Key" prompt and a single space as the "Action".
 
-And then you'll probably want to choose to "Append keymaps to a file" so that it persists for next time you load the game.
+And then you'll probably want to choose to "Save keymaps to a file", and either choose the file name so that it is one automatically loaded when a character is loaded or combine the contents of the saved file with one of the automatically loaded preference files. That allows the change to stay in effect the next time you load the game.
 
 This just replaces the default action of Enter with a "do nothing but don't tell me about help" action. If you want to keep the menu available, say on the 'Tab' key, you can also remap the Tab keypress to the ``\n`` action.
 
@@ -61,7 +61,7 @@ Go to the GitHub_ page, where you can find the bleeding edge as well as all prev
 How do I compile the game?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Please see the compiling section of the manual.
+Please see the :doc:`compiling section of the manual <hacking/compiling>`.
 
 How do I contribute to the game?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

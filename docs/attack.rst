@@ -144,6 +144,16 @@ identification.
 
 Some of the more common ego weapons are described at the end of this file.
 
+Equipment that is not in the weapon or missile weapon slot can affect your
+attacks. For hand-to-hand combat, the to hit adjustments, to damage
+adjustments, extra elemental damage (called "brands"), and extra damage
+due to the target monster's type (called "slays") from that equipment are
+applied and can be seen on the character sheet or when the weapon is inspected.
+When a weapon is thrown or a missile is launched, only the to hit adjustments
+(and, when the :ref:`to-damage is a percent of dice option
+<damage-percent-of-dice-option>` is on, the to damage adjustments) are
+applied from that equipment.
+
 .. index::
    single: armour class; effect on attacks
 
@@ -186,10 +196,12 @@ You will find some spells and items which can affect monsters in ways which
 do not involve directly dealing them damage.  These are 'status effects'.
 They are listed with their effects below.  These status effects will either
 work on a monster type or they won't; some monsters resist particular effects
-but not all do.
+but not all do.  If the same attribute is affected by more than one of these
+status effects, the effects on that attribute do not stack, unless noted
+otherwise.
 
 Hold Monster:
-  Paralyses a monster until you hit them.
+  Paralyses a monster until you hit them or the duration lapses.
   Increases chance of player getting a critical hit.
   Normal duration 3-8 turns.
 
@@ -200,10 +212,13 @@ Stun Monster:
   Normal duration 5-10 turns.
 
 Confuse Monster:
-  Monster spells fail 50% more often.
+  Monster spells fail 50% more often; that stacks with the increased failures
+  from being scared.
   Monster at least 40% more likely to miss target with spells/ranged attacks.
-  Monster ball & bolt spells sometimes go in the wrong direction.
+  Monster ball, bolt, and breath spells sometimes go in the wrong direction.
   30% chance of erratic movement, more when more confused.
+  If an erratic move tries to go through a wall that the monster can not
+  normally go through, the monster may be lightly stunned.
   Increases chance of player getting a critical hit.
   Normal duration 5-10 turns.
 
@@ -216,10 +231,13 @@ Sleep Monster:
 
 Scare Monster:
   Monster will run away.
-  Monster spells fail 20% more often.
+  Monster spells fail 20% more often; that stacks with the increased failures
+  from confusion or disenchantment.
+  Increases chance of player getting a critical hit.
 
 Disenchant Monster:
-  Monster spells fail 50% more often.
+  Monster spells fail 50% more often; that stacks with the increased failures
+  from being scared.
   Normal duration 5-10 turns.
 
 
@@ -237,16 +255,17 @@ scare or paralyze the target. These attacks are resisted by monsters of
 higher level (native to deeper dungeon depths) and characters with a high
 saving throw - saving throws being dependent on class, level and wisdom.
 There are also available resistances to fear, blindness, confusion and 
-stunning, and the power of "free action" prevents magical paralysis and
-most slowing attacks (the player may still be paralyzed by being "knocked
-out" in melee or by a stunning attack, but this is very rare and can be
-prevented with protection from stunning.) There are monsters that can
-cause status effects such as blindness, paralysis or confusion through
-their melee attack.  Since this is a physical effect and not a mental one,
-the player will not get a saving throw.  However, having resistance to
-that effect will prevent the negative status in all cases. It should
-also be noticed that most unique monsters automatically pass their saving
-throws, and some monsters are naturally resistant to confusion, fear and
+stunning, and the power of "free action" prevents magical paralysis (the
+player may still be paralyzed by being "knocked out" in melee or by a stunning
+attack, but this is very rare and can be prevented with protection from
+stunning; paralysis due to fainting from hunger or casting a spell with
+ith insufficient mana is also unaffected by having free action). There are
+monsters that can cause status effects such as blindness, paralysis or
+confusion through their melee attack.  Since this is a physical effect and
+not a mental one, the player will not get a saving throw.  However, having
+resistance to that effect will prevent the negative status in all cases.
+It should also be noticed that most unique monsters automatically pass their
+saving throws, and some monsters are naturally resistant to confusion, fear and
 sleep. Some monsters may have spells that 'cause wounds' that can be 
 deadly if successful but do no damage if the saving throw is passed.
 Some melee attacks by monsters may drain a stat, as can some traps: this is
@@ -312,6 +331,15 @@ he is fortunate to find any of the few artifacts that provide these
 immunities: immunity means that no damage is taken, and the character's
 equipment is also totally protected. Immunities are EXTREMELY rare.
 
+Some worn items render the character vulnerable to fire, cold, lightning
+or acid.  Unless the character also wears an item that grants immunity
+to the same element, the vulnerability means that the character takes
+more damage from that element:  1/3 more if the character does not have
+a permanent source of resistance to the element and normal damage if the
+character does have a permanent source of resistance to the element.  Also,
+a character can not gain a temporary resistance to an element when a
+vulnerability to that element is present.
+
 .. index::
    single: experience points; draining attacks
 
@@ -321,18 +349,19 @@ life experience. Some monsters have a life-draining melee attack, others
 may cast ball or bolt spells or, in extreme cases, breathe the very force
 of the netherworld (shortened by the game to "nether".) There are two
 powers which are of assistance in this case: that of "hold life" will
-prevent 90% of all experience drains, and in the other 10% of cases, the
-amount of experience lost will be reduced by 90%. That of "resistance to
-nether forces" will provide resistance to nether bolts, balls and breaths,
-reducing the damage and preventing any experience drains from these
-attacks, but has no effect on melee "hits to drain experience". Monsters
-caught in the blast from a nether ball or breath will take damage
-proportional to distance from the centre of the attack, except for undead
-who are totally immune. The player may find wands or rods of Drain Life,
-which similarly are ineffective on those undead creatures which have no
-life to drain: however, the real player equivalent attack spell is the
-priest/paladin spell of "Orb of Draining", a ball spell which does damage
-to all monsters, double damage to evil monsters, and is resisted by none.
+prevent many experience drains (the fraction affected depends on the monster,
+and can be 95%, 90%, 75%, or 50%), and if the drain occurs, reduces the amount
+of experience lost by 90%. That of "resistance to nether forces" will provide
+resistance to nether bolts, balls and breaths, reducing the damage and
+preventing any experience drains from those attacks, but has no effect on
+melee "hits to drain experience". Monsters caught in the blast from a nether
+ball or breath will take damage proportional to distance from the centre of
+the attack, except for undead who are totally immune. The player may find
+wands or rods of Drain Life, which are similarly ineffective on those undead
+creatures which have no life to drain: however, the real player equivalent
+attack spell is the priest/paladin spell of "Orb of Draining", a ball spell
+which does damage to all monsters, double damage to evil monsters, and is
+resisted by none.
 
 Other attack forms are rarer, but may include: disenchantment (both in
 melee or by a monster breath), chaos (breath or melee, which if unresisted
@@ -436,20 +465,19 @@ Ego Melee Weapons:
   increasing his/her armor class, and protecting him/her against damage
   from fire, cold, acid, lightning, and falls. This weapon also will
   increase your stealth, let you see invisible creatures, protect you from
-  paralyzation and some slowing attacks, and help you regenerate hit points
-  and mana faster. As a result of the regeneration ability, you will use up
-  food somewhat faster than normal while wielding such a weapon. These
-  powerful weapons also will sustain one stat, though this stat will vary
-  from weapon to weapon.
+  paralyzation, and help you regenerate hit points and mana faster. As a
+  result of the regeneration ability, you will use up food somewhat faster
+  than normal while wielding such a weapon. These powerful weapons also will
+  sustain one stat, though this stat will vary from weapon to weapon.
 
 (Holy Avenger)
   A Holy Avenger is often one of the most powerful weapons. A Holy Avenger
   will increase your wisdom and your armour class. This weapon will do
   extra damage when used against evil, demonic and undead creatures, and
-  will also give you the ability to see invisible creatures. These weapons
-  are basically extremely powerful versions of Blessed Blades and give
-  melee bonuses to priests and paladins. These weapons, like (Defender)
-  weapons, also will sustain one random stat.
+  will also give you protection against fear and the ability to see invisible
+  creatures. These weapons are basically extremely powerful versions of
+  Blessed Blades and give melee bonuses to priests and paladins. These
+  weapons, like (Defender) weapons, also will sustain one random stat.
 
 (Blessed)
   A blessed blade will increase your wisdom. If you are a priest or paladin,
@@ -460,8 +488,8 @@ Weapon of Westernesse
   A Weapon of Westernesse is one of the more powerful weapons. It does
   extra damage against orcs, trolls, and giants, while increasing your
   strength, dexterity, and constitution. It also lets you see invisible
-  creatures and protects from paralyzation and some slowing attacks. These
-  blades were made by the Dunedain.
+  creatures and protects from paralyzation. These blades were made by the
+  Dunedain.
 
 Weapon of Extra Attacks
   A weapon of extra attacks will allow the wielder to deliver extra attacks
@@ -469,11 +497,12 @@ Weapon of Extra Attacks
 
 Elemental Branded Weapons
   Each of the five elemental attacks has a corresponding weapon which will
-  do treble its base damage to creatures not resistant to that element. (It
-  should be noted that the magical damage bonus is not affected by this: a
-  weapon of Flame '(2d6) (+5,+6)' does 6d6+6 damage per hit, not 6d6+18,
-  against creatures which are not fire-resistant.) There are weapons of
-  Flame, Frost, Lightning, Acid and Poison brands.
+  do treble its base damage to creatures not resistant to that element and
+  grant the wielder resistance to that element. (It should be noted that the
+  magical damage bonus is not affected by this: a weapon of Flame '(2d6)
+  (+5,+6)' does 6d6+6 damage per hit, not 6d6+18, against creatures which are
+  not fire-resistant.) There are weapons of Flame, Frost, Lightning, Acid and
+  Poison brands.
 
 Weapons of Slaying enemies
   These weapons do extra damage against creatures of a vulnerable type.
@@ -489,10 +518,11 @@ Weapons of |*Slay*ing| enemies
   opponents, doing five times their base damage rather than the normal
   three.
 
-Shovels and Picks of Digging
+Shovels, Picks, and Mattocks of Digging
   These powerful diggers will dig through granite as if it were mere wood,
   and mineral veins as if they were butter. Permanent rock is still an
-  impassable obstacle.
+  impassable obstacle.  All are branded with acid, and triple their base
+  damage against creatures which are not acid-resistant.
 
 Ego Missile Launchers and Ammo:
 -------------------------------
@@ -589,11 +619,12 @@ Crown of the Magi
 Crown of Might
   This is the crown of the warriors. The wearer will have an increased and
   sustained strength, dexterity, and constitution, and will also be immune
-  to any foe's attempt to slow or paralyze him or her.
+  to any foe's attempt paralyze him or her.
 
 Crown of Lordliness
   This is the great crown of the priests. The wearer will have an increased
-  and sustained wisdom.
+  and sustained wisdom and be protected against fear. These helms also have
+  an additional random power.
 
 Helm/Crown of Seeing
   This is the great helmet or crown of the rogues. The wearer will be able
@@ -605,8 +636,7 @@ Helm of Infravision
   This helmet allows the character to see monsters even in total darkness,
   with the ability to see heat. Note that spellbooks are the same
   temperature as the surroundings, and so cannot be read unless some real
-  light is present. (Some monsters which are invisible to normal vision can
-  be seen under infravision.)
+  light is present.
 
 Helm of Light
   In addition to providing a permanent light source for the wearer, this
@@ -625,8 +655,9 @@ Helm of Regeneration
 Ego Cloaks:
 -----------
 Cloak of Protection
-  This finely made cloak will come with an unnaturally high enchantment and
-  is not affected by elemental based attacks.
+  This finely made cloak will come with an unnaturally high enchantment,
+  is not affected by elemental based attacks, and provides resistance against
+  shards.
 
 Cloak of Stealth
   This cloak will increase the wearer's stealth, making the wearer less
@@ -639,23 +670,18 @@ Cloak of Aman
 Ego Gloves:
 -----------
 Gloves of Free Action
-  The wearer of these gloves will find himself resistant to paralyzing
-  attacks as well as some slowing attacks. Because of the special nature of
-  these gloves, magic users may wear these gloves without incurring a mana
-  penalty.
+  The wearer of these gloves will be resistant to paralyzing attacks.
 
 Gloves of Slaying
   These gloves will increase the wearer's fighting ability by boosting the
   wearer's to-hit and to-dam values.
 
 Gloves of Agility
-  These gloves will increase the wearer's dexterity. Because of the special
-  nature of these gloves, magic users may wear these gloves without
-  incurring a mana penalty.
+  These gloves will increase the wearer's dexterity.
 
-Gauntlets of Power
-  These spiked gauntlets will boost the wearer's strength as well as the
-  wearer's to-hit and to-dam numbers.
+Gloves of Power
+  These gloves will boost the wearer's strength as well as the wearer's to-hit
+  and to-dam numbers.
 
 Ego Boots:
 ----------
@@ -666,8 +692,7 @@ Boots of Stealth
   These boots increase the wearer's stealth, like a Cloak of Stealth.
 
 Boots of Free Action
-  The wearer of these boots will find himself resistant to paralyzing
-  attacks as well as some slowing attacks.
+  The wearer of these boots will be resistant to paralyzing attacks.
 
 Boots of Speed
   The wearer of these boots will become unnaturally fast.
@@ -676,10 +701,10 @@ Once again, these are not necessarily the ONLY ego-items in the dungeon,
 only the most common.
 
 Apart from these there are some very rare and well-made armours in the
-dungeon with not necessarily any special abilities. These include Shields
-of Deflection, Adamantite Plate Mail, Mithril Plate Mail, Mithril Chain
-Mail, and Elven Cloaks. The first four cannot be damaged by acid because of
-the quality metals they contain.
+dungeon with not necessarily any special abilities. These include Adamantite
+Plate Mail, Mithril Plate Mail, Mithril Chain Mail, and Elven Cloaks. The
+first three cannot be damaged by acid because of the quality metals they
+contain.
 
 There are rumors of unique "artifact" items in the dungeon - weapons and
 armor of all types. Many of these are more powerful than even the greatest

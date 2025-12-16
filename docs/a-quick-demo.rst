@@ -47,11 +47,13 @@ edge of the town represent the walls that surround the town. You cannot
 leave the town above ground, although some games derived from Angband
 (called "variants") have an overground element.
 
-The 3x3 squares represent stores. The "numeric" symbols represent an
-"entrance" to a store. The ``.`` symbols represent the "floor". It is
-currently daytime, so most of the town should consist of stores and
-illuminated floor grids.  There will also be a few ``:`` symbols which
-represent "passable rubble".
+The rectangular blocks of walls with a number on the edge represent stores.
+The number is the entrance to the store.  The ``.`` symbols represent the
+"floor". It is currently daytime, so most of the town should consist of stores
+and illuminated floor grids.  There will also be a few ``:`` symbols which
+represent rubble.  Rubble comes in two varieties, "passable rubble" and just
+"rubble", distinguished by color.  Both block vision, but you can move through
+passable rubble.
 
 Any "alphabetic" symbols always represent monsters, where the word
 "monsters" specifies a wide variety of entities, including people, animals,
@@ -60,25 +62,26 @@ most of them are harmless (avoid any mercenaries or veterans if you see
 them). The most common "monsters" in town are small animals (cats and dogs)
 and townspeople (merchants, mercenaries, miscreants, etc).
 
-Now use the ``l`` command to "look" around. This will cause the cursor to
-be moved onto each "interesting" square, one at a time, giving you a
-description of that square. The cursor always starts on the square
-containing your character. In this case, you will see a message telling you
-that your character is standing on a staircase. Keep pressing space until
-the prompt goes away.
+Now use the ``l`` command to "look" around. This allows you to move the
+cursor around and get a description of what is present at the cursor. The
+cursor always starts on the square containing your character. In this case,
+you will see a message telling you that your character is standing on a
+staircase. Pressing space will cycle through the interesting locations
+nearby. Press ``q`` or ESCAPE to exit the look command.
 
 Now press ``i``, to display your character's "inventory". New characters
 start out with some objects to help them survive (though there is an option
 to start with more money instead). Your character will have some food, a
-potion, some torches, and a scroll. Press ``e`` to see what you are
-wearing. You will find you are wearing armour on your body, wielding a
-dagger and lighting the way with a torch. You have many other equipment
-slots but they are all currently empty.
+potion, some torches, and a scroll. Press ESCAPE to get out of the inventory
+display. Press ``e`` to see what you are wearing. You will find you are
+wearing armour on your body, wielding a dagger and lighting the way with a
+torch. You have many other equipment slots but they are all currently empty.
+Press ESCAPE to get out of the equipment display.
 
 Press ``t`` to take something off. Note that the equipment listing is
 reduced to those objects which can actually be taken off. Press ``g`` to
 take off the armour, and then press ``e`` again. Note that the armour is no
-longer shown in the equipment. Press escape. Press ``w`` to wield something
+longer shown in the equipment. Press ESCAPE. Press ``w`` to wield something
 and observe that the inventory listing is reduced to those objects which
 can actually be wielded or worn, press ``e`` to put the armour back on.
 
@@ -181,42 +184,62 @@ to go back down the stairs into the dungeon. You are now in a different
 part of the dungeon than you were in before. The dungeon is so huge, once
 you leave one part of the dungeon, you will never find it again.
 
-Now look at the screen. Your character may be in a lit room, represented as a
-large rectangle of illuminated floor grids (``.``), surrounded by walls. If
-you are not in a lit room, keep going back up to the town and back down
-into the dungeon until you are. Now look around. You may see some closed
-doors (``+``) or some open doors (``'``) or some open exits (``.``) in the
-walls which surround the room. If you do not, keep playing the stairway
-game until you are in such a room. This will keep the demo simple.
+Now look at the screen. Your character will most likely be at the end
+of a corridor surrounded by eight walls and with a floor in the other
+direction. If you are not at the end of a corridor, keep going back up to
+the town and back down into the dungeon until you are.  You could move
+down the corridor's floors, one square at time, but the game provides a way,
+called "running", to move many squares until there's a choice to be made
+about where to go or something interesting appears or happens. Try that now:
+press ``.`` and then the direction key that would move you to the empty floor
+(on most systems, you can press and hold Shift before pressing the direction
+key as a shortcut for the two key sequence of ``.`` followed by a direction).
 
-Now look around using the ``l`` command. You may see some monsters and/or
-some objects in the room with you. You may see some stairs up (``<``) or 
-some stairs down (``>``). If you see any monsters, move up next to the 
-monster, using the movement keys, and then try and move into the monster.
-This will cause you to attack the monster. Keep moving into the monster
-until you kill the monster, or it runs away, or you die. If you die, start
-a new game. If the monster runs away, ignore it, or chase it, but do not
-leave the room. Once all the monsters in the room are dead or gone, walk on
-top of any objects in the room. Press ``g`` to get the object, and it will
-be added to your inventory. If there are any closed doors (``+``) in the
-room walk up next to them and press ``o`` and then the direction key which
-would move you into the door, which should attempt to "open" the door.
+When your character stops, use ``l`` to look around to see what stopped your
+character.  It could be a closed door, ``+``, which you can open by moving
+into it.  It could be rubble, ``:``, blocking the path. You can clear that
+by tunneling: ``T`` followed by a direction key to indicate which square to
+dig out (on many systems, pressing and holding Control followed by the
+direction key also works; that invokes the "alter" command which can be
+used to dig, open doors, and other things).
 
-Now use the movement keys to explore the dungeon. As you leave the room,
-you will probably notice that your character cannot see nearly as far as
-she could in the room. Also, you will notice that as she moves around, the
-screen keeps displaying some of the grids that your character has seen.
-Think of this as a kind of "map" superimposed on the world itself, the
-player can see the entire map, but the character can only see those parts
-of the world which are actually nearby. If the character gets near the edge
-of the "map" portion of the screen the entire map will scroll to show a new
-portion of the world. Only about ten percent of the dungeon level can be
-seen by the player at one time, but you can use the ``L`` command to look
-at other pieces of the map. Use the ``.`` key, then a direction, to "run"
-through the dungeon. Use the ``R`` key, then return, to force your
-character to "rest" until she has recovered from any damage she incurs
-while attacking monsters. Use the ``M`` key to see the entire dungeon level
-at once, and hit escape when done. If your food rations are still at index
+It could be an object, represented by a punctuation symbol that does not look
+like a wall, floor, closed door, or an open or broken door, ``'``.  In that
+case, moving onto the object and then pressing ``g`` will pick up the item.
+If the item on the floor matched something in your inventory or the object
+is gold or gems, ``$``, your character will pick it up automatically.
+
+A monster could have stopped the run.  Most monsters are represented by
+letters, but some look enough like objects, that they are represented by
+a punctuation symbol.  When in doubt, use ``l`` to look at something to know
+what's there. If a monster stopped the run, you can attack it by moving next
+to it and then moving into it. Keep moving into the monster until you kill the
+monster, the monster runs away, or your character dies.  If your character
+dies, start a new game. If the monster dies, it may have dropped one or more
+objects. You can pick those up by moving onto the object and then press ``g``.
+
+The run could have stopped when a corridor branched into two or more corridors
+or because you have entered a room, empty space perhaps with some internal
+walls. At this depth, rooms are almost always lit, and you will be able to
+see parts beyond the one square radius illuminated by your torch.  Corridors
+are dark, and, unless there is a lit room at the end, all you will see is
+what is lit by your light source.
+
+Now use the movement keys to explore the dungeon. As your character moves
+around, you will notice that the screen keeps displaying some of the grids
+that she has seen.  Think of this as a kind of "map" superimposed on the
+world itself, the player can see the entire map, but the character can
+only see those parts of the world which are actually nearby. If the
+character gets near the edge of the "map" portion of the screen the
+entire map will scroll to show a new portion of the world. If the game's
+window can display 80 by 24 characters, only about ten percent of a typical
+dungeon level can be seen by the player at one time.  Without moving, you can
+use the ``L`` command to look at other portions of the map (it is also possible
+with look command, ``l``; see the :ref:`targeting section of the manual
+<targeting>` for more details on that).  Use the ``R`` key, then return, to
+force your character to "rest" until she has recovered from any damage she
+incurs while attacking monsters. Use the ``M`` key to see the entire dungeon
+level at once, and hit escape when done. If your food rations are still at index
 ``a`` in your inventory, press ``E``, ``a`` to eat some food. If your oil
 is still at index ``b`` in your inventory, and there is a monster nearby,
 press ``v``, ``b``, ``'`` to throw a flask of oil at the nearest monster.
@@ -228,8 +251,7 @@ for you to learn, including how to interpret information about your
 character, how to create different kinds of characters, how to determine
 which equipment to wield/wear, how to use various kinds of objects, and how
 to use the more than fifty different commands available to your character.
-The best resource for learning these things is the online help, which
-include, among other things, a complete list of all commands available to
-you, and a list of all the symbols which you may encounter in the dungeon,
-and information about creating new characters.
-
+The best resource for learning these things is the
+:doc:`manual that includes this demo <index>`. The in-game help, which you
+access by pressing ``?``, does have a list of the commands with the key and
+very brief description for each.

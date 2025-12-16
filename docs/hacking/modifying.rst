@@ -123,6 +123,11 @@ quest.txt
   appear.  This currently can't easily be changed, as there are still
   hard-coded aspects of the quests.
 
+shape.txt
+  Defines alternate shapes that player can assume through spells or magic
+  items.  Such a spell or magic item would include
+  "SHAPECHANGE:*name of shape to assume*" in its list of effects.
+
 terrain.txt
   This file defines the kind of terrain which can appear in Angband, and its
   properties.  Current terrain can be changed (with possibly large effects),
@@ -131,8 +136,15 @@ terrain.txt
   for it to appear.
 
 trap.txt
-  This defines all traps, door locks and runes.  Actual trap effects appear in
-  list-effects.h and effect-handler-*something*.c.
+  This defines all floor traps, door locks, webs, player decoys, and
+  glyphs of warding.  Traps that can appear on chests are defined elsewhere,
+  chest_trap.txt.  Actual trap effects appear in list-effects.h and
+  effect-handler-*something*.c.
+
+chest_trap.txt
+  This defines the traps and locks that can appear on chests.  Floor traps
+  are defined in trap.txt.  Actual trap effects appear in list-effects.h
+  and effect-handler-*something*.c.
 
 room_template.txt
   This is a list of templates for interesting-shaped rooms which appear in the
@@ -142,11 +154,27 @@ vault.txt
   Similar to room_template.txt, this handles vaults, which are very dangerous
   and lucrative rooms.
 
+visuals.txt
+  Configures the sequences of colors used by monsters with the ATTR_FLICKER
+  flag.
+
 dungeon_profile.txt
   This file contains fairly technical details about the different types of
   dungeon level which can be generated.  The actual generation routines are in
   gen-cave.c; the information here consists of parameters for generating
   individual levels, and for how often given level types appear.
+
+world.txt
+  This defines how the levels of the dungeon are linked.  It is very much a
+  stub.  If what you want is much like Angband with a single dungeon and a
+  fixed number of levels linked sequentially, then all you would change here
+  are the names and ensure that there is configuration for each level up to
+  one less than what's set by world:max-depth in constants.txt.  Anything
+  else likely requires changes to struct level in game-world.h,
+  level generation, and how the player interacts with the terrain (staircases
+  in Angband) that links levels.  Depending on what aspects of that world
+  layout you want to be configurable, the contents of world.txt and how it is
+  parsed in init.c probably will be nothing like what is in Angband.
 
 store.txt
   This details the shop owners and their relative generosity.
@@ -178,6 +206,16 @@ object_property.txt
   in the game to refer to that property in some way. This means it is not
   possible to add new properties to this file and expect to have any effect,
   but it is possible to change how existing properties work.
+
+player_property.txt
+  Configures properties the player can get from the player's race, class, or
+  shape.  Some of those can come from no other sources and are tied to
+  entries in list-player-flags.h.  Others overlap with what the player can
+  get from equipment and are tied to entries in list-object-flags.h or
+  list-elements.h.  Sets the names and descriptions used by the birth
+  screens and the See abilities command, ``S``.  Sets up links to the column
+  in the character screen's resistances panel and the line in the
+  equippable comparison that summarize the player's state.
 
 player_timed.txt
   This file defines some of the properties of timed effects (such as haste and
