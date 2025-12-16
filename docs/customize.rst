@@ -264,7 +264,7 @@ Angband uses a few built-in keymaps.  These are for the movement keys (they are 
 A keymap's action can include multiple commands.  For instance, a priest who has inscribed the first spellbook with '@m1' could have a keymap with the action
 of 'm1dm1f' to cast Bless and Heroism.  Such keymaps can abort early without completing the remaining commands if:
 
-* The player is disturbed before the next command in the keymap.
+* The player is :ref:`disturbed <disturb-player>` before the next command in the keymap.
 * (new since 4.2.5-460-... in Vanilla) The next key to be processed in the keymap does not correspond to a command.  Note that if the next key is a space, ESCAPE, or the alert key (ASCII 7), those correspond to the NULL command:  do nothing, successfully, without requiring any input.
 * (new since 4.2.5-460-... in Vanilla) The next command has a prerequisite that is not met.  For instance, firing a missile requires an equipped launcher and using a scroll requires being able to read (not blind, not confused, not subject to amnesia, and the current grid is seen).
 * (new since 4.2.5-460-... in Vanilla) A scan of the equipped items found an inscription requiring a confirmation (either '^*' to confirm for any action or '^' followed by the next command's key) and that confirmation was denied.

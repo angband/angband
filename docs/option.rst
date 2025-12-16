@@ -10,10 +10,10 @@ which is shown on the "options" screen, plus the internal name of the
 option in brackets, followed by a textual description of the option.
 
 Various concepts are mentioned in the descriptions below, including
-"disturb", (cancel any running, resting, or repeated commands, which are in
-progress), "flush" (forget any keypresses waiting in the keypress queue),
-"fresh" (dump any pending output to the screen), and "sub-windows" (see
-below).
+:ref:`"disturb" <disturb-player>` (cancel any running, resting, or repeated
+commands, which are in progress), "flush" (forget any keypresses waiting in
+the keypress queue), "fresh" (dump any pending output to the screen), and
+"sub-windows" (see below).
 
 .. contents:: Option pages
    :local:
@@ -83,6 +83,10 @@ Highlight player with cursor between turns ``highlight_player``
   Highlights the player with a cursor.  Useful if you have trouble finding
   the player.
 
+.. _disturb-near-option:
+.. index::
+   single: disturb; option
+
 Disturb whenever viewable monster moves ``disturb_near``
   Disturb the player when any viewable monster moves, whenever any monster
   becomes viewable for the first time, and also whenever any viewable
@@ -129,6 +133,8 @@ Color: Player color indicates low hit points ``hp_changes_color``
 Allow mouse clicks to move the player  ``mouse_movement``
   Clicking on the main window will be interpreted as a move command to that
   spot.
+
+.. _notify-recharge-option:
 
 Notify on object recharge ``notify_recharge``
   This causes the game to print a message when any rechargeable object
