@@ -303,8 +303,11 @@ To give a count to a command, type 0, the repeat count, and then the
 command. If you want to give a movement command and you are using the
 original command set (where the movement commands are digits), press space
 after the count and you will be prompted for the command.  The open, tunnel,
-disarm, alter, and close commands default to having a repeat count of 99;
-all other commands default to not repeating at all.
+disarm, alter, close, aim a wand, use a staff, zap a rod, and activate
+equipment commands default to having a repeat count of 99.  The generic
+use an item command also defaults to having a repeat count of 99 when it is
+used with a wand, staff, rod, or equipped item.  All other commands default
+to not repeating at all.
  
 Counted commands are very useful for time consuming commands, as they
 automatically terminate on success, or if you are attacked. You may also
