@@ -32,11 +32,14 @@ backslash (``\``) plus the "underlying command" key. You may enter
 
 Some commands allow an optional "repeat count", which allows you to tell
 the game that you wish to do the command multiple times, unless you press a
-key or are otherwise disturbed. To enter a "repeat count", type ``0``,
-followed by the numerical count, followed by the command. You must type
-'space' before entering certain commands. Skipping the numerical count
-yields a count of 99 for the open, tunnel, disarm, alter, and close
-commands. All other commands do not repeat unless requested.
+key or are :ref:`otherwise disturbed <disturb-player>`. To enter a
+"repeat count", type ``0``, followed by the numerical count, followed by the
+command. You must type 'space' before entering certain commands. Skipping
+the numerical count yields a count of 99 for the open, tunnel, disarm,
+alter, close, aim a wand, zap a rod, and activate equipment commands.  The
+generic use an item command also defaults to having a repeat count of 99
+when it is used with a wand, staff, or rod. All other commands do not repeat
+unless requested.
 
 Some commands will prompt for extra information, such as a direction, an
 inventory or equipment item, a spell, a textual inscription, the symbol of
@@ -247,6 +250,45 @@ nearest known staircase of the appropriate kind if the player is not already
 at that kind of staircase. ``p`` will move to the nearest unexplored location
 when the autoexplore_commands option is on.
 
+.. _disturb-player:
+.. index::
+   single: disturb; details
+
+Disturb
+=======
+
+For commands that repeat, like resting, tunnneling or running, certain events
+will disturb the player.  That stops the command, flushes queued input from
+the keyboard or mouse, and drops any unprocessed keys from a partially
+processed keymap.  The events that disturb the player are:
+
+* The command reached its goal:  the wall was tunnelled, the door or chest was opened, the specific criteria for resting was met.
+* While running, following a precomputed path, resting, or executing a repeated command (either with an explicit repeat count or one that repeats automatically if no repeat count was specified), a keypress or, if the front end supports it, a mouse button event, interrupts the command by disturbing the player.  Since the keypress could come from a keymap, such commands will have to be last in the keymap (no further keystrokes in the action besides what the command would normally consume) to have the intended effect.  While resting, checking for an input event that disturbs the rest only happens every 128 turns.
+* A monster's melee attack hits the player, regardless of whether any damage was done.
+* A monster uses a ranged attack or spell, regardless of whether the attack hits.
+* A monster that is visible and in the line of sight and either moves or performs a melee attack on the player will disturb if the :ref:`Disturb whenever viewable monster moves <disturb-near-option>` is on.  With that option on, a monster that enters the line of sight and is visible or leaves the line of sight while visible, also disturbs the player.
+* A monster smashes open a door.
+* The player loses hit points.
+* The player makes a melee attack.
+* A projection affects the player, regardless of whether it does damage.
+* Changes to a timed effect, like confusion, can disturb the player.  If the change was initiated by the player by casting a spell or using an item, the change will not disturb the player with the exception for when an unidentified item is used.  For effects that have more than two gradations, like cuts, stunning, and the hunger meter, going up a grade will disturb the player and going down a grade will disturb if the effect has a message for entering the grade from a higher one.  For effects that have two gradations (off and on), going from off to on will disturb the player.  Otherwise, the change will disturb if the effect in question does not duplicate a state the player has from another source and the change is not due to decreasing the effect's duration because time passed.
+* The player tries to move into impassable terrain.
+* While following a precomputed path or on the second or later step of running, a visible object, including gold, or visible monster in the next grid stops running.
+* While following a precomputed path or on the second or later step of running, the next grid contains a known trap and the player is not immune to traps.
+* If on the second or later step of a run or following a precomputed path, the player's current grid is in an area that has had trap detection cast on it but the next grid has not had trap detection cast on it.
+* While following a precomputed path, a known impassable grid that cannot be autmatically dealt with as the next step on the path disturbs the player.
+* The player triggers a trap.  That disturbs even if the player passed the saving throw for the trap's effects.
+* The player finds a secret door or a trap on a chest.
+* The player faints because of hunger.
+* The player's pack overflows.
+* A curse on an equipped item triggers.
+* The delayed effect of deep descent or a word of recall activates.
+* The player's light source has run out of fuel or is close to running out of fuel and a new "growing faint" reminder message is displayed.
+* An item that is equipped or in the pack has recharged and that item's inscription includes '!!' or the :ref:`notify on object recharge <notify-recharge-option>` is on.
+* The player is on a visible stack of objects that are not all gold and a scan for autopickup happens (either by holding with autopickup, explicitly invoking autopickup, or having just moved to the grid).
+* The player enters a store.
+* The player enters a new level.
+
 Special Keys
 ============
  
@@ -294,7 +336,8 @@ Command Counts
  
 Some commands can be executed a fixed number of times by preceding them
 with a count. Counted commands will execute until the count expires, until
-you type any character, or until something significant happens, such as
+you type any character, or until
+:ref:`something significant happens <disturb-player>`, such as
 being attacked. Thus, a counted command doesn't work to attack another
 creature. While the command is being repeated, the number of times left to
 be repeated will flash by on the line at the bottom of the screen.
@@ -570,14 +613,14 @@ Paths are never allowed to cross passable, but damaging terrain, like lava.
 When the game move you along the selected path, you can interrupt the process
 with a keypress (space or ESCAPE are recommended as they can not be interpreted
 as a command) or, when the front end supports it, pressing a mouse button.  The
-process will also be interrupted by other events that disturb.  If following
-the path was interrupted and you have not issued another command, repeating
-the previous command (``n`` in the original keyset, ``^v`` in the roguelike
-keyset) will recompute the path (if the path was from '<', '>', or 'p', it
-will find the nearest up staircase, down staircase, or unknown location,
-respectively, and compute a path to it from your current location; otherwise,
-it will compute a path to the original destination from your current location)
-and start along that path.
+process will also be interrupted by other events that
+:ref:`disturb <disturb-player>`.  If following the path was interrupted and
+you have not issued another command, repeating the previous command (``n`` in
+the original keyset, ``^v`` in the roguelike keyset) will recompute the path
+(if the path was from '<', '>', or 'p', it will find the nearest up staircase,
+down staircase, or unknown location, respectively, and compute a path to it
+from your current location; otherwise, it will compute a path to the original
+destination from your current location) and start along that path.
 
 Following a path can automatically open a door or dig out impassable rubble
 that is in the path.  It will only do so if you know the terrain in all the

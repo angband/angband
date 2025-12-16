@@ -118,8 +118,8 @@ Walk (``W``) or Walk (``-``)
 Run (``.``) or Run (``,``)
   This command will move in the given direction, following any bends in the
   corridor, until you either have to make a "choice" between two directions
-  or you are disturbed. You can configure what will disturb you by setting
-  the disturbance options. You may also use shift plus the "roguelike"
+  or you are disturbed. For more information about what can disturb you, see
+  :ref:`Disturb <disturb-player>`. You may also use shift plus the "roguelike"
   direction keys (roguelike keyset), or shift plus the "original" direction
   keys on the keypad (both keysets, some machines) to run in a direction.
   This command may take an argument, requires a direction, and takes some
@@ -187,11 +187,11 @@ Rest (``R``)
   Resting is better for you than repeatedly staying still, and can be told
   to automatically stop after a certain amount of time, or when various
   conditions are met. In any case, you always wake up when anything
-  disturbing happens, or when you press any key. To rest, enter the Rest
-  command, followed by the number of turns you want to rest, or ``*`` to
-  rest until your hitpoints and mana are restored, or ``&`` to rest until
-  you are fully "healed". This command may take an argument (used for the
-  number of turns to rest), and takes some energy.
+  :ref:`disturbing happens <disturb-player>`, or when you press any key.
+  To rest, enter the Rest command, followed by the number of turns you want
+  to rest, or ``*`` to rest until your hitpoints and mana are restored, or
+  ``&`` to rest until you are fully "healed". This command may take an
+  argument (used for the number of turns to rest), and takes some energy.
 
 Alter Commands
 ==============
@@ -763,10 +763,11 @@ Command Counts
 
 Some commands can be executed a fixed number of times by preceding them
 with a count. Counted commands will execute until the count expires, until
-you type any character, or until something significant happens, such as
-being attacked. Thus, a counted command doesn't work to attack another
-creature. While the command is being repeated, the number of times left to
-be repeated will flash by on the line at the bottom of the screen.
+you type any character, or until
+:ref:`something significant happens <disturb-player>`, such as being attacked.
+Thus, a counted command doesn't work to attack another creature. While the
+command is being repeated, the number of times left to be repeated will flash
+by on the line at the bottom of the screen.
 
 To give a count to a command, type ``0``, the repeat count, and then the
 command. If you want to give a movement command and you are using the
