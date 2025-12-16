@@ -155,6 +155,7 @@
  */
 #include <windows.h>
 #include <windowsx.h>
+#include <shellapi.h>
 
 #ifndef GetWindowLongPtr
 #define GetWindowLongPtr GetWindowLong
@@ -3425,15 +3426,56 @@ static void start_screensaver(void)
 
 #endif /* USE_SAVER */
 
+static bool open_url(const char *url)
+{
+	HINSTANCE res = ShellExecuteA(
+		NULL,
+		"open",
+		url,
+		NULL,
+		NULL,
+		SW_SHOWNORMAL
+	);
+	return ((INT_PTR)res > 32);
+}
+
+static bool open_local_docs(void)
+{
+	char exe_path[MAX_PATH];
+	char *slash;
+	char doc_path[MAX_PATH];
+	char url[MAX_PATH + 8];
+	DWORD attrs;
+
+	if (!GetModuleFileNameA(NULL, exe_path, sizeof(exe_path)))
+		return false;
+	slash = strrchr(exe_path, '\\');
+	if (!slash)
+		return false;
+	*slash = '\0';
+	snprintf(doc_path, sizeof(doc_path),
+	         "%s\\docs\\index.html", exe_path);
+	attrs = GetFileAttributesA(doc_path);
+	if (attrs == INVALID_FILE_ATTRIBUTES || (attrs & FILE_ATTRIBUTE_DIRECTORY))
+		return false;
+	snprintf(url, sizeof(url), "file:///%s", doc_path);
+
+	return open_url(url);
+}
 
 /**
- * Display a help file
+ * Display help
  */
 static void display_help(void)
 {
-	Term_keypress('?',0);
-}
+	if (open_local_docs())
+		return;
 
+	if (open_url("https://angband.readthedocs.io/en/latest/"))
+		return;
+
+	Term_keypress('?', 0);
+}
 
 /**
  * Process a menu command
