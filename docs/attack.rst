@@ -95,7 +95,7 @@ to dig your best digging tool will automatically be used.
 
 .. index::
    single: to-hit; equipment values
-   single; to-dam; equipment values
+   single: to-dam; equipment values
 
 Weapons have two main magical characteristics, their enchanted ability to
 hit and their enchanted ability to do damage, expressed as '(+#,+#)'. A
@@ -103,7 +103,7 @@ normal weapon would be '(+0,+0)'. Many weapons in Angband have bonuses to
 hit and/or to damage.
 
 .. index::
-   single; blows; upper limit
+   single: blows; upper limit
 
 Angband assumes that your youth in the rough environment near the dungeons
 has taught you the relative merits of different weapons, and displays as

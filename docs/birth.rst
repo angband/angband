@@ -490,7 +490,7 @@ Infravision
    see: melee skill; fighting skill
    seealso: to-hit; fighting skill
    seealso: to-dam; fighting skill
-   seealso; blows; fighting skill
+   seealso: blows; fighting skill
 
 Fighting
   Fighting is the ability to hit and do damage with weapons or fists.
