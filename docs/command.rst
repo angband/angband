@@ -1,3 +1,5 @@
+.. _command-descriptions:
+
 ====================
 Command Descriptions
 ====================
@@ -52,16 +54,22 @@ Equipment list (``e``)
   objects to take advantage of their special powers.
 
 Quiver list (``|``)
-  Missiles that you carry will automatically be put in your quiver.  The
-  quiver has 10 slots; it also takes up inventory space, so every 40 
-  missiles will reduce your number of inventory slots by 1.
+  Displays the contents of your quiver.  Missiles that you carry will
+  automatically be put in your quiver if there is space.  The quiver has
+  10 slots; it also takes up inventory space:  every 40 missiles will
+  reduce your number of inventory slots by 1.  Items that are good for
+  throwing and have been :ref:`inscribed for throwing <inscribing>` (for
+  instance, the inscription includes ``@v0``) will also be placed in the
+  quiver if there is space.  Each stack of such items takes a quiver slot
+  and every 8 such items will reduce your inventory slots by 1.
 
 Drop an item (``d``)
   This drops an item from your inventory or equipment onto the dungeon
-  floor. If the floor spot you are standing on already has an object in it,
-  Angband will attempt to drop the item onto an adjacent space.  Doors and
-  traps are considered objects for the purpose of determining if the space 
-  is occupied. This command may take a quantity, and takes some energy.
+  floor.  The item will remain at your feet if possible.  Some terrain,
+  like doors and staircases, and any square with a trap can not hold
+  items, and, in that case, the game will attempt to place the item in
+  a nearby square that can hold items.  This command may take a quantity,
+  and takes some energy.
 
 Ignore an item (``k``) or Ignore an item ('^d')
   This ignores an item in your inventory or on the dungeon floor. If the
@@ -69,8 +77,8 @@ Ignore an item (``k``) or Ignore an item ('^d')
   ignored, the game will sometimes prompt you whether to ignore only this
   item or all others like it.  If the second option is chosen, all similar
   items on the floor and in your inventory will be ignored.  To view all
-  items regardless of whether they are ignored, you can use ``K`` to
-  toggle the ignore setting on and off.
+  items regardless of whether they are ignored, you can use ``K`` (``O``
+  in the roguelike keyset) to toggle the ignore setting on and off.
 
 Wear/Wield equipment (``w``)
   To wear or wield an object in your inventory, use this command. Since
@@ -94,15 +102,18 @@ Movement Commands
 Moving (arrow keys, number keys) or (arrow keys, number keys, 'yuhjklbn')
   This causes you to move one step in a given direction. If the square you
   wish to move into is occupied by a monster, you will attack it. If the
-  square is occupied by a door or a trap you may attempt to open or disarm
-  it if the appropriate option is set. Preceding this command with CTRL
-  will cause you to attack in the appropriate direction, but will not move
-  your character if no monster is there. These commands take some energy.
+  square is occupied by a door, you will attempt to open it. If the square
+  is occupied by a trap, you will attempt to disarm it unless you are
+  immune to traps:  in that case, you simply move there without harm. Preceding
+  this command with CTRL will cause you to alter (attack, tunnel, open,
+  disarm or close) in the appropriate direction, but will not move your
+  character if there is nothing there to alter. These commands take some
+  energy.
 
-Walk (``W``)
-  The walk command lets you willingly walk into a trap or a closed door,
-  without trying to open or disarm it. This command may take a count,
-  requires a direction, and takes some energy.
+Walk (``W``) or Walk (``-``)
+  The walk command lets you willingly walk into a trap without trying to
+  disarm it. This command may take a count, requires a direction, and takes
+  some energy.
 
 Run (``.``) or Run (``,``)
   This command will move in the given direction, following any bends in the
@@ -189,7 +200,7 @@ Tunnel (``T``) or Tunnel ('^t')
   Tunnelling or mining is a very useful art. There are many kinds of rock,
   with varying hardness, including permanent rock (permanent), granite
   (very hard), quartz veins (hard), magma veins (soft), and rubble (very
-  soft). Quartz and Magma veins may be displayed in a special way, and may
+  soft). Quartz and magma veins may be displayed in a special way, and may
   sometimes contain treasure, in which case they will be displayed in a
   different way. Rubble sometimes covers an object but is easy to tunnel
   through, even with your bare hands.  Tunnelling ability increases with 
@@ -266,12 +277,11 @@ Cast a spell (``m`` in both keysets)
   a chance of failure which starts out fairly large but decreases as you
   gain levels. If you don't have enough mana to cast a spell, you will be
   prompted for confirmation. If you decide to go ahead, the chance of
-  failure is greatly increased, and you may wind up paralyzed for several
-  turns. Since you must read the spell from a book, you cannot be blind or
-  confused while casting, and there must be some light present. This
-  command takes some energy: the higher your level, the less it takes, but
-  the higher the spell level, the more it takes.
-
+  failure is greatly increased, and whether or not the spell is successfully
+  cast, you may wind up paralyzed for several turns or draining your
+  constitution. Since you must read the spell from a book, you cannot be blind
+  or confused while casting, and, unless you are a necromancer, there must be
+  some light present. This command takes some energy.
 
 Object Manipulation Commands
 ============================
@@ -309,7 +319,7 @@ Read a scroll (``r``)
 Inscribe an object (``{``) 
   This command inscribes a string on an object. The inscription is
   displayed inside curly braces after the object description. The
-  inscription is limited to the particular object (or pile) and is not
+  inscription is limited to the particular object (or stack) and is not
   automatically transferred to all similar objects. Under certain
   circumstances, Angband will display "fake" inscriptions on certain
   objects ('tried', 'empty') when appropriate. These "fake" inscriptions
@@ -323,8 +333,8 @@ Inscribe an object (``{``)
   An item labeled as '{empty}' was found to be out of charges, and an
   item labeled as '{tried}' is a "flavored" item which the character has
   used, but whose effects are unknown. Certain inscriptions have a meaning
-  to the game, see '@#', '@x#', '!*', and '!x', in the section on
-  inventory object selection.
+  to the game, see '@#', '@x#', '!!', '=g`, '!*', '!x', '^*', and '^x' in the
+  :ref:`section on inscriptions <inscribing>`.
 
 Uninscribe an object (``}``)
   This command removes the inscription on an object. This command will have
@@ -333,7 +343,8 @@ Uninscribe an object (``}``)
 Toggle ignore (``K``) or Toggle ignore (``O``)
   This command will toggle ignore settings.  If on, all ignored items 
   will be hidden from view.  If off, all items will be shown regardless
-  of their ignore setting.  See the customize section for more info.
+  of their ignore setting.  See the :ref:`section on ignoring items <ignoring>`
+  for more information.
 
 Magical Object Commands
 =======================
@@ -400,12 +411,9 @@ Throw an item (``v``)
   weapons are especially designed for throwing.  Once the
   creature is hit, the object may or may not do any damage to it. 
   Note that flasks of oil will do some fire damage to a monster on impact. 
-  If you are wielding a missile launcher compatible with the object you are
-  throwing, then you automatically use the launcher to fire the missile
-  with much higher range, accuracy, and damage, than you would get by just
-  throwing the missile. Throw, like fire, requires a direction. Targeting
-  mode (see the next command) can be invoked with ``*`` at the 
-  'Direction?' prompt. This command takes some energy.
+  Throw, like fire, requires a direction. Targeting mode (see the next
+  command) can be invoked with ``*`` at the 'Direction?' prompt. This command
+  takes some energy.
 
 Targeting Mode (``*``)
   This will allow you to change or clear the current target.  That target
@@ -630,14 +638,12 @@ Interact with options (``=``)
   may mark your savefile as unsuitable for the high score list. The
   "window" options allow you to specify what should be drawn in any of the
   special sub-windows (not available on all platforms). See the help files
-  'customize.txt' and 'options.txt' for more info. You can also interact
-  with keymaps under this menu.
+  for :doc:`customization <customize>` and :doc:`options <option>` for more
+  information. You can also interact with keymaps under this menu.
 
 Interact with keymaps - option submenu
   Allow you to interact with keymaps. You may load or save keymaps from
-  user pref files, or define keymaps. You must define a "current action",
-  shown at the bottom of the screen, before you attempt to use any of the
-  "create macro" commands, which use that "current action" as their action.
+  user pref files, or define keymaps.
  
 Interact with visuals - option submenu
   Allow you to interact with visuals. You may load or save visuals from
@@ -664,7 +670,7 @@ Help (``?``)
 Identify Symbol (``/``)
   Use this command to find out what a character stands for. For instance,
   by pressing '/.', you can find out that the ``.`` symbol stands for a
-  floor spot. When used with a symbol that represents creatures, the this
+  floor spot. When used with a symbol that represents creatures, this
   command will tell you only what class of creature the symbol stands for,
   not give you specific information about a creature you can see. To get
   that, use the Look command.

@@ -5,12 +5,12 @@ Customising the game
 Angband allows you to change various aspects of the game to suit your tastes.  These include:
 
 * Options - which let you change interface or gameplay behaviour
-* `Ignoring items`_ and `inscribing items`_ to change how the game treats them
+* :ref:`Ignoring items <ignoring>` and :ref:`inscribing items <inscribing>` to change how the game treats them
 * `Showing extra info in subwindows`_
 * `Keymaps`_ - a way to assign commonly-used actions to specific keys
 * `Visuals`_ - allowing you to change the appearance of in-game entities like objects and monsters
 * `Colours`_ - allowing you to make a given color brighter, darker, or even completely different
-* `Interface details`_ - depending on which interface to the game you use, these give you control over the font, window placement, and graphical tile set
+* :ref:`Interface details <interface-details>` - depending on which interface to the game you use, these give you control over the font, window placement, and graphical tile set
 
 Except for the options, which are linked to the save file, and interface
 details, that are handled by the front end rather than the core of the game,
@@ -79,6 +79,8 @@ user pref command" command, activated by pressing ``"``.
 You may have to use the redraw command (``^r``) after changing certain of the
 aspects of the game to allow Angband to adapt to your changes.
 
+.. _ignoring:
+
 Ignoring items
 ==============
 
@@ -103,6 +105,8 @@ good
 non-artifact
   This setting only leaves artifacts unignored.
 
+
+.. _inscribing:
 
 Inscribing items
 ================
@@ -136,8 +140,8 @@ Inscribing an item with ``!`` followed by a command letter or ``*``:
 	Similarly, using !v!k!d makes it very hard for you to accidentally
 	throw, ignore or put down the item it is inscribed on.
 
-	Some adventurers use this for Scrolls of Word of Recall so they don't
-	accidentally return to the dungeon too soon.
+	Some adventurers inscribe their Scrolls of Word of Recall with '!r'
+	so they don't accidentally return to the dungeon too soon.
 
 Inscribing an item with ``@``, followed by a command letter, followed by 0-9:
 	Normally when you select an item from your inventory you must enter the
@@ -148,10 +152,10 @@ Inscribing an item with ``@``, followed by a command letter, followed by 0-9:
 	If you have multiple items inscribed with the same thing, the game will
 	use the first one.
 
-	For example, if you inscribe a staff of Cure Light Wounds with '@u1',
+	For example, if you inscribe a staff of Cure Light Wounds with '\@u1',
 	you can refer to it by pressing 1 when ``u``\sing it.  You could also
-	inscribe a wand of Wonder with '@a1', and when using ``a``\, 1 would select
-	that wand.
+	inscribe a wand of Wonder with '\@a1', and when using ``a``\, 1 would
+	select that wand.
 
 	Spellcasters should inscribe their books, so that if they lose them they
 	do not cast the wrong spell.  If you are mage and the beginner's
@@ -159,9 +163,21 @@ Inscribing an item with ``@``, followed by a command letter, followed by 0-9:
 	missile. But if you lose your spellbook, casting 'maa' will cast the
 	first spell in whatever new book is in the top of your inventory. This
 	can be a waste in the best case scenario and exceedingly dangerous in
-	the worst! By inscribing your spellbooks with '@m1', '@m2', etc., if
+	the worst! By inscribing your spellbooks with '\@m1', '\@m2', etc., if
 	you lose your first spellbook and attempt to cast magic missile by
 	using 'm1a', you cannot accidentally select the wrong spellbook.
+
+	The '\@v' plus number inscription has the side effect of placing the
+	item in the quiver if the item is good for throwing and the quiver has
+	room.  So, inscribing a spear with '\@v0' will attempt to put the
+	spear in the quiver's first slot.  Ammunition automatically goes into
+	the quiver when there is room, but you can inscribe it with '\@f' (for
+	the original keyset; use '\@t' for the roguelike keyset) plus the
+	desired slot number, 0 to 9, if you want a different ordering of
+	items in the quiver than what the game does on its own.  If
+	inscriptions assign more than one stack to the same quiver slot, the
+	inscribed stack that has been in the inventory the longest will be
+        placed in the slot.
 
 Inscribing an item with ``^``, followed by a command letter:
 	When you wear an item inscribed with ``^``, the game prompts you before
@@ -179,9 +195,15 @@ Inscribing an item with ``^``, followed by a command letter:
 Showing extra info in subwindows
 ================================
 
-In addition to the main window, you can create additional windows that have secondary information on them. You can access the subwindow menu by using ``=`` then ``w``, where you can choose what to display in which window.
-
-You may then need to make the window visible using the "window" menu from the menu bar (if you have one in your version of the game).
+In addition to the main window, you can create additional windows that have
+secondary information on them.  You can access the subwindow menu by using
+``=`` then ``w``, where you can choose what to display in which window.  The
+front end you use may provide a way to directly configure the subwindows
+without using that subwindow menu.  For front ends that do not provide that,
+you may have to use the front end's controls to make the subwindow visible
+after you have made changes in the subwindow menu.  Look at the
+:ref:`Interface details section <interface-details>` to see if it describes
+the front end you use and how that front end handles subwindows.
 
 There are a variety of subwindow choices and you should experiment to see which ones are the most useful for you.
 
@@ -266,6 +288,7 @@ If you are in graphics mode, you will be able to select a new tile for the entit
 
 Once you have made edits, you can save them from the options menu (``=``).  Press ``v`` for 'save visuals' and choose what you want to save.
 
+.. _interface-details:
 
 Interface details
 =================

@@ -103,15 +103,17 @@ has a basic "hit dice" number - for instance, a Dwarf's basic hit die is
 11, while a hobbit's is 7. This is modified by class: for instance, a
 warrior gets a +9 bonus to the hit die, while a mage gets no bonus and a
 priest +2, so a dwarven warrior's total hit die will be (11+9)=20 - meaning
-that they get between 1 and 20 hit points per level. If they were a priest,
-his hit dice would be (11+2)=13, and get between 1 and 13 hit points per
-level. The hobbit mage would get only 1-7 hps per level. (All characters
-get the maximum at first level: thereafter it is a random roll of 1dX where
-X is the hit die number, when the character goes up in level.) This is
-further modified by constitution - a character with high constitution will
-get a flat bonus of a certain number of hit points per level (recalculated
-right back to level 1: if you gain an extra hit point per level, and you
-are 42nd level, you will suddenly be 42 hit points better off.)
+that they get between 1 and 20 hit points per level. A dwarven priest's total
+hit die would be (11+2)=13, and that priest would get between 1 and 13 hit
+points per level. The hobbit mage would get only 1-7 hps per level. (All
+characters get the maximum at first level: thereafter it is a random roll of
+1dX where X is the hit die number, when the character goes up in level; the
+rolls are constrained so that the total hitpoints at the maximum level does
+not vary too far from the expected value.) This is further modified by
+constitution - a character with high constitution will get a flat bonus of a
+certain number of hit points per level (recalculated right back to level 1:
+if you gain an extra hit point per level, and you are 42nd level, you will
+suddenly be 42 hit points better off.)
 
 .. index::
    single: spell points; description
@@ -119,12 +121,13 @@ are 42nd level, you will suddenly be 42 hit points better off.)
 
 Each character has spell points, or mana, which limits how many spells (or
 prayers) a character can cast (or pray). The maximum number of spell points
-is derived from your class, level, and intelligence (for spells) or wisdom
-(for prayers), and you can never have more spell points than the maximum.
-Spell points may be regained by resting, or by magical means. Warriors
-never have any spell points. If a character gains enough wisdom or
-intelligence to get more spell points, the result is calculated right back
-to first level, just as with constitution and hit points.
+is derived from your class, level, and the class's spellcasting stat
+(intelligence for mages, rogues, necromancers, and blackguards, and wisdom
+for priests, paladins, druids, and rangers), and you can never have more spell
+points than the maximum.  Spell points may be regained by resting, or by
+magical means. Warriors never have any spell points. If a character gains
+enough wisdom or intelligence to get more spell points, the result is
+calculated right back to first level, just as with constitution and hit points.
 
 Lastly, each character has a base speed. Speed determines the amount of
 "energy" your character acquires in the game, and therefore how often you
@@ -190,9 +193,8 @@ Gnome
   mages, and have very good saving throws. They are good at searching,
   disarming, perception, and stealth. They have lower strength than humans
   so they are not very good at fighting with hand weapons. Gnomes have good
-  infravision.  Gnomes are intrinsically protected against paralysis and 
-  some slowing effects. Gnomes are excellent at using wands and staves
-  and can identify them when found.
+  infravision.  Gnomes are intrinsically protected against paralysis.  Gnomes
+  are excellent at using wands and staves and can identify them when found.
 
 .. _Dwarf:
 
@@ -214,11 +216,10 @@ Dwarf
 Half-Orc
   Half-Orcs make excellent warriors and decent priests, but are terrible at
   magic. They are as bad as dwarves at stealth, and horrible at searching,
-  disarming, and perception. Half-Orcs are, let's face it, ugly. They tend
-  to pay more for goods in town. Half-Orcs do make good warriors and
-  rogues, for the simple reason that Half-Orcs tend to have great
-  constitution and lots of hit points. Because of their preference to
-  living underground to on the surface, half-orcs resist darkness attacks.
+  disarming, and perception. Half-Orcs are, let's face it, ugly. Half-Orcs do
+  make good warriors and rogues, for the simple reason that Half-Orcs tend to
+  have great constitution and lots of hit points. Because they prefer to live
+  underground rather than on the surface, half-orcs resist darkness attacks.
   They have fair infravision.
 
 .. _Half-Troll:
@@ -261,9 +262,9 @@ Kobold
   They have excellent infravision, and are intrinsically resistant to
   poisons of all kinds. They have a good dexterity and constitution.
   However, they are weaker than humans, and also not noted for great
-  intelligence. Furthermore, they are ugly, and not trusted in town. And
-  while their constitution makes them tough, it still cannot prevent the
-  fact that they are not the biggest of creatures, and have few hit points.
+  intelligence. And while their constitution makes them tough, it still
+  cannot prevent the fact that they are not the biggest of creatures, and
+  have few hit points.
 
 Classes
 =======
@@ -321,9 +322,9 @@ Priest
   which spells they will learn. They are familiar with magical devices,
   preferring to call them "instruments of God", but are not as good as a
   mage in their use. Priests have great saving throws, and make passable
-  fighters, better if they can find a blessed weapon.  Wisdom is the priest's
-  primary stat and at high enough levels they can cast many prayers without
-  a chance of failure. Priests have poor stealth.
+  fighters, better if they can find a hafted or blessed weapon.  Wisdom is
+  the priest's primary stat and at high enough levels they can cast many
+  prayers without a chance of failure. Priests have poor stealth.
 
 .. _Necromancer:
 
@@ -419,9 +420,9 @@ Intelligence
   Intelligence will affect the number of spells you may learn each level as
   well as the number of spell points you receive. Intelligence is the most
   important stat for mages and necromancers. A high intelligence may also
-  improve your chances of successfully casting a spell. You cannot learn
-  spells if your intelligence is 7 or lower. A good intelligence can also
-  help with using magic devices, picking locks, and disarming traps.
+  improve your chances of successfully casting a spell. A good intelligence
+  can also help with using magic devices, picking locks, and disarming magic
+  traps.
  
 .. index::
    single: wisdom; description
@@ -445,7 +446,7 @@ Dexterity
   allow a character to get multiple blows with lighter weapons. Dexterity
   also increases a character's chances of hitting with any weapon and of
   dodging blows from enemies. Dexterity is also useful in picking locks,
-  disarming traps, protecting yourself from some of the thieves that
+  disarming physical traps, protecting yourself from some of the thieves that
   inhabit the dungeons, and (for rogues) stealing successfully from others.
   If the character has a high enough dexterity, thieves will never
   be successful in stealing from them.
