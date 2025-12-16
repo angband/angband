@@ -439,6 +439,15 @@ target_include_directories(OurExecutable PRIVATE
 )
 target_link_libraries(OurExecutable PRIVATE ${ANGBAND_CORE_LINK_LIBRARIES})
 
+# Allow for some introspection:  have rules to print out names that something
+# downstream could use.  Have the output start with "our-<something>=" so it
+# can very likely be separated from whatever other junk the build system prints
+# out.
+add_custom_target(print-project-name
+    COMMAND "${CMAKE_COMMAND}" -E echo "our-project-name=${PROJECT_NAME}")
+add_custom_target(print-executable-name
+    COMMAND "${CMAKE_COMMAND}" -E echo "our-executable-name=$<TARGET_FILE_NAME:OurExecutable>")
+
 if(SUPPORT_X11_FRONTEND)
     include(src/cmake/macros/X11_Frontend.cmake)
     configure_x11_frontend(OurExecutable)

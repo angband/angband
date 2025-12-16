@@ -44,16 +44,17 @@ jobs:
         run: |
           cd "$(cygpath -u "$GITHUB_WORKSPACE")"
           cd build/game
+          prog=$(cmake --build .. -t print-executable-name | sed -En 's/^our-executable-name=//p')
           set +e
-          timeout 1 ./angband.exe
+          timeout 1 "./$prog"
           EXIT_CODE=$?
           set -e
           if [ $EXIT_CODE -eq 124 ]; then
               # 124 = timeout expired
-              echo "Angband ran for at least 1 second and was killed by timeout. ✅ Success."
+              echo "$prog ran for at least 1 second and was killed by timeout. ✅ Success."
           else
               # Exited before timeout
-              echo "Angband exited too early (exit code $EXIT_CODE). ❌ Failure."
+              echo "$prog exited too early (exit code $EXIT_CODE). ❌ Failure."
               exit 1
           fi
 
@@ -89,16 +90,17 @@ jobs:
         shell: C:\tools\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
         run: |
           cd "$(cygpath -u "$GITHUB_WORKSPACE")"
+          prog=$(cd src && make print-executable-name | sed -En 's/^our-executable-name=//p')
           set +e
-          timeout 1 ./angband.exe
+          timeout 1 "./$prog"
           EXIT_CODE=$?
           set -e
           if [ $EXIT_CODE -eq 124 ]; then
               # 124 = timeout expired
-              echo "Angband ran for at least 1 second and was killed by timeout. ✅ Success."
+              echo "$prog ran for at least 1 second and was killed by timeout. ✅ Success."
           else
               # Exited before timeout
-              echo "Angband exited too early (exit code $EXIT_CODE). ❌ Failure."
+              echo "$prog exited too early (exit code $EXIT_CODE). ❌ Failure."
               exit 1
           fi
 
