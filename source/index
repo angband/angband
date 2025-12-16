@@ -44,7 +44,7 @@ pageclass = "class='front'"
 <section id="resources">
 <h3>Now you're playing, check out:</h3>
 <dl>
-<dt><a href="http://angband.oook.cz/forum/">Angband forums</a>
+<dt><a href="https://angband.live/forums/">Angband forums</a>
 <dd>Angband and its variants have an active community.  Ask here for advice, share tips, and talk about the game.
 
 <dt><a href="https://angband.live/">angband.live</a>
@@ -53,7 +53,7 @@ pageclass = "class='front'"
 <dt><a href="https://angband.readthedocs.io/en/latest/index.html">User manual</a>
 <dd>The latest documentation is available, and some brief help notes are included with the game too - just type <tt>?</tt> to access them.
 
-<dt><a href="http://angband.oook.cz/ladder.php">Angband ladder</a>
+<dt><a href="https://angband.live/ladder/">Angband ladder</a>
 <dd>Upload your character sheet to the ladder for rankings and advice - and check out other adventurers too!
 
 </dl>
