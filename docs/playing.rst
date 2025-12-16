@@ -112,7 +112,7 @@ Original Keyset Command Summary
 ``n``  Repeat previous command       ``N``  (unused)
 ``o``  Open a door or chest          ``O``  (unused)
 ``p``  (normally unused; see note)   ``P``  (unused)
-``q``  Quaff a potion                ``Q``  Kill character & quit
+``q``  Quaff a potion                ``Q``  Retire character & quit
 ``r``  Read a scroll                 ``R``  Rest for a period
 ``s``  Steal (rogues only)           ``S``  See abilities
 ``t``  Take off equipment            ``T``  Dig a tunnel
@@ -191,7 +191,7 @@ Roguelike Keyset Command Summary
  ``n``  (walk - south east)           ``N``  (run - south east)
  ``o``  Open a door or chest          ``O``  Toggle ignore
  ``p``  (normally unused; see note)   ``P``  Browse a book
- ``q``  Quaff a potion                ``Q``  Kill character & quit
+ ``q``  Quaff a potion                ``Q``  Retire character & quit
  ``r``  Read a scroll                 ``R``  Rest for a period
  ``s``  Steal (rogues only)           ``S``  See abilities
  ``t``  Fire an item                  ``T``  Take off equipment
