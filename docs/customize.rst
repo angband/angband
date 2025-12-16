@@ -432,18 +432,21 @@ aspects of the SDL2 interface.
 
 Next to "Menu", are a series of one letter labels that act as toggles for the
 terminal windows shown in the application window.  Click on one to toggle it
-between on (drawn in white) and off (drawn in gray).  It is not possible to
-toggle off the main window shown in the primary application window.
+between on (drawn with a filled rectangle next to it) and off (drawn with an
+empty rectangle next to it).  It is not possible to toggle off the main window
+shown in the primary application window.
 
-At the end of the menu bar are two toggle buttons labeled "Size" and "Move".
-Each will be gray if disabled or white if enabled.  Clicking on "Size" when
-it is disabled will enable it, disable "Move", turn off input to the game's
-core, and cause clicks and drags within the displayed subwindows to change
-the sizes for those subwindows.  Clicking on "Move" when it is disabled will
-enable it, disable "Size", turn off input to the game's core, and cause clicks
-and drags within the displayed subwindows to change the positions for those
-subwindows.  Disable both "Move" and "Size", by clicking on one if it is
-enabled, to restore passing input to the game's core.
+At the end of the menu bar are two toggle buttons labeled "Move" and "Size".
+When the rectangle next to "Move" is empty, the positions of the subwindows
+are fixed in place.  Clicking "Move" in that state will turn it on, turn off
+"Size", disable input to the game's core, and cause clicks and drags within the
+displayed to change the positions of those windows.  Clicking "Move" when it is
+on will turn it off and restore passing input to the game's core.  When the
+rectangle next to "Size" is empty, the size of the subwindows are fixed.
+Clicking "Size" in that state will turn it on, turn off "Move", disable input
+to the game's core, and cause clicks and drags withing the displayed windows
+to change the sizes for those subwindows.  Clicking "Size" when it is on will
+turn it off and restore passing input to the game's core.
 
 Within "Menu", the first entries control properties for each of the displayed
 terminal windows within that application window.  For the main window, you
@@ -457,18 +460,19 @@ will be shown on top of the other windows.
 
 Below the entries for the contained terminal windows, is an entry,
 "Fullscreen" for toggling fullscreen mode for that application window.  That
-entry will display a rectangle at the end of the entry when fullscreen mode
-is on.  That rectangle will be absent when fullscreen mode is off.
+entry will display a filled rectangle at the end of the entry when fullscreen
+mode is on and an empty rectangle when fullscreen mode is off.
 
 In the primary application window which contains the main window, there is an
 entry, "Send Keypad Modifier", after that for whether key strokes from the
 numeric keypad will be sent to the game with the keypad modifier set.  That
-entry will be gray when the modifier is not send and will be white when the
-modifier is sent.  Sending the modifier allows some predefined keymaps to work,
-for instance shift with 8 from the numeric keypad to run north, at the cost of
-compatibility issues with some keyboard layouts that differ from the standard
-English keyboard layout for which normal keys have equivalents on the numeric
-keypad.  https://github.com/angband/angband/issues/4522 has an example of the
+entry will have an empty rectangle at the end  when the modifier is not sent
+and a filled rectangle when the modifier is sent.  Sending the modifier allows
+some predefined keymaps to work, for instance shift with 8 from the numeric
+keypad to run north, at the cost of compatibility issues with some keyboard
+layouts that differ from the standard English keyboard layout for which normal
+keys have equivalents on the numeric keypad.
+https://github.com/angband/angband/issues/4522 has an example of the
 problems that can be avoided by not sending the keypad modifier.
 
 Below "Send Keypad Modifier" in the primary application window's "Menu" is
@@ -481,10 +485,11 @@ movement keys will work to move between controls as will Tab (to go to the
 activate a menu item if it can be activated.  Trying to descend further into
 the menus with the in-game movement keys will also activate if a menu item if
 it is as deep as you can go.  Below "Menu Shortcuts..." is "Windows":  use
-that to bring up one of the additional application windows.
+that to bring up or hide one of the additional application windows.
 
-The final two entries in "Menu" are "About" for displaying an information
-dialog about the game and "Quit" to save the game and exit.
+The final three entries in "Menu" are "About" for displaying an information
+dialog about the game, "SDL Details" for displaying an information dialog
+with diagnostic details about SDL2, and "Quit" to save the game and exit.
 
 When you leave the game, the current settings for the SDL interface are saved
 as ``sdl2init.txt`` in the same directory as is used for preference files, see
