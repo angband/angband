@@ -67,7 +67,7 @@ void nds_scrkey_add_file(ang_file *f) {
 
 		nds_scrkey_entry entry = { 0 };
 
-		strncpy(entry.label, label, NDS_SCRKEY_LABEL_LEN);
+		snprintf(entry.label, NDS_SCRKEY_LABEL_LEN, "%s", label);
 
 		entry.x = CLIP(strtoul(x_str, NULL, 0), 0, NDS_SCREEN_WIDTH);
 		entry.y = CLIP(strtoul(y_str, NULL, 0), 0, NDS_SCREEN_HEIGHT);
@@ -75,7 +75,7 @@ void nds_scrkey_add_file(ang_file *f) {
 		entry.h = CLIP(strtoul(h_str, NULL, 0), 0, NDS_SCREEN_HEIGHT - entry.y);
 
 		strunescape(sequence);
-		strncpy(entry.sequence, sequence, NDS_SCRKEY_SEQ_LEN);
+		snprintf(entry.sequence, NDS_SCRKEY_SEQ_LEN, "%s", sequence);
 
 		nds_scrkeys = mem_realloc(nds_scrkeys, (nds_scrkeys_num + 1) * sizeof(nds_scrkey_entry));
 		nds_scrkeys[nds_scrkeys_num++] = entry;

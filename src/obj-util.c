@@ -468,7 +468,7 @@ unsigned check_for_inscrip_with_int(const struct object *obj, const char *inscri
 	do {
 		s = strstr(s, inscrip);
 		if (!s) break;
-		if (isdigit(s[inlen])) {
+		if (isdigit((unsigned char)s[inlen])) {
 			if (i == 0) {
 				long inarg = strtol(s + inlen, 0, 10);
 

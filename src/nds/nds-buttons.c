@@ -164,7 +164,7 @@ void nds_btn_add_mappings_from_file(ang_file *f) {
 
 		strunescape(sequence);
 
-		strncpy(entry.input, sequence, NDS_BTN_SEQ_LEN);
+		snprintf(entry.input, NDS_BTN_SEQ_LEN, "%s", sequence);
 
 		nds_btn_add_mappings(&entry, 1);
 	}

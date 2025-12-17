@@ -1522,7 +1522,7 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 			if (*t == ' ') continue;
 
 			/* Most alphabetic characters signify monster races. */
-			if (isalpha(*t) && (*t != 'x') && (*t != 'X')) {
+			if (isalpha((unsigned char)*t) && (*t != 'x') && (*t != 'X')) {
 				/* If the symbol is not yet stored, ... */
 				if (!strchr(racial_symbol, *t)) {
 					/* ... store it for later processing. */

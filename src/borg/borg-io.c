@@ -203,7 +203,7 @@ static void borg_note_internal(bool warning, const char *what)
                 /* Find a split point */
                 for (i = w / 2; i < w - 2; i++) {
                     /* Pre-emptive split point */
-                    if (isspace(what[i]))
+                    if (isspace((unsigned char)what[i]))
                         k = i;
                 }
 

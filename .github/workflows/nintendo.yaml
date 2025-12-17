@@ -25,8 +25,7 @@ jobs:
         shell: bash
         run: |
           pushd src/
-          # TODO: -Werror trigger an stringop-truncation error on strncpy. The fix is not clear to me. Either enforce '\0' termination in the last byte, or use memcpy instead of strncpy.
-          make -f Makefile.3ds -j$(nproc)
+          env CFLAGS="-Werror" make -f Makefile.3ds -j$(nproc)
           popd
 
       - name: Setup cxitool
