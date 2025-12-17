@@ -11,7 +11,7 @@
 # Basic compiler stuff
 CC = i586-pc-msdosdjgpp-gcc
 WARNINGS = -W -Wall -Wextra -Wold-style-definition -Wmissing-declarations -Wredundant-decls -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wformat-security -Winit-self -Wmissing-include-dirs -Wundef -Wmissing-format-attribute -Wnested-externs -Wunreachable-code -Wno-unused-parameter -Wno-missing-field-initializers
-CFLAGS = -O2 -D'iswprint(...)=0' -D'wcschr(...)=NULL' -D'wcslen(...)=0' $(WARNINGS)
+CFLAGS += -O2 -D'iswprint(...)=0' -D'wcschr(...)=NULL' -D'wcslen(...)=0' $(WARNINGS)
 
 # Add additional search directives here
 INCLUDES = -I.

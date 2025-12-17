@@ -16,7 +16,7 @@ jobs:
       - name: Build
         run: |
           cd src
-          make -f Makefile.osx -j$(sysctl -n hw.ncpu)
+          env CFLAGS="-Werror" make -f Makefile.osx -j$(sysctl -n hw.ncpu)
 
   release-flags:
     runs-on: macos-latest
@@ -27,7 +27,7 @@ jobs:
       - name: Build with Flags Used for Release
         run: |
           cd src
-          env OPT="-O2 -DNDEBUG" make -f Makefile.osx -j$(sysctl -n hw.ncpu)
+          env CFLAGS="-Werror" OPT="-O2 -DNDEBUG" make -f Makefile.osx -j$(sysctl -n hw.ncpu)
 
   autoconf:
     runs-on: macos-latest
@@ -62,4 +62,4 @@ jobs:
           echo 'exit 0' >>hack-ncurses.sh
           chmod a+x hack-ncurses.sh
           ./configure --with-no-install NCURSES_CONFIG=$(PWD)/hack-ncurses.sh
-          make
+          env CFLAGS="-Werror" make -j$(sysctl -n hw.ncpu)

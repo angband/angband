@@ -32,7 +32,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -G Ninja -DSUPPORT_GCU_FRONTEND=ON -DSUPPORT_STATIC_LINKING=ON ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_GCU_FRONTEND=ON -DSUPPORT_STATIC_LINKING=ON ..
           ninja -j$(nproc)
 
   sdl:
@@ -64,7 +64,7 @@ jobs:
         run: |
           mkdir build-sound
           cd build-sound
-          cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON -DSUPPORT_SDL2_SOUND=ON -DSUPPORT_STATIC_LINKING=ON ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_SDL2_FRONTEND=ON -DSUPPORT_SDL2_SOUND=ON -DSUPPORT_STATIC_LINKING=ON ..
           ninja -j$(nproc)
 
   configure-win:
@@ -94,8 +94,8 @@ jobs:
         run: |
           ./autogen.sh
           ./configure --enable-win
-          make -j$(nproc) install
-          make -j$(nproc) tests
+          env CFLAGS="-Werror" make -j$(nproc) install
+          env CFLAGS="-Werror" make -j$(nproc) tests
 
   cmake-win32:
     runs-on: windows-latest
@@ -122,7 +122,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_STATIC_LINKING=ON ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_STATIC_LINKING=ON ..
 
       - name: Build with Ninja
         run: |
@@ -138,7 +138,7 @@ jobs:
         run: |
           mkdir build-bundled-png
           cd build-bundled-png
-          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_BUNDLED_PNG=ON ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_BUNDLED_PNG=ON ..
           ninja -j$(nproc)
 
   cmake-win64:
@@ -165,7 +165,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_WINDOWS_FRONTEND=ON ..
 
       - name: Build with Ninja
         run: |
@@ -181,7 +181,7 @@ jobs:
         run: |
           mkdir build-static
           cd build-static
-          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_STATIC_LINKING=ON ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_STATIC_LINKING=ON ..
           ninja -j$(nproc)
 
   asan-ubsan-clang64:
@@ -212,7 +212,7 @@ jobs:
           cmake -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
-            -DCMAKE_C_FLAGS="-fsanitize=address -fsanitize=undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer -fno-lto -g" \
+            -DCMAKE_C_FLAGS="-Werror -fsanitize=address -fsanitize=undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer -fno-lto -g" \
             ..
           ninja -j$(nproc) --verbose
 

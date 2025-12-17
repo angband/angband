@@ -27,4 +27,4 @@ jobs:
           rm "$archive"
           PATH="$PATH":"`pwd`/djgpp/bin"
           cd src
-          make -f Makefile.ibm -j$(nproc)
+          env CFLAGS="-Werror" make -f Makefile.ibm -j$(nproc)

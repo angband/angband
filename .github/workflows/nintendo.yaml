@@ -25,6 +25,7 @@ jobs:
         shell: bash
         run: |
           pushd src/
+          # TODO: -Werror trigger an stringop-truncation error on strncpy. The fix is not clear to me. Either enforce '\0' termination in the last byte, or use memcpy instead of strncpy.
           make -f Makefile.3ds -j$(nproc)
           popd
 
@@ -36,7 +37,7 @@ jobs:
           pushd 3dstools/
           ./autogen.sh
           ./configure
-          make install
+          make -j$(nproc) install
           popd
 
       - name: Setup makerom 
@@ -45,8 +46,8 @@ jobs:
           apt-get update && apt-get install -y build-essential libmbedtls-dev liblzma-dev libyaml-dev
           git clone https://github.com/3DSGuy/Project_CTR/
           pushd Project_CTR/makerom
-          make deps
-          make
+          make -j$(nproc) deps
+          make -j$(nproc)
           cp -rv bin/makerom /usr/local/bin
           popd
 

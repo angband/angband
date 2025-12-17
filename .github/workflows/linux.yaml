@@ -22,7 +22,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake -G Ninja -DSUPPORT_TEST_FRONTEND=ON ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_TEST_FRONTEND=ON ..
           ninja -j$(nproc)
           ninja -j$(nproc) alltests
 
@@ -42,7 +42,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake -G Ninja ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" ..
           ninja -j$(nproc)
 
   ncurses:
@@ -61,7 +61,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake -G Ninja -DSUPPORT_GCU_FRONTEND=ON ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_GCU_FRONTEND=ON ..
           ninja -j$(nproc)
 
   sdl:
@@ -80,7 +80,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake -G Ninja -DSUPPORT_SDL_FRONTEND=ON -DSUPPORT_SDL_SOUND=ON ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_SDL_FRONTEND=ON -DSUPPORT_SDL_SOUND=ON ..
           ninja -j$(nproc)
 
   sdl2:
@@ -99,7 +99,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON -DSUPPORT_SDL2_SOUND=ON ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_SDL2_FRONTEND=ON -DSUPPORT_SDL2_SOUND=ON ..
           ninja -j$(nproc)
 
   statbuild:
@@ -119,8 +119,13 @@ jobs:
       - name: Build
         run: |
           ./autogen.sh
+          # Prepending -Werror to ./configure does not work because it causes SDL and sqlite3 tests to fail.
+          # CFLAGS is applied to the small temporary .c programs that autoconf generates and executes
+          # as part of feature detection. These programs often contain warnings, which should not block
+          # configure success.
+          # Therefore, -Werror is applied only to the make invocation, so our own source code is treated strictly.
           env CFLAGS="-Wvla -Wlogical-op" ./configure --with-no-install --enable-stats --enable-test --enable-sdl-mixer
-          make -j$(nproc)
+          env CFLAGS="-Werror" make -j$(nproc)
 
   makefilestd:
     name: Makefile.std
@@ -138,7 +143,7 @@ jobs:
         run: |
           cd src
           sed -e 's/^# SYS_x11 =/SYS_x11 =/' -e 's/^# SYS_sdl =/SYS_sdl=/' -e 's/^# SYS_stats =/SYS_stats =/' -e 's/^# SYS_stats_objs =/SYS_stats_objs =/' -e 's/^#SOUND_sdl =/SOUND_sdl =/' -e 's/^#SOUND_sdl_objs =/SOUND_sdl_objs =/' <Makefile.std >Makefile.std.modified
-          make -f Makefile.std.modified -j$(nproc)
+          env CFLAGS="-Werror" make -f Makefile.std.modified -j$(nproc)
           make -f Makefile.std.modified clean
           sed -e 's/^# SYS_sdl2 =/SYS_sdl2 =/' -e 's/^# SYS_sdl2_objs =/SYS_sdl2_objs =/' -e 's/^#SOUND_sdl2 =/SOUND_sdl2 =/' -e 's/^#SOUND_sdl_objs =/SOUND_sdl_objs =/' <Makefile.std >Makefile.std.modified
-          make -f Makefile.std.modified -j$(nproc)
+          env CFLAGS="-Werror" make -f Makefile.std.modified -j$(nproc)

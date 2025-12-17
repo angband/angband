@@ -58,7 +58,7 @@ ICON		:=	nds/att-48.png
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
-CFLAGS	:=	-g -Wall -mword-relocations -ffunction-sections \
+CFLAGS	+=	-g -Wall -mword-relocations -ffunction-sections \
 			$(ARCH)
 
 # Omit some flags for easier debugging

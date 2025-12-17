@@ -1166,14 +1166,14 @@ static void Term_nuke_ibm(term *t)
 	curs_set(1);
 }
 
-int Term_iswprint_ibm(wint_t wc)
+static int Term_iswprint_ibm(wint_t wc)
 {
 	int retval;
 	retval = (wc < 0x100);
 	return retval;
 }
 
-wchar_t *Term_wcschr_ibm(const wchar_t *s, wchar_t c) {
+static wchar_t *Term_wcschr_ibm(const wchar_t *s, wchar_t c) {
 	wchar_t cc = c;
 
 	while (*s) {
@@ -1190,7 +1190,7 @@ wchar_t *Term_wcschr_ibm(const wchar_t *s, wchar_t c) {
 	return 0;
 }
 
-size_t Term_wcslen_ibm(const wchar_t *s) {
+static size_t Term_wcslen_ibm(const wchar_t *s) {
 	const wchar_t *p;
 
 	if (s == 0) {
