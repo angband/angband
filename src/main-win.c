@@ -3474,7 +3474,9 @@ static void display_help(void)
 	if (open_url("https://angband.readthedocs.io/en/latest/"))
 		return;
 
-	Term_keypress('?', 0);
+	if (inkey_flag) {
+    	Term_keypress('?', 0);
+	}
 }
 
 /**
