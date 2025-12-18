@@ -1,0 +1,64 @@
+name: documents
+
+on:
+  pull_request:
+
+env:
+    # Used as the name when uploading or downloading the artifact with the
+    # converted document files.
+    DOC_ARTIFACT: docs-for-review
+    # Used as the path for the file with the converted document files.
+    DOC_ARTIFACT_PATH: docs-for-review.tar
+
+jobs:
+  doc-check:
+    name: Check changes to docs
+    runs-on: ubuntu-latest
+    steps:
+      # Need commit history.  Use 0 for fetch-depth to handle pull requests
+      # with an arbitrary number of commits.  Only get the part of the
+      # repository that affects building the documentation.
+      - name: Clone Project
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          sparse-checkout: |
+            docs
+            scripts
+
+      # Need Sphinx (Python documentation tool).  To avoid extra work, do not
+      # bother with the 3rd party theme used to build the documents for
+      # release.  Need make and git as well.
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install sphinx-common make git
+
+      # If the pull request changes anything in docs, run the document
+      # conversion to the end and fail on any warnings.  Need to fetch the
+      # master branch first so we check against it.
+      - name: Convert
+        run: |
+          git fetch origin master --depth 1
+          if test x`git log origin/master..HEAD docs | wc -l` = x0 ; then
+            echo There are no changes in docs to check.
+          else
+            cd docs
+            make -j$(nproc) DOC_HTML_THEME=alabaster SPHINX_OPTS="-W --keep-going" html
+          fi
+
+      # Archive the built documentation so it can be uploaded for review.
+      - name: Archive
+        run: |
+          if test -d docs/_build/html ; then
+            cd docs/_build
+            tar -cf ../../${{ env.DOC_ARTIFACT_PATH }} html
+          fi
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.DOC_ARTIFACT }}
+          path: ${{ env.DOC_ARTIFACT_PATH }}
+          if-no-files-found: ignore
+          retention-days: 14
