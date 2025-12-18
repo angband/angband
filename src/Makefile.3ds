@@ -183,11 +183,18 @@ ifneq ($(ROMFS),)
 	export _3DSXFLAGS += --romfs=$(CURDIR)/$(ROMFS)
 endif
 
-.PHONY: all clean
+.PHONY: all clean print-project-name print-executable-name
 
 #---------------------------------------------------------------------------------
 all: $(BUILD) $(BUILD)/borg $(GFXBUILD) $(DEPSDIR) $(DEPSDIR)/borg $(ROMFS_T3XFILES) $(T3XHFILES)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.3ds $(PROGNAME).3dsx
+
+# These two mimic rules from src/Makefile.
+print-project-name:
+	@echo our-project-name=${NAME}
+
+print-executable-name:
+	@echo our-executable-name=${PROGNAME}
 
 $(BUILD) $(BUILD)/borg:
 	@mkdir -p $@
