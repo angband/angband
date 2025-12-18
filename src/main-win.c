@@ -72,18 +72,22 @@
 #include "ui-prefs.h"
 #include "win/win-menu.h"
 
-/* Set the minimum version of Windows to accept so AlphaBlend() is available */
+/* Set the minimum version of Windows to accept:
+ * - ShellExecuteA() requires Windows XP (_WIN32_WINNT >= 0x0501)
+ * - AlphaBlend() requires Windows 2000 (_WIN32_WINNT >= 0x0500)
+ */
 #ifndef WINVER
-#define WINVER 0x0500
-#elif WINVER < 0x0500
+#define WINVER 0x0501
+#elif WINVER < 0x0501
 #undef WINVER
-#define WINVER 0x0500
+#define WINVER 0x0501
 #endif
+
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0500
-#elif _WIN32_WINNT < 0x0500
+#define _WIN32_WINNT 0x0501
+#elif _WIN32_WINNT < 0x0501
 #undef _WIN32_WINNT
-#define _WIN32_WINNT 0x0500
+#define _WIN32_WINNT 0x0501
 #endif
 
 #include <locale.h>
