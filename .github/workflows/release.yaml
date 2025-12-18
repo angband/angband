@@ -71,12 +71,26 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract Names from Makefile
+      # Need automake and autoconf to initialize the build system and make to
+      # extract the names.
+      - name: Install Build Dependencies
+        id: build_dep
+        run: |
+          sudo apt-get update
+          sudo apt-get install autoconf automake make
+
+      - name: Initialize the Build System
+        id: build_init
+        run: |
+          ./autogen.sh
+          ./configure --with-no-install
+
+      - name: Extract Names from the Build System
         id: get_names
         run: |
-          name=`sed -E -n -e 's/^[[:blank:]]*NAME[[:blank:]]+=[[:blank:]]+//p' src/Makefile.src | tr ' #' '\t\t' | tail -1 | cut -f 1`
+          name=`cd src && make print-project-name | sed -En 's/^our-project-name=//p'`
           echo "name=$name" >> $GITHUB_OUTPUT
-          prog=`sed -E -n -e 's/^[[:blank:]]*PROGNAME[[:blank:]]+=[[:blank:]]+//p' src/Makefile.src | tr ' #' '\t\t' | tail -1 | cut -f 1`
+          prog=`cd src && make print-executable-name | sed -En 's/^our-executable-name=//p'`
           echo "prog=$prog" >> $GITHUB_OUTPUT
 
       - name: Set Release Version

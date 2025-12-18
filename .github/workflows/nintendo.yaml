@@ -17,8 +17,9 @@ jobs:
 
       - name: Extract Names from Makefile
         id: get_names
+        shell: bash
         run: |
-            progname=`sed -E -n -e 's/^[[:blank:]]*PROGNAME[[:blank:]]+=[[:blank:]]+//p' src/Makefile.src || tr ' #' '\t\t' | tail -1 | cut -f 1`
+            progname=`cd src && make -f Makefile.3ds print-executable-name | sed -En 's/^our-executable-name=//p'`
             echo "progname=$progname" >> $GITHUB_OUTPUT
 
       - name: Build Nintendo 3DS (3dsx)
