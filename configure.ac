@@ -298,18 +298,9 @@ AS_IF([test "$enable_curses" = "yes"],
 		AC_DEFINE(USE_GCU, 1, [Define to 1 if using the Curses frontend.])
 		CPPFLAGS="${CPPFLAGS} ${NCURSES_CFLAGS}"
 		LIBS="${LIBS} ${NCURSES_LIBS}"
-		MAINFILES="${MAINFILES} \$(GCUMAINFILES)"],
-		[AC_CHECK_LIB([ncursesw], [initscr], [
-			AC_DEFINE(USE_NCURSES, 1, [Define to 1 if NCurses is found.])
-			AC_DEFINE(USE_GCU, 1, [Define to 1 if using the Curses frontend.])
-			AC_DEFINE(_XOPEN_SOURCE_EXTENDED, 1, [Defined for systems that guard ncurses decls with _XOPEN_SOURCE_EXTENDED])
-			with_curses=yes
-			LIBS="${LIBS} -lncursesw"
-			MAINFILES="${MAINFILES} \$(GCUMAINFILES)"
-		])
-		AC_SEARCH_LIBS([keypad], [tinfow tinfo])])])
-
-AC_CHECK_FUNCS([mvwaddnwstr use_default_colors can_change_color])
+		MAINFILES="${MAINFILES} \$(GCUMAINFILES)"
+		AC_SEARCH_LIBS([keypad], [tinfow tinfo])
+		AC_CHECK_FUNCS([use_default_colors])])])
 
 dnl X11 checking
 with_x11=no

@@ -421,118 +421,181 @@ int main (int argc, char *argv[])
 ])
 
 # Configure paths for ncursesw
-# stolen from Sam Lantinga 9/21/99 from directly above (SDL)
-# stolen from Manish Singh
-# stolen back from Frank Belew
-# stolen from Manish Singh
-# Shamelessly stolen from Owen Taylor
 
 dnl AM_PATH_NCURSESW([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
 dnl Test for ncursesw, and define NCURSES_CFLAGS and NCURSES_LIBS
 dnl
 AC_DEFUN([AM_PATH_NCURSESW],
-[dnl 
+[dnl
 dnl Get the cflags and libraries from the ncursesw6-config or ncursesw5-config
 dnl script.
-dnl
-AC_ARG_WITH(ncurses-prefix,[AS_HELP_STRING([--with-ncurses-prefix=PFX], [set prefix where ncurses is installed (optional)])],
-            ncurses_prefix="$withval", ncurses_prefix="")
-AC_ARG_WITH(ncurses-exec-prefix,[AS_HELP_STRING([--with-ncurses-exec-prefix=PFX], [set exec prefix where ncurses is installed (optional)])],
-            ncurses_exec_prefix="$withval", ncurses_exec_prefix="")
-AC_ARG_ENABLE(ncursestest, [AS_HELP_STRING([--disable-ncursestest], [do not try to compile and run a test ncurses program])],
-		    , enable_ncursestest=yes)
-AC_ARG_VAR([NCURSES_CONFIG], [full path to the script for querying details about how to compile and link with an installed ncurses library])
+  AC_ARG_WITH([ncurses-prefix],
+      [AS_HELP_STRING([--with-ncurses-prefix=PFX],
+          [set prefix where ncurses is installed (optional)])],
+      [ncurses_prefix="$withval"],
+      [ncurses_prefix=""])
+  AC_ARG_ENABLE(ncursestest,
+      [AS_HELP_STRING([--disable-ncursestest], [disable runtime sanity check for ncurses])],
+      [],
+      [enable_ncursestest=yes])
+  AC_ARG_VAR([NCURSES_CONFIG],
+      [full path to the script for querying details about how to compile and link with an installed ncurses library])
 
-# Holds variations of the name of the script used to query the ncurses
-# installation.
-ncurses_config_progs="ncursesw6-config ncursesw5-config"
-
-  if test x$ncurses_exec_prefix != x ; then
-     AC_PATH_PROGS([NCURSES_CONFIG], [$ncurses_config_progs], [no],
-        [$ncurses_exec_prefix/bin])
-  fi
+dnl Holds variations of the name of the script used to query the ncurses
+dnl installation.
+  ncurses_config_progs="ncursesw6-config ncursesw5-config"
   if test x$ncurses_prefix != x ; then
-     AC_PATH_PROGS([NCURSES_CONFIG], [$ncurses_config_progs], [no],
+    AC_PATH_PROGS([NCURSES_CONFIG], [$ncurses_config_progs], [no],
         [$ncurses_prefix/bin])
   fi
-
   AC_PATH_PROGS([NCURSES_CONFIG], [$ncurses_config_progs], [no])
-  AC_MSG_CHECKING([for ncurses - wide char support])
+
   no_ncurses=""
-  if test "$NCURSES_CONFIG" = "no" ; then
-    no_ncurses=yes
+  if test "x$NCURSES_CONFIG" = xno ; then
+dnl Without a config program, fall back to seeing if what is in the standard
+dnl locations will suffice.
+    ncurses_lib=""
+    AC_CHECK_HEADER([ncurses.h],
+        [AC_CHECK_LIB([ncursesw], [initscr], [ncurses_lib=ncursesw],
+            [AC_CHECK_LIB([ncurses], [initscr], [ncurses_lib=ncurses],
+                [no_ncurses=yes])])],
+        [no_ncurses=yes])
+    if test "x$no_ncurses" = x ; then
+      NCURSES_CFLAGS=""
+      NCURSES_LIBS="-l$ncurses_lib"
+      AC_MSG_WARN([The ncursesw6-config or ncursesw5-config script normally installed by ncursesw could not be found.  Located ncurses.h and $ncurses_lib library in the standard paths and will attempt to use them.])
+    else
+      AC_MSG_WARN([The ncursesw6-config or ncursesw5-config script installed by ncursesw could not be found.  If ncursesw was installed in PREFIX, make sure PREFIX/bin is in your path, or set the NCURSES_CONFIG environment variable to the full path to ncursesw6-config or ncursesw5-config.])
+      ifelse([$2], [], [:], [$2])
+    fi
   else
     NCURSES_CFLAGS=`$NCURSES_CONFIG --cflags`
     NCURSES_LIBS=`$NCURSES_CONFIG --libs`
+  fi
 
+  if test "x$no_ncurses" = x ; then
+dnl Now check if the installed ncurses is installed OK.
+    AC_MSG_NOTICE([Perform basic sanity check on ncurses ...])
+    ncurses_compile=""
+    ncurses_run=""
+    ncurses_includes='
+#include "ncurses.h"'
     ac_save_CFLAGS="$CFLAGS"
     ac_save_LIBS="$LIBS"
     CFLAGS="$CFLAGS $NCURSES_CFLAGS"
     LIBS="$LIBS $NCURSES_LIBS"
-dnl
-dnl Now check if the installed ncurses is installed OK. (Also sanity
-dnl checks the results of ncursesw6-config/ncursesw5-config to some extent)
-dnl
-    rm -f conf.ncursestest
-    AC_RUN_IFELSE([AC_LANG_SOURCE([[
-#include <stdio.h>
-#include "ncurses.h"
+
+    AC_LINK_IFELSE([AC_LANG_SOURCE([[
+$ncurses_includes
 
 int main (int argc, char *argv[])
 {
-  { FILE *fp = fopen("conf.ncursestest", "a"); if ( fp ) fclose(fp); }
-
+  (void)initscr();
+  (void)endwin();
   return 0;
 }
+]])],
+        [],
+        [AC_MSG_NOTICE([   ... basic sanity check failed])
+            ncurses_compile=no])
 
-]])],[],[no_ncurses=yes],[echo $ac_n "cross compiling; assumed OK... $ac_c"])
-  	CFLAGS="$ac_save_CFLAGS"
-  	LIBS="$ac_save_LIBS"
+    if test "x$ncurses_compile" = x ; then
+      if test "x$enable_ncursestest" = xno ; then
+        AC_MSG_NOTICE([   ... basic sanity check passed])
+        AC_MSG_NOTICE([Skipped runtime check for basic ncurses.])
+      else
+        AC_RUN_IFELSE([AC_LANG_SOURCE([[
+$ncurses_includes
+
+int main (int argc, char *argv[])
+{
+  (void)initscr();
+  (void)endwin();
+  return 0;
+}
+]])],
+            [AC_MSG_NOTICE([   ... basic sanity check passed])],
+            [AC_MSG_NOTICE([   ... basic sanity check failed])
+                ncurses_run=no],
+            [AC_MSG_NOTICE([   ... basic sanity check passed])
+                AC_MSG_NOTICE([Assume runtime check of ncurses passes when cross compiling.])])
+        if test "x$ncurses_compile" = x && test "x$ncurses_run" = x; then
+dnl Check that the wide character interfaces are present.  At least on some
+dnl platforms (macOS is one), need to set _XOPEN_SOURCE_EXTENDED to make them
+dnl visible.  Check if CFLAGS + NCURSES_CFLAGS is sufficient to see the wide
+dnl character interfaces.  If not, set _XOPEN_SOURCE_EXTENDED.
+          AC_CHECK_DECL([mvwaddnwstr],
+              [],
+              [CFLAGS="$CFLAGS -D_XOPEN_SOURCE_EXTENDED"
+dnl Do not let it use the cached result of failure from the previous check.
+                  unset ac_cv_have_decl_mvwaddnwstr
+                  AC_CHECK_DECL([mvwaddnwstr],
+                      [NCURSES_CFLAGS="$NCURSES_CFLAGS -D_XOPEN_SOURCE_EXTENDED"],
+                      [ncurses_compile=no
+                          AC_MSG_WARN([mvwaddnwstr is not visible in ncurses.h.])],
+                      [$ncurses_includes])],
+              [$ncurses_includes])
+          if test "x$ncurses_compile" = x ; then
+            AC_MSG_NOTICE([Perform sanity check wide characters with ncurses ...])
+            AC_LINK_IFELSE([AC_LANG_SOURCE([[
+$ncurses_includes
+
+int main (int argc, char *argv[])
+{
+  WINDOW *w = initscr();
+  (void)mvwaddnwstr(w, 0, 0, L"Hello!", 6);
+  (void)endwin();
+  return 0;
+}
+]])],
+                [],
+                [AC_MSG_NOTICE([   ... sanity check for wide characters failed])
+                    ncurses_compile=no])
+            if test "x$ncurses_compile" = x ; then
+              if test "x$enable_ncursestest" = xno ; then
+                AC_MSG_NOTICE([   ... sanity check for wide characters passed])
+                AC_MSG_NOTICE([Skipped runtime check for ncurses with wide characters.])
+              else
+                AC_RUN_IFELSE([AC_LANG_SOURCE([[
+$ncurses_includes
+
+int main (int argc, char *argv[])
+{
+  WINDOW *w = initscr();
+  (void)mvwaddnwstr(w, 0, 0, L"Hello!", 6);
+  (void)endwin();
+  return 0;
+}
+]])],
+                    [AC_MSG_NOTICE([   ... sanity check for wide characters passed])],
+                    [AC_MSG_NOTICE([   ... sanity check for wide characters failed])
+                        ncurses_run=no],
+                    [AC_MSG_NOTICE([   ... sanity check for wide characters passed])
+                        AC_MSG_NOTICE([Assume runtime check of ncurses passes when cross compiling.])])
+              fi
+            fi
+          fi
+        fi
+      fi
+    fi
+
+    CFLAGS="$ac_save_CFLAGS"
+    LIBS="$ac_save_LIBS"
+    if test "x$ncurses_compile" = xno ; then
+      AC_MSG_WARN([The test program failed to compile or link. See the file config.log for the exact error that occured. This usually means ncursesw was incorrectly installed or that you have moved ncursesw since it was installed. In the latter case, you may want to edit the ncursesw6-config or ncursesw5-config script: $NCURSES_CONFIG])
+      NCURSES_CFLAGS=""
+      NCURSES_LIBS=""
+      ifelse([$2], [], [:], [$2])
+    elif test "x$ncurses_run" = xno ; then
+      AC_MSG_WARN([The test program compiled, but did not run. See the file config.log for the exact error that occurred. This usually means that the run-time linker did not find ncursesw. If it did not find ncursesw, you will need to set your LD_LIBRARY_PATH environment variable or edit /etc/ld.so.conf to point to the installed location. Also, make sure you have run ldconfig if that is required on your system. If the run-time linker found the wrong library, consider removing that library if it is an older version that needlessly prevents applications from finding an up-to-date version that is also in the paths the run time linker normally searches. Otherwise, set LD_LIBRARY_PATH so the correct library is found before the wrong one.])
+      NCURSES_CFLAGS=""
+      NCURSES_LIBS=""
+      ifelse([$2], [], [:], [$2])
+    else
+      ifelse([$1], [], [:], [$1])
+    fi
   fi
 
-  if test "x$no_ncurses" = x ; then
-     AC_MSG_RESULT(yes)
-     ifelse([$1], , :, [$1])     
-  else
-     AC_MSG_RESULT(no)
-     if test "$NCURSES_CONFIG" = "no" ; then
-       echo "*** The ncursesw6-config or ncursesw5-config script installed by"
-       echo "*** ncursesw could not be found.  If ncursesw was installed in"
-       echo "*** PREFIX, make sure PREFIX/bin is in your path, or set the"
-       echo "*** NCURSES_CONFIG environment variable to the full path to"
-       echo "*** ncursesw6-config or ncursesw5-config."
-     else
-       if test -f conf.ncursestest ; then
-         :
-       else
-          echo "*** Could not run ncurses test program, checking why..."
-          CFLAGS="$CFLAGS $NCURSES_CFLAGS"
-          LIBS="$LIBS $NCURSES_LIBS"
-          AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-#include <stdio.h>
-#include "ncurses.h"
-]], [[ return 0; ]])],[ echo "*** The test program compiled, but did not run. This usually means"
-          echo "*** that the run-time linker is not finding ncursesw. If it is not finding"
-          echo "*** ncursesw, you'll need to set your LD_LIBRARY_PATH environment variable,"
-          echo "*** or edit /etc/ld.so.conf to point to the installed location.  Also, make"
-          echo "*** sure you have run ldconfig if that is required on your system"
-          echo "***"
-          echo "*** If you have an old version installed, it is best to remove it, although"
-          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"],[ echo "*** The test program failed to compile or link. See the file config.log for the"
-          echo "*** exact error that occured. This usually means ncursesw was incorrectly"
-          echo "*** installed or that you have moved ncursesw since it was installed. In the"
-          echo "*** latter case, you may want to edit the ncursesw6-config or"
-          echo "*** ncursesw5-config script: $NCURSES_CONFIG" ])
-          CFLAGS="$ac_save_CFLAGS"
-          LIBS="$ac_save_LIBS"
-       fi
-	 
-     fi
-     NCURSES_CFLAGS=""
-     NCURSES_LIBS=""
-     ifelse([$2], , :, [$2])
-  fi
   AC_SUBST(NCURSES_CFLAGS)
   AC_SUBST(NCURSES_LIBS)
-  rm -f conf.ncursestest
 ])
