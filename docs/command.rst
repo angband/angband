@@ -437,8 +437,11 @@ Locate player on map (``L``) or Where is the player (``W``)
   This command lets you scroll your map around, looking at all sectors of
   the current dungeon level, until you press escape, at which point the map
   will be re-centered on the player if necessary. To scroll the map around,
-  simply press any of the "direction" keys. The top line will display the
-  sector location, and the offset from your current sector.
+  simply press any of the "direction" keys. With the mouse, click near the
+  map's edge with the first mouse button to shift the view or click anywhere
+  with the second mouse button to break out of the locate command. The top
+  line will display the sector location, and the offset from your current
+  sector.
 
 Look around (``l``) or Examine things (``x``)
   This command is used to look around at nearby monsters (to determine 

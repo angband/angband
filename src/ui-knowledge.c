@@ -4069,7 +4069,7 @@ void do_cmd_look(void)
  */
 void do_cmd_locate(void)
 {
-	int panel_hgt, panel_wid;
+	int panel_hgt, panel_wid, top, bottom, left, right;
 	int y1, x1;
 
 	/* Use dimensions that match those in ui-output.c. */
@@ -4087,6 +4087,18 @@ void do_cmd_locate(void)
 	/* Start at current panel */
 	y1 = Term->offset_y;
 	x1 = Term->offset_x;
+
+	/* With mouse input, shift the panel if the click is near to an edge */
+	if (Term == term_screen) {
+		top = ROW_MAP + MAX(1, panel_hgt / 20);
+		bottom = ROW_BOTTOM_MAP - MAX(1, panel_hgt / 20);
+		left = COL_MAP + MAX(1, panel_wid / 20);
+	} else {
+		top = MAX(1, panel_hgt / 20);
+		bottom = Term->hgt - 1 - MAX(1, panel_hgt / 20);
+		left = MAX(1, panel_wid / 20);
+	}
+	right = Term->wid - 1 - MAX(1, panel_wid / 20);
 
 	/* Show panels until done */
 	while (1) {
@@ -4124,13 +4136,44 @@ void do_cmd_locate(void)
 
 		/* Get a direction */
 		while (!dir) {
-			struct keypress command = KEYPRESS_NULL;
+			ui_event command;
 
-			/* Get a command (or Cancel) */
-			if (!get_com(out_val, (char *)&command.code)) break;
+			/* Get the player's input */
+			if (!get_com_ex(out_val, &command)) break;
 
 			/* Extract direction */
-			dir = target_dir(command);
+			if (command.type == EVT_KBRD) {
+				dir = target_dir(command.key);
+			} else if (command.type == EVT_MOUSE) {
+				if (command.mouse.button == 2) {
+					break;
+				}
+				if (command.mouse.button == 1) {
+					if (command.mouse.y < top) {
+						if (command.mouse.x < left) {
+							dir = 7;
+						} else if (command.mouse.x
+								> right) {
+							dir = 9;
+						} else {
+							dir = 8;
+						}
+					} else if (command.mouse.y > bottom) {
+						if (command.mouse.x < left) {
+							dir = 1;
+						} else if (command.mouse.x
+								> right) {
+							dir = 3;
+						} else {
+							dir = 2;
+						}
+					} else if (command.mouse.x < left) {
+						dir = 4;
+					} else if (command.mouse.x > right) {
+						dir = 6;
+					}
+				}
+			}
 
 			/* Error */
 			if (!dir) bell();
