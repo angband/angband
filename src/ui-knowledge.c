@@ -4232,8 +4232,37 @@ static void lookup_symbol(keycode_t key, char *buf, size_t max)
 	 * associate a display character with each tval. */
 	for (i = 0; i < z_info->k_max; i++) {
 		if (char_matches_key(k_info[i].d_char, key)) {
-			strnfmt(buf, max, "%s - %s.", key_utf8,
-				tval_find_name(k_info[i].tval));
+			const char *tval_name = tval_find_name(k_info[i].tval);
+
+			if (!streq(tval_name, "none") || !k_info[i].name) {
+				strnfmt(buf, max, "%s - %s.", key_utf8,
+					tval_name);
+			} else {
+				/*
+				 * The tval's name is not informative.  Use
+				 * the kind's name instead.  The names for
+				 * kinds with tvals of zero are, by convention,
+				 * enclosed in angle brackets.  Strip those
+				 * off if present.
+				 */
+				size_t len = strlen(k_info[i].name);
+
+				if (len > 2 && k_info[i].name[0] == '<'
+						&& k_info[i].name[len - 1]
+						== '>') {
+					char *extract = mem_alloc(len);
+
+					(void)my_strcpy(extract,
+						k_info[i].name + 1, len);
+					extract[len - 2] = '\0';
+					strnfmt(buf, max, "%s - %s.", key_utf8,
+						extract);
+					mem_free(extract);
+				} else {
+					strnfmt(buf, max, "%s - %s.", key_utf8,
+						k_info[i].name);
+				}
+			}
 			return;
 		}
 	}
