@@ -572,9 +572,9 @@ jobs:
           retention-days: 1
 
   release:
-    needs: [ setup, source, windows, mac ]
+#    needs: [ setup, source, windows, mac ]
 #    needs: [ setup, source, windows, mac, _3ds ]
-#    needs: [ setup, source, windows, mac, _3ds, nds ]
+    needs: [ setup, source, windows, mac, _3ds, nds ]
     name: Create GitHub Release
     runs-on: ubuntu-latest
     steps:
@@ -641,37 +641,37 @@ jobs:
         with:
           name: ${{ env.MAC_ARCHIVE_ARTIFACT }}
 
-#      - name: Download Artifact with Nintendo 3DS Archive Path
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: ${{ env.NIN_3DS_ARTIFACT }}
+      - name: Download Artifact with Nintendo 3DS Archive Path
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.NIN_3DS_ARTIFACT }}
 
-#      - name: Extract Nintendo 3DS Archive Path and Store in Step Outputs
-#        id: store_3ds
-#        run: |
-#          archive_path=`sed -E -n -e 's/archive_path= //p' $NIN_3DS_ARTIFACT_PATH`
-#          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+      - name: Extract Nintendo 3DS Archive Path and Store in Step Outputs
+        id: store_3ds
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $NIN_3DS_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
 
-#      - name: Download Artifact with Nintendo 3DS Archive
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: ${{ env.NIN_3DS_ARCHIVE_ARTIFACT }}
+      - name: Download Artifact with Nintendo 3DS Archive
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.NIN_3DS_ARCHIVE_ARTIFACT }}
 
-#      - name: Download Artifact with Nintendo DS Archive Path
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: ${{ env.NIN_DS_ARTIFACT }}
+      - name: Download Artifact with Nintendo DS Archive Path
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.NIN_DS_ARTIFACT }}
 
-#      - name: Extract Nintendo DS Archive Path and Store in Step Outputs
-#        id: store_ds
-#        run: |
-#          archive_path=`sed -E -n -e 's/archive_path= //p' $NIN_DS_ARTIFACT_PATH`
-#          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+      - name: Extract Nintendo DS Archive Path and Store in Step Outputs
+        id: store_ds
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $NIN_DS_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
 
-#      - name: Download Artifact with Nintendo DS Archive
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: ${{ env.NIN_DS_ARCHIVE_ARTIFACT }}
+      - name: Download Artifact with Nintendo DS Archive
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.NIN_DS_ARCHIVE_ARTIFACT }}
 
       - name: Populate Release
         uses: softprops/action-gh-release@v2
@@ -685,6 +685,6 @@ jobs:
             ${{ steps.store_src.outputs.archive_path }}
             ${{ steps.store_win.outputs.archive_path }}
             ${{ steps.store_mac.outputs.archive_path }}
-#            ${{ steps.store_3ds.outputs.archive_path }}
-#            ${{ steps.store_ds.outputs.archive_path }}
+            ${{ steps.store_3ds.outputs.archive_path }}
+            ${{ steps.store_ds.outputs.archive_path }}
           token: ${{ secrets.GITHUB_TOKEN }}
