@@ -506,6 +506,8 @@ static void step_simple_menu_control(struct sdlpui_dialog *d,
 	SDL_assert(c >= p->controls && c < p->controls + p->number);
 
 	if (c->ftb->step_within && (*c->ftb->step_within)(c, forward)) {
+		d->dirty = true;
+		sdlpui_signal_redraw(w);
 		return;
 	}
 
