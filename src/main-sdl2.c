@@ -36,6 +36,7 @@
 #include "buildid.h"
 #include "ui-display.h"
 #include "ui-command.h"
+#include "ui-init.h"
 #include "player-calcs.h"
 #include "ui-output.h"
 #include "game-world.h"
@@ -45,7 +46,7 @@
 #include "ui-game.h"
 #include "ui-map.h"
 #include "parser.h"
-#ifdef SOUND_SDL2
+#if defined(SOUND) || defined(SOUND_SDL2)
 #include "sound.h"
 #endif
 
@@ -4571,6 +4572,13 @@ static void handle_quit(void)
 		save_game();
 	}
 
+	/* Bypassing main.c's normal exit path, so do what it would do. */
+	textui_cleanup();
+	cleanup_angband();
+#ifdef SOUND
+	close_sound();
+#endif
+
 	quit(NULL);
 }
 
@@ -7072,6 +7080,7 @@ static void quit_hook(const char *s)
 	}
 
 	free_globals(&g_app);
+	close_graphics_modes();
 	quit_systems();
 }
 
