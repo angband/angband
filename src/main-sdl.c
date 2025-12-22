@@ -22,9 +22,13 @@
 #include "game-input.h"
 #include "game-world.h"
 #include "init.h"
+#ifdef SOUND
+#include "sound.h"
+#endif
 #include "ui-command.h"
 #include "ui-display.h"
 #include "ui-game.h"
+#include "ui-init.h"
 #include "ui-input.h"
 #include "ui-map.h"
 #include "ui-output.h"
@@ -4573,6 +4577,15 @@ static errr sdl_HandleEvent(SDL_Event *event)
 
 			if (really) {
 				save_prefs();
+				/*
+				 * Bypassing main.c's normal exit path, so do
+				 * what it would do.
+				 */
+				textui_cleanup();
+				cleanup_angband();
+#ifdef SOUND
+				close_sound();
+#endif
 				quit(NULL);
 			}
 			break;
