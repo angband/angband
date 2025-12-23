@@ -31,7 +31,7 @@ typedef struct {
 } nds_btn_cpad_zone;
 
 typedef struct {
-	char input[NDS_BTN_SEQ_LEN];
+	char input[NDS_BTN_SEQ_LEN + 1];
 	u32 keys;
 } nds_btn_map_entry;
 
@@ -164,7 +164,7 @@ void nds_btn_add_mappings_from_file(ang_file *f) {
 
 		strunescape(sequence);
 
-		strncpy(entry.input, sequence, NDS_BTN_SEQ_LEN);
+		snprintf(entry.input, sizeof(entry.input), "%s", sequence);
 
 		nds_btn_add_mappings(&entry, 1);
 	}
@@ -245,7 +245,7 @@ void nds_btn_vblank()
 		if (!(kd & NDS_BTN_KEYS & keys))
 			continue;
 
-		for (int si = 0; si < NDS_BTN_SEQ_LEN && nds_btn_map[i].input[si]; si++) {
+		for (int si = 0; nds_btn_map[i].input[si]; si++) {
 			nds_event_put_key(nds_btn_map[i].input[si], 0);
 		}
 		break;

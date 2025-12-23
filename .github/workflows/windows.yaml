@@ -21,40 +21,22 @@ jobs:
       - name: Build
         id: autotools_build
         run: |
-          start_time=$(date +%s)
           ./autogen.sh
           ./configure --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32
-          make -j$(nproc)
-          end_time=$(date +%s)
-          echo "autotools_time=$((end_time - start_time))" >> $GITHUB_OUTPUT
+          env CFLAGS="-Werror" make -j$(nproc)
 
-      - name: Build debug version with CMake/Ninja
+      - name: Build with CMake/Ninja
         id: cmake_build
         run: |
-          start_time=$(date +%s)
           mkdir build
           cd build
-          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON \
+          cmake -G Ninja \
+            -DCMAKE_C_FLAGS="-Werror" \
+            -DSUPPORT_WINDOWS_FRONTEND=ON \
             -DSUPPORT_BUNDLED_PNG=ON \
             -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-i686-mingw32-cross.cmake \
-            -DCMAKE_BUILD_TYPE=Debug \
             ..
           ninja -j$(nproc)
-          end_time=$(date +%s)
-          echo "cmake_time=$((end_time - start_time))" >> $GITHUB_OUTPUT
-
-      - name: Display build time results
-        run: |
-          echo "=== BUILD TIME RESULTS ==="
-          echo "Autotools/Make: ${{ steps.autotools_build.outputs.autotools_time }} seconds"
-          echo "CMake/Ninja:    ${{ steps.cmake_build.outputs.cmake_time }} seconds"
-          echo "Time difference: $(( ${{ steps.cmake_build.outputs.cmake_time }} - ${{ steps.autotools_build.outputs.autotools_time }} )) seconds"
-          
-          if [ ${{ steps.cmake_build.outputs.cmake_time }} -lt ${{ steps.autotools_build.outputs.autotools_time }} ]; then
-            echo "✅ CMake/Ninja is faster!"
-          else
-            echo "⚠️  Autotools/Make is faster or equal"
-          fi
 
   release-flags:
     runs-on: ubuntu-latest
@@ -71,4 +53,4 @@ jobs:
         run: |
           ./autogen.sh
           env CFLAGS="-O2" ./configure --enable-release --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32
-          make -j$(nproc)
+          env CFLAGS="-Werror" make -j$(nproc)

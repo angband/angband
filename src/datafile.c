@@ -309,7 +309,7 @@ errr grab_int_range(int *lo, int *hi, const char *range, const char *sep)
 	 * Reject INT_MIN and INT_MAX as well so don't have to check errno in
 	 * order to recognize overflow when sizeof(int) == sizeof(long).
 	 */
-	if (pe == range || !isspace(*pe) || lv1 <= INT_MIN || lv1 >= INT_MAX) {
+	if (pe == range || !isspace((unsigned char)*pe) || lv1 <= INT_MIN || lv1 >= INT_MAX) {
 		return PARSE_ERROR_INVALID_VALUE;
 	}
 	range = pe;
@@ -325,7 +325,7 @@ errr grab_int_range(int *lo, int *hi, const char *range, const char *sep)
 			return PARSE_ERROR_INVALID_VALUE;
 		}
 		range = pe + strlen(sep);
-		if (!isspace(*range)) {
+		if (!isspace((unsigned char)*range)) {
 			return PARSE_ERROR_INVALID_VALUE;
 		}
 	}

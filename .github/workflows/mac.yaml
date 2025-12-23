@@ -16,7 +16,7 @@ jobs:
       - name: Build
         run: |
           cd src
-          make -f Makefile.osx -j$(sysctl -n hw.ncpu)
+          env OPT="-Werror" make -f Makefile.osx -j$(sysctl -n hw.ncpu)
 
   release-flags:
     runs-on: macos-latest
@@ -27,7 +27,7 @@ jobs:
       - name: Build with Flags Used for Release
         run: |
           cd src
-          env OPT="-O2 -DNDEBUG" make -f Makefile.osx -j$(sysctl -n hw.ncpu)
+          env OPT="-Werror -O2 -DNDEBUG" make -f Makefile.osx -j$(sysctl -n hw.ncpu)
 
   autoconf:
     runs-on: macos-latest

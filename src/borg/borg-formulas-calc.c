@@ -255,7 +255,7 @@ static bool tokenize_math(
             borg_array_add(
                 f->token_array, new_token(TOK_NUMBER, val, pdepth, not ));
             not = false;
-            while (isdigit(*line) || *line == '-')
+            while (isdigit((unsigned char)*line) || *line == '-')
                 line++;
             continue;
         }

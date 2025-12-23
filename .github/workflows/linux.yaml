@@ -22,7 +22,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake -G Ninja -DSUPPORT_TEST_FRONTEND=ON ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_TEST_FRONTEND=ON ..
           ninja -j$(nproc)
           ninja -j$(nproc) alltests
 
@@ -42,7 +42,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake -G Ninja ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" ..
           ninja -j$(nproc)
 
   ncurses:
@@ -61,7 +61,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake -G Ninja -DSUPPORT_GCU_FRONTEND=ON ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_GCU_FRONTEND=ON ..
           ninja -j$(nproc)
 
   sdl:
@@ -80,7 +80,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake -G Ninja -DSUPPORT_SDL_FRONTEND=ON -DSUPPORT_SDL_SOUND=ON ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_SDL_FRONTEND=ON -DSUPPORT_SDL_SOUND=ON ..
           ninja -j$(nproc)
 
   sdl2:
@@ -99,7 +99,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          env CFLAGS=-Wall cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON -DSUPPORT_SDL2_SOUND=ON ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_SDL2_FRONTEND=ON -DSUPPORT_SDL2_SOUND=ON ..
           ninja -j$(nproc)
 
   statbuild:

@@ -122,8 +122,6 @@ static nds_pixel color_data[MAX_COLORS];
  */
 static void Term_init_nds(term *t)
 {
-	term_data *td = (term_data *)(t->data);
-
 	/* XXX XXX XXX */
 }
 
@@ -137,8 +135,6 @@ static void Term_init_nds(term *t)
  */
 static void Term_nuke_nds(term *t)
 {
-	term_data *td = (term_data *)(t->data);
-
 	/* XXX XXX XXX */
 }
 
@@ -259,8 +255,6 @@ static void init_color_data(void)
  */
 static errr Term_xtra_nds(int n, int v)
 {
-	term_data *td = (term_data *)(Term->data);
-
 	/* Analyze */
 	switch (n) {
 	case TERM_XTRA_EVENT: {
@@ -433,8 +427,6 @@ static errr Term_curs_nds(int x, int y)
  */
 static errr Term_wipe_nds(int x, int y, int n)
 {
-	term_data *td = (term_data *)(Term->data);
-
 	int i;
 
 	/* Draw a blank */

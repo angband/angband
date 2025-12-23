@@ -24,10 +24,10 @@
 #define CLIP(val, min, max) MAX(MIN(val, max), min)
 
 typedef struct {
-	char label[NDS_SCRKEY_LABEL_LEN];
+	char label[NDS_SCRKEY_LABEL_LEN + 1];
 	uint16_t x, y;
 	uint16_t w, h;
-	char sequence[NDS_SCRKEY_SEQ_LEN];
+	char sequence[NDS_SCRKEY_SEQ_LEN + 1];
 } nds_scrkey_entry;
 
 nds_scrkey_entry *nds_scrkeys = NULL;
@@ -67,7 +67,7 @@ void nds_scrkey_add_file(ang_file *f) {
 
 		nds_scrkey_entry entry = { 0 };
 
-		strncpy(entry.label, label, NDS_SCRKEY_LABEL_LEN);
+		snprintf(entry.label, sizeof(entry.label), "%s", label);
 
 		entry.x = CLIP(strtoul(x_str, NULL, 0), 0, NDS_SCREEN_WIDTH);
 		entry.y = CLIP(strtoul(y_str, NULL, 0), 0, NDS_SCREEN_HEIGHT);
@@ -75,7 +75,7 @@ void nds_scrkey_add_file(ang_file *f) {
 		entry.h = CLIP(strtoul(h_str, NULL, 0), 0, NDS_SCREEN_HEIGHT - entry.y);
 
 		strunescape(sequence);
-		strncpy(entry.sequence, sequence, NDS_SCRKEY_SEQ_LEN);
+		snprintf(entry.sequence, sizeof(entry.sequence), "%s", sequence);
 
 		nds_scrkeys = mem_realloc(nds_scrkeys, (nds_scrkeys_num + 1) * sizeof(nds_scrkey_entry));
 		nds_scrkeys[nds_scrkeys_num++] = entry;
@@ -106,10 +106,10 @@ void nds_scrkey_redraw_key(nds_scrkey_entry *key, bool initial, bool active)
 		}
 	}
 
-	int str_x = key->x + key->w / 2 - strnlen(key->label, NDS_SCRKEY_LABEL_LEN) * nds_font->width / 2;
+	int str_x = key->x + key->w / 2 - strlen(key->label) * nds_font->width / 2;
 	int str_y = NDS_SCREEN_HEIGHT + key->y + key->h / 2 - nds_font->height / 2;
 
-	for (int i = 0; i < NDS_SCRKEY_LABEL_LEN && key->label[i]; i++) {
+	for (int i = 0; key->label[i]; i++) {
 		nds_draw_char_px(str_x + (i * nds_font->width), str_y, key->label[i],
 		                 active ? NDS_CURSOR_COLOR : NDS_WHITE_PIXEL, NDS_BLACK_PIXEL);
 	}
@@ -173,7 +173,7 @@ void nds_scrkey_vblank()
 
 		need_redraw = true;
 
-		for (int si = 0; si < NDS_SCRKEY_SEQ_LEN && entry->sequence[si]; si++) {
+		for (int si = 0; entry->sequence[si]; si++) {
 			nds_event_put_key(entry->sequence[si], 0);
 		}
 

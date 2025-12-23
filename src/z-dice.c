@@ -334,7 +334,7 @@ bool dice_parse_string(dice_t *dice, const char *string)
 		dice_input_t input_type = DICE_INPUT_MAX;
 
 		/* Skip spaces; this will concatenate digits and variable names. */
-		if (isspace(string[current]))
+		if (isspace((unsigned char)string[current]))
 			continue;
 
 		input_type = dice_input_for_char(string[current]);
@@ -459,7 +459,7 @@ bool dice_parse_string(dice_t *dice, const char *string)
 			int value = 0;
 			bool is_variable = false;
 
-			if (isupper(token[0])) {
+			if (isupper((unsigned char)token[0])) {
 				value = dice_add_variable(dice, token);
 				is_variable = true;
 			}
