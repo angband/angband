@@ -6850,8 +6850,6 @@ static void free_subwindow_config(struct subwindow_config *config)
 
 static void free_subwindow(struct subwindow *subwindow)
 {
-	assert(subwindow->loaded);
-
 	free_font(subwindow->font);
 	subwindow->font = NULL;
 	if (subwindow->texture != NULL) {
