@@ -7141,6 +7141,7 @@ static void quit_hook(const char *s)
 	}
 
 	free_globals(&g_app);
+	close_graphics_modes();
 	quit_systems();
 }
 
