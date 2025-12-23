@@ -46,20 +46,5 @@ jobs:
       - name: Build
         run: |
           ./autogen.sh
-          # On a non-GitHub system with macOS 12.7.6 and Xcode 14.2, the
-          # results from ncurses5.4-config agree with what is in the SDK.
-          # On a GitHub system with macOS 14.7.6 and Xcode 15.4, they do
-          # not agree.  Work around that.
-          echo '#!/bin/sh' >hack-ncurses.sh
-          echo 'if test "x$1" == x--cflags ; then' >>hack-ncurses.sh
-          echo '    echo "-D_DARWIN_C_SOURCE -I/usr/include"'>>hack-ncurses.sh
-          echo '    exit 0' >>hack-ncurses.sh
-          echo 'fi' >>hack-ncurses.sh
-          echo 'if test "x$1" == x--libs ; then' >>hack-ncurses.sh
-          echo '    echo "-L/usr/lib -lncurses"' >>hack-ncurses.sh
-          echo '    exit 0' >>hack-ncurses.sh
-          echo 'fi' >>hack-ncurses.sh
-          echo 'exit 0' >>hack-ncurses.sh
-          chmod a+x hack-ncurses.sh
-          ./configure --with-no-install NCURSES_CONFIG=$(PWD)/hack-ncurses.sh
+          ./configure --with-no-install --enable-curses --disable-ncursestest
           make
