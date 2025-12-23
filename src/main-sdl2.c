@@ -208,7 +208,7 @@ struct font {
 	char *path;
 	int size;
 	/* index of font in the application's fonts array */
-	size_t index;
+	int index;
 
 	struct font_cache cache;
 };
@@ -420,7 +420,7 @@ struct font_info {
 	char *name;
 	char *path;
 	int size;
-	size_t index;
+	int index;
 	enum font_type type;
 };
 
@@ -2821,17 +2821,15 @@ static void handle_menu_pw(struct sdlpui_control *ctrl,
 static void handle_menu_font_name(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
 {
-	int tag, index, old_index;
+	int tag = sdlpui_get_tag(ctrl), index, old_index;
 	struct subwindow *subwindow;
 	const struct font_info *font_info;
 
-	SDL_assert(ctrl->ftb->get_tag);
-	tag = (*ctrl->ftb->get_tag)(ctrl);
+	SDL_assert(tag >= 0);
 	subwindow = get_subwindow_by_index(window,
-		(unsigned int)(tag / (2 * window->app->font_count) - 1), false);
+		(unsigned int)(tag % MAX_SUBWINDOWS), false);
 	SDL_assert(subwindow);
-	index = (unsigned int)tag
-		% (unsigned int)(2 * window->app->font_count);
+	index = tag / MAX_SUBWINDOWS;
 	old_index = subwindow->font->index;
 	font_info = &window->app->fonts[index];
 
@@ -2851,9 +2849,8 @@ static void handle_menu_font_name(struct sdlpui_control *ctrl,
 
 	if (reload_font(subwindow, font_info)) {
 		/* Set the previous selected font in the menu to off. */
-		int target_tag = tag
-			- (tag % (2 * window->app->font_count))
-			+ old_index;
+		int target_tag = (int)subwindow->index + MAX_SUBWINDOWS
+			* old_index;
 		bool searching = true;
 		int minw, minh;
 
@@ -2988,33 +2985,20 @@ static struct sdlpui_dialog *handle_menu_font_names(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
 		int ul_x_win, int ul_y_win)
 {
-	int tag;
-	SDL_Renderer *renderer;
+	int tag = sdlpui_get_tag(ctrl);
+	SDL_Renderer *renderer = sdlpui_get_renderer(window);
 	struct subwindow *subwindow;
 	struct sdlpui_dialog *result;
 	struct sdlpui_control *c;
 	bool more_nesting = false;
 	int win_w, win_h, start, count, i;
 
-	renderer = sdlpui_get_renderer(window);
 	SDL_GetRendererOutputSize(renderer, &win_w, &win_h);
-	SDL_assert(ctrl->ftb->get_tag);
-	tag = (*ctrl->ftb->get_tag)(ctrl);
-	if (tag < 2 * window->app->font_count) {
-		/* At the top level */
-		subwindow = get_subwindow_by_index(window, tag, false);
-		tag = (tag + 1) * 2 * window->app->font_count;
-		start = 0;
-	} else {
-		/* Nested */
-		subwindow = get_subwindow_by_index(window,
-			tag / (2 * window->app->font_count) - 1, false);
-		start = tag % (2 * window->app->font_count)
-			- window->app->font_count;
-		assert(start >= 0);
-		tag -= start + window->app->font_count;
-	}
+	SDL_assert(tag >= 0);
+	subwindow = get_subwindow_by_index(window,
+		(unsigned int)(tag % MAX_SUBWINDOWS), false);
 	SDL_assert(subwindow);
+	start = tag / MAX_SUBWINDOWS;
 	SDL_assert(start <= window->app->font_count);
 	/*
 	 * Figure out how many entries can fit.  Use the size of the parent
@@ -3037,7 +3021,8 @@ static struct sdlpui_dialog *handle_menu_font_names(struct sdlpui_control *ctrl,
 			SDLPUI_MFLG_NONE);
 		sdlpui_create_submenu_button(c, "More", SDLPUI_HOR_LEFT,
 			handle_menu_font_names, SDLPUI_CHILD_MENU_RIGHT,
-			tag + window->app->font_count + start + count, false);
+			(int)subwindow->index + MAX_SUBWINDOWS
+			* (start + count), false);
 	}
 	for (i = start; i < start + count; ++i) {
 		c = sdlpui_get_simple_menu_next_unused(result,
@@ -3046,8 +3031,9 @@ static struct sdlpui_dialog *handle_menu_font_names(struct sdlpui_control *ctrl,
 		 * Optimistically assume that it'll be possible to resize
 		 * the subwindow for this font.
 		 */
-		sdlpui_create_menu_toggle(c, window->app->fonts[i].name,				SDLPUI_HOR_LEFT, handle_menu_font_name, tag + i,
-			false, subwindow->font->index == (unsigned int)i);
+		sdlpui_create_menu_toggle(c, window->app->fonts[i].name,				SDLPUI_HOR_LEFT, handle_menu_font_name,
+			(int)subwindow->index + MAX_SUBWINDOWS * i,
+			false, subwindow->font->index == i);
 	}
 	sdlpui_complete_simple_menu(result, window);
 	result->rect.x = ul_x_win;
