@@ -572,8 +572,6 @@ jobs:
           retention-days: 1
 
   release:
-#    needs: [ setup, source, windows, mac ]
-#    needs: [ setup, source, windows, mac, _3ds ]
     needs: [ setup, source, windows, mac, _3ds, nds ]
     name: Create GitHub Release
     runs-on: ubuntu-latest
