@@ -36,11 +36,11 @@ jobs:
 
       # If the pull request changes anything in docs, run the document
       # conversion to the end and fail on any warnings.  Need to fetch the
-      # master branch first so we check against it.
+      # default branch first so we can check against it.
       - name: Convert
         run: |
-          git fetch origin master --depth 1
-          if test x`git log origin/master..HEAD docs | wc -l` = x0 ; then
+          git fetch origin ${{ github.event.repository.default_branch }} --depth 1
+          if test x`git log origin/${{ github.event.repository.default_branch }}..HEAD docs | wc -l` = x0 ; then
             echo There are no changes in docs to check.
           else
             cd docs
