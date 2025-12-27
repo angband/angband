@@ -144,6 +144,13 @@ static int overdraw_max = 0;
 
 static char *sdl_settings_file;
 
+/**
+ * One if the player requests an exit and the game is not at a command prompt;
+ * any non-zero value other than one when ready to save the game at exit but
+ * the game may request additional input; zero in all other cases
+ */
+static int quit_when_ready = 0;
+
 /* Default point size for scalable fonts */
 #define DEFAULT_POINT_SIZE (10)
 /* Minimum allowed point size for scalable fonts */
@@ -555,6 +562,10 @@ static int MoreHeightPlus;	/* Increase tile height */
 static int MoreHeightMinus;	/* Decrease tile height */
 static int *GfxButtons;	/* Graphics mode buttons */
 static int SelectedGfx;				/* Current selected gfx */
+
+static bool SimpleConfirm(const char *msg, const char *label1,
+		const char *label2, bool first_default);
+static int sdl_ModalEventLoop(void);
 
 /**
  * Verify if the given path refers to a font file that can be used.
@@ -1241,6 +1252,47 @@ static void hook_quit(const char *str)
 		string_free(FontList[i]);
 }
 
+/**
+ * Respond to user interface events which either request an immediate
+ * exit (forced is true) or a possible exit subject to requesting more
+ * input from the user(forced is false).
+ */
+static void handle_quit(bool forced)
+{
+	if (character_generated) {
+		/*
+		 * Want to be at a command prompt so the game's state is ready
+		 * to save.  If not at a command prompt and not forcing an
+		 * exit, mark as ready to quit:  Term_extra_sdl_event() will
+		 * use that to either call back to here when it is safe to
+		 * save or send escapes to the game to satisfy its requests
+		 * for input.
+		 */
+		if (!inkey_flag && !forced) {
+			quit_when_ready = 1;
+			return;
+		}
+
+		/* Drop pending messages. */
+		msg_flag = false;
+		quit_when_ready = 2;
+		/*
+		 * If not forcing an exit, allow the player to abort the
+		 * exit if there is trouble saving the game.
+		 */
+		if (!forced && !save_game_checked()
+				&& SimpleConfirm("Saving failed.  Really quit?",
+				NULL, NULL, false) == 1) {
+			quit_when_ready = 0;
+			return;
+		}
+		close_game(false);
+	}
+
+	save_prefs();
+	quit(NULL);
+}
+
 static void BringToTop(void)
 {
 	int i, idx;
@@ -1421,11 +1473,7 @@ static void RemovePopUp(void)
 
 static void QuitActivate(sdl_Button *sender)
 {
-	SDL_Event Event;
-
-	Event.type = SDL_QUIT;
-
-	SDL_PushEvent(&Event);
+	handle_quit(false);
 }
 
 static void SetStatusButtons(void)
@@ -1460,6 +1508,134 @@ static void TermFocus(int idx)
 
 	sdl_BlitAll();
 }	
+
+struct simple_confirm_data {
+	const char *msg;
+	int result;
+};
+
+static void SimpleConfirmHandlePress(sdl_Button *sender)
+{
+	struct simple_confirm_data *sc_data =
+		(struct simple_confirm_data*)sender->data;
+
+	sc_data->result = sender->tag;
+	RemovePopUp();
+}
+
+static void SimpleConfirmDraw(sdl_Window *win)
+{
+	struct simple_confirm_data *sc_data = (struct simple_confirm_data*)
+		win->buttons.buttons[0].data;
+	size_t len = strlen(sc_data->msg);
+	SDL_Rect rc;
+
+	RECT(0, 0, win->width, win->height, &rc);
+	SDL_FillRect(win->surface, &win->surface->clip_rect,
+		SDL_MapRGB(win->surface->format, 255, 255, 255));
+	sdl_DrawBox(win->surface, &win->surface->clip_rect, AltUnselColour, 5);
+	sdl_WindowText(win, AltUnselColour,
+		(win->width - ((len > 128) ? 128 : (int)len) * win->font.width)
+		/ 2, 7, format("%.128s", sc_data->msg));
+}
+
+/**
+ * Present a modal dialog with two choices.
+ *
+ * \param msg is the message to display in the confirmation dialog.
+ * \param label1 is the label for the first button.  If NULL, use "Yes"
+ * as the label.
+ * \param label2 is the label for the second button.  If NULL, use "No"
+ * as the label.
+ * \param first_default indicates whether the first button is the default.
+ * \return 0 if the player selected the first button, 1 if the player
+ * selected the second button, 2 if the dialog was dismissed by SDL_QUIT, or
+ * 3 if the dialog was dismissed by an error from SDL_WaitEvent().
+ */
+static bool SimpleConfirm(const char *msg, const char *label1,
+		const char *label2, bool first_default)
+{
+	struct simple_confirm_data sc_data;
+	size_t len = strlen(msg);
+	int width = ((len > 128) ? 128 : len) * StatusBar.font.width + 14;
+	int height = 4 * StatusBar.font.height + 14;
+	int check_width, button_width, button_height, next, result;
+
+	if (!label1) {
+		label1 = "Yes";
+		button_width = 3;
+	} else {
+		len = strlen(label1);
+		button_width = (len >= 50) ? 49 : (int)len;
+	}
+	if (!label2) {
+		label2 = "No";
+		check_width = 2;
+	} else {
+		len = strlen(label2);
+		check_width = (len >= 50) ? 49 : (int)len;
+	}
+	if (button_width < check_width) {
+		button_width = check_width;
+	}
+	button_width = button_width * StatusBar.font.width + 4;
+	button_height = StatusBar.font.height + 4;
+	check_width = 3 * button_width + button_width / 2 + 14;
+	if (width < check_width) {
+		width = check_width;
+	}
+
+	sc_data.msg = msg;
+	sc_data.result = (first_default) ? 0 : 1;
+	sdl_WindowInit(&PopUp, width, height, AppWin, StatusBar.font.req);
+	PopUp.left = (AppWin->w - width) / 2;
+	PopUp.top = (AppWin->h - height) / 2;
+	next = sdl_ButtonBankNew(&PopUp.buttons);
+	PopUp.buttons.buttons[next].pos.x =
+		(PopUp.width - (5 * button_width / 2)) / 2;
+	PopUp.buttons.buttons[next].pos.y = PopUp.height - button_height - 10;
+	PopUp.buttons.buttons[next].pos.w = button_width;
+	PopUp.buttons.buttons[next].pos.h = button_height;
+	PopUp.buttons.buttons[next].visible = true;
+	PopUp.buttons.buttons[next].activate = SimpleConfirmHandlePress;
+	(void)my_strcpy(PopUp.buttons.buttons[next].caption, label1,
+		sizeof(PopUp.buttons.buttons[next].caption));
+	PopUp.buttons.buttons[next].data = &sc_data;
+	PopUp.buttons.buttons[next].tag = 0;
+	next = sdl_ButtonBankNew(&PopUp.buttons);
+	PopUp.buttons.buttons[next].pos.x = PopUp.width
+		- (button_width + (PopUp.width - (5 * button_width / 2)) / 2);
+	PopUp.buttons.buttons[next].pos.y = PopUp.height - button_height - 10;
+	PopUp.buttons.buttons[next].pos.w = button_width;
+	PopUp.buttons.buttons[next].pos.h = button_height;
+	PopUp.buttons.buttons[next].visible = true;
+	PopUp.buttons.buttons[next].activate = SimpleConfirmHandlePress;
+	(void)my_strcpy(PopUp.buttons.buttons[next].caption, label2,
+		sizeof(PopUp.buttons.buttons[next].caption));
+	PopUp.buttons.buttons[next].data = &sc_data;
+	PopUp.buttons.buttons[next].tag = 1;
+	PopUp.draw_extra = SimpleConfirmDraw;
+
+	popped = true;
+	switch (sdl_ModalEventLoop()) {
+	case 0:
+		result = sc_data.result;
+		break;
+
+	case 1:
+		result = 2;
+		break;
+
+	case 2:
+		result = 3;
+		break;
+
+	default:
+		assert(0);
+		break;
+	}
+	return result;
+}
 
 static void AboutDraw(sdl_Window *win)
 {
@@ -4503,6 +4679,41 @@ static void sdl_keypress(SDL_keysym keysym)
 
 static void init_windows(void);
 static void init_morewindows(void);
+
+/**
+ * Handle the response to a SDL_VIDEORESIZE event.
+ *
+ * \param e is the event whose type is SDL_VIDEORESIZE.
+ */
+static void sdl_VideoResize(SDL_Event *e)
+{
+	/* Free the surface */
+	SDL_FreeSurface(AppWin);
+
+	if (!fullscreen) {
+		/* Make sure */
+		vflags &= ~(SDL_FULLSCREEN);
+		vflags |= SDL_RESIZABLE;
+
+		screen_w = e->resize.w;
+		screen_h = e->resize.h;
+
+		if (screen_w < 640) screen_w = 640;
+		if (screen_h < 480) screen_h = 480;
+
+		/* Resize the application surface */
+		AppWin = SDL_SetVideoMode(screen_w, screen_h, 0, vflags);
+	} else {
+		/* Make sure */
+		vflags |= SDL_FULLSCREEN;
+		vflags &= ~(SDL_RESIZABLE);
+
+		AppWin = SDL_SetVideoMode(full_w, full_h, 0, vflags);
+	}
+	init_morewindows();
+	init_windows();
+}
+
 /**
  * Handle a single message sent to the application.
  *
@@ -4554,62 +4765,19 @@ static errr sdl_HandleEvent(SDL_Event *event)
 		}
 			
 		/* Shut down the game */
-		/* XXX - check for stuck inside menu etc... */
 		case SDL_QUIT:
 		{
-			bool really = true;
-
-			/* We are playing a game with an active character */
-			if (character_generated && inkey_flag) {
-				/* Forget messages */
-				msg_flag = false;
-				
-				/* Save the game */
-				if (!save_game_checked()
-						&& !get_check("Saving failed.  Really quit? ")) {
-					really = false;
-				}
-			}
-
-			if (really) {
-				save_prefs();
-				quit(NULL);
-			}
+			handle_quit(false);
 			break;
 		}
-			
+
 		/* Resize the application */
 		case SDL_VIDEORESIZE:
 		{
-			/* Free the surface */
-			SDL_FreeSurface(AppWin);
-			
-			if (!fullscreen) {
-				/* Make sure */
-				vflags &= ~(SDL_FULLSCREEN);
-				vflags |= SDL_RESIZABLE;
-				
-				screen_w = event->resize.w;
-				screen_h = event->resize.h;
-				
-				if (screen_w < 640) screen_w = 640;
-				if (screen_h < 480) screen_h = 480;
-				
-				/* Resize the application surface */
-				AppWin = SDL_SetVideoMode(screen_w, screen_h, 0, vflags);
-			} else {
-				/* Make sure */
-				vflags |= SDL_FULLSCREEN;
-				vflags &= ~(SDL_RESIZABLE);
-				
-				AppWin = SDL_SetVideoMode(full_w, full_h, 0, vflags);
-			}
-			init_morewindows();
-			init_windows();
-			
+			sdl_VideoResize(event);
 			break;
 		}
-			
+
 		case WINDOW_DRAW:
 		{
 			/* Redraw window that have asked */
@@ -4626,6 +4794,124 @@ static errr sdl_HandleEvent(SDL_Event *event)
 	sdl_WindowUpdate(&StatusBar);
 	sdl_WindowUpdate(&PopUp);
 	return (0);
+}
+
+/**
+ * Perform a modal event loop with all input directed to the PopUp window.
+ *
+ * \return zero if the PopUp window was dismissed normally.  Return one
+ * if the PopUp window was dismissed by a SDL_QUIT event.  Return two if
+ * the PopUp window was dismissed because SDL_WaitEvent() reported an error
+ * with event handling.
+ *
+ * The following events will dismiss the PopUp window without invoking
+ * a callback registered by the caller:  pressing the Escape key, pressing the
+ * right mouse button, SDL_QUIT, or SDL_WaitEvent() reporting an error.
+ *
+ * Uses a simplified form of the event handling from sdl_HandleEvent() and its
+ * children.
+ */
+static int sdl_ModalEventLoop(void)
+{
+	int result = 0;
+
+	while (popped) {
+		SDL_Event e;
+
+		sdl_WindowUpdate(&PopUp);
+		if (SDL_WaitEvent(&e)) {
+			switch (e.type) {
+			case SDL_KEYDOWN:
+				switch (e.key.keysym.sym) {
+				case SDLK_ESCAPE:
+					/* Dismiss the dialog. */
+					if (!e.key.keysym.mod) {
+						RemovePopUp();
+					}
+					break;
+
+				default:
+					/* Do nothing. */
+					break;
+				}
+				break;
+
+			case SDL_MOUSEBUTTONDOWN:
+				if (e.button.button == SDL_BUTTON_LEFT) {
+					mouse.left = 1;
+					mouse.leftx = e.button.x;
+					mouse.lefty = e.button.y;
+
+					(void)sdl_ButtonBankMouseDown(
+						&PopUp.buttons,
+						e.button.x - PopUp.left,
+						e.button.y - PopUp.top);
+				} else if (e.button.button
+						== SDL_BUTTON_RIGHT) {
+					mouse.right = 1;
+					mouse.rightx = e.button.x;
+					mouse.righty = e.button.y;
+
+					RemovePopUp();
+				}
+				break;
+
+			case SDL_MOUSEBUTTONUP:
+				if (e.button.button == SDL_BUTTON_LEFT) {
+					mouse.left = 0;
+					(void)sdl_ButtonBankMouseUp(
+						&PopUp.buttons,
+						e.button.x - PopUp.left,
+						e.button.y - PopUp.top);
+				} else if (e.button.button
+						== SDL_BUTTON_RIGHT) {
+					mouse.right = 0;
+				}
+				break;
+
+			case SDL_MOUSEMOTION:
+				{
+					SDL_Event motion_events[10];
+					int count;
+
+					mouse.x = e.motion.x;
+					mouse.y = e.motion.y;
+					while ((count = SDL_PeepEvents(motion_events,
+							10, SDL_GETEVENT,
+							SDL_EVENTMASK(SDL_MOUSEMOTION)))) {
+						mouse.x = motion_events[count - 1].motion.x;
+						mouse.y = motion_events[count - 1].motion.y;
+					}
+				}
+				break;
+
+			case SDL_QUIT:
+				RemovePopUp();
+				result = 1;
+				break;
+
+			case SDL_VIDEORESIZE:
+				sdl_VideoResize(&e);
+				PopUp.left = (AppWin->w - PopUp.width) / 2;
+				PopUp.top = (AppWin->h - PopUp.height) / 2;
+				PopUp.need_update = true;
+				break;
+
+			case WINDOW_DRAW:
+				sdl_WindowBlit((sdl_Window*)e.user.data1);
+				break;
+
+			default:
+				/* Do nothing. */
+				break;
+			}
+		} else {
+			RemovePopUp();
+			result = 2;
+		}
+	}
+
+	return result;
 }
 
 /**
@@ -4685,8 +4971,22 @@ static errr Term_xtra_sdl_event(int v)
 	SDL_Event event;
 	errr error = 0;
 
-	/* Wait or check for an event */
-	if (v) {
+	/* Wait or check for an event with special casing when exiting */
+	if (quit_when_ready) {
+		if (inkey_flag && quit_when_ready == 1) {
+			/*
+			 * The game is at a command prompt and has a
+			 * consistent state so it is safe to quit and exit.
+			 */
+			handle_quit(false);
+		} else {
+			/*
+			 * Send an escape to satisfy whatever the game is
+			 * asking for.
+			 */
+			Term_keypress(ESCAPE, 0);
+		}
+	} else if (v) {
 		/* Wait in 0.02s increments while updating animations every 0.2s */
 		int i = 0;
 		while (!SDL_PollEvent(&event)) {
