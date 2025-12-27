@@ -466,8 +466,8 @@ jobs:
           prog='${{ steps.store_config.outputs.prog }}'
           procname=`echo "$prog" | head -c 8`
           test -e "$prog".3dsx
-          cxitool --name=angband --code=CTR-P-ANGBAND --tid=000400000616E600 angband.3dsx angband.cxi
-          makerom -v -f cia -o angband.cia -target t -i angband.cxi:0:0 -ignoresign -icon icon.smdh
+          cxitool --name="$procname" --code=CTR-P-`echo "$procname" | tr [:lower:] [:upper:]` --tid=000400000616E600 "$prog".3dsx "$prog".cxi
+          makerom -v -f cia -o "$prog".cia -target t -i "$prog".cxi:0:0 -ignoresign -icon icon.smdh  
           test -e "$prog".cia
           popd
 
