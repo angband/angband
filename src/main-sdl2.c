@@ -2122,6 +2122,7 @@ static void show_about(struct sdlpui_window *window, int x, int y)
 	if (!window->infod) {
 		char path[4096];
 		SDL_Texture *texture;
+		const char *copyright_eol;
 
 		window->infod = sdlpui_start_simple_info("Ok", NULL,
 			recreate_about_dialog_textures, 0);
@@ -2133,6 +2134,20 @@ static void show_about(struct sdlpui_window *window, int x, int y)
 			DEFAULT_XTRA_BORDER, DEFAULT_XTRA_BORDER);
 		sdlpui_simple_info_add_label(window->infod, buildid,
 			SDLPUI_HOR_CENTER);
+		copyright_eol = SDL_strstr(copyright, "\n");
+		if (copyright_eol) {
+			char *line = SDL_malloc((size_t)(copyright_eol
+				- copyright) + 1);
+
+			(void)SDL_strlcpy(line, copyright,
+				(size_t)(copyright_eol - copyright) + 1);
+			sdlpui_simple_info_add_label(window->infod, line,
+				SDLPUI_HOR_CENTER);
+			SDL_free(line);
+		} else {
+			sdlpui_simple_info_add_label(window->infod, copyright,
+				SDLPUI_HOR_CENTER);
+		}
 		sdlpui_simple_info_add_label(window->infod,
 			"See http://www.rephial.org", SDLPUI_HOR_CENTER);
 		sdlpui_simple_info_add_label(window->infod,
