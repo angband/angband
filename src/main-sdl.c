@@ -1641,6 +1641,7 @@ static void AboutDraw(sdl_Window *win)
 {
 	SDL_Rect rc;
 	SDL_Rect icon;
+	const char *copyright_eol;
 
 	RECT(0, 0, win->width, win->height, &rc);
 
@@ -1654,14 +1655,26 @@ static void AboutDraw(sdl_Window *win)
 	}
 	sdl_WindowText(win, AltUnselColour, 20, 150,
 		format("You are playing %s", buildid));
-	sdl_WindowText(win, AltUnselColour, 20, 160,
+	copyright_eol = SDL_strstr(copyright, "\n");
+	if (copyright_eol) {
+		char *line = SDL_malloc((size_t)(copyright_eol
+			- copyright) + 1);
+
+		(void)SDL_strlcpy(line, copyright,
+			(size_t)(copyright_eol - copyright) + 1);
+		sdl_WindowText(win, AltUnselColour, 20, 160, line);
+		SDL_free(line);
+	} else {
+		sdl_WindowText(win, AltUnselColour, 20, 160, copyright);
+	}
+	sdl_WindowText(win, AltUnselColour, 20, 170,
 		"See http://www.rephial.org");
 }
 
 static void AboutActivate(sdl_Button *sender)
 {
 	int width = 350;
-	int height = 200;
+	int height = 210;
 
 	sdl_WindowInit(&PopUp, width, height, AppWin, StatusBar.font.req);
 	PopUp.left = (AppWin->w / 2) - width / 2;
