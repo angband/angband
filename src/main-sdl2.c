@@ -31,23 +31,23 @@
 #include "SDL_revision.h"
 
 #include "main.h"
-#include "init.h"
-#include "ui-term.h"
 #include "buildid.h"
-#include "ui-display.h"
-#include "ui-command.h"
-#include "player-calcs.h"
-#include "ui-output.h"
 #include "game-world.h"
-#include "ui-input.h"
-#include "ui-prefs.h"
 #include "grafmode.h"
-#include "ui-game.h"
-#include "ui-map.h"
+#include "init.h"
 #include "parser.h"
+#include "player-calcs.h"
 #ifdef SOUND_SDL2
 #include "sound.h"
 #endif
+#include "ui-command.h"
+#include "ui-display.h"
+#include "ui-game.h"
+#include "ui-input.h"
+#include "ui-map.h"
+#include "ui-output.h"
+#include "ui-prefs.h"
+#include "ui-term.h"
 
 #define MAX_SUBWINDOWS \
 	ANGBAND_TERM_MAX
