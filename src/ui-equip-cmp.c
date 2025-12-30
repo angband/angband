@@ -1268,6 +1268,9 @@ static int prompt_for_easy_filter(struct equippable_summary *s, bool apply_not)
 			s->easy_filt.v[s->easy_filt.nv - 1] =
 				s->easy_filt.v[s->easy_filt.nv];
 			--s->easy_filt.nv;
+			if (!s->easy_filt.nv) {
+				s->easy_filt.simple = EQUIP_EXPR_TERMINATOR;
+			}
 			filter_items(s);
 			sort_items(s);
 		}
@@ -1391,6 +1394,10 @@ static int prompt_for_easy_filter(struct equippable_summary *s, bool apply_not)
 					s->easy_filt.v[s->easy_filt.nv].c =
 						EQUIP_EXPR_SELECTOR;
 					++s->easy_filt.nv;
+					if (s->easy_filt.nv == 1) {
+						s->easy_filt.simple =
+							EQUIP_EXPR_AND;
+					}
 				}
 				ind = s->easy_filt.nv - 1;
 				s->easy_filt.v[ind].s.ex.propind =
