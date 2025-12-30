@@ -1131,17 +1131,20 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	c_prt(attr, race->name, row, col);
 
 	/* Display symbol */
-	big_pad(66, row, a, c);
+	big_pad(64, row, a, c);
 
 	/* Display kills */
 	if (!race->rarity) {
-		put_str(format("%s", "shape"), row, 70);
+		put_str(format("%s", "shape"), row, 68);
 	} else if (rf_has(race->flags, RF_UNIQUE)) {
 		put_str(format("%s", (race->max_num == 0)?  " dead" : "alive"),
-				row, 70);
+				row, 68);
 	} else {
-		put_str(format("%5d", lore->pkills), row, 70);
+		put_str(format("%5d", lore->pkills), row, 68);
 	}
+
+	/* Display if fully known */
+	put_str((lore->all_known) ? "yes" : "no", row, 75);
 }
 
 static int m_cmp_race(const void *a, const void *b)
@@ -1288,8 +1291,12 @@ static int count_known_monsters(void)
 					}
 				}
 			}
-			if (!has_base && rf_is_inter(race->flags,
-					monster_group[j].inc_flags)) {
+			if (!has_base && (rf_is_inter(race->flags,
+					monster_group[j].inc_flags)
+					|| (monster_group[j].include_fully_known
+					&& l_list[i].all_known)
+					|| (monster_group[j].include_not_fully_known
+					&& !l_list[i].all_known))) {
 				++m_count;
 				classified = true;
 			}
@@ -1351,8 +1358,12 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 					}
 				}
 			}
-			if (!has_base && rf_is_inter(race->flags,
-					monster_group[j].inc_flags)) {
+			if (!has_base && (rf_is_inter(race->flags,
+					monster_group[j].inc_flags)
+					|| (monster_group[j].include_fully_known
+					&& l_list[i].all_known)
+					|| (monster_group[j].include_not_fully_known
+					&& !l_list[i].all_known))) {
 				assert(ind < m_count);
 				monsters[ind] = ind;
 				default_join[ind].oid = i;
@@ -1372,7 +1383,7 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 	}
 
 	display_knowledge("monsters", monsters, m_count, r_funcs, m_funcs,
-			"                   Sym  Kills");
+			"                 Sym  Kills  Full");
 	mem_free(default_join);
 	mem_free(monsters);
 }
@@ -3274,6 +3285,29 @@ static enum parser_error parse_mcat_include_flag(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_mcat_include_other(struct parser *p)
+{
+	struct ui_knowledge_parse_state *s =
+		(struct ui_knowledge_parse_state*) parser_priv(p);
+	const char *name;
+
+	assert(s);
+	if (!s->categories) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+
+	name = parser_getstr(p, "name");
+	if (streq(name, "fully-known")) {
+		s->categories->include_fully_known = true;
+	} else if (streq(name, "not-fully-known")) {
+		s->categories->include_not_fully_known = true;
+	} else {
+		return PARSE_ERROR_UNRECOGNISED_PARAMETER;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
 static struct parser *init_ui_knowledge_parser(void)
 {
 	struct ui_knowledge_parse_state *s = mem_zalloc(sizeof(*s));
@@ -3283,6 +3317,7 @@ static struct parser *init_ui_knowledge_parser(void)
 	parser_reg(p, "monster-category str name", parse_monster_category);
 	parser_reg(p, "mcat-include-base str name", parse_mcat_include_base);
 	parser_reg(p, "mcat-include-flag ?str flags", parse_mcat_include_flag);
+	parser_reg(p, "mcat-include-other str name", parse_mcat_include_other);
 
 	return p;
 }
@@ -3337,6 +3372,8 @@ static errr finish_ui_knowledge_parser(struct parser *p)
 	rf_wipe(monster_group[count].inc_flags);
 	monster_group[count].n_inc_bases = 0;
 	monster_group[count].max_inc_bases = 0;
+	monster_group[count].include_fully_known = false;
+	monster_group[count].include_not_fully_known = false;
 
 	/*
 	 * Set the others, restoring the order they had in the data file.
@@ -3355,6 +3392,10 @@ static errr finish_ui_knowledge_parser(struct parser *p)
 		rf_copy(monster_group[count].inc_flags, src->inc_flags);
 		monster_group[count].n_inc_bases = src->n_inc_bases;
 		monster_group[count].max_inc_bases = src->max_inc_bases;
+		monster_group[count].include_fully_known =
+			src->include_fully_known;
+		monster_group[count].include_not_fully_known =
+			src->include_not_fully_known;
 		mem_free(src);
 	}
 

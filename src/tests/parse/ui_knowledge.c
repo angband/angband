@@ -48,6 +48,8 @@ static int test_missing_record_header0(void *state) {
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "mcat-include-flag:UNIQUE");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "mcat-include-other:fully-known");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	ok;
 }
 
@@ -64,6 +66,8 @@ static int test_category0(void *state) {
 	require(streq(s->categories->name, "Flying Things"));
 	require(rf_is_empty(s->categories->inc_flags));
 	eq(s->categories->n_inc_bases, 0);
+	require(!s->categories->include_fully_known);
+	require(!s->categories->include_not_fully_known);
 	ok;
 }
 
@@ -150,6 +154,45 @@ static int test_include_flag_bad0(void *state) {
 	ok;
 }
 
+static int test_include_other0(void *state) {
+	struct parser *p = (struct parser*) state;
+	struct ui_knowledge_parse_state *s =
+		(struct ui_knowledge_parse_state*) parser_priv(p);
+	enum parser_error r;
+
+	notnull(s);
+	notnull(s->categories);
+	require(!s->categories->include_fully_known);
+	require(!s->categories->include_not_fully_known);
+	r = parser_parse(p, "mcat-include-other:fully-known");
+	eq(r, PARSE_ERROR_NONE);
+	require(s->categories->include_fully_known);
+	require(!s->categories->include_not_fully_known);
+	r = parser_parse(p, "mcat-include-other:not-fully-known");
+	eq(r, PARSE_ERROR_NONE);
+	require(s->categories->include_not_fully_known);
+	require(s->categories->include_fully_known);
+	ok;
+}
+
+static int test_include_other_bad0(void *state) {
+	struct parser *p = (struct parser*) state;
+	struct ui_knowledge_parse_state *s =
+		(struct ui_knowledge_parse_state*) parser_priv(p);
+	enum parser_error r;
+	bool old_fully, old_not_fully;
+
+	notnull(s);
+	notnull(s->categories);
+	old_fully = s->categories->include_fully_known;
+	old_not_fully = s->categories->include_not_fully_known;
+	r = parser_parse(p, "mcat-include-other:xyzzy");
+	noteq(r, PARSE_ERROR_NONE);
+	eq(s->categories->include_fully_known, old_fully);
+	eq(s->categories->include_not_fully_known, old_not_fully);
+	ok;
+}
+
 /*
  * test_missing_record_header0() has to be before test_category0().
  * test_include_base0(), test_include_base_bad0(), test_include_flag0(),
@@ -163,5 +206,7 @@ struct test tests[] = {
 	{ "include_base_bad0", test_include_base_bad0 },
 	{ "include_flag0", test_include_flag0 },
 	{ "include_flag_bad0", test_include_flag_bad0 },
+	{ "include_other0", test_include_other0 },
+	{ "include_other_bad0", test_include_other_bad0 },
 	{ NULL, NULL }
 };

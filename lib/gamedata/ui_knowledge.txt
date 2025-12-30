@@ -7,6 +7,7 @@
 # monster-category:name
 # mcat-include-base:name
 # mcat-include-flag:flag | ...
+# mcat-include-other:name
 
 # 'monster-category' introduces a set of directives to define a category of
 # monsters in the monster knowledge menu.  It takes one parameter:  the name
@@ -27,20 +28,42 @@
 # same monster base, the knowledge menu will sort the monster types by level
 # and then by name.
 
-# 'mcat-include-flag' adds one or more monster flags to be included in the most
+# 'mcat-include-flag' adds zero or more monster flags to be included in the most
 # recent category specified by a 'monster-category' directive.  It takes
 # one parameter:  a list of zero or more monster flags, separated by spaces
 # or '|'.  Each flag must match one of the first arguments (except 'NONE') to
 # a RF() macro in list-mon-race-flags.h.  All types of monsters that have a
 # flag specified by 'mcat-include-flag' will be included in the category.
 # This directive may be used more than once for the same category.  Monster
-# types which only appear in a category because they possess a flag will
+# types which do not have a base that matches a category but do have a flag
+# (or an additional attribute described below) that matches that category will
 # appear, when displayed in the monster knowledge menu, after those that are
-# included  because of a monster base and will be sorted by level and then
+# included because of a monster base and will be sorted by level and then by
+# name.
+
+# 'mcat-include-other' adds an additional attribute to be included in the most
+# recent category specified by a 'monster-category' directive.  It takes one
+# parameter which must be one of the following:
+#
+# fully-known
+#     Include any type of monster whose attributes are fully known by the
+#     player.
+# not-fully-known
+#     Include any type of monster whose attributes are not fully known by
+#     the player.
+#
+# This directive may be used more than once for the same category.  Monster
+# types which do not have a base that matches a category but do have an
+# additional attribute (or flag as described above) that matches that category
+# will appear, when displayed in the monster knowledge menu, after those that
+# are included because of a monster base and will be sorted by level and then
 # by name.
 
 monster-category:Uniques
 mcat-include-flag:UNIQUE
+
+monster-category:Not Fully Known
+mcat-include-other:not-fully-known
 
 monster-category:Ainur
 mcat-include-base:ainu
