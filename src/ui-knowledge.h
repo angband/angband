@@ -46,6 +46,7 @@ struct ui_monster_category {
 	const struct monster_base **inc_bases;
 	bitflag inc_flags[RF_SIZE];
 	int n_inc_bases, max_inc_bases;
+	bool include_fully_known, include_not_fully_known;
 };
 struct ui_knowledge_parse_state {
 	struct ui_monster_category *categories;
