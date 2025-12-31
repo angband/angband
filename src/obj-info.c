@@ -178,7 +178,7 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 			textblock_append_c(tb, attr, "%+i %s.\n", val, desc);
 		} else if (known_effect)
 			/* Ego type or jewellery description */
-			textblock_append(tb, "Affects your %s\n", desc);
+			textblock_append(tb, "Affects your %s.\n", desc);
 	}
 
 	return true;
