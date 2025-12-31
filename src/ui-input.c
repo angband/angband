@@ -1721,6 +1721,28 @@ static bool textui_get_aim_dir(int *dp)
 }
 
 /**
+ * Get a location from the user.
+ *
+ * \param grid is dereferenced and set to location selected by the user.
+ * \return true if the user selected a location; otherwise, return false.
+ *
+ * Because of the use of target_set_interactive(), this function has the
+ * side effect of always clearing the previously set target and, if the
+ * user selects a location, setting the target to that location.
+ *
+ * As currently set up, the player likely will have to switch to free
+ * targeting to select the desired location.  That was also present in
+ * the previous implementation (debugging commands calling
+ * target_set_interactive() directly) so it has been left as is for now.
+ */
+static bool textui_get_point(struct loc *grid)
+{
+	if (!target_set_interactive(TARGET_LOOK, -1, -1, false)) return false;
+	target_get(grid);
+	return true;
+}
+
+/**
  * Initialise the UI hooks to give input asked for by the game
  */
 void textui_input_init(void)
@@ -1731,6 +1753,7 @@ void textui_input_init(void)
 	get_com_hook = textui_get_com;
 	get_rep_dir_hook = textui_get_rep_dir;
 	get_aim_dir_hook = textui_get_aim_dir;
+	get_point_hook = textui_get_point;
 	get_spell_from_book_hook = textui_get_spell_from_book;
 	get_spell_hook = textui_get_spell;
 	get_effect_from_list_hook = textui_get_effect_from_list;

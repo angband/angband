@@ -165,7 +165,7 @@ depgen:
  obj-knowledge.h obj-make.h obj-pile.h obj-power.h obj-tval.h obj-util.h \
  player-calcs.h player-timed.h list-player-timed.h player-util.h \
  project.h list-projections.h trap.h list-trap-flags.h ui-input.h \
- ui-event.h ui-term.h ui-map.h ui-output.h ui-target.h wizard.h
+ ui-event.h ui-term.h ui-map.h ui-output.h wizard.h
 ./datafile.o: datafile.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
  list-message.h player.h guid.h obj-properties.h z-file.h list-tvals.h \

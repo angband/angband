@@ -395,6 +395,7 @@ int cmd_get_arg_number(struct command *cmd, const char *arg, int *amt);
 int cmd_get_direction(struct command *cmd, const char *arg, int *dir,
 					  bool allow_5);
 int cmd_get_target(struct command *cmd, const char *arg, int *target);
+int cmd_get_point(struct command *cmd, const char *arg, struct loc *grid);
 int cmd_get_item(struct command *cmd, const char *arg, struct object **obj,
 				 const char *prompt, const char *reject, item_tester filter,
 				 int mode);

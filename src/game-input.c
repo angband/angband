@@ -27,6 +27,7 @@ bool (*get_check_hook)(const char *prompt);
 bool (*get_com_hook)(const char *prompt, char *command);
 bool (*get_rep_dir_hook)(int *dir, bool allow_none);
 bool (*get_aim_dir_hook)(int *dir);
+bool (*get_point_hook)(struct loc *grid);
 int (*get_spell_from_book_hook)(struct player *p, const char *verb,
 	struct object *book, const char *error,
 	bool (*spell_filter)(const struct player *p, int spell));
@@ -141,6 +142,21 @@ bool get_aim_dir(int *dir)
 	/* Ask the UI for it */
 	if (get_aim_dir_hook)
 		return get_aim_dir_hook(dir);
+	else
+		return false;
+}
+
+/**
+ * Get a location from the user.
+ *
+ * \param grid is dereferenced and set to the location selected.
+ * \return true if a location was chosen, otherwise return false.
+ */
+bool get_point(struct loc *grid)
+{
+	/* Ask the UI for it */
+	if (get_point_hook)
+		return get_point_hook(grid);
 	else
 		return false;
 }
