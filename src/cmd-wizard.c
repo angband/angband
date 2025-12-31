@@ -44,7 +44,6 @@
 #include "ui-input.h"
 #include "ui-map.h"
 #include "ui-output.h"
-#include "ui-target.h"
 #include "wizard.h"
 
 
@@ -1922,10 +1921,8 @@ void do_cmd_wiz_push_object(struct command *cmd)
 {
 	struct loc grid;
 
-	if (cmd_get_arg_point(cmd, "point", &grid) != CMD_OK) {
-		if (!target_set_interactive(TARGET_KILL, -1, -1, false)) return;
-		target_get(&grid);
-		cmd_set_arg_point(cmd, "point", grid);
+	if (cmd_get_point(cmd, "point", &grid) != CMD_OK) {
+		return;
 	}
 	push_object(grid);
 }
@@ -2726,15 +2723,8 @@ void do_cmd_wiz_teleport_to(struct command *cmd)
 {
 	struct loc grid;
 
-	if (cmd_get_arg_point(cmd, "point", &grid) != CMD_OK) {
-		/* Use the targeting function. */
-		if (!target_set_interactive(TARGET_LOOK, -1, -1, false)) return;
-
-		/* Grab the target coordinates. */
-		target_get(&grid);
-
-		/* Record in the command to facilitate repetition. */
-		cmd_set_arg_point(cmd, "point", grid);
+	if (cmd_get_point(cmd, "point", &grid) != CMD_OK) {
+		return;
 	}
 
 	/* Test for passable terrain. */

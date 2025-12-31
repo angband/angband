@@ -1000,6 +1000,29 @@ int cmd_get_arg_point(struct command *cmd, const char *arg, struct loc *grid)
 }
 
 /**
+ * Get a point, first from command or prompt otherwise.
+ *
+ * It would likely be useful to have a function pointer argument to select
+ * allowable locations.  For the text UI, that would require some reworking
+ * of the targeting interface - likely to allow the caller to set what an
+ * "interesting" grid is and to allow the caller to restrict the targeting
+ * system from using free targeting.
+ */
+int cmd_get_point(struct command *cmd, const char *arg, struct loc *grid)
+{
+	if (cmd_get_arg_point(cmd, arg, grid) == CMD_OK) {
+		return CMD_OK;
+	}
+
+	if (get_point(grid)) {
+		cmd_set_arg_point(cmd, arg, *grid);
+		return CMD_OK;
+	}
+
+	return CMD_ARG_ABORTED;
+}
+
+/**
  * ------------------------------------------------------------------------
  * Item arguments
  * ------------------------------------------------------------------------ */
