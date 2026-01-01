@@ -19,7 +19,7 @@ import os
 # -- Project information -----------------------------------------------------
 
 project = "Angband"
-copyright = "2025, Angband developers past and present"
+copyright = "2026, Angband developers past and present"
 author = "Angband developers past and present"
 
 # The full version, including alpha/beta/rc tags

@@ -7,7 +7,7 @@
 
 NAME = Angband
 VERSION = 4.2.6
-COPYRIGHT = (c) 1995-2025 Angband contributors
+COPYRIGHT = (c) 1995-2026 Angband contributors
 PROGNAME = angband
 
 HEADERS = \
