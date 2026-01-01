@@ -31,7 +31,7 @@ int setup_tests(void **state) {
 		projections[i].name = string_make(elem_names[i]);
 		cursor = projections[i].name;
 		while (*cursor) {
-			*cursor = tolower(*cursor);
+			*cursor = tolower((unsigned char)*cursor);
 			++cursor;
 		}
 	}

@@ -1290,11 +1290,11 @@ static int prompt_for_easy_filter(struct equippable_summary *s, bool apply_not)
 		}
 		switch (itry) {
 		case 0:
-			ctry[0] = toupper(c[0]);
+			ctry[0] = toupper((unsigned char)c[0]);
 			if (c[1] != '\0') {
-				ctry[1] = tolower(c[1]);
+				ctry[1] = tolower((unsigned char)c[1]);
 				if (c[2] != '\0') {
-					ctry[2] = tolower(c[2]);
+					ctry[2] = tolower((unsigned char)c[2]);
 					ctry[3] = '\0';
 					threec = true;
 				} else {
@@ -1306,11 +1306,11 @@ static int prompt_for_easy_filter(struct equippable_summary *s, bool apply_not)
 			break;
 
 		case 1:
-			ctry[0] = toupper(c[0]);
+			ctry[0] = toupper((unsigned char)c[0]);
 			if (c[1] != '\0') {
-				ctry[1] = toupper(c[1]);
+				ctry[1] = toupper((unsigned char)c[1]);
 				if (c[2] != '\0') {
-					ctry[2] = toupper(c[2]);
+					ctry[2] = toupper((unsigned char)c[2]);
 					ctry[3] = '\0';
 					threec = true;
 				} else {
@@ -1322,11 +1322,11 @@ static int prompt_for_easy_filter(struct equippable_summary *s, bool apply_not)
 			break;
 
 		case 2:
-			ctry[0] = tolower(c[0]);
+			ctry[0] = tolower((unsigned char)c[0]);
 			if (c[1] != '\0') {
-				ctry[1] = tolower(c[1]);
+				ctry[1] = tolower((unsigned char)c[1]);
 				if (c[2] != '\0') {
-					ctry[2] = tolower(c[2]);
+					ctry[2] = tolower((unsigned char)c[2]);
 					ctry[3] = '\0';
 					threec = true;
 				} else {
@@ -1338,9 +1338,9 @@ static int prompt_for_easy_filter(struct equippable_summary *s, bool apply_not)
 			break;
 
 		case 3:
-			ctry[0] = tolower(c[0]);
+			ctry[0] = tolower((unsigned char)c[0]);
 			if (c[1] != '\0') {
-				ctry[1] = toupper(c[1]);
+				ctry[1] = toupper((unsigned char)c[1]);
 				ctry[2] = '\0';
 			} else {
 				ctry[1] = '\0';
