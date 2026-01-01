@@ -22,7 +22,7 @@ export ZFILES           :=      $(ZFILES)
 # User config
 # ===========
 
-NAME			:= angband
+NAME			:= $(PROGNAME)
 
 GAME_TITLE		:= Angband
 GAME_DESCRIPTION	:= Dungeon exploration
