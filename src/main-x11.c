@@ -21,6 +21,7 @@
 #include "init.h"
 #include "ui-display.h"
 #include "ui-game.h"
+#include "ui-input.h"
 
 /**
  * This file helps Angband work with UNIX/X11 computers.
@@ -219,8 +220,9 @@ typedef struct infofnt infofnt;
  *	- The default Screen for the display
  *	- The virtual root (usually just the root)
  *	- The default colormap (from a macro)
- *  - The Alt key modifier mask
- *  - The Super key modifier mask
+ *	- The atom corresponding to WM_DELETE_WINDOW
+ *	- The Alt key modifier mask
+ *	- The Super key modifier mask
  *
  *	- The "name" of the display
  *
@@ -247,6 +249,7 @@ struct metadpy
 	Screen *screen;
 	Window root;
 	Colormap cmap;
+	Atom wm_delete_msg;
 	unsigned int alt_mask;
 	unsigned int super_mask;
 
@@ -668,6 +671,8 @@ static errr Metadpy_init_2(Display *dpy, const char *name)
 
 	/* Get the default colormap */
 	m->cmap = DefaultColormapOfScreen(m->screen);
+
+	m->wm_delete_msg = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
 
 	/* Extract the true name of the display */
 	m->name = DisplayString(dpy);
@@ -1624,6 +1629,100 @@ static int term_windows_open;
 
 
 /**
+ * Track progress towards quitting when the window manager requests closing the
+ * main window.  Will be zero when no close request for the main window has
+ * been received.  Will be one if a close request has been received, but either
+ * the game is not yet ready to save or have not determined the status of the
+ * game.  Will be a non-zero value other than one if a close request has been
+ * received and the game is ready to save.
+ */
+static int quit_when_ready = 0;
+
+
+
+/**
+ * Remove a window and all the associated data.
+ *
+ * \param ind is the index of the window to remove.
+ */
+static void nuke_window(int ind)
+{
+	term_data *td = &data[ind];
+	term *t = &td->t;
+
+	/* Free size hints */
+	if (td->sizeh) {
+		XFree(td->sizeh);
+		td->sizeh = NULL;
+	}
+
+	/* Free class hints */
+	if (td->classh) {
+		XFree(td->classh);
+		td->classh = NULL;
+	}
+
+	/* Free fonts */
+	if (td->fnt) {
+		Infofnt_set(td->fnt);
+		(void)Infofnt_nuke();
+		mem_free(td->fnt);
+		td->fnt = NULL;
+	}
+
+	/* Free window */
+	if (td->win) {
+		Infowin_set(td->win);
+		(void)Infowin_nuke();
+		mem_free(td->win);
+		td->win = NULL;
+	}
+
+	/* Free term */
+	if (t->key_queue) {
+		(void)term_nuke(t);
+		t->key_queue = NULL;
+	}
+}
+
+
+
+/**
+ * Handle exiting the game due to events not triggered by the game's core.
+ */
+static void handle_quit(void)
+{
+	if (character_generated) {
+		/*
+		 * Want to be at a command prompt so the game's state is ready
+		 * to save.  If not at a command prompt, mark as ready to quit:
+		 * CheckEvent() will use that to either call back to here when
+		 * it is safe to save or send escapes to the game to satisfy
+		 * its requests for input.
+		 */
+		if (!inkey_flag) {
+			quit_when_ready = 1;
+			return;
+		}
+
+		/* Drop pending messages. */
+		msg_flag = false;
+		quit_when_ready = 2;
+
+		/*
+		 * Other front ends (SDL, SDL2) try to explicitly save here,
+		 * and if that is not successful, confirm with the player
+		 * whether to proceed with quitting.  For now, skip that for
+		 * X11:  use the implicit save done within close_game().
+		 */
+		close_game(false);
+	}
+	quit(NULL);
+}
+
+
+
+/**
  * Process a keypress event
  */
 static void react_keypress(XKeyEvent *ev)
@@ -1767,6 +1866,23 @@ static errr CheckEvent(bool wait)
 	int i;
 	int window = 0;
 
+	if (quit_when_ready) {
+		if (inkey_flag && quit_when_ready == 1) {
+			/*
+			 * The game is at a command prompt and has a consistent
+			 * state so it is safe to save and exit.
+			 */
+			handle_quit();
+		} else {
+			/*
+			 * Send an escape to satisfy whatever the game is
+			 * asking for.
+			 */
+			Term_keypress(ESCAPE, 0);
+		}
+		return 0;
+	}
+
 	/* Do not wait unless requested */
 	if (!wait && !XPending(Metadpy->dpy)) return (1);
 
@@ -1790,8 +1906,8 @@ static errr CheckEvent(bool wait)
 
 
 	/* Scan the windows */
-	for (i = 0; i < MAX_TERM_DATA; i++) {
-		if (xev->xany.window == data[i].win->win) {
+	for (i = 0; i < term_windows_open; i++) {
+		if (data[i].win && xev->xany.window == data[i].win->win) {
 			td = &data[i];
 			iwin = td->win;
 			window = i;
@@ -1941,6 +2057,20 @@ static errr CheckEvent(bool wait)
 
 			break;
 		}
+
+		case ClientMessage:
+			if ((unsigned long)xev->xclient.data.l[0]
+					== Metadpy->wm_delete_msg) {
+				/* Requested close for window */
+				if (window == 0) {
+					if (!quit_when_ready) {
+						handle_quit();
+					}
+				} else {
+					nuke_window(window);
+				}
+			}
+			break;
 	}
 
 	/* Activate the old term */
@@ -2087,7 +2217,7 @@ static errr Term_xtra_x11(int n, int v)
 		case TERM_XTRA_EVENT: return (CheckEvent(v));
 
 		/* Flush the events XXX */
-		case TERM_XTRA_FLUSH: while (!CheckEvent(false)); return (0);
+		case TERM_XTRA_FLUSH: while (!quit_when_ready && !CheckEvent(false)); return (0);
 
 		/* Handle change in the "level" */
 		case TERM_XTRA_LEVEL: return (Term_xtra_x11_level(v));
@@ -2552,14 +2682,19 @@ static errr term_data_init(term_data *td, int i)
 	wmh->flags |= WindowGroupHint;
 
 	if(i == 0) {
-		// root points to itself
+		/* root points to itself */
 		wmh->window_group = td->win->win;
 	} else {
-		// others point to root
+		/* others point to root */
 		wmh->window_group = data[0].win->win;
 	}
 	XSetWMHints(Metadpy->dpy, Infowin->win, wmh);
 	XFree(wmh);
+
+	/*
+	 * Have attempts to close the window be mapped to a ClientMessage event.
+	 */
+	XSetWMProtocols(Metadpy->dpy, Infowin->win, &Metadpy->wm_delete_msg, 1);
 
 	/* Map the window */
 	Infowin_map();
@@ -2612,27 +2747,7 @@ static void hook_quit(const char *str)
 
 	/* Free allocated data */
 	for (i = 0; i < term_windows_open; i++) {
-		term_data *td = &data[i];
-		term *t = &td->t;
-
-		/* Free size hints */
-		XFree(td->sizeh);
-
-		/* Free class hints */
-		XFree(td->classh);
-
-		/* Free fonts */
-		Infofnt_set(td->fnt);
-		(void)Infofnt_nuke();
-		mem_free(td->fnt);
-
-		/* Free window */
-		Infowin_set(td->win);
-		(void)Infowin_nuke();
-		mem_free(td->win);
-
-		/* Free term */
-		(void)term_nuke(t);
+		nuke_window(i);
 	}
 
 	/* Free colors */
