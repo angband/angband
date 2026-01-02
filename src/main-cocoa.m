@@ -106,8 +106,14 @@ enum
 - (void)setRestorable:(BOOL)flag;
 @end
 
-/** Delay handling of pre-emptive "quit" event */
-static BOOL quit_when_ready = NO;
+/**
+ * Delay handling of pre-emptive "quit" event; one if the player requests
+ * an exit and the game is not at a command prompt (or have not verified the
+ * state of that prompt); any non-zero value other than one when ready to
+ * save the game at exit but the game may request additional input; zero in
+ * all other cases
+ */
+static int quit_when_ready = 0;
 
 /** Set to indicate the game is over and we can quit without delay */
 static BOOL game_is_finished = NO;
@@ -4955,32 +4961,52 @@ static void wakeup_event_loop(void)
 
 
 /**
- * Handle quit_when_ready, by Peter Ammon,
- * slightly modified to check inkey_flag.
+ * Respond to user interface events which either request an immediate exit
+ * (forced is YES) or a possible exit subject to requesting more input
+ * from the user (forced is NO).
  */
-static void quit_calmly(void)
+static void handle_quit(BOOL forced)
 {
-    /* Quit immediately if game's not started */
-    if (!game_in_progress || !character_generated) quit(NULL);
+    if (character_generated) {
+        /*
+         * Want to be at a command prompt so the game's state is ready
+         * to save.  If not at a command prompt and not forcing an
+         * exit mark it as ready to quit:  check_events() will use that
+         * to either call back here or send escapes to the game to
+         * satisfy its requests for input.
+         */
+        if (!inkey_flag && !forced) {
+            quit_when_ready = 1;
+            return;
+        }
 
-    /* Save the game and Quit (if it's safe) */
-    if (inkey_flag)
-    {
-        /* Forget messages and term */
+        /* Drop pending messages */
         msg_flag = false;
-        Term->mapped_flag = false;
+        quit_when_ready = 2;
 
-        /* Save the game */
+        /*
+         * If not forcing an exit, allow the player to abort the
+         * exit if there is trouble saving the game.
+         */
+        if (!forced && !save_game_checked()) {
+            NSAlert *alert = [[NSAlert alloc] init];
+
+            alert.messageText = @"Confirm Quitting";
+            alert.informativeText = @"Saving failed.  Really quit?";
+            [alert addButtonWithTitle:@"No"];
+            [alert addButtonWithTitle:@"Yes"];
+            if ([alert runModal] != NSAlertSecondButtonReturn) {
+                quit_when_ready = 0;
+                return;
+            }
+        }
+
         record_current_savefile();
         close_game(true);
-
-        /* Quit */
-        quit(NULL);
     }
 
-    /* Wait until inkey_flag is set */
+    quit(NULL);
 }
-
 
 
 /**
@@ -5239,32 +5265,36 @@ static BOOL check_events(int wait)
     BOOL result = YES;
 
     @autoreleasepool {
-	/* Handles the quit_when_ready flag */
-	if (quit_when_ready) quit_calmly();
-
-	NSDate* endDate;
-	if (wait == CHECK_EVENTS_WAIT) endDate = [NSDate distantFuture];
-	else endDate = [NSDate distantPast];
-
+	NSDate* endDate = (wait == CHECK_EVENTS_WAIT)
+            ? [NSDate distantFuture] : [NSDate distantPast];
 	NSEvent* event;
+
 	for (;;) {
-	    if (quit_when_ready)
-	    {
-		/* send escape events until we quit */
-		Term_keypress(0x1B, 0);
+	    if (quit_when_ready) {
+		if (inkey_flag && quit_when_ready == 1) {
+		    /*
+		     * The game is at a command prompt and has a consistent
+		     * state so it is safe to save and quit.
+		     */
+		    handle_quit(NO);
+		} else {
+		    /*
+		     * Send an escape to satisfy whatever the game is asking
+		     * for.
+		     */
+		    Term_keypress(ESCAPE, 0);
+		}
 		result = NO;
 		break;
 	    }
-	    else {
-		event = [NSApp nextEventMatchingMask:-1 untilDate:endDate
-			       inMode:NSDefaultRunLoopMode dequeue:YES];
 
-		if (! event) {
-		    result = NO;
-		    break;
-		}
-		if (send_event(event)) break;
+	    event = [NSApp nextEventMatchingMask:-1 untilDate:endDate
+			       inMode:NSDefaultRunLoopMode dequeue:YES];
+	    if (!event) {
+		result = NO;
+		break;
 	    }
+	    if (send_event(event)) break;
 	}
     }
 
@@ -6264,25 +6294,17 @@ static void cocoa_reinit(void)
 {
     if (!player->upkeep->playing || game_is_finished)
     {
-        quit_when_ready = YES;
+        quit_when_ready = 1;
         return NSTerminateNow;
-    }
-    else if (! inkey_flag)
-    {
-        /* For compatibility with other ports, do not quit in this case */
-        return NSTerminateCancel;
     }
     else
     {
-        /* Stop playing */
-        player->upkeep->playing = false;
-
         /*
          * Post an escape event so that we can return from our get-key-event
          * function
          */
         wakeup_event_loop();
-        quit_when_ready = YES;
+        quit_when_ready = 1;
         /*
          * Must return Cancel, not Later, because we need to get out of the
          * run loop and back to Angband's loop
