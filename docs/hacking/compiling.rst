@@ -490,7 +490,7 @@ Using Cygwin (with MinGW)
 Use this option if you want to build a native Windows executable that
 can run with or without Cygwin.
 
-Use the Cygwin setup.exe to install cmake, ninja, and ming64-i686-gcc-core.
+Use the Cygwin setup.exe to install cmake, ninja, and mingw64-i686-gcc-core.
 Build with::
 
     mkdir build && cd build
@@ -508,7 +508,7 @@ Run with::
     ./angband.exe
 
 Alternatively you can use autotools, for which we need the autoconf,
-automake, make, and ming64-i686-gcc-core::
+automake, make, and mingw64-i686-gcc-core::
 
     ./autogen.sh
     ./configure --enable-win --host=i686-w64-mingw32
