@@ -58,11 +58,13 @@ jobs:
       - name: Build Nintendo 3DS (cia)
         shell: bash
         run: |
-          progname='${{ steps.get_names.outputs.progname }}'
-          procname=`echo "$progname" | head -c 8`
+          prog='${{ steps.get_names.outputs.progname }}'
+          procname=`echo "$prog" | head -c 8`
           pushd src/
-          cxitool --name "$procname" "$progname".3dsx "$progname".cxi
-          makerom -v -f cia -o $"progname".cia -target t -i "$progname".cxi:0:0 -ignoresign -icon src/nds/icon.smdh
+          test -e "$prog".3dsx
+          cxitool --name "$procname" --code=CTR-P-`echo "$procname" | tr [:lower:] [:upper:]` --tid=000400000616E600 "$prog".3dsx "$prog".cxi
+          makerom -v -f cia -o "$prog".cia -target t -i "$prog".cxi:0:0 -ignoresign -icon src/nds/icon.smdh
+          test -e "$prog".cia
           popd
 
   blocksds:
