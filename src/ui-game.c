@@ -309,7 +309,7 @@ struct cmd_info cmd_debug_query[] =
 	{ "Feature", { 'F' }, CMD_WIZ_QUERY_FEATURE, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Square flag", { 'q' }, CMD_WIZ_QUERY_SQUARE_FLAG, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Noise and scent", { '_' }, CMD_WIZ_PEEK_NOISE_SCENT, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
-	{ "Keystroke log", { 'L' }, CMD_WIZ_DISPLAY_KEYLOG, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Keystroke log", { 'L' }, CMD_NULL, wiz_display_keylog, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 };
 
 struct cmd_info cmd_debug_misc[] =
