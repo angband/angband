@@ -2617,7 +2617,7 @@ errr Term_mousepress(int x, int y, char button)/*, uint8_t mods);*/
 /**
  * Add a keypress to the FRONT of the "queue"
  */
-errr Term_key_push(int k)
+errr Term_key_push(keycode_t k, uint8_t mods)
 {
 	ui_event ke;
 
@@ -2625,7 +2625,7 @@ errr Term_key_push(int k)
 
 	ke.type = EVT_KBRD;
 	ke.key.code = k;
-	ke.key.mods = 0;
+	ke.key.mods = mods;
 
 	return Term_event_push(&ke);
 }
