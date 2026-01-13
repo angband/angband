@@ -93,6 +93,55 @@ void wiz_proj_demo(void)
 }
 
 
+/**
+ * Display the keycodes the user has been generating.
+ */
+void wiz_display_keylog(void)
+{
+	int i;
+	char buf[50];
+	char buf2[12];
+	struct keypress keys[2] = {KEYPRESS_NULL, KEYPRESS_NULL};
+
+	screen_save();
+
+	prt("Previous keypresses (top most recent):", 0, 0);
+
+	for (i = 0; i < KEYLOG_SIZE; i++) {
+		if (i < log_size) {
+			/*
+			 * Find the keypress from the log; log_i is one past
+			 * the most recent.
+			 */
+			int j = (log_i > i)
+				? log_i - i - 1 : log_i - i - 1 + KEYLOG_SIZE;
+			struct keypress k = keylog[j];
+
+			/*
+			 * ugh. it would be nice if there was a version of
+			 * keypress_to_text which took only one keypress.
+			 */
+			keys[0] = k;
+			keypress_to_text(buf2, sizeof(buf2), keys, true);
+
+			/* format this line of output */
+			strnfmt(buf, sizeof(buf),
+				"    %-12s (code=%lu mods=%u)", buf2,
+				(unsigned long)k.code, k.mods);
+		} else {
+			/* create a blank line of output */
+			strnfmt(buf, sizeof(buf), "%40s", "");
+		}
+
+		prt(buf, i + 1, 0);
+	}
+
+	prt("Press any key to continue.", KEYLOG_SIZE + 1, 0);
+	anykey();
+	screen_load();
+}
+
+
 /** Object creation code **/
 static bool choose_artifact = false;
 static const region wiz_create_item_area = { 0, 0, 0, 0 };
