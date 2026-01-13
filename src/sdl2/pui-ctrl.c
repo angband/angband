@@ -984,7 +984,7 @@ static bool handle_mb_mousemove(struct sdlpui_control *c,
 			}
 			if (old != mbp->has_mouse) {
 				if (!mbp->has_mouse) {
-#ifndef NDEBUG
+#ifdef SDLPUI_TRACE_EVENTS
 					size_t ecap_sz =
 						SDL_strlen(mbp->caption) + 16;
 					char *ecap = SDL_malloc(ecap_sz);
@@ -998,7 +998,7 @@ static bool handle_mb_mousemove(struct sdlpui_control *c,
 #endif
 					d->c_mouse = NULL;
 				} else if (!old) {
-#ifndef NDEBUG
+#ifdef SDLPUI_TRACE_EVENTS
 					size_t ecap_sz =
 						SDL_strlen(mbp->caption) + 16;
 					char *ecap = SDL_malloc(ecap_sz);
@@ -1015,7 +1015,7 @@ static bool handle_mb_mousemove(struct sdlpui_control *c,
 				/* Have keyboard focus follow the mouse. */
 				if (mbp->has_key != mbp->has_mouse) {
 					if (!mbp->has_mouse) {
-#ifndef NDEBUG
+#ifdef SDLPUI_TRACE_EVENTS
 						size_t ecap_sz =
 							SDL_strlen(mbp->caption)
 							+ 16;
@@ -1033,7 +1033,7 @@ static bool handle_mb_mousemove(struct sdlpui_control *c,
 #endif
 						d->c_key = NULL;
 					} else if (!mbp->has_key) {
-#ifndef NDEBUG
+#ifdef SDLPUI_TRACE_EVENTS
 						size_t ecap_sz =
 							SDL_strlen(mbp->caption)
 							+ 16;
@@ -1106,7 +1106,7 @@ static bool handle_mb_mousewheel(struct sdlpui_control *c,
 		result = mbp->v.ranged_int.max;
 	}
 	if (mbp->v.ranged_int.curr != result) {
-#ifndef NDEBUG
+#ifdef SDLPUI_TRACE_EVENTS
 		size_t ecap_sz = SDL_strlen(mbp->caption) + 16;
 		char *ecap = SDL_malloc(ecap_sz);
 
@@ -1124,7 +1124,7 @@ static bool handle_mb_mousewheel(struct sdlpui_control *c,
 			(*mbp->callback)(c, d, w);
 		}
 	} else {
-#ifndef NDEBUG
+#ifdef SDLPUI_TRACE_EVENTS
 		size_t ecap_sz = SDL_strlen(mbp->caption) + 16;
 		char *ecap = SDL_malloc(ecap_sz);
 
@@ -1404,7 +1404,7 @@ static void respond_default_mb(struct sdlpui_control *c,
 			newi = mbp->v.ranged_int.max;
 		}
 		if (newi == mbp->v.ranged_int.curr) {
-#ifndef NDEBUG
+#ifdef SDLPUI_TRACE_EVENTS
 			size_t ecap_sz = SDL_strlen(mbp->caption) + 16;
 			char *ecap = SDL_malloc(ecap_sz);
 
@@ -1416,7 +1416,7 @@ static void respond_default_mb(struct sdlpui_control *c,
 #endif
 			return;
 		}
-#ifndef NDEBUG
+#ifdef SDLPUI_TRACE_EVENTS
 		{
 			size_t ecap_sz = SDL_strlen(mbp->caption) + 16;
 			char *ecap = SDL_malloc(ecap_sz);
