@@ -103,7 +103,6 @@ void do_cmd_wiz_cure_all(struct command *cmd);
 void do_cmd_wiz_curse_item(struct command *cmd);
 void do_cmd_wiz_detect_all_local(struct command *cmd);
 void do_cmd_wiz_detect_all_monsters(struct command *cmd);
-void do_cmd_wiz_display_keylog(struct command *cmd);
 void do_cmd_wiz_dump_level_map(struct command *cmd);
 void do_cmd_wiz_edit_player_exp(struct command *cmd);
 void do_cmd_wiz_edit_player_gold(struct command *cmd);

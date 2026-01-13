@@ -143,7 +143,6 @@ static const struct command_info game_cmds[] =
 	{ CMD_WIZ_CURSE_ITEM, "change a curse on an item", do_cmd_wiz_curse_item, false, false, 0 },
 	{ CMD_WIZ_DETECT_ALL_LOCAL, "detect everything nearby", do_cmd_wiz_detect_all_local, false, false, 0 },
 	{ CMD_WIZ_DETECT_ALL_MONSTERS, "detect all monsters", do_cmd_wiz_detect_all_monsters, false, false, 0 },
-	{ CMD_WIZ_DISPLAY_KEYLOG, "display keystroke log", do_cmd_wiz_display_keylog, false, false, 0 },
 	{ CMD_WIZ_DUMP_LEVEL_MAP, "write map of level", do_cmd_wiz_dump_level_map, false, false, 0 },
 	{ CMD_WIZ_EDIT_PLAYER_EXP, "change the player's experience", do_cmd_wiz_edit_player_exp, false, false, 0 },
 	{ CMD_WIZ_EDIT_PLAYER_GOLD, "change the player's gold", do_cmd_wiz_edit_player_gold, false, false, 0 },
