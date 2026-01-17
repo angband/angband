@@ -194,7 +194,7 @@ static struct keypress borg_inkey_hack(int flush_first)
 /*
  * Get a grid square to use for command
  */
-static bool borg_cmd_target()
+static bool borg_cmd_target(void)
 {
     char cmd = 'n';
 
