@@ -20,14 +20,14 @@
 #include "borg.h"
 
 #ifdef ALLOW_BORG
-
+ 
 #include "../game-input.h"
 #include "../game-world.h"
-#include "../player-timed.h"
 #include "../project.h"
 #include "../ui-input.h"
 #include "../ui-keymap.h"
 #include "../ui-map.h"
+#include "../ui-target.h"
 
 #include "borg-cave-util.h"
 #include "borg-cave-view.h"
@@ -189,6 +189,38 @@ static struct keypress internal_borg_inkey(int flush_first);
 static struct keypress borg_inkey_hack(int flush_first)
 {
     return save_keypress_history(internal_borg_inkey(flush_first));
+}
+
+/*
+ * Get a grid square to use for command
+ */
+static bool borg_cmd_target()
+{
+    char cmd = 'n';
+
+    /* Check for use of current target */
+    if (target_okay()) {
+        if (!get_com("Use current target? (y/n) ", &cmd)) {
+            borg_note("command aborted");
+            return false;
+        }
+    }
+
+    if (cmd != 'y' && cmd != 'Y') {
+        ui_event ke;
+        /* Get a command (or Cancel) */
+        if (!get_com_ex("Select grid location (t): ", &ke))
+        {
+            borg_note("targetting aborted");
+            return false;
+        }
+
+        if (!target_set_interactive(TARGET_LOOK, borg.c.x, borg.c.y, true)) {
+            borg_note("targetting aborted");
+            return false;
+        }
+    }
+    return true;
 }
 
 /*
@@ -549,7 +581,7 @@ void do_cmd_borg(void)
         if (auto_start_borg == false)
 #endif
         {
-            if (!get_com("Borg command: ", &cmd))
+            if (!get_com("Borg command (? for help): ", &cmd))
                 return;
         }
 
@@ -1004,6 +1036,8 @@ void do_cmd_borg(void)
 
     /* Display Feature of a targetted grid */
     case 'G': {
+        if (!borg_cmd_target())
+            return;
         int y = 1;
         int x = 1;
 
@@ -1131,6 +1165,9 @@ void do_cmd_borg(void)
         int        y = 1;
         int        x = 1;
         struct loc l;
+
+        if (!borg_cmd_target())
+            return;
 
         target_get(&l);
         y = l.y;
@@ -1425,11 +1462,13 @@ void do_cmd_borg(void)
     case '#': {
         int        n;
         struct loc l;
+        if (!borg_cmd_target())
+            return;
 
         target_get(&l);
 
         /* Turns */
-        n = get_quantity("Quantity: ", 10);
+        n = get_quantity("Time on square? ", 10);
 
         /* Danger of grid */
         msg("Danger(%d,%d,%d) is %d", l.x, l.y, n,
