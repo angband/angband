@@ -1320,6 +1320,37 @@ static void validate_file(const char *s)
 }
 
 /**
+ * Guess whether a file represents a bitmapped font based on the file name's
+ * extension.
+ *
+ * Only include formats that are handled by FreeType (and therefore SDL_TTF).
+ */
+static bool is_bitmapped_font(const char *file_name)
+{
+	/*
+	 * Microsoft executable only containing font resources; those can
+	 * be stroked fonts, but here assume they are bitmapped as that is
+	 * most common; ignore case in the file extension as both .fon and
+	 * .FON are found
+	 */
+	if (suffix_i(file_name, ".fon")) {
+		return true;
+	}
+	/*
+	 * Portable Compiled Format (PCF) used by X11; accept either
+	 * uncompressed or gzipped compressed versions
+	 */
+	if (suffix(file_name, ".pcf.gz") || suffix(file_name, ".pcf")) {
+		return true;
+	}
+	/* Glyph Bitmap Distribution Format */
+	if (suffix(file_name, ".bdf")) {
+		return true;
+	}
+	return false;
+}
+
+/**
  * Find a window that is under the points x,y on
  * the main screen
  */
@@ -2706,7 +2737,7 @@ static void SelectFileFontBrowser(sdl_Button *sender)
 		new_font.preset = false;
 	}
 	new_font.name = new_font.alloc_name;
-	if (suffix_i(new_font.name, ".fon")) {
+	if (is_bitmapped_font(new_font.name)) {
 		new_font.size = 0;
 		new_font.bitmapped = true;
 	} else {
@@ -3503,8 +3534,8 @@ static void FontActivate(sdl_Button *sender)
 		}
 		sdl_ButtonCaption(button, FontList[i]);
 		sdl_ButtonVisible(button, true);
-		button->activate = (suffix_i(FontList[i], ".fon")) ?
-			SelectPresetBitmappedFont : SelectPresetScalableFont;
+		button->activate = (is_bitmapped_font(FontList[i]))
+			? SelectPresetBitmappedFont : SelectPresetScalableFont;
 	}
 
 	if (extra == 2) {
