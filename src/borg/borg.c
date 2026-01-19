@@ -20,7 +20,7 @@
 #include "borg.h"
 
 #ifdef ALLOW_BORG
- 
+
 #include "../game-input.h"
 #include "../game-world.h"
 #include "../project.h"
