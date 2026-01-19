@@ -2587,7 +2587,12 @@ static errr term_data_init(term_data *td, int i)
 	td->fnt = mem_zalloc(sizeof(infofnt));
 	Infofnt_set(td->fnt);
 	if (Infofnt_init_data(font))
-		quit_fmt("Couldn't load the requested font. (%s)", font);
+		quit_fmt(
+			"Couldn't load the requested X11 font (%s).\n"
+			"X11 requires legacy bitmap fonts, which may not be installed by default.\n"
+			"See https://angband.readthedocs.io/en/latest/faq.html#x11-fonts",
+			font
+		);
 
 	/* Use proper tile size */
 	if (td->tile_wid <= 0) td->tile_wid = td->fnt->twid;

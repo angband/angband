@@ -28,6 +28,29 @@ Dark monsters are hard to see
 
 Fix (reduce) the alpha on your screen, or use the "Interact with colors" screen under the options (``=``) menu.  Navigate to the ``8`` using ``n`` and increase the color intensity with r(ed)/g(reen)/b(lue).
 
+.. _x11-fonts:
+
+How do I avoid the "Couldn't load the requested X11 font (10x20)" message?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The X11 frontend requires *legacy bitmap fonts*. Many modern systems no longer install those fonts by default, or install them in locations that X11 does not search automatically.
+
+Common ways to resolve this include:
+
+* Install legacy X11 bitmap font packages provided by your operating system (package names vary by distribution).
+* Explicitly select an installed bitmap font by setting the ``ANGBAND_X11_FONT`` environment variable.
+* Use a different frontend (SDL, SDL2, Windows, macOS) that does not rely on X11 bitmap fonts.
+
+On Linux, the required font is typically provided as ``10x20.pcf.gz``. If your distribution allows searching packages by installed files, look for a package that provides that file. Common examples include:
+
+* Debian/Ubuntu and derivatives: ``xfonts-base``
+* Red Hat–derived distributions: ``xorg-x11-fonts-misc``
+* Arch Linux: ``xorg-fonts-misc``
+
+Depending on the distribution and configuration, installing these packages may not be sufficient if X11 is not configured to search the installed font paths.
+
+If none of the above works, please check the forums for distribution-specific advice or post a question including your OS, distribution, and Angband version.
+
 Is there a way to disable that thing that pops up when you hit the enter key?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
