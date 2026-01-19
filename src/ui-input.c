@@ -326,30 +326,24 @@ void anykey(void)
  */
 struct keypress inkey(void)
 {
-	ui_event ke = EVENT_EMPTY;
+	ui_event ke = { .key = KEYPRESS_NULL };
 
 	while (ke.type != EVT_ESCAPE && ke.type != EVT_KBRD &&
 		   ke.type != EVT_MOUSE && ke.type != EVT_BUTTON)
 		ke = inkey_ex();
 
 	/* Make the event a keypress */
-	if (ke.type == EVT_ESCAPE) {
-		ke.type = EVT_KBRD;
-		ke.key.code = ESCAPE;
-		ke.key.mods = 0;
-	} else if (ke.type == EVT_MOUSE) {
-		if (ke.mouse.button == 1) {
-			ke.type = EVT_KBRD;
-			ke.key.code = '\n';
-			ke.key.mods = 0;
-		} else {
-			ke.type = EVT_KBRD;
-			ke.key.code = ESCAPE;
-			ke.key.mods = 0;
-		}
-	} else if (ke.type == EVT_BUTTON) {
-		ke.type = EVT_KBRD;
-	}
+    if (ke.type == EVT_ESCAPE) {
+        ke = (ui_event){ .key = { .type = EVT_KBRD, .code = ESCAPE, .mods = 0 } };
+    } else if (ke.type == EVT_MOUSE) {
+        ke = (ui_event){ .key = { 
+            .type = EVT_KBRD,
+            .code = (ke.mouse.button == 1 ? '\n' : ESCAPE),
+            .mods = 0 
+        } };
+    } else if (ke.type == EVT_BUTTON) {
+        ke.key.type = EVT_KBRD;
+    }
 
 	return ke.key;
 }
@@ -360,18 +354,16 @@ struct keypress inkey(void)
  */
 ui_event inkey_m(void)
 {
-	ui_event ke = EVENT_EMPTY;
+	ui_event ke = { .key = KEYPRESS_NULL };
 
 	/* Only accept a keypress */
 	while (ke.type != EVT_ESCAPE && ke.type != EVT_KBRD	&&
 		   ke.type != EVT_MOUSE  && ke.type != EVT_BUTTON)
 		ke = inkey_ex();
 	if (ke.type == EVT_ESCAPE) {
-		ke.type = EVT_KBRD;
-		ke.key.code = ESCAPE;
-		ke.key.mods = 0;
+		ke = (ui_event){ .key = { .type = EVT_KBRD, .code = ESCAPE, .mods = 0 } };
 	} else if (ke.type == EVT_BUTTON) {
-		ke.type = EVT_KBRD;
+		ke.key.type = EVT_KBRD;
 	}
 
   return ke;
@@ -982,7 +974,7 @@ bool askfor_aux_ext(char *buf, size_t len,
 
 	/* Process input */
 	while (!done) {
-		ui_event in;
+		ui_event in = { .key = KEYPRESS_NULL };
 
 		/* Place cursor */
 		Term_gotoxy(x + k, y);
@@ -997,13 +989,11 @@ bool askfor_aux_ext(char *buf, size_t len,
 				break;
 			}
 			if (in.type == EVT_BUTTON) {
-				in.type = EVT_KBRD;
+				in.key.type = EVT_KBRD;
 				break;
 			}
 			if (in.type == EVT_ESCAPE) {
-				in.type = EVT_KBRD;
-				in.key.code = ESCAPE;
-				in.key.mods = 0;
+				in = (ui_event){.key = {.type = EVT_KBRD, .code = ESCAPE, .mods = 0}};
 				break;
 			}
 		}

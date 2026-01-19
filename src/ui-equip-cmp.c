@@ -381,9 +381,7 @@ void equip_cmp_display(void)
 				break;
 			}
 			if (in.type == EVT_ESCAPE) {
-				in.type = EVT_KBRD;
-				in.key.code = ESCAPE;
-				in.key.mods = 0;
+				in = (ui_event){ .key = { .type = EVT_KBRD, .code = ESCAPE, .mods = 0 } };
 				break;
 			}
 		}

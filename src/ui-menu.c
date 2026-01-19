@@ -324,14 +324,13 @@ static ui_event object_skin_process_direction(struct menu *m, int dir)
 
 	/* Prepare to switch menus */
 	else if (ddx[dir]) {
-		out.type = EVT_SWITCH;
-		out.key.code = ddx[dir] < 0 ? ARROW_LEFT : ARROW_RIGHT;
+		out = (ui_event){ .key = { .type = EVT_SWITCH, .code = ddx[dir] < 0 ? ARROW_LEFT : ARROW_RIGHT, .mods = 0 } };
 	}
 
 	/* Move up or down to the next valid & visible row */
 	else if (ddy[dir]) {
 		m->cursor += ddy[dir];
-		out.type = EVT_MOVE;
+		out = (ui_event){ .type = EVT_MOVE };
 	}
 
 	return out;
