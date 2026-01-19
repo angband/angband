@@ -2568,9 +2568,13 @@ errr Term_keypress(keycode_t k, uint8_t mods)
 	}
 
 	/* Store the char, advance the queue */
-	Term->key_queue[Term->key_head].type = EVT_KBRD;
-	Term->key_queue[Term->key_head].key.code = k;
-	Term->key_queue[Term->key_head].key.mods = mods;
+	Term->key_queue[Term->key_head] = (ui_event){
+		.key = {
+			.type = EVT_KBRD,
+			.code = k,
+			.mods = mods
+		}
+	};
 	Term->key_head++;
 
 	/* Circular queue, handle wrap */
@@ -2589,17 +2593,21 @@ errr Term_keypress(keycode_t k, uint8_t mods)
 errr Term_mousepress(int x, int y, char button)/*, uint8_t mods);*/
 {
 	/* Store the char, advance the queue */
-	Term->key_queue[Term->key_head].type = EVT_MOUSE;
-	Term->key_queue[Term->key_head].mouse.x = x;
-	Term->key_queue[Term->key_head].mouse.y = y;
-	/* XXX for now I encode the mods into the button number, so I would
-	 * not have to worry about the other platforms, when all platforms set
-	 * mods, this code should be replaced with :
-	 * Term->key_queue[Term->key_head].mouse.button = button;
-	 * Term->key_queue[Term->key_head].mouse.mods = mods;
-	 */
-	Term->key_queue[Term->key_head].mouse.button = (button & 0x0F);
-	Term->key_queue[Term->key_head].mouse.mods = ((button & 0xF0)>>4);
+	Term->key_queue[Term->key_head] = (ui_event){
+		.mouse = {
+			.type   = EVT_MOUSE,
+			.x      = x,
+			.y      = y,
+			/* XXX for now I encode the mods into the button number, so I would
+			* not have to worry about the other platforms, when all platforms set
+			* mods, this code should be replaced with :
+			* .button = button,
+			* .mods = mods
+			*/
+			.button = (button & 0x0F),
+			.mods   = (button & 0xF0) >> 4
+		}
+	};
 
 	Term->key_head++;
 
@@ -2617,17 +2625,13 @@ errr Term_mousepress(int x, int y, char button)/*, uint8_t mods);*/
 /**
  * Add a keypress to the FRONT of the "queue"
  */
-errr Term_key_push(int k)
+errr Term_key_push(keycode_t k)
 {
-	ui_event ke;
+    if (!k) return -1;
 
-	if (!k) return (-1);
-
-	ke.type = EVT_KBRD;
-	ke.key.code = k;
-	ke.key.mods = 0;
-
-	return Term_event_push(&ke);
+    return Term_event_push(&(ui_event){
+        .key = { .type = EVT_KBRD, .code = k, .mods = 0 }
+    });
 }
 
 errr Term_event_push(const ui_event *ke)

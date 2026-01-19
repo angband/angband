@@ -228,7 +228,7 @@ typedef union {
 /**
  * Easy way to initialise a ui_event without seeing the gory bits.
  */
-#define EVENT_EMPTY		{ 0 }
+static const ui_event EVENT_EMPTY = { .type = EVT_NONE };
 
 
 /*** Functions ***/

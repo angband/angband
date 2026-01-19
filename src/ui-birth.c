@@ -915,9 +915,7 @@ static enum birth_stage roller_command(bool first_call)
 			break;
 		}
 		if (in.type == EVT_ESCAPE) {
-			in.type = EVT_KBRD;
-			in.key.code = ESCAPE;
-			in.key.mods = 0;
+			in = (ui_event){ .key = { .type = EVT_KBRD, .code = ESCAPE, .mods = 0 } };
 			break;
 		}
 	}
@@ -1147,9 +1145,7 @@ static enum birth_stage point_based_command(void)
 			in.type = EVT_KBRD;
 		}
 		if (in.type == EVT_ESCAPE) {
-			in.type = EVT_KBRD;
-			in.key.code = ESCAPE;
-			in.key.mods = 0;
+			in = (ui_event){ .key = { .type = EVT_KBRD, .code = ESCAPE, .mods = 0 } };
 			break;
 		}
 	}
