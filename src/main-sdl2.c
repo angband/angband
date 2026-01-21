@@ -2480,7 +2480,7 @@ static void handle_button_movesize(struct sdlpui_control *ctrl,
 static void handle_menu_shortcuts(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
 {
-	int x = ctrl->rect.x, y = ctrl->rect.y;
+	int x = dlg->rect.x + ctrl->rect.x, y = dlg->rect.y + ctrl->rect.y;
 
 	sdlpui_popdown_dialog(dlg, window, true);
 	show_shortcut_editor(window, x, y);
@@ -2614,7 +2614,7 @@ static void handle_menu_kp_mod(struct sdlpui_control *ctrl,
 static void handle_menu_about(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
 {
-	int x = ctrl->rect.x, y = ctrl->rect.y;
+	int x = dlg->rect.x + ctrl->rect.x, y = dlg->rect.y + ctrl->rect.y;
 
 	sdlpui_popdown_dialog(dlg, window, true);
 	show_about(window, x, y);
@@ -2623,7 +2623,7 @@ static void handle_menu_about(struct sdlpui_control *ctrl,
 static void handle_menu_sdl_details(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
 {
-	int x = ctrl->rect.x, y = ctrl->rect.y;
+	int x = dlg->rect.x + ctrl->rect.x, y = dlg->rect.y + ctrl->rect.y;
 
 	sdlpui_popdown_dialog(dlg, window, true);
 	show_sdl_details(window, x, y);
