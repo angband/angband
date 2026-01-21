@@ -1143,7 +1143,7 @@ static void change_mb_caption(struct sdlpui_control *c,
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		const char *new_caption)
 {
-	struct sdlpui_label *mbp;
+	struct sdlpui_menu_button *mbp;
 
 	SDL_assert(c->type_code == SDLPUI_CTRL_MENU_BUTTON && c->priv);
 	mbp = c->priv;
