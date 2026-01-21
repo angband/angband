@@ -1213,6 +1213,10 @@ void sdlpui_popup_dialog(struct sdlpui_dialog *d, struct sdlpui_window *w,
 {
 	/* Assume it may have been obscured and needs to be redrawn. */
 	d->dirty = true;
+	sdlpui_signal_redraw(w);
+	if (d->pop_callback) {
+		(*d->pop_callback)(d, w, true);
+	}
 	sdlpui_dialog_push_to_top(w, d);
 	if (give_key_focus) {
 		sdlpui_dialog_gain_key_focus(w, d);
