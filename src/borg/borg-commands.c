@@ -503,8 +503,6 @@ static void borg_cmd_search_string(void)
     }
 }
 
-#define BORG_INFO_FLAGS 9
-
 /**
  * Display an entry on the features menu
  */
