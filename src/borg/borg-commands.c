@@ -98,7 +98,7 @@ static void borg_cmd_version(void);
 extern void do_cmd_borg(void);
 static struct borg_commands borg_commands[] = {
     { '?', "borg command help", borg_cmd_help },
-    { '$', "reload borg.txt file", borg_init_txt_file },
+    { '$', "reload borg.txt file", borg_cmd_init_txt_file },
     { 'z', "activate borg", borg_cmd_start },
     { 'x', "step the borg", borg_cmd_step },
     { 'm', "show map information", borg_cmd_map },
