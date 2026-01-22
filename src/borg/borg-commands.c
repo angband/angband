@@ -17,10 +17,11 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#include "borg.h"
+
 #ifdef ALLOW_BORG
 
 #include "../game-input.h"
-#include "../game-world.h"
 #include "../project.h"
 #include "../target.h"
 #include "../ui-input.h"
@@ -29,7 +30,6 @@
 #include "../ui-target.h"
 #include "../ui-term.h"
 
-#include "borg.h"
 #include "borg-cave.h"
 #include "borg-cave-util.h"
 #include "borg-cave-view.h"
