@@ -302,6 +302,7 @@ ANGFILES0 = \
 	borg/borg-cave-util.o \
 	borg/borg-cave-view.o \
 	borg/borg-cave.o \
+	borg/borg-commands.o \
 	borg/borg-danger.o \
 	borg/borg-escape.o \
 	borg/borg-fight-attack.o \
