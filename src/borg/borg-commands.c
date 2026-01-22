@@ -68,6 +68,7 @@ struct borg_commands
 /* predefine all the functions used in the array */
 static void borg_cmd_help(void);
 static void borg_cmd_start(void);
+static void borg_cmd_init_txt_file(void);
 static void borg_cmd_step(void);
 static void borg_cmd_update(void);
 static void borg_cmd_flags(void);
@@ -233,6 +234,14 @@ static void borg_cmd_start(void)
 
     /* Activate the key stealer */
     borg_update_entrypoint(true);
+}
+
+/*
+ * Setup the borg to start
+ */
+static void borg_cmd_init_txt_file(void)
+{
+    borg_cmd_init_txt_file();
 }
 
 /*
