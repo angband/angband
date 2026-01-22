@@ -241,7 +241,7 @@ static void borg_cmd_start(void)
  */
 static void borg_cmd_init_txt_file(void)
 {
-    borg_cmd_init_txt_file();
+    borg_init_txt_file();
 }
 
 /*
