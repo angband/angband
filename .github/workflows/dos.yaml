@@ -7,14 +7,14 @@ on:
 
 jobs:
   build:
-    name: Stock
+    name: DOS build and runtime test
     runs-on: ubuntu-latest
     steps:
       - name: Install Build Dependencies
         id: install_depend
         run: |
           sudo apt-get update
-          sudo apt-get install make
+          sudo apt-get install make dosbox-x
 
       - name: Clone Project
         uses: actions/checkout@v4
@@ -28,3 +28,56 @@ jobs:
           PATH="$PATH":"`pwd`/djgpp/bin"
           cd src
           make -f Makefile.ibm -j$(nproc)
+          make -f Makefile.ibm -j$(nproc) dist
+
+      - name: Prepare DOS runtime environment
+        run: |
+          mkdir dosroot
+          wget --no-verbose https://sandmann.dotster.com/cwsdpmi/csdpmi7b.zip
+          unzip csdpmi7b.zip -d dosroot
+          unzip angband.zip -d dosroot
+
+      - name: DOS runtime smoke test
+        timeout-minutes: 2
+        run: |
+          cat > dosbox.conf << 'EOF'
+          [sdl]
+          fullscreen=false
+          [dosbox]
+          machine=svga_s3
+          [cpu]
+          core=normal
+          cycles=auto
+          [autoexec]
+          mount c dosroot
+          c:
+          BIN\CWSDPMI.EXE
+          cd angband
+          echo "Queue keys to create DOSUSER and exit" >> ..\OUT.LOG
+          addkey p500 Enter @ Enter
+          addkey p10000 ^ x
+          addkey p11000 Enter Enter
+          echo "Run ANGBAND.EXE" >> ..\OUT.LOG
+          ANGBAND.EXE >> ..\OUT.LOG
+          echo "ANGBAND.EXE finished" >> ..\OUT.LOG
+          EOF
+
+          rm -f dosbox.log dosroot/OUT.LOG dosroot/angband/lib/save/DOSUSER
+          dosbox-x -conf dosbox.conf -nogui -exit > dosbox.log 2>&1
+
+          echo "=== OUT.LOG ==="
+          [ -f dosroot/OUT.LOG ] && cat dosroot/OUT.LOG || echo "(OUT.LOG not found)"
+          echo "=== Save Directory ==="
+          ls -l dosroot/angband/lib/save || echo "(save directory not found)"
+
+          if [ ! -f dosroot/OUT.LOG ] || ! grep -q "ANGBAND.EXE finished" dosroot/OUT.LOG; then
+            echo "ERROR: OUT.LOG missing or ANGBAND did not finish"
+            cat dosbox.log
+            exit 1
+          fi
+
+          if [ ! -f dosroot/angband/lib/save/DOSUSER ]; then
+            echo "ERROR: DOSUSER save file missing"
+            cat dosbox.log
+            exit 1
+          fi
