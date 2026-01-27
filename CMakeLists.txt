@@ -322,6 +322,7 @@ add_library(OurCoreLib OBJECT
         src/borg/borg-cave-util.c
         src/borg/borg-cave-view.c
         src/borg/borg-cave.c
+        src/borg/borg-commands.c
         src/borg/borg-danger.c
         src/borg/borg-escape.c
         src/borg/borg-fight-attack.c

@@ -170,6 +170,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\borg\borg-cave-util.c" />
     <ClCompile Include="src\borg\borg-cave-view.c" />
     <ClCompile Include="src\borg\borg-cave.c" />
+    <ClCompile Include="src\borg\borg-commands.c" />
     <ClCompile Include="src\borg\borg-danger.c" />
     <ClCompile Include="src\borg\borg-escape.c" />
     <ClCompile Include="src\borg\borg-fight-attack.c" />

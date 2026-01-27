@@ -1776,6 +1776,39 @@ depgen:
  borg/../list-options.h borg/../list-player-flags.h borg/../init.h \
  borg/../datafile.h borg/../parser.h borg/../list-parser-errors.h \
  borg/borg-init.h borg/borg-io.h borg/../ui-event.h
+./borg/borg-commands.o: borg/borg-commands.c borg/borg.h borg/../angband.h \
+ borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
+ borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
+ borg/../game-event.h borg/../z-type.h borg/../message.h \
+ borg/../list-message.h borg/../player.h borg/../guid.h \
+ borg/../obj-properties.h borg/../z-file.h borg/../list-tvals.h \
+ borg/../list-object-flags.h borg/../list-kind-flags.h \
+ borg/../list-stats.h borg/../list-object-modifiers.h borg/../object.h \
+ borg/../z-quark.h borg/../z-dice.h borg/../z-expression.h \
+ borg/../list-elements.h borg/../list-origins.h borg/../option.h \
+ borg/../list-options.h borg/../list-player-flags.h borg/../obj-ignore.h \
+ borg/../list-ignore-types.h borg/borg-trait.h borg/borg-item.h \
+ borg/../init.h borg/../datafile.h borg/../parser.h \
+ borg/../list-parser-errors.h borg/../monster.h borg/../cave.h \
+ borg/../list-square-flags.h borg/../list-terrain-flags.h \
+ borg/../list-terrain.h borg/../target.h borg/../mon-predicate.h \
+ borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
+ borg/../monster.h borg/../list-mon-temp-flags.h \
+ borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
+ borg/borg-trait-swap.h borg/../game-input.h borg/../cmd-core.h \
+ borg/../project.h borg/../source.h borg/../list-projections.h \
+ borg/../target.h borg/../ui-input.h borg/../ui-event.h borg/../ui-term.h \
+ borg/../ui-map.h borg/../ui-menu.h borg/../ui-output.h \
+ borg/../z-textblock.h borg/../ui-target.h borg/../ui-term.h \
+ borg/borg-cave.h borg/borg-cave-util.h borg/borg-cave-view.h \
+ borg/borg-danger.h borg/borg-flow.h borg/borg-flow-glyph.h \
+ borg/borg-flow-kill.h borg/../mon-spell.h borg/borg-flow-take.h \
+ borg/borg-home-notice.h borg/borg-home-power.h borg/borg-init.h \
+ borg/borg-inventory.h borg/borg-io.h borg/../ui-event.h \
+ borg/borg-item-id.h borg/borg-item-wear.h borg/borg-log.h \
+ borg/borg-magic.h borg/borg-messages.h borg/borg-power.h \
+ borg/borg-projection.h borg/../z-type.h borg/borg-prepared.h \
+ borg/borg-reincarnate.h borg/borg-store.h borg/borg-update.h
 ./borg/borg-danger.o: borg/borg-danger.c borg/borg-danger.h borg/../angband.h \
  borg/../h-basic.h borg/../z-bitflag.h borg/../z-form.h borg/../z-virt.h \
  borg/../z-color.h borg/../z-util.h borg/../z-rand.h borg/../config.h \
@@ -3013,21 +3046,11 @@ depgen:
  borg/../mon-timed.h borg/../list-mon-timed.h borg/../mon-blows.h \
  borg/../monster.h borg/../list-mon-temp-flags.h \
  borg/../list-mon-race-flags.h borg/../list-mon-spells.h \
- borg/borg-trait-swap.h borg/../game-input.h borg/../cmd-core.h \
- borg/../game-world.h borg/../player-timed.h borg/../list-player-timed.h \
- borg/../project.h borg/../source.h borg/../list-projections.h \
- borg/../ui-input.h borg/../ui-event.h borg/../ui-term.h \
- borg/../ui-keymap.h borg/../ui-map.h borg/borg-cave-util.h \
- borg/borg-cave.h borg/borg-cave-view.h borg/borg-danger.h \
- borg/borg-flow-glyph.h borg/borg-flow.h borg/borg-flow-kill.h \
- borg/../mon-spell.h borg/borg-flow-take.h borg/borg-home-notice.h \
- borg/borg-home-power.h borg/borg-init.h borg/borg-inventory.h \
- borg/borg-io.h borg/../ui-event.h borg/borg-item-id.h \
- borg/borg-item-wear.h borg/borg-log.h borg/borg-magic.h \
- borg/borg-messages-react.h borg/borg-messages.h borg/borg-power.h \
- borg/borg-prepared.h borg/borg-projection.h borg/../z-type.h \
- borg/borg-reincarnate.h borg/borg-store.h borg/borg-think.h \
- borg/borg-update.h borg/borg-util.h
+ borg/borg-trait-swap.h borg/../game-world.h borg/../ui-input.h \
+ borg/../cmd-core.h borg/../ui-event.h borg/../ui-term.h \
+ borg/../ui-keymap.h borg/borg-init.h borg/borg-io.h borg/../ui-event.h \
+ borg/borg-log.h borg/borg-messages-react.h borg/borg-messages.h \
+ borg/borg-think.h borg/borg-util.h
 ./buildid.o: buildid.c buildid.h
 ./z-bitflag.o: z-bitflag.c z-bitflag.h h-basic.h z-form.h z-virt.h
 ./z-color.o: z-color.c h-basic.h z-color.h z-util.h

@@ -72,6 +72,9 @@
     <ClCompile Include="src\borg\borg-cave.c">
         <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\borg\borg-commands.c">
+        <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\borg\borg-danger.c">
         <Filter>Source Files</Filter>
     </ClCompile>
