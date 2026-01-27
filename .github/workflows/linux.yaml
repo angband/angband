@@ -102,8 +102,34 @@ jobs:
           cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_SDL2_FRONTEND=ON -DSUPPORT_SDL2_SOUND=ON ..
           ninja -j$(nproc)
 
-  statbuild:
-    name: Statistics Build
+  cmake-statbuild:
+    name: Statistics Build (CMake)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc make libsqlite3-dev libsdl1.2-dev libsdl-mixer1.2-dev cmake ninja-build
+
+      - name: Clone Project
+        uses: actions/checkout@v4
+
+      # Turn on sound and the test front end so more of the basic
+      # infrastructure is compiled.
+      - name: Configure (CMake)
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_C_FLAGS="-Wvla -Wlogical-op" \
+            -DSUPPORT_STATS_FRONTEND=ON \
+            -DSUPPORT_TEST_FRONTEND=ON \
+            -DSUPPORT_SDL_SOUND=ON
+
+      - name: Build
+        run: |
+          cmake --build build --parallel
+
+  autotools-statbuild:
+    name: Statistics Build (Autotools)
     runs-on: ubuntu-latest
     steps:
       - name: Install Build Dependencies
