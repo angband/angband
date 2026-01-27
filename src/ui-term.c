@@ -2625,13 +2625,13 @@ errr Term_mousepress(int x, int y, char button)/*, uint8_t mods);*/
 /**
  * Add a keypress to the FRONT of the "queue"
  */
-errr Term_key_push(keycode_t k)
+errr Term_key_push(keycode_t k, uint8_t mods)
 {
-    if (!k) return -1;
+	if (!k) return -1;
 
-    return Term_event_push(&(ui_event){
-        .key = { .type = EVT_KBRD, .code = k, .mods = 0 }
-    });
+	return Term_event_push(&(ui_event){
+		.key = { .type = EVT_KBRD, .code = k, .mods = mods }
+	});
 }
 
 errr Term_event_push(const ui_event *ke)
