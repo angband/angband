@@ -3644,7 +3644,7 @@ static void process_menus(WORD wCmd)
 
 			if (use_graphics_nice) {
 			        /* Force redraw */
-			        Term_key_push(KTRL('R'));
+			        Term_key_push(KTRL('R'), 0);
 			}
 
 			break;
@@ -3849,7 +3849,7 @@ static void process_menus(WORD wCmd)
 				Term_xtra_win_react();
 
 				/* Force redraw */
-				Term_key_push(KTRL('R'));			
+				Term_key_push(KTRL('R'), 0);
 			}
 
 			break;
@@ -3869,7 +3869,7 @@ static void process_menus(WORD wCmd)
 			Term_xtra_win_react();
 
 			/* Force redraw */
-			Term_key_push(KTRL('R'));
+			Term_key_push(KTRL('R'), 0);
 			
 			break;
 		}
@@ -3982,7 +3982,7 @@ static void process_menus(WORD wCmd)
 			Term_xtra_win_react();
 
 			/* Force redraw */
-			Term_key_push(KTRL('R'));
+			Term_key_push(KTRL('R'), 0);
 
 			break;
 		}
@@ -4223,7 +4223,7 @@ static void process_menus(WORD wCmd)
 					Term_xtra_win_react();
 
 					/* Force redraw */
-					Term_key_push(KTRL('R'));
+					Term_key_push(KTRL('R'), 0);
 				}
 			}
 			break;
