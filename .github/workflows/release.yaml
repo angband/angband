@@ -3,6 +3,7 @@ name: create-github-release
 on:
   push:
     branches: [ master ]
+  pull_request:
 
 env:
     # Used as the name when uploading or downloading the artifact for passing
@@ -77,20 +78,19 @@ jobs:
         id: build_dep
         run: |
           sudo apt-get update
-          sudo apt-get install autoconf automake make
+          sudo apt-get install cmake ninja-build gcc libx11-dev
 
       - name: Initialize the Build System
         id: build_init
         run: |
-          ./autogen.sh
-          ./configure --with-no-install
+          cmake -S . -B build -G Ninja
 
       - name: Extract Names from the Build System
         id: get_names
         run: |
-          name=`cd src && make print-project-name | sed -En 's/^our-project-name=//p'`
+          name=$(cmake --build build --target print-project-name | sed -En 's/^our-project-name=//p')
           echo "name=$name" >> $GITHUB_OUTPUT
-          prog=`cd src && make print-executable-name | sed -En 's/^our-executable-name=//p'`
+          prog=$(cmake --build build --target print-executable-name | sed -En 's/^our-executable-name=//p')
           echo "prog=$prog" >> $GITHUB_OUTPUT
 
       - name: Set Release Version
@@ -138,18 +138,17 @@ jobs:
           fetch-depth: 0
 
       # Need both Sphinx (Python documentation tool) and a 3rd party theme.
-      # Also install pip (to get theme), gcc, automake, autoconf, make
-      # (those four are so configuration and "make manual" work), and git
+      # Also install pip (to get theme), gcc, cmake, ninja, libx11-dev
+      # (those four are so configuration and build work), and git
       # (so scripts/version.sh works).  With Python 3, use a virtual
       # environment (requires at least Python 3.3) to install the 3rd party
       # theme and a hacked version of sphinx-build which will use that
       # environment for compatibility with "externally managed environments"
       # like GitHub's runner for Ubuntu 24.04.
       - name: Install Build Dependencies
-        id: build_dep
         run: |
           sudo apt-get update
-          sudo apt-get install autoconf automake gcc make sphinx-common git
+          sudo apt-get install cmake gcc ninja-build libx11-dev sphinx-common git
           use_python3=`python --version 2>&1 | awk "/^Python 3\\./ { print \"YES\" ; exit 0 ; } ; { print \"NO\" ; exit 0; }"`
           if test X$use_python3 == XYES ; then
             sudo apt-get install python3-pip
@@ -169,13 +168,14 @@ jobs:
       # in the build dependencies step.
       - name: Convert
         run: |
-          ./autogen.sh
-          ./configure SPHINXBUILD="${PWD}/sphinx-build" --with-no-install --with-sphinx
-          make -j$(nproc) manual
+          cmake -S . -B build -G Ninja -DBUILD_DOC=ON -DSPHINX_EXECUTABLE=$PWD/sphinx-build
+          cmake --build build --parallel --target OurManual
 
       - name: Archive
         run: |
-          tar -cf ${{ env.DOC_ARTIFACT_PATH }} docs/_build/html
+          tar -cf ${{ env.DOC_ARTIFACT_PATH }} \
+            --transform='s|^manual-output/html|docs/_build/html|' \
+            -C build manual-output/html
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -207,7 +207,7 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install automake autoconf git make
+          sudo apt-get install git
 
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
@@ -216,14 +216,40 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create Source Archive
+      - name: Create source archive (CMake-era)
         id: create_source_archive
         run: |
-          ./autogen.sh
-          ./configure
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+
+          # Export tracked files only
+          git archive \
+            --prefix=${archive_prefix}/ \
+            --format=tar \
+            HEAD \
+            | tar -x
+
+          # Generate version file
+          scripts/version.sh > ${archive_prefix}/version
+
+          # Generate autotools files in the exported tree
+          (
+            cd ${archive_prefix}
+            ./autogen.sh
+            rm -rf autom4te.cache autogen.sh
+          )
+
+          # Create compressed archive
+          tar \
+            --exclude .gitignore \
+            --exclude .github \
+            --exclude .travis.yml \
+            --exclude '*.dll' \
+            -czvf ${archive_prefix}.tar.gz \
+            ${archive_prefix}
+
+          rm -rf ${archive_prefix}
+
           echo "archive_file=${archive_prefix}.tar.gz" >> $GITHUB_OUTPUT
-          make -j$(nproc) TAG="$archive_prefix" OUT="$archive_prefix".tar.gz dist
 
       - name: Create Artifact with Source Archive Path
         run: |
@@ -308,10 +334,13 @@ jobs:
       - name: Create Windows Archive
         id: create_windows_archive
         run: |
-          ./autogen.sh
-          env CFLAGS="-O2" ./configure --enable-release --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32
-          make -j$(nproc)
-          cp src/${{ steps.store_config.outputs.prog }}.exe src/win/dll/libpng12.dll src/win/dll/zlib1.dll .
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_RELEASE="-O2" \
+            -DSUPPORT_WINDOWS_FRONTEND=ON \
+            -DSUPPORT_BUNDLED_PNG=ON \
+            -DCMAKE_TOOLCHAIN_FILE=toolchains/linux-i686-mingw32-cross.cmake
+          cmake --build build --parallel
+          cp build/game/${{ steps.store_config.outputs.prog }}.exe build/game/libpng12.dll build/game/zlib1.dll .
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
           echo "archive_file=${archive_prefix}-win.zip" >> $GITHUB_OUTPUT
           scripts/pkg_win $archive_prefix ${archive_prefix}-win.zip
@@ -442,7 +471,7 @@ jobs:
         shell: bash
         run: |
           pushd src/
-          make -f Makefile.3ds
+          make -f Makefile.3ds -j$(nproc)
           popd
           test -e src/${{ steps.store_config.outputs.prog }}.3dsx
 
@@ -454,7 +483,7 @@ jobs:
           pushd 3dstools/
           ./autogen.sh
           ./configure
-          make install
+          make -j$(nproc) install
           popd
 
       - name: Setup makerom
@@ -463,8 +492,8 @@ jobs:
           apt-get update && apt-get install -y build-essential libmbedtls-dev liblzma-dev libyaml-dev
           git clone https://github.com/3DSGuy/Project_CTR/
           pushd Project_CTR/makerom
-          make deps
-          make
+          make -j$(nproc) deps
+          make -j$(nproc)
           cp -rv bin/makerom /usr/local/bin
           popd
 
@@ -586,6 +615,7 @@ jobs:
           retention-days: 1
 
   release:
+    if: github.event_name == 'push'
     needs: [ setup, source, windows, mac, _3ds, nds ]
     name: Create GitHub Release
     runs-on: ubuntu-latest
