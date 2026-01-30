@@ -315,6 +315,10 @@ static uint8_t ext_color_map[32] = {
 	8   /* Shade -> Light Dark */
 };
 
+int Term_iswprint_ibm(wint_t);
+wchar_t *Term_wcschr_ibm(const wchar_t *, wchar_t);
+size_t Term_wcslen_ibm(const wchar_t *);
+
 /*
  * Activate the "ibm_color_complex" palette information.
  *
