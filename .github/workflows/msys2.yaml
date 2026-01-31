@@ -67,36 +67,6 @@ jobs:
           cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON -DSUPPORT_SDL2_SOUND=ON -DSUPPORT_STATIC_LINKING=ON ..
           ninja -j$(nproc)
 
-  configure-win:
-    runs-on: windows-latest
-    defaults:
-      # Reduce verbosity and always run with msys2 as the default shell.
-      # See https://github.com/marketplace/actions/setup-msys2 .
-      run:
-        shell: msys2 {0}
-    steps:
-      - name: Set up prerequisites
-        uses: msys2/setup-msys2@v2
-        with:
-          update: true
-          # The libraries in src/win/lib and src/win/dll are 32-bit.
-          msystem: mingw32
-          install: >-
-            autoconf-wrapper
-            automake-wrapper
-            make
-            mingw-w64-i686-gcc
-
-      - name: Clone Project
-        uses: actions/checkout@v6
-
-      - name: Build
-        run: |
-          ./autogen.sh
-          ./configure --enable-win
-          make -j$(nproc) install
-          make -j$(nproc) tests
-
   cmake-win32:
     runs-on: windows-latest
     defaults:

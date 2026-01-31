@@ -35,23 +35,3 @@ jobs:
       - name: Build
         run: |
           cmake --build build --parallel
-
-  autoconf-curses:
-    runs-on: macos-latest
-    steps:
-      # Requires autoconf and automake; install those via homebrew (available
-      # by default).
-      - name: Install Build Dependencies
-        run: |
-          brew install m4
-          brew install autoconf
-          brew install automake
-
-      - name: Clone Project
-        uses: actions/checkout@v6
-
-      - name: Build
-        run: |
-          ./autogen.sh
-          ./configure --with-no-install --enable-curses --disable-ncursestest
-          make -j$(sysctl -n hw.ncpu)

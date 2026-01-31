@@ -231,13 +231,6 @@ jobs:
           # Generate version file
           scripts/version.sh > ${archive_prefix}/version
 
-          # Generate autotools files in the exported tree
-          (
-            cd ${archive_prefix}
-            ./autogen.sh
-            rm -rf autom4te.cache autogen.sh
-          )
-
           # Create compressed archive
           tar \
             --exclude .gitignore \

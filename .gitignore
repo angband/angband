@@ -29,7 +29,6 @@ autom4te.cache/
 cmake-build-debug/
 config.log
 config.status
-configure
 Debug/
 doc/manual/*.aux
 docs/manual.aux

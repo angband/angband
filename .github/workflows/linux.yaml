@@ -103,7 +103,7 @@ jobs:
           ninja -j$(nproc)
 
   cmake-statbuild:
-    name: Statistics Build (CMake)
+    name: Statistics Build
     runs-on: ubuntu-latest
     steps:
       - name: Install Build Dependencies
@@ -116,7 +116,7 @@ jobs:
 
       # Turn on sound and the test front end so more of the basic
       # infrastructure is compiled.
-      - name: Configure (CMake)
+      - name: Configure
         run: |
           cmake -S . -B build -G Ninja \
             -DCMAKE_C_FLAGS="-Wvla -Wlogical-op" \
@@ -127,26 +127,6 @@ jobs:
       - name: Build
         run: |
           cmake --build build --parallel
-
-  autotools-statbuild:
-    name: Statistics Build (Autotools)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Build Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install gcc autoconf automake make libsqlite3-dev libsdl1.2-dev libsdl-mixer1.2-dev
-
-      - name: Clone Project
-        uses: actions/checkout@v6
-
-      # Turn on sound and the test front end so more of the basic
-      # infrastructure is compiled.
-      - name: Build
-        run: |
-          ./autogen.sh
-          env CFLAGS="-Wvla -Wlogical-op" ./configure --with-no-install --enable-stats --enable-test --enable-sdl-mixer
-          make -j$(nproc)
 
   makefilestd:
     name: Makefile.std

@@ -112,62 +112,6 @@ Linux / other UNIX
 Native builds
 ~~~~~~~~~~~~~
 
-Linux builds using autotools. There are several different front ends that you
-can optionally build (GCU, SDL, SDL2, and X11) using arguments to configure
-such as --enable-sdl, --disable-x11, etc. Each front end has different
-dependencies (e.g. ncurses, SDL libraries, etc).
-
-Some sets of source code (e.g. downloads from Rephial.org) will contain a
-"configure" script in the root directory of the unpacked files, while other
-filesets (e.g. the "Source code (tar.gz)" links on the Releases pages)
-will not contain the "configure" script.
-
-If the code you download doesn't contain the "configure" script, then you'll
-first need to run the following command to create that script::
-
-    ./autogen.sh
-
-To build Angband to be run in-place, then run this::
-
-    ./configure --with-no-install [other options as needed]
-    make
-
-That'll create an executable in the src directory.  You can run it from the
-same directory where you ran make with::
-
-    src/angband
-
-To see what command line options are accepted, use::
-
-    src/angband -?
-
-Note that some of Angband's makefiles (src/Makefile and src/tests/Makefile are
-the primary offenders) assume features present in GNU make.  If the default
-make on your system is not GNU make, you'll likely have to replace instances
-of make in the quoted commands with whatever will run GNU make.  On OpenBSD,
-for instance, that is gmake (which can be installed by running "pkg_add gmake").
-
-On systems where there's several C compilers, ./configure may choose the
-wrong one.  One example of that is on OpenBSD 6.9 when building Angband with
-SDL2:  ./configure chooses gcc but the installed version of gcc can't handle
-the SDL2 header files that are installed via pkg_add.  To override ./configure's
-default selection of the compiler, use::
-
-    env CC=the_good_compiler ./configure [the appropriate configure options]
-
-Replace the_good_compiler in that command with the command for running the
-compiler that you want.  For OpenBSD 6.9 when compiling with SDL2, you'd
-replace the_good_compiler with cc or clang.
-
-To build Angband to be installed in some other location, run this::
-
-    ./configure --prefix /path/to [other options as needed]
-    make
-    make install
-
-On some BSDs, you may need to copy install-sh into lib/ and various
-subdirectories of lib/ in order to install correctly.
-
 Compilation with CMake
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -310,50 +254,6 @@ game/.  That executable can be run with wine::
 
 The unit test cases can also be run from cmake.
 
-This type of build can also use autotools to make the overall procedure very
-similar to that for a native build.  The key difference is setting up to
-cross-compile when running configure.
-
-If your source files are from rephial.org, from a "Source code" link on the
-github releases page, or from cloning the git repository, you'll first need to
-run this to create the configure script::
-
-    ./autogen.sh
-
-That is not necessary for source files that are from the github releases page
-but not from a "Source code" link on that page.
-
-Then configure the cross-compilation and perform the compilation itself::
-
-    ./configure --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32
-    make install
-
-You may need to change the --build and --host options there to match your
-system. Mingw installs commands like 'i686-w64-mingw32-gcc'. The value of --host
-should be that same command with the '-gcc' removed. Instead of i686 you may
-see i686, amd64, etc. The value of --build should be the host you're building
-on (see http://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.68/html_node/Specifying-Target-Triplets.html#Specifying%20Names for
-gory details of how these triplets are arrived at).  The 'make install' step
-only works with very recent version.  For older ones, use this instead of the
-last step::
-
-    make
-    cp src/angband.exe .
-    cp src/win/dll/*.dll .
-
-To run the result, you can use wine like this::
-
-    wine angband.exe
-
-TODO: except for recent versions (after Angband 4.2.3) you likely need to
-manually disable curses (add --disable-curses to the options passed to
-configure), or the host curses installation will be found causing the build
-process to fail when linking angband.exe (the error message will likely be
-"cannot find -lncursesw" and "cannot find -ltinfo").  Most of the --with or
---enable options for configure are not appropriate when using --enable-win.
-The ones that are okay are --with-private-dirs (on by default),
---with-gamedata-in-lib (has no effect), and --enable-release.
-
 Debug build
 ~~~~~~~~~~~
 
@@ -361,8 +261,9 @@ Debug build
 
 When debugging crashes it can be very useful to get more information about *what exactly* went wrong. There are many tools that can detect common issues and provide useful information. Two such tools that are best used together are AddressSanitizer (ASan) and UndefinedBehaviorSanitizer (UBSan). To use them you'll need to enable them when compiling angband::
 
-    ./configure [options]
-    SANITIZE_FLAGS="-fsanitize=undefined -fsanitize=address" make
+    mkdir build && cd build
+    cmake -DCMAKE_C_FLAGS="-fsanitize=undefined -fsanitize=address" ..
+    cmake --build .
 
 Note that compiling with these tools will require installing additional dependencies: libubsan libasan (names of the packages might be different in your distribution).
 
@@ -382,35 +283,34 @@ If you only want the unit tests while using CMake, it's a little simpler::
     cmake ..
     make allunittests
 
-To compile and run the unit tests if you used ./configure --with-no-install,
-do this::
+To rerun just one part, say monster/attack, of the unit tests, run the executable
+directly from the build/game directory::
 
-    make tests
-
-If you want to rerun just one part, say monster/attack, of the unit tests,
-that's most easily done by directly running from the top-level directory::
-
-    src/tests/monster/attack.exe
+    ./build/game/tests/monster/attack.exe
 
 Previous versions put the test executables in src/tests/bin.  With those
 versions, the line above would be::
 
-    src/tests/bin/monster/attack
+    ./build/game/tests/bin/monster/attack
 
 There's a separate set of tests that use scripts to control a character in
-the full game.  To run those tests, you'll need to enable the test module
-when running configure and then run the run-tests script in the top-level
-directory::
+the full game.  To run those tests, enable the test module when running CMake
+and then run the run-tests script in the build/game directory::
 
-    ./configure --with-no-install --enable-test
+    mkdir build && cd build
+    cmake -DSUPPORT_TEST_FRONTEND=ON -DENABLE_TEST=ON ..
     make
-    ./run-tests
+    ./game/run-tests
 
-There is some support for measuring how well the test cases cover the code.
-If you use configure and have gcc, gcov, and perl, you can run this in src
-directory after running configure::
+There is also support for measuring how well the test cases cover the code.
+If you have perl, and either gcc/gcov or clang/llvm-cov, then you can enable
+coverage support in CMake by including -DSUPPORT_COVERAGE=ON::
 
-    make coverage
+    mkdir build && cd build
+    cmake -DSUPPORT_COVERAGE=ON ..
+    make resetcoverage
+    make alltests
+    make reportcoverage
 
 That cleans the directories (removing object files, intermediates generated
 for code coverage, and coverage reports), rebuilds the game with code coverage
@@ -436,6 +336,7 @@ tests), and then report the coverage results.
 Statistics build
 ~~~~~~~~~~~~~~~~
 
+#TODO: Update below for cmake
 If building directly for Linux/Unix using configure, you can get the statistics
 front end and support for the debugging commands related to statistics (see
 the descriptions for ``S``, ``D``, and ``P`` in :ref:`DebugDungeon`) by
@@ -460,30 +361,6 @@ related to statistics by setting CFLAGS to include -DUSE_STATS::
 Windows
 -------
 
-Using MinGW
-~~~~~~~~~~~
-
-This build now also uses autotools, so should be very similar to the Linux
-build. Open the MinGW shell (MSYS) by running msys.bat.
-
-If your source files are from rephial.org, from a "Source code" link on the
-github releases page, or from cloning the git repository, you'll first need to
-run this to create the configure script::
-
-        ./autogen.sh
-
-That is not necessary for source files that are from the github releases page
-but not from a "Source code" link on that page.
-
-Then run these commands::
-
-        ./configure --enable-win
-        make install
-
-The last step only works with very recent versions.  For older ones, use
-"make" rather than "make install" and copy src/angband.exe,
-src/win/dll/libpng12.dll, and src/win/dll/zlib1.dll to the top-level directory.
-
 Using Cygwin (with MinGW)
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -506,21 +383,6 @@ Run with::
 
     cd game
     ./angband.exe
-
-Alternatively you can use autotools, for which we need the autoconf,
-automake, make, and mingw64-i686-gcc-core::
-
-    ./autogen.sh
-    ./configure --enable-win --host=i686-w64-mingw32
-    make install
-
-And run::
-
-    ./angband.exe
-
-If you want to build the Unix version of Angband that uses X11 or
-Curses and run it under Cygwin, then follow the native build
-instructions.
 
 Using MSYS2 (with MinGW64)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -585,9 +447,12 @@ Using eclipse (Indigo) on Windows (with MinGW)
 * Go to C/C++ Build | Toolchain Editor, select "Gnu Make Builder" instead of "CDT Internal Builder"
 * go to C/C++ Build, uncheck "Generate Makefiles automatically"
 
-You still need to run ./autogen.sh, if your source files are from a
-"Source code" link on the github releases page or from cloning the
-git repository, and ./configure manually, outside eclipse (see above)
+You still need to run CMake manually outside Eclipse to generate the build system and project files.
+For a bare-bones setup, do this from the top-level directory of the source::
+
+    mkdir build && cd build
+    cmake ..
+    cmake --build .
 
 Using Visual Studio
 ~~~~~~~~~~~~~~~~~~~
@@ -637,12 +502,15 @@ we can also copy those.
 Statistics build
 ~~~~~~~~~~~~~~~~
 
+#TODO: Update below for cmake
 The Windows front end bypasses main.c and can not use the statistics front end.
 It is possible to enable the debugging commands related to statistics (see
 the descriptions for ``S``, ``D``, and ``P`` in :ref:`DebugDungeon`).  To do
 so, set your compiler options so that the USE_STATS preprocessor macro is set.
-When using mingw (either stand-alone or as part of Cygwin) and configure,
-include CFLAGS=-DUSE_STATS in the options to configure to do that.
+When using mingw (either stand-alone or as part of Cygwin), you can enable it by passing::
+
+    cmake -DSUPPORT_STATS_FRONTEND=ON ..
+    cmake --build .
 
 Nintendo DS / Nintendo 3DS
 --------------------------
@@ -729,18 +597,6 @@ can be installed via pip using::
 
 ).
 
-If you are using configure, you can tell it to build the manual in HTML by
-including ``--with-sphinx`` in the options to configure.  If you want to
-override the default theme, specify the theme's name in the DOC_HTML_THEME
-variable.  For instance, running this at the top level of the distribution::
-
-    ./configure --with-no-install --with-sphinx DOC_HTML_THEME=alabaster
-
-would use one of the themes always included with Sphinx and avoid the need
-to install the sphinx-better-theme.  When running make or ``make manual``
-after configure has been set up to generate the user manual, the result
-will appear in docs/_build/html.
-
 If you are using CMake, you can tell it to build the manual in HTML by including
 ``-DBUILD_DOC=ON``  in the options to CMake.  If you want to override the
 default theme, specify the theme's name in the DOC_HTML_THEME variable.  For
@@ -749,13 +605,12 @@ instance running this at the top level of the distribution::
     mkdir build
     cd build
     cmake -DBUILD_DOC=ON -DDOC_HTML_THEME=alabaster ..
+    cmake --build . -t OurManual
 
-would behave much like the earlier example using configure.  After building
-with CMake (i.e. ``cmake --build .`` or ``cmake --build . -t OurManual``), the
-generated user manual will be in manual-output-html in the build directory.
+would generate the user manual in manual-output/html in the build directory.
 
-To build the user manual without configure or CMake, make sure sphinx-build
-is in your path and then run::
+To build the user manual without CMake, make sure sphinx-build is in your path
+and then run::
 
     make html
 

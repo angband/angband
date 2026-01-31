@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Define colors
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+GREEN='\033[0;32m'
+NC='\033[0m' 
+
+echo -e "${BLUE}=== Angband Build System Migration ===${NC}"
+echo "Autotools has been replaced by CMake."
+
+# 1. Path Changes
+echo ""
+echo -e "${RED}IMPORTANT: Directory changes${NC}"
+echo "Binaries and tests are now built in 'build/game/' to keep the source tree clean."
+
+# 2. Dependency Check
+echo ""
+echo -e "${BLUE}Prerequisites:${NC}"
+for cmd in cmake ninja pkg-config; do
+    if command -v $cmd &> /dev/null; then
+        echo "  [✓] $cmd is installed."
+    else
+        echo "  [!] $cmd is MISSING."
+    fi
+done
+
+echo -e "\n${GREEN}On Ubuntu/Debian, you can install the requirements for the commands below with:${NC}"
+echo "  sudo apt install build-essential cmake ninja-build pkg-config libx11-dev libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev"
+
+# 3. Command Mapping (The "Cheat Sheet")
+echo ""
+echo -e "${BLUE}Workflow Comparison:${NC}"
+printf "  %-30s %-40s\n" "Old Autotools" "New CMake + Ninja"
+printf "  %-30s %-40s\n" "------------" "-----------------"
+printf "  %-30s %-40s\n" "./autogen.sh" "mkdir build && cd build"
+printf "  %-30s %-40s\n" "./configure" "cmake .. -G Ninja"
+printf "  %-30s %-40s\n" "make" "ninja"
+printf "  %-30s %-40s\n" "src/angband" "cd game && ./angband"
+printf "  %-30s %-40s\n" "--with-no-install" "(Default behavior)"
+printf "  %-30s %-40s\n" "--enable-sdl2" "-DSUPPORT_SDL2_FRONTEND=ON"
+printf "  %-30s %-40s\n" "--enable-test" "-DSUPPORT_TEST_FRONTEND=ON"
+printf "  %-30s %-40s\n" "make && ./run-tests" "ninja alltests"
+
+# 4. Troubleshooting
+echo ""
+echo -e "${GREEN}Troubleshooting Tip:${NC}"
+printf "  %-30s %-40s\n" "Old Cleanup" "New CMake Equivalent"
+printf "  %-30s %-40s\n" "-----------" "--------------------"
+printf "  %-30s %-40s\n" "make clean" "rm -rf build/"
+echo ""
+echo "  If you change options (like switching to SDL2), it is often safest"
+echo "  to delete the build directory, or create a different build directory,"
+echo "  and start fresh to avoid stale files."
+
+# 5. Documentation Links
+echo ""
+echo -e "${GREEN}Documentation:${NC}"
+echo "  • Full Guide:   doc/hacking/compiling.rst"
+echo "  • Live Docs:    https://angband.readthedocs.io/en/latest/hacking/compiling.html"
+echo "  • Source Truth: Check .github/workflows/ for exact build commands used in CI."
+echo -e "${BLUE}=================================================================================${NC}"
+
+# Exit with failure to stop automated scripts
+exit 1
