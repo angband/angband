@@ -413,10 +413,6 @@ struct term_data
 	int tile_wid;
 	int tile_wid2; /* Tile-width with bigscreen */
 	int tile_hgt;
-
-	/* Pointers to allocated data, needed to clear up memory */
-	XClassHint *classh;
-	XSizeHints *sizeh;
 };
 
 
@@ -1652,18 +1648,6 @@ static void nuke_window(int ind)
 	term_data *td = &data[ind];
 	term *t = &td->t;
 
-	/* Free size hints */
-	if (td->sizeh) {
-		XFree(td->sizeh);
-		td->sizeh = NULL;
-	}
-
-	/* Free class hints */
-	if (td->classh) {
-		XFree(td->classh);
-		td->classh = NULL;
-	}
-
 	/* Free fonts */
 	if (td->fnt) {
 		Infofnt_set(td->fnt);
@@ -2639,6 +2623,7 @@ static errr term_data_init(term_data *td, int i)
 	ch->res_class = res_class;
 
 	XSetClassHint(Metadpy->dpy, Infowin->win, ch);
+	XFree(ch);
 
 	/* Make Size Hints */
 	sh = XAllocSizeHints();
@@ -2680,6 +2665,7 @@ static errr term_data_init(term_data *td, int i)
 
 	/* Use the size hints */
 	XSetWMNormalHints(Metadpy->dpy, Infowin->win, sh);
+	XFree(sh);
 
 	/* WMHints */
 	wmh = XAllocWMHints();
@@ -2705,10 +2691,6 @@ static errr term_data_init(term_data *td, int i)
 
 	/* Map the window */
 	Infowin_map();
-
-	/* Set pointers to allocated data */
-	td->sizeh = sh;
-	td->classh = ch;
 
 	/* Move the window to requested location */
 	if ((x >= 0) && (y >= 0)) Infowin_impell(x, y);
