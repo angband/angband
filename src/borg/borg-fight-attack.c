@@ -1114,7 +1114,7 @@ static int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
 		if (rf_has(r_ptr->flags, RF_IM_ELEC))
 			dam = 0;
         /* don't let lightning strike pass through unknown squares */
-		else if (!borg_projectable_pure(borg.c.y, borg.c.x, kill->pos.y, 
+		else if (!borg_projectable_pure(borg.c.y, borg.c.x, kill->pos.y,
             kill->pos.x))
 			dam = 0;
 		break;
@@ -1552,7 +1552,7 @@ static int borg_launch_bolt_at_location(
                     else
                         return n;
                 }
-            } 
+            }
 
             /* Stop at unseen walls */
             /* We just shot and missed, this is our next shot */
@@ -1808,7 +1808,7 @@ int borg_launch_bolt(int rad, int dam, int typ, int max, int ammo_location)
 
 /*
  * Determine the "reward" of launching an arc/spray/cone at a location
- * 
+ *
  * This code is copied from borg_launch_bolt_at_location
  * both need to be optimized for shared code !FIX
  *
@@ -1984,7 +1984,7 @@ static int borg_launch_arc_at_location(
                 /* Collect damage, lowered by distance */
                 n += borg_launch_bolt_aux_hack(ag->kill, dam / (r + 1), typ, 0);
 
-            if (ag->take && borg_takes[ag->take].kind) 
+            if (ag->take && borg_takes[ag->take].kind)
                 n -= borg_launch_destroy_stuff(ag, typ);
         }
     }
@@ -2168,10 +2168,19 @@ int borg_attack_aux_launch(void)
  */
 static int borg_attack_aux_rest(void)
 {
-    int  i;
-    bool resting_is_good = false;
+    int         i;
+    int         my_danger;
 
-    int my_danger        = borg_danger(borg.c.y, borg.c.x, 1, false, false);
+    /* don't wait twice in a row */
+    /* this is only checked and reset here which means if something else is */
+    /* done before trying an attack this won't get reset. While not perfect */
+    /* that should be fine */
+    if (borg_simulate && borg.goal.waiting) {
+        borg.goal.waiting = false;
+        return 0;
+    }
+
+    my_danger = borg_danger(borg.c.y, borg.c.x, 1, false, false);
 
     /* Examine all the monsters */
     for (i = 1; i < borg_kills_nxt; i++) {
@@ -2220,6 +2229,10 @@ static int borg_attack_aux_rest(void)
         if (kill->speed - borg.trait[BI_SPEED] >= 5)
             continue;
 
+        /* Monster can't have a status that prevents approach */
+        if (kill->afraid || kill->confused || kill->stunned)
+            continue;
+
         /* Should be flowing towards the monster */
         if (borg.goal.type != GOAL_KILL || borg_flow_y[0] != kill->pos.y)
             continue;
@@ -2232,12 +2245,11 @@ static int borg_attack_aux_rest(void)
         if (my_danger > borg.trait[BI_CURHP])
             continue;
 
-        /* Should be a good idea to wait for monster here. */
-        resting_is_good = true;
+        break;
     }
 
     /* Not a good idea */
-    if (resting_is_good == false)
+    if (i >= borg_kills_nxt)
         return 0;
 
     /* Return some value for this rest */
@@ -2246,9 +2258,9 @@ static int borg_attack_aux_rest(void)
 
     /* Rest */
     borg_keypress(',');
-    borg_note(
-        format("# Resting on grid (%d, %d), waiting for monster to approach.",
-            borg.c.y, borg.c.x));
+    borg_note(format("# Waiting for monster '%s' to approach.",
+        r_info[borg_kills[i].r_idx].name));
+    borg.goal.waiting = true;
 
     /* All done */
     return 1;
@@ -3546,7 +3558,7 @@ static int borg_attack_aux_vampire_strike(void)
             y2 = borg_temp_y[b_i] + o_y;
 
             ag = &borg_grids[y2][x2];
-            if (!ag->kill && ag->feat == FEAT_FLOOR 
+            if (!ag->kill && ag->feat == FEAT_FLOOR
                 && !ag->web
                 && !ag->glyph
                 && (y2 != borg.c.y || x2 != borg.c.x))
@@ -3584,7 +3596,7 @@ static int borg_attack_aux_vampire_strike(void)
         /* Calculate danger */
         p = borg_danger_one_kill(y, x, 1, ag->kill, true, true);
 
-        if (p > avoidance * 2) 
+        if (p > avoidance * 2)
             return 0;
     }
 
@@ -3973,7 +3985,7 @@ int borg_calculate_attack_effectiveness(int attack_type)
             ELECTRIC_ARC, rad, dam, BORG_ATTACK_ELEC, borg.trait[BI_CLEVEL], false));
 
     case BF_SPELL_ACID_SPRAY:
-        rad = 60; 
+        rad = 60;
         dam = ((borg.trait[BI_CLEVEL] / 2) * (8 + 1)) / 2;
         return (borg_attack_aux_spell_bolt(
             ACID_SPRAY, rad, dam, BORG_ATTACK_ACID, 10, true));
