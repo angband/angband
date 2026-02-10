@@ -487,7 +487,8 @@ static void brand_object(struct object *obj, const char *name)
  * ------------------------------------------------------------------------ */
 /**
  * Dummy effect, to tell the effect code to pick one of the next
- * context->value.base effects at random.
+ * context->value.base + damroll(context->value.dice, context->value.sides)
+ * effects at random.
  */
 bool effect_handler_RANDOM(effect_handler_context_t *context)
 {
@@ -1826,8 +1827,8 @@ static bool detect_monsters(int y_dist, int x_dist, monster_predicate pred)
 
 /**
  * Detect living monsters around the player.  The height to detect above and
- * below the player is context->value.dice, the width either side of the player
- * context->value.sides.
+ * below the player is context->y.  The width to either side of the player is
+ * context->x.
  */
 bool effect_handler_DETECT_LIVING_MONSTERS(effect_handler_context_t *context)
 {
@@ -1847,9 +1848,8 @@ bool effect_handler_DETECT_LIVING_MONSTERS(effect_handler_context_t *context)
  * Detect visible monsters around the player; note that this means monsters
  * which are in principle visible, not monsters the player can currently see.
  *
- * The height to detect above and
- * below the player is context->value.dice, the width either side of the player
- * context->value.sides.
+ * The height to detect above and below the player is context->y.  The width
+ * to either side of the player is context->x.
  */
 bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
 {
@@ -1868,8 +1868,8 @@ bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
 
 /**
  * Detect invisible monsters around the player.  The height to detect above and
- * below the player is context->value.dice, the width either side of the player
- * context->value.sides.
+ * below the player is context->y.  The width to either side of the player is
+ * context->x.
  */
 bool effect_handler_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
 {
@@ -1887,8 +1887,8 @@ bool effect_handler_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
 
 /**
  * Detect monsters susceptible to fear around the player.  The height to detect
- * above and below the player is context->value.dice, the width either side of
- * the player context->value.sides.
+ * above and below the player is context->y.  The width to either side of
+ * the player is context->x.
  */
 bool effect_handler_DETECT_FEARFUL_MONSTERS(effect_handler_context_t *context)
 {
@@ -1905,8 +1905,8 @@ bool effect_handler_DETECT_FEARFUL_MONSTERS(effect_handler_context_t *context)
 
 /**
  * Detect evil monsters around the player.  The height to detect above and
- * below the player is context->value.dice, the width either side of the player
- * context->value.sides.
+ * below the player is context->y.  The width to either side of the player
+ * context->x.
  */
 bool effect_handler_DETECT_EVIL(effect_handler_context_t *context)
 {
@@ -1923,8 +1923,8 @@ bool effect_handler_DETECT_EVIL(effect_handler_context_t *context)
 
 /**
  * Detect monsters possessing a spirit around the player.
- * The height to detect above and below the player is context->value.dice,
- * the width either side of the player context->value.sides.
+ * The height to detect above and below the player is context->y.  The
+ * width to either side of the player is context->x.
  */
 bool effect_handler_DETECT_SOUL(effect_handler_context_t *context)
 {
@@ -3590,8 +3590,9 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 
 /**
  * Dummy effect, to tell the effect code to pick one of the next
- * context->value.base effects at the player's selection or, if the effect
- * wasn't initiated by the player, at random.
+ * context->value.base + damroll(context->value.dice, context->value.sides)
+ * effects at the player's selection or, if the effect wasn't initiated by
+ * the player, at random.
  */
 bool effect_handler_SELECT(effect_handler_context_t *context)
 {
