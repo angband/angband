@@ -33,13 +33,50 @@
 # pval: pval
 # desc: description
 
-# Some fields accept randomized numbers of the form "10+2d3M4" where
-# 10 is the non-variable base, 2d3 is a standard die roll, and
-# M4 uses the m_bonus function to generate a number between 0 and
-# 4 according to a normal distribution.  All three components are
-# optional, and the number of dice is optional and assumed to be 1
-# when not specified.  10+2d3M4 has the range 12-20.  10+M4 has the
-# range 10-14.  10+2d3 has the range 12-16.  10+d3 has the range 11-13.
+# Some fields accept randomized numbers of the form "10+2d3M4".
+# 10 is the non-variable base.  2d3 is a standard die roll.  The
+# meaning of M4 depends on the context.  For an effect's dice, what
+# 'M' or 'm' does depends on the specific effect.  For most effects,
+# it does nothing.  The effects where 'M' or 'm' is used are:
+#
+# ENCHANT:  Mx or mx in the dice expression acts like Mx in dice expressions
+#     not used for an effect.  See below for the details.
+#
+# HEAL_HP:  Mx or mx in the dice expression specifies that the healing amount
+#     is (x * (max HP - current HP)) / 100 or the value of the rest of
+#     the dice expression, whichever is greater.
+#
+# SWARM:  Mx or mx in the dice expression specifies that there are x balls.
+#
+# TELEPORT:  Mx or mx in the dice expression specifies that the base
+#    distance teleported is (x * MAX(dungeon height in grids, dungeon
+#    width in grids)) / 100.  The base amount is ignored in that case.
+#    Any die, i.e. 2d3 from the example, are ignored, regardless of
+#    whether 'M' is present or not.
+#
+# Besides the meaning of 'M' in an effect's dice, some effects abuse other
+# parts of the dice expression as a way to pass additional parameters to
+# the effect:  when in doubt, check the effect's handler in the code to see
+# how it uses the dice.
+#
+# Outside of dice for effects, Mx or mx means:
+#
+# 1) Generate a random value from an approximate normal distribution (results
+#    are integers rather than continuous; differences from the mean are
+#    restricted to be less than 4 standard deviations).  The mean of the
+#    distribution is (x * item generation level) / 128 (that mean is rounded
+#    up to the next largest integer if a random roll between 0 and 127 is less
+#    than the remainder from x * item generation level divided by 128;
+#    otherwise, the fractional part is discarded).  The standard deviation of
+#    the distribution is x / 4 (that standard deviation is rounded up if a
+#    random roll between 0 and 3 is less than the remainder from x divided
+#    by 4; otherwise, the fractional part is discarded).
+# 2) Coerce the result of (1) to be between 0 and x, inclusive.
+# 3) Add the result of (2) to the result of the rest of the dice expression.
+#
+# All three components are optional, and the number of dice is optional and
+# assumed to be 1 when not specified. 10+2d3M4 has the range 12-20.  10+M4 has
+# the range 10-14.  10+2d3 has the range 12-16.  10+d3 has the range 11-13.
 # 2d3, d3, M4, 2d3M4, and d3M4 are all acceptable as well.  Randomized
 # expressions which begin with "-" are currently handled differently in the
 # "values" line than they are elsewhere.  In the "values" line, the leading

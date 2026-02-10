@@ -29,20 +29,32 @@
 # curse: name : power
 # desc: description
 
-# Some fields accept randomized numbers of the form "10+2d3M4" where
-# 10 is the non-variable base, 2d3 is a standard die roll, and
-# M4 uses the m_bonus function to generate a number between 0 and
-# 4 according to a normal distribution.  All three components are
-# optional, and the number of dice is optional and assumed to be 1
-# when not specified.  10+2d3M4 has the range 12-20.  10+M4 has the
-# range 10-14.  10+2d3 has the range 12-16.  10+d3 has the range 11-13.
-# 2d3, d3, M4, 2d3M4, and d3M4 are all acceptable as well.  Randomized
-# expressions which begin with "-" are currently handled differently in
-# the "values" line than they are elsewhere.  In the "values" line, the
-# leading "-" sets the sign on the base value (i.e. 10 in the example).
-# On other lines, a leading "-" in the randomized expression means multiply
-# what follows by negative one.  As a result, something like "-d4" will not
-# work as you want when used for a "values" line.  Use "-5+1d4" instead.
+# Some fields accept randomized numbers of the form "10+2d3M4".
+# 10 is the non-variable base.  2d3 is a standard die roll.  M4
+# (or m4) means:
+#
+# 1) Generate a random value from an approximate normal distribution (results
+#    are integers rather than continuous; differences from the mean are
+#    restricted to be less than 4 standard deviations).  The mean of the
+#    distribution is (x * item generation level) / 128, where x is the value
+#    after 'M' or 'm'.  The standard deviation of the distribution is x / 4
+#    (that standard deviation is rounded up if a random roll between 0 and 3
+#    is less than the remainder from x divided 4; otherwise, the fractional
+#    part is discarded).
+# 2) Coerce the result of (1) to be between 0 and x, inclusive.
+# 3) Add the result of (2) to the result of the rest of the dice expression.
+#
+# All three components are optional, and the number of dice is optional and
+# assumed to be 1 when not specified.  10+2d3M4 has the range 12-20.  10+M4
+# has the range 10-14.  10+2d3 has the range 12-16.  10+d3 has the range
+# 11-13.  2d3, d3, M4, 2d3M4, and d3M4 are all acceptable as well.
+# Randomized expressions which begin with "-" are currently handled
+# differently in the "values" line than they are elsewhere.  In the
+# "values" line, the leading "-" sets the sign on the base value (i.e. 10 in
+# the example).  On other lines, a leading "-" in the randomized expression
+# means multiply what follows by negative one.  As a result, something like
+# "-d4" will not work as you want when used for a "values" line.  Use
+# "-5+1d4" instead.
 
 # 'name' indicates the beginning of an entry.
 
