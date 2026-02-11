@@ -982,7 +982,7 @@ static void render_window_while_menu_active(struct sdlpui_window *window)
 		if (d->ftb->render && (d->dirty || !d->texture)) {
 			(*d->ftb->render)(d, window);
 		}
-		d->dirty = false;
+		d->dirty = SDL_FALSE;
 		if (d->texture) {
 			SDL_SetRenderTarget(window->renderer, NULL);
 			SDL_RenderCopy(window->renderer, d->texture, NULL,
@@ -1465,7 +1465,7 @@ static void calculate_subwindow_font_size_bounds(struct subwindow *subwindow,
 	}
 }
 
-static bool handle_shortcut_editor_key(struct sdlpui_dialog *d,
+static SDL_bool handle_shortcut_editor_key(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const struct SDL_KeyboardEvent *e)
 {
 	struct shortcut_editor_data *pse;
@@ -1493,12 +1493,12 @@ static bool handle_shortcut_editor_key(struct sdlpui_dialog *d,
 			d, w, keypress_desc);
 		pse->changing_shortcut = -1;
 		sdlpui_change_caption(&pse->prompt_label, d, w, " ");
-		return true;
+		return SDL_TRUE;
 	}
-	return false;
+	return SDL_FALSE;
 }
 
-static bool handle_shortcut_editor_textin(struct sdlpui_dialog *d,
+static SDL_bool handle_shortcut_editor_textin(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const struct SDL_TextInputEvent *e)
 {
 	struct shortcut_editor_data *pse;
@@ -1526,9 +1526,9 @@ static bool handle_shortcut_editor_textin(struct sdlpui_dialog *d,
 			d, w, keypress_desc);
 		pse->changing_shortcut = -1;
 		sdlpui_change_caption(&pse->prompt_label, d, w, " ");
-		return true;
+		return SDL_TRUE;
 	}
-	return false;
+	return SDL_FALSE;
 }
 
 static void render_shortcut_editor(struct sdlpui_dialog *d,
@@ -1581,7 +1581,7 @@ static void render_shortcut_editor(struct sdlpui_dialog *d,
 	if (pse->reset_button.ftb->render) {
 		(*pse->reset_button.ftb->render)(&pse->reset_button, d, w, r);
 	}
-	d->dirty = false;
+	d->dirty = SDL_FALSE;
 }
 
 static void goto_shortcut_editor_first_control(struct sdlpui_dialog *d,
@@ -1600,7 +1600,8 @@ static void goto_shortcut_editor_first_control(struct sdlpui_dialog *d,
 }
 
 static void step_shortcut_editor_control(struct sdlpui_dialog *d,
-		struct sdlpui_window *w, struct sdlpui_control *c, bool forward)
+		struct sdlpui_window *w, struct sdlpui_control *c,
+		SDL_bool forward)
 {
 	struct shortcut_editor_data *pse;
 	int i = 0;
@@ -1953,7 +1954,7 @@ static void handle_shortcut_clear(struct sdlpui_control *c,
 static void handle_shortcut_editor_close(struct sdlpui_control *c,
 		struct sdlpui_dialog *d, struct sdlpui_window *w)
 {
-	sdlpui_popdown_dialog(d, w, false);
+	sdlpui_popdown_dialog(d, w, SDL_FALSE);
 }
 
 static void handle_shortcut_editor_reset(struct sdlpui_control *c,
@@ -1981,7 +1982,7 @@ static void handle_shortcut_editor_reset(struct sdlpui_control *c,
 }
 
 static void hide_shortcut_editor(struct sdlpui_dialog *d,
-		struct sdlpui_window *w, bool up)
+		struct sdlpui_window *w, SDL_bool up)
 {
 	if (!up) {
 		SDL_assert(w->shorte == d);
@@ -2021,7 +2022,7 @@ static void show_shortcut_editor(struct sdlpui_window *w, int x, int y)
 	int dw, dh;
 
 	if (w->shorte) {
-		sdlpui_popup_dialog(w->shorte, w, true);
+		sdlpui_popup_dialog(w->shorte, w, SDL_TRUE);
 		return;
 	}
 	w->shorte = SDL_malloc(sizeof(*w->shorte));
@@ -2042,17 +2043,17 @@ static void show_shortcut_editor(struct sdlpui_window *w, int x, int y)
 			SDLPUI_HOR_LEFT);
 		sdlpui_create_push_button(&pse->change_buttons[i],
 			"Change", SDLPUI_HOR_CENTER, handle_shortcut_change,
-			i, false);
+			i, SDL_FALSE);
 		sdlpui_create_push_button(&pse->clear_buttons[i],
 			"Clear", SDLPUI_HOR_CENTER, handle_shortcut_clear,
-			i, false);
+			i, SDL_FALSE);
 	}
 	sdlpui_create_label(&pse->prompt_label, "", SDLPUI_HOR_CENTER);
 	sdlpui_create_push_button(&pse->close_button, "Close",
-		SDLPUI_HOR_CENTER, handle_shortcut_editor_close, 0, false);
+		SDLPUI_HOR_CENTER, handle_shortcut_editor_close, 0, SDL_FALSE);
 	sdlpui_create_push_button(&pse->reset_button, "Reset",
 		SDLPUI_HOR_CENTER, handle_shortcut_editor_reset, 0,
-		false);
+		SDL_FALSE);
 	pse->changing_shortcut = -1;
 
 	w->shorte->ftb = &shortcut_editor_funcs;
@@ -2066,8 +2067,8 @@ static void show_shortcut_editor(struct sdlpui_window *w, int x, int y)
 	w->shorte->priv = pse;
 	w->shorte->type_code = SHORTCUT_EDITOR_CODE;
 	w->shorte->tag = 0;
-	w->shorte->pinned = false;
-	w->shorte->dirty = true;
+	w->shorte->pinned = SDL_FALSE;
+	w->shorte->dirty = SDL_TRUE;
 
 	(*w->shorte->ftb->query_natural_size)(w->shorte, w, &dw, &dh);
 	if (w->shorte->ftb->resize) {
@@ -2078,11 +2079,11 @@ static void show_shortcut_editor(struct sdlpui_window *w, int x, int y)
 	}
 	w->shorte->rect.x = x;
 	w->shorte->rect.y = y;
-	sdlpui_popup_dialog(w->shorte, w, true);
+	sdlpui_popup_dialog(w->shorte, w, SDL_TRUE);
 }
 
 static void hide_about(struct sdlpui_dialog *d, struct sdlpui_window *w,
-		bool up)
+		SDL_bool up)
 {
 	if (!up) {
 		SDL_assert(w->infod == d);
@@ -2091,7 +2092,7 @@ static void hide_about(struct sdlpui_dialog *d, struct sdlpui_window *w,
 }
 
 static void recreate_about_dialog_textures(struct sdlpui_dialog *d,
-		struct sdlpui_window *w, bool all)
+		struct sdlpui_window *w, SDL_bool all)
 {
 	struct sdlpui_simple_info *psi;
 	int i;
@@ -2117,7 +2118,7 @@ static void recreate_about_dialog_textures(struct sdlpui_dialog *d,
 				DEFAULT_ABOUT_ICON);
 			pi->image = load_image(w, path);
 
-			d->dirty = true;
+			d->dirty = SDL_TRUE;
 			sdlpui_signal_redraw(w);
 			break;
 		}
@@ -2165,11 +2166,11 @@ static void show_about(struct sdlpui_window *window, int x, int y)
 		window->infod->rect.x = x;
 		window->infod->rect.y = y;
 	}
-	sdlpui_popup_dialog(window->infod, window, true);
+	sdlpui_popup_dialog(window->infod, window, SDL_TRUE);
 }
 
 static void hide_sdl_details(struct sdlpui_dialog *d, struct sdlpui_window *w,
-		bool up)
+		SDL_bool up)
 {
 	if (!up) {
 		SDL_assert(w->detaild == d);
@@ -2395,7 +2396,7 @@ static void show_sdl_details(struct sdlpui_window *window, int x, int y)
 		window->detaild->rect.x = x;
 		window->detaild->rect.y = y;
 	}
-	sdlpui_popup_dialog(window->detaild, window, true);
+	sdlpui_popup_dialog(window->detaild, window, SDL_TRUE);
 }
 
 static void signal_move_state(struct sdlpui_window *window)
@@ -2419,8 +2420,9 @@ static void signal_move_state(struct sdlpui_window *window)
 			== SDLPUI_CTRL_MENU_BUTTON);
 		mb = (struct sdlpui_menu_button*)window->move_button->priv;
 		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
-		mb->v.toggled = window->move_state.active;
-		window->status_bar->dirty = true;
+		mb->v.toggled = (window->move_state.active)
+			? SDL_TRUE : SDL_FALSE;
+		window->status_bar->dirty = SDL_TRUE;
 	}
 
 	SDL_SetWindowGrab(window->window, was_active ? SDL_FALSE : SDL_TRUE);
@@ -2451,8 +2453,9 @@ static void signal_size_state(struct sdlpui_window *window)
 			== SDLPUI_CTRL_MENU_BUTTON);
 		mb = (struct sdlpui_menu_button*)window->size_button->priv;
 		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
-		mb->v.toggled = window->size_state.active;
-		window->status_bar->dirty = true;
+		mb->v.toggled = (window->size_state.active)
+			? SDL_TRUE : SDL_FALSE;
+		window->status_bar->dirty = SDL_TRUE;
 	}
 
 	SDL_SetWindowGrab(window->window, was_active ? SDL_FALSE : SDL_TRUE);
@@ -2482,7 +2485,7 @@ static void handle_menu_shortcuts(struct sdlpui_control *ctrl,
 {
 	int x = dlg->rect.x + ctrl->rect.x, y = dlg->rect.y + ctrl->rect.y;
 
-	sdlpui_popdown_dialog(dlg, window, true);
+	sdlpui_popdown_dialog(dlg, window, SDL_TRUE);
 	show_shortcut_editor(window, x, y);
 }
 
@@ -2495,7 +2498,7 @@ static void handle_menu_window(struct sdlpui_control *ctrl,
 	SDL_assert(ctrl->ftb->get_tag);
 	tag = (*ctrl->ftb->get_tag)(ctrl);
 	SDL_assert(tag >= 0);
-	sdlpui_popdown_dialog(dlg, window, true);
+	sdlpui_popdown_dialog(dlg, window, SDL_TRUE);
 	other = get_window_direct(window->app, (unsigned int)tag);
 	if (other == NULL) {
 		other = get_new_window(window->app, (unsigned int)tag);
@@ -2513,7 +2516,7 @@ static struct sdlpui_dialog *handle_menu_windows(struct sdlpui_control *ctrl,
 		int ul_x_win, int ul_y_win)
 {
 	struct sdlpui_dialog *result = sdlpui_start_simple_menu(
-		dlg, ctrl, MAX_WINDOWS, true, false, NULL, NULL, 0);
+		dlg, ctrl, MAX_WINDOWS, SDL_TRUE, SDL_FALSE, NULL, NULL, 0);
 	unsigned int i;
 
 	for (i = 1; i < MAX_WINDOWS; ++i) {
@@ -2521,7 +2524,7 @@ static struct sdlpui_dialog *handle_menu_windows(struct sdlpui_control *ctrl,
 			result, SDLPUI_MFLG_NONE);
 
 		sdlpui_create_menu_toggle(c, format("Window-%u", i),
-			SDLPUI_HOR_LEFT, handle_menu_window, i, false,
+			SDLPUI_HOR_LEFT, handle_menu_window, i, SDL_FALSE,
 			get_window_direct(window->app, i) != NULL);
 	}
 	sdlpui_complete_simple_menu(result, window);
@@ -2537,7 +2540,7 @@ static void handle_menu_fullscreen(struct sdlpui_control *ctrl,
 	bool was_fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP);
 	SDL_Rect tmp_rect;
 
-	sdlpui_popdown_dialog(dlg, window, true);
+	sdlpui_popdown_dialog(dlg, window, SDL_TRUE);
 
 	SDL_GetWindowSize(window->window, &tmp_rect.w, &tmp_rect.h);
 	SDL_GetWindowPosition(window->window, &tmp_rect.x, &tmp_rect.y);
@@ -2607,7 +2610,7 @@ static void handle_menu_fullscreen(struct sdlpui_control *ctrl,
 static void handle_menu_kp_mod(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
 {
-	sdlpui_popdown_dialog(dlg, window, true);
+	sdlpui_popdown_dialog(dlg, window, SDL_TRUE);
 	window->app->kp_as_mod = !window->app->kp_as_mod;
 }
 
@@ -2616,7 +2619,7 @@ static void handle_menu_about(struct sdlpui_control *ctrl,
 {
 	int x = dlg->rect.x + ctrl->rect.x, y = dlg->rect.y + ctrl->rect.y;
 
-	sdlpui_popdown_dialog(dlg, window, true);
+	sdlpui_popdown_dialog(dlg, window, SDL_TRUE);
 	show_about(window, x, y);
 }
 
@@ -2625,14 +2628,14 @@ static void handle_menu_sdl_details(struct sdlpui_control *ctrl,
 {
 	int x = dlg->rect.x + ctrl->rect.x, y = dlg->rect.y + ctrl->rect.y;
 
-	sdlpui_popdown_dialog(dlg, window, true);
+	sdlpui_popdown_dialog(dlg, window, SDL_TRUE);
 	show_sdl_details(window, x, y);
 }
 
 static void handle_menu_quit(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
 {
-	sdlpui_popdown_dialog(dlg, window, true);
+	sdlpui_popdown_dialog(dlg, window, SDL_TRUE);
 	handle_quit(window->app, false);
 }
 
@@ -2653,8 +2656,8 @@ static void handle_menu_tile_set(struct sdlpui_control *ctrl,
 		SDL_assert(ctrl->type_code == SDLPUI_CTRL_MENU_BUTTON);
 		mb = (struct sdlpui_menu_button*)ctrl->priv;
 		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
-		mb->v.toggled = true;
-		dlg->dirty = true;
+		mb->v.toggled = SDL_TRUE;
+		dlg->dirty = SDL_TRUE;
 	} else {
 		/* Change the graphics mode.  Toggle off the old mode. */
 		int old_id = current_graphics_mode->grafID;
@@ -2673,8 +2676,8 @@ static void handle_menu_tile_set(struct sdlpui_control *ctrl,
 			mb = (struct sdlpui_menu_button*)sm->controls[i].priv;
 			SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
 			if (mb->tag == old_id) {
-				mb->v.toggled = false;
-				dlg->dirty = true;
+				mb->v.toggled = SDL_FALSE;
+				dlg->dirty = SDL_TRUE;
 				break;
 			}
 		}
@@ -2713,10 +2716,10 @@ static struct sdlpui_dialog *handle_menu_tile_sizes(struct sdlpui_control *ctrl,
 	 * or display artifacts when the in-game menu is dismissed sometime
 	 * after the multiplier change).
 	 */
-	bool disabled = (window->graphics.id == GRAPHICS_NONE
-		|| !character_generated || !inkey_flag);
+	SDL_bool disabled = ((window->graphics.id == GRAPHICS_NONE
+		|| !character_generated || !inkey_flag)) ? SDL_TRUE : SDL_FALSE;
 	struct sdlpui_dialog *result = sdlpui_start_simple_menu(dlg, ctrl, 2,
-		true, false, NULL, NULL, 0);
+		SDL_TRUE, SDL_FALSE, NULL, NULL, 0);
 	struct sdlpui_control *c;
 
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
@@ -2746,9 +2749,10 @@ static struct sdlpui_dialog *handle_menu_tile_sets(struct sdlpui_control *ctrl,
 	 * overlayed menus could have tile references that become outdated
 	 * when the graphics mode is changed.
 	 */
-	bool disabled = !character_generated || !inkey_flag;
+	SDL_bool disabled = (!character_generated || !inkey_flag)
+		? SDL_TRUE : SDL_FALSE;
 	struct sdlpui_dialog *result = sdlpui_start_simple_menu(dlg, ctrl,
-		0, true, false, NULL, NULL, 0);
+		0, SDL_TRUE, SDL_FALSE, NULL, NULL, 0);
 	graphics_mode *mode = graphics_modes;
 
 	while (mode) {
@@ -2772,15 +2776,15 @@ static struct sdlpui_dialog *handle_menu_tiles(struct sdlpui_control *ctrl,
 		int ul_x_win, int ul_y_win)
 {
 	struct sdlpui_dialog *result = sdlpui_start_simple_menu(dlg, ctrl, 2,
-		true, false, NULL, NULL, 0);
+		SDL_TRUE, SDL_FALSE, NULL, NULL, 0);
 	struct sdlpui_control *c;
 
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_submenu_button(c, "Set", SDLPUI_HOR_LEFT,
-		handle_menu_tile_sets, SDLPUI_CHILD_MENU_RIGHT, 0, false);
+		handle_menu_tile_sets, SDLPUI_CHILD_MENU_RIGHT, 0, SDL_FALSE);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_submenu_button(c, "Size", SDLPUI_HOR_LEFT,
-		handle_menu_tile_sizes, SDLPUI_CHILD_MENU_RIGHT, 0, false);
+		handle_menu_tile_sizes, SDLPUI_CHILD_MENU_RIGHT, 0, SDL_FALSE);
 	sdlpui_complete_simple_menu(result, window);
 	result->rect.x = ul_x_win;
 	result->rect.y = ul_y_win;
@@ -2842,8 +2846,8 @@ static void handle_menu_font_name(struct sdlpui_control *ctrl,
 		SDL_assert(ctrl->type_code == SDLPUI_CTRL_MENU_BUTTON);
 		mb = (struct sdlpui_menu_button*)ctrl->priv;
 		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
-		mb->v.toggled = true;
-		dlg->dirty = true;
+		mb->v.toggled = SDL_TRUE;
+		dlg->dirty = SDL_TRUE;
 		return;
 	}
 
@@ -2868,8 +2872,8 @@ static void handle_menu_font_name(struct sdlpui_control *ctrl,
 					== SDLPUI_CTRL_MENU_BUTTON);
 				mb = (struct sdlpui_menu_button*)sm->controls[i].priv;
 				if (mb->tag == target_tag) {
-					mb->v.toggled = false;
-					dlg->dirty = true;
+					mb->v.toggled = SDL_FALSE;
+					dlg->dirty = SDL_TRUE;
 					searching = false;
 					break;
 				}
@@ -2908,9 +2912,9 @@ static void handle_menu_font_name(struct sdlpui_control *ctrl,
 		SDL_assert(ctrl->type_code == SDLPUI_CTRL_MENU_BUTTON);
 		mb = (struct sdlpui_menu_button*)ctrl->priv;
 		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
-		mb->disabled = true;
-		mb->v.toggled = false;
-		dlg->dirty = true;
+		mb->disabled = SDL_TRUE;
+		mb->v.toggled = SDL_FALSE;
+		dlg->dirty = SDL_TRUE;
 	}
 }
 
@@ -2965,8 +2969,8 @@ static struct sdlpui_dialog *handle_menu_font_sizes(
 	calculate_subwindow_font_size_bounds(subwindow, NULL,
 		&subwindow->min_font_size, &subwindow->max_font_size);
 	SDL_assert(subwindow);
-	result = sdlpui_start_simple_menu(dlg, ctrl, 2, true, false, NULL,
-		NULL, 0);
+	result = sdlpui_start_simple_menu(dlg, ctrl, 2, SDL_TRUE, SDL_FALSE,
+		NULL, NULL, 0);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_ranged_int(c, "- %2d points +", SDLPUI_HOR_LEFT,
 		handle_menu_font_size, tag, !is_vector_font
@@ -3015,14 +3019,15 @@ static struct sdlpui_dialog *handle_menu_font_names(struct sdlpui_control *ctrl,
 		count = window->app->font_count - start;
 	}
 	result = sdlpui_start_simple_menu(dlg, ctrl,
-		count + ((more_nesting) ? 1 : 0), true, false, NULL, NULL, 0);
+		count + ((more_nesting) ? 1 : 0), SDL_TRUE, SDL_FALSE, NULL,
+		NULL, 0);
 	if (more_nesting) {
 		c = sdlpui_get_simple_menu_next_unused(result,
 			SDLPUI_MFLG_NONE);
 		sdlpui_create_submenu_button(c, "More", SDLPUI_HOR_LEFT,
 			handle_menu_font_names, SDLPUI_CHILD_MENU_RIGHT,
 			(int)subwindow->index + MAX_SUBWINDOWS
-			* (start + count), false);
+			* (start + count), SDL_FALSE);
 	}
 	for (i = start; i < start + count; ++i) {
 		c = sdlpui_get_simple_menu_next_unused(result,
@@ -3033,7 +3038,7 @@ static struct sdlpui_dialog *handle_menu_font_names(struct sdlpui_control *ctrl,
 		 */
 		sdlpui_create_menu_toggle(c, window->app->fonts[i].name,				SDLPUI_HOR_LEFT, handle_menu_font_name,
 			(int)subwindow->index + MAX_SUBWINDOWS * i,
-			false, subwindow->font->index == i);
+			SDL_FALSE, subwindow->font->index == i);
 	}
 	sdlpui_complete_simple_menu(result, window);
 	result->rect.x = ul_x_win;
@@ -3053,7 +3058,8 @@ static struct sdlpui_dialog *handle_menu_purpose(struct sdlpui_control *ctrl,
 	subw_idx = (*ctrl->ftb->get_tag)(ctrl);
 	SDL_assert(subw_idx >= 0 && subw_idx != MAIN_SUBWINDOW);
 	result = sdlpui_start_simple_menu(dlg, ctrl,
-		(int)N_ELEMENTS(window_flag_desc), true, false, NULL, NULL, 0);
+		(int)N_ELEMENTS(window_flag_desc), SDL_TRUE, SDL_FALSE, NULL,
+		NULL, 0);
 	while (i < (int)N_ELEMENTS(window_flag_desc)) {
 		if (window_flag_desc[i]) {
 			struct sdlpui_control *c =
@@ -3062,7 +3068,8 @@ static struct sdlpui_dialog *handle_menu_purpose(struct sdlpui_control *ctrl,
 
 			sdlpui_create_menu_toggle(c, window_flag_desc[i],
 				SDLPUI_HOR_LEFT, handle_menu_pw, subw_idx *
-				(int)N_ELEMENTS(window_flag_desc) + i, false,
+				(int)N_ELEMENTS(window_flag_desc) + i,
+				SDL_FALSE,
 				window_flag[subw_idx] & ((uint32_t)1 << i));
 		}
 		++i;
@@ -3084,14 +3091,16 @@ static struct sdlpui_dialog *handle_menu_font(struct sdlpui_control *ctrl,
 
 	SDL_assert(ctrl->ftb->get_tag);
 	tag = (*ctrl->ftb->get_tag)(ctrl);
-	result = sdlpui_start_simple_menu(dlg, ctrl, 2, true, false, NULL,
-		NULL, 0);
+	result = sdlpui_start_simple_menu(dlg, ctrl, 2, SDL_TRUE, SDL_FALSE,
+		NULL, NULL, 0);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_submenu_button(c, "Name", SDLPUI_HOR_LEFT,
-		handle_menu_font_names, SDLPUI_CHILD_MENU_RIGHT, tag, false);
+		handle_menu_font_names, SDLPUI_CHILD_MENU_RIGHT, tag,
+		SDL_FALSE);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_submenu_button(c, "Size", SDLPUI_HOR_LEFT,
-		handle_menu_font_sizes, SDLPUI_CHILD_MENU_RIGHT, tag, false);
+		handle_menu_font_sizes, SDLPUI_CHILD_MENU_RIGHT, tag,
+		SDL_FALSE);
 	sdlpui_complete_simple_menu(result, window);
 	result->rect.x = ul_x_win;
 	result->rect.y = ul_y_win;
@@ -3139,8 +3148,8 @@ static void handle_menu_subwindow_alpha(struct sdlpui_control *ctrl,
 		SDL_assert(ctrl->type_code == SDLPUI_CTRL_MENU_BUTTON);
 		mb = (struct sdlpui_menu_button*)ctrl->priv;
 		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
-		mb->v.toggled = true;
-		dlg->dirty = true;
+		mb->v.toggled = SDL_TRUE;
+		dlg->dirty = SDL_TRUE;
 		return;
 	}
 	/* Toggle off the previous setting. */
@@ -3156,8 +3165,8 @@ static void handle_menu_subwindow_alpha(struct sdlpui_control *ctrl,
 		alpha = ALPHA_PERCENT((mb->tag % 101));
 		if (is_close_to(alpha, subwindow->color.a,
 				DEFAULT_ALPHA_STEP / 2)) {
-			mb->v.toggled = false;
-			dlg->dirty = true;
+			mb->v.toggled = SDL_FALSE;
+			dlg->dirty = SDL_TRUE;
 			break;
 		}
 	}
@@ -3183,7 +3192,7 @@ static struct sdlpui_dialog *handle_menu_alpha(struct sdlpui_control *ctrl,
 	SDL_assert(subwindow);
 	nstep = 1 + ((100 - DEFAULT_ALPHA_LOWEST + (DEFAULT_ALPHA_STEP - 1))
 		/ DEFAULT_ALPHA_STEP);
-	result = sdlpui_start_simple_menu(dlg, ctrl, nstep, true, false,
+	result = sdlpui_start_simple_menu(dlg, ctrl, nstep, SDL_TRUE, SDL_FALSE,
 		NULL, NULL, 0);
 	for (i = 0; i < nstep; ++i) {
 		int alpha_pct = MIN(100,
@@ -3194,9 +3203,9 @@ static struct sdlpui_dialog *handle_menu_alpha(struct sdlpui_control *ctrl,
 
 		sdlpui_create_menu_toggle(c, format(" %3d%% ", alpha_pct),
 			SDLPUI_HOR_LEFT, handle_menu_subwindow_alpha,
-			101 * tag + alpha_pct, false,
-			is_close_to(alpha, subwindow->color.a,
-			DEFAULT_ALPHA_STEP / 2));
+			101 * tag + alpha_pct, SDL_FALSE,
+			(is_close_to(alpha, subwindow->color.a,
+			DEFAULT_ALPHA_STEP / 2)) ? SDL_TRUE : SDL_FALSE);
 	}
 	sdlpui_complete_simple_menu(result, window);
 	result->rect.x = ul_x_win;
@@ -3221,7 +3230,7 @@ static void handle_menu_top(struct sdlpui_control *ctrl,
 }
 
 static void handle_menu_term_pop(struct sdlpui_dialog *dlg,
-		struct sdlpui_window *window, bool up)
+		struct sdlpui_window *window, SDL_bool up)
 {
 	struct subwindow *subwindow = get_subwindow_by_index(window,
 		(unsigned int)dlg->tag, false);
@@ -3249,33 +3258,36 @@ static struct sdlpui_dialog *handle_menu_terms(struct sdlpui_control *ctrl,
 	subwindow = get_subwindow_by_index(window, (unsigned int)tag, false);
 	SDL_assert(subwindow);
 	result = sdlpui_start_simple_menu(dlg, ctrl,
-		(subwindow->index == MAIN_SUBWINDOW) ? 4 : 5, true, false,
-		handle_menu_term_pop, NULL, tag);
+		(subwindow->index == MAIN_SUBWINDOW) ? 4 : 5, SDL_TRUE,
+		SDL_FALSE, handle_menu_term_pop, NULL, tag);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_submenu_button(c, "Font", SDLPUI_HOR_LEFT,
-		handle_menu_font, SDLPUI_CHILD_MENU_RIGHT, tag, false);
+		handle_menu_font, SDLPUI_CHILD_MENU_RIGHT, tag, SDL_FALSE);
 	if (subwindow->index == MAIN_SUBWINDOW) {
 		c = sdlpui_get_simple_menu_next_unused(result,
 			SDLPUI_MFLG_NONE);
 		sdlpui_create_submenu_button(c, "Tiles", SDLPUI_HOR_LEFT,
-			handle_menu_tiles, SDLPUI_CHILD_MENU_RIGHT, 0, false);
+			handle_menu_tiles, SDLPUI_CHILD_MENU_RIGHT, 0,
+			SDL_FALSE);
 	} else {
 		c = sdlpui_get_simple_menu_next_unused(result,
 			SDLPUI_MFLG_NONE);
 		sdlpui_create_submenu_button(c, "Purpose", SDLPUI_HOR_LEFT,
 			handle_menu_purpose, SDLPUI_CHILD_MENU_RIGHT, tag,
-			false);
+			SDL_FALSE);
 		c = sdlpui_get_simple_menu_next_unused(result,
 			SDLPUI_MFLG_NONE);
 		sdlpui_create_submenu_button(c, "Alpha", SDLPUI_HOR_LEFT,
-			handle_menu_alpha, SDLPUI_CHILD_MENU_RIGHT, tag, false);
+			handle_menu_alpha, SDLPUI_CHILD_MENU_RIGHT, tag,
+			SDL_FALSE);
 	}
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_toggle(c, "Borders", SDLPUI_HOR_LEFT,
-		handle_menu_borders, tag, false, subwindow->borders.visible);
+		handle_menu_borders, tag, SDL_FALSE,
+		subwindow->borders.visible);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_toggle(c, "Top", SDLPUI_HOR_LEFT,
-		handle_menu_top, tag, false, subwindow->always_top);
+		handle_menu_top, tag, SDL_FALSE, subwindow->always_top);
 	sdlpui_complete_simple_menu(result, window);
 	result->rect.x = ul_x_win;
 	result->rect.y = ul_y_win;
@@ -3289,7 +3301,7 @@ static struct sdlpui_dialog *handle_menu_button(struct sdlpui_control *ctrl,
 {
 	struct sdlpui_dialog *result = sdlpui_start_simple_menu(
 		parent, ctrl, 3 + (int)N_ELEMENTS(angband_term_name)
-		+ ((window->index == MAIN_WINDOW) ? 2 : 0), true, false,
+		+ ((window->index == MAIN_WINDOW) ? 2 : 0), SDL_TRUE, SDL_FALSE,
 		NULL, NULL, 0);
 	unsigned int i;
 	struct sdlpui_control *c;
@@ -3305,36 +3317,37 @@ static struct sdlpui_dialog *handle_menu_button(struct sdlpui_control *ctrl,
 			SDLPUI_MFLG_NONE);
 		sdlpui_create_submenu_button(c, angband_term_name[i],
 			SDLPUI_HOR_LEFT, handle_menu_terms,
-			SDLPUI_CHILD_MENU_RIGHT, (int)i, false);
+			SDLPUI_CHILD_MENU_RIGHT, (int)i, SDL_FALSE);
 	}
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_toggle(c, "Fullscreen", SDLPUI_HOR_LEFT,
-		handle_menu_fullscreen, 0, false,
+		handle_menu_fullscreen, 0, SDL_FALSE,
 		window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP);
 	if (window->index == MAIN_WINDOW) {
 		c = sdlpui_get_simple_menu_next_unused(result,
 			SDLPUI_MFLG_NONE);
 		sdlpui_create_menu_toggle(c, "Send Keypad Modifier",
-			SDLPUI_HOR_LEFT, handle_menu_kp_mod, 0, false,
+			SDLPUI_HOR_LEFT, handle_menu_kp_mod, 0, SDL_FALSE,
 			window->app->kp_as_mod);
 		c = sdlpui_get_simple_menu_next_unused(result,
 			SDLPUI_MFLG_NONE);
 		sdlpui_create_menu_button(c, "Menu Shortcuts...",
-			SDLPUI_HOR_LEFT, handle_menu_shortcuts, 0, false);
+			SDLPUI_HOR_LEFT, handle_menu_shortcuts, 0, SDL_FALSE);
 		c = sdlpui_get_simple_menu_next_unused(result,
 			SDLPUI_MFLG_NONE);
 		sdlpui_create_submenu_button(c, "Windows", SDLPUI_HOR_LEFT,
-			handle_menu_windows, SDLPUI_CHILD_MENU_RIGHT, 0, false);
+			handle_menu_windows, SDLPUI_CHILD_MENU_RIGHT, 0,
+			SDL_FALSE);
 	}
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_button(c, "About...", SDLPUI_HOR_LEFT,
-		handle_menu_about, 0, false);
+		handle_menu_about, 0, SDL_FALSE);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_button(c, "SDL Details...", SDLPUI_HOR_LEFT,
-		handle_menu_sdl_details, 0, false);
+		handle_menu_sdl_details, 0, SDL_FALSE);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_button(c, "Quit", SDLPUI_HOR_LEFT,
-		handle_menu_quit, 0, false);
+		handle_menu_quit, 0, SDL_FALSE);
 	sdlpui_complete_simple_menu(result, window);
 	result->rect.x = ul_x_win;
 	result->rect.y = ul_y_win;
@@ -5967,12 +5980,12 @@ static void load_status_bar(struct sdlpui_window *window)
 
 	window->status_bar = sdlpui_start_simple_menu(NULL, NULL,
 		2 + N_ELEMENTS(window->subwindows)
-		+ ((window->index == MAIN_WINDOW) ? 1 : 0), false, true,
+		+ ((window->index == MAIN_WINDOW) ? 1 : 0), SDL_FALSE, SDL_TRUE,
 		NULL, NULL, 0);
 	c = sdlpui_get_simple_menu_next_unused(window->status_bar,
 		SDLPUI_MFLG_NONE);
 	sdlpui_create_submenu_button(c, "Menu", SDLPUI_HOR_CENTER,
-		handle_menu_button, SDLPUI_CHILD_MENU_BELOW, 0, false);
+		handle_menu_button, SDLPUI_CHILD_MENU_BELOW, 0, SDL_FALSE);
 	if (window->index == MAIN_WINDOW) {
 		/*
 		 * For symmetry with the other windows, give the main window
@@ -5983,7 +5996,7 @@ static void load_status_bar(struct sdlpui_window *window)
 		c = sdlpui_get_simple_menu_next_unused(window->status_bar,
 			SDLPUI_MFLG_CAN_HIDE);
 		sdlpui_create_menu_indicator(c, "A", SDLPUI_HOR_CENTER, 0,
-			true);
+			SDL_TRUE);
 	}
 	for (i = 1; i < (unsigned int)N_ELEMENTS(window->subwindows); ++i) {
 		struct subwindow *subw =
@@ -5993,18 +6006,20 @@ static void load_status_bar(struct sdlpui_window *window)
 			SDLPUI_MFLG_CAN_HIDE);
 		sdlpui_create_menu_toggle(c, format("%u", i),
 			SDLPUI_HOR_CENTER, handle_button_open_subwindow,
-			(int)i, false, subw && subw->visible);
+			(int)i, SDL_FALSE, subw && subw->visible);
 	}
 	c = sdlpui_get_simple_menu_next_unused(window->status_bar,
 		SDLPUI_MFLG_END_GRAVITY);
 	window->move_button = c;
 	sdlpui_create_menu_toggle(c, "Move", SDLPUI_HOR_CENTER,
-		handle_button_movesize, 0, false, window->move_state.active);
+		handle_button_movesize, 0, SDL_FALSE,
+		window->move_state.active);
 	c = sdlpui_get_simple_menu_next_unused(window->status_bar,
 		SDLPUI_MFLG_END_GRAVITY);
 	window->size_button = c;
 	sdlpui_create_menu_toggle(c, "Size", SDLPUI_HOR_CENTER,
-		handle_button_movesize, 1, false, window->size_state.active);
+		handle_button_movesize, 1, SDL_FALSE,
+		window->size_state.active);
 	sdlpui_complete_simple_menu(window->status_bar, window);
 	if (window->status_bar->ftb->query_minimum_size) {
 		(*window->status_bar->ftb->query_minimum_size)(
@@ -6030,8 +6045,8 @@ static void load_status_bar(struct sdlpui_window *window)
 	 */
 	window->status_bar->rect.x = 0;
 	window->status_bar->rect.y = 0;
-	window->status_bar->pinned = true;
-	sdlpui_popup_dialog(window->status_bar, window, false);
+	window->status_bar->pinned = SDL_TRUE;
+	sdlpui_popup_dialog(window->status_bar, window, SDL_FALSE);
 }
 
 static void fit_subwindow_in_window(const struct sdlpui_window *window,
@@ -6493,8 +6508,8 @@ static void detach_subwindow_from_window(struct sdlpui_window *window,
 			== SDLPUI_CTRL_MENU_BUTTON);
 		mb = (struct sdlpui_menu_button*)sm->controls[cidx].priv;
 		assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
-		mb->v.toggled = false;
-		window->status_bar->dirty = true;
+		mb->v.toggled = SDL_FALSE;
+		window->status_bar->dirty = SDL_TRUE;
 		window->dirty = true;
 	}
 }
@@ -6949,7 +6964,7 @@ static void free_window(struct sdlpui_window *window)
 	assert(window->loaded);
 
 	while (window->d_head) {
-		sdlpui_popdown_dialog(window->d_head, window, false);
+		sdlpui_popdown_dialog(window->d_head, window, SDL_FALSE);
 	}
 	window->d_tail = NULL;
 	window->d_mouse = NULL;
