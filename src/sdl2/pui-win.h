@@ -33,6 +33,15 @@ struct sdlpui_stipple {
  * \param w is the window containing what's to be rendered.
  * \return the renderer that can be used to render directly to the window
  * or to a texture.
+ *
+ * The UI toolkit assumes the blend mode in the renderer is SDL_BLENDMODE_NONE
+ * and, if the toolkit changes the blend mode, it will restore it to that
+ * value when rendering is complete.  The UI toolkit may modify the target and
+ * rendering color in the renderer and will not restore them to the prior
+ * values.  Any changes the UI toolkit makes to the clipping rectangle, scale,
+ * integer scale, logical size, or viewport in the renderer will be reverted
+ * when rendering is complete.  The UI toolkit does not alter the VSync of
+ * the renderer.
  */
 SDL_Renderer *sdlpui_get_renderer(struct sdlpui_window *w);
 

@@ -150,8 +150,18 @@ struct sdlpui_control_funcs {
 		const char *new_caption);
 	/**
 	 * Render the control.  Can be NULL, but then the control will be
-	 * invisible.  Assumes the renderer's target has been set to
-	 * d->texture.
+	 * invisible.  Must not affect parts of the screen outside the
+	 * bounds of c->rect.  Can assume the renderer's target has been set
+	 * to d->texture.  If it modifies the renderer's target, it must
+	 * restore it to d->texture before returning.  Can not assume
+	 * anything about the drawing color in the renderer and does not
+	 * need to restore the prior drawing color before returning.  Can
+	 * assume that the blending mode in the renderer is SDL_BLENDMODE_NONE.
+	 * Must restore the blending mode to SDL_BLENDMODE_NONE before
+	 * returning.  If changes the clipping rectangle, scale, integer
+	 * scale, logical size, or viewport in the renderer, must restore
+	 * the prior state before returning.  Must not alter the VSync of the
+	 * renderer.
 	 */
 	void (*render)(struct sdlpui_control *c, struct sdlpui_dialog *d,
 		struct sdlpui_window *w, SDL_Renderer *r);
