@@ -226,13 +226,13 @@ static void prt_level(int row, int col)
 static void prt_exp(int row, int col)
 {
 	char out_val[32];
-	bool lev50 = (player->lev == 50);
+	bool lev_max = (player->lev == PY_MAX_LEVEL);
 
 	long xp = (long)player->exp;
 
 
 	/* Calculate XP for next level */
-	if (!lev50)
+	if (!lev_max)
 		xp = (long)(player_exp[player->lev - 1] * player->expfact / 100L) -
 			player->exp;
 
@@ -241,10 +241,10 @@ static void prt_exp(int row, int col)
 
 
 	if (player->exp >= player->max_exp) {
-		put_str((lev50 ? "EXP" : "NXT"), row, col);
+		put_str((lev_max ? "EXP" : "NXT"), row, col);
 		c_put_str(COLOUR_L_GREEN, out_val, row, col + 4);
 	} else {
-		put_str((lev50 ? "Exp" : "Nxt"), row, col);
+		put_str((lev_max ? "Exp" : "Nxt"), row, col);
 		c_put_str(COLOUR_YELLOW, out_val, row, col + 4);
 	}
 }
