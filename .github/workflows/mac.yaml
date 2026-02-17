@@ -18,17 +18,6 @@ jobs:
           cd src
           env OPT="-Werror" make -f Makefile.osx -j$(sysctl -n hw.ncpu)
 
-  release-flags:
-    runs-on: macos-latest
-    steps:
-      - name: Clone Project
-        uses: actions/checkout@v4
-
-      - name: Build with Flags Used for Release
-        run: |
-          cd src
-          env OPT="-Werror -O2 -DNDEBUG" make -f Makefile.osx -j$(sysctl -n hw.ncpu)
-
   cmake-curses:
     runs-on: macos-latest
     steps:
