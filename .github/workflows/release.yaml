@@ -335,7 +335,8 @@ jobs:
         id: create_windows_archive
         run: |
           cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_RELEASE="-O2" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror" \
             -DSUPPORT_WINDOWS_FRONTEND=ON \
             -DSUPPORT_BUNDLED_PNG=ON \
             -DCMAKE_TOOLCHAIN_FILE=toolchains/linux-i686-mingw32-cross.cmake
@@ -409,7 +410,7 @@ jobs:
         id: create_mac_archive
         run: |
           cd src
-          env OPT="-O2 -DNDEBUG" make -f Makefile.osx -j$(sysctl -n hw.ncpu) dist
+          env OPT="-O2 -DNDEBUG -Werror" make -f Makefile.osx -j$(sysctl -n hw.ncpu) dist
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}-osx
           echo "archive_file=${archive_prefix}.dmg" >> $GITHUB_OUTPUT
 
