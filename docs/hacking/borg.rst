@@ -63,7 +63,7 @@ Main Commands
 ``m``  Map information
 ``o``  Object Information
 ``p``  Borg Power
-``P``  Level preperation information
+``P``  Level preparation information
 ``R``  Respawn Borg
 ``s``  Search mode
 ``S``  Dump spell info
@@ -82,7 +82,7 @@ Main Commands
 ====== ========================================
 
 Map Information
--------------
+---------------
 
 After pressing ``m`` from the main borg interface you enter map information 
 display mode. This is map information as the borg understands it. The 
