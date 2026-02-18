@@ -104,7 +104,7 @@ You will be able to select any borg configuration and change its runtime value.
 
 
 Borg_has Commands
--------------
+-----------------
 
 After pressing ``h`` from the main borg interface you enter "has"
 display mode. These are things the borg has. The list is put in the games
