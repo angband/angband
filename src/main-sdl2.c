@@ -1631,7 +1631,7 @@ static void step_shortcut_editor_control(struct sdlpui_dialog *d,
 		if (c == &pse->change_buttons[i]) {
 			new_c = (forward) ? &pse->clear_buttons[i] :
 				((i > 0) ? &pse->clear_buttons[i - 1] :
-				&pse->close_button);
+				&pse->reset_button);
 			break;
 		} else if (c == &pse->clear_buttons[i]) {
 			new_c = (forward) ? ((i < MAX_WINDOWS - 1) ?
