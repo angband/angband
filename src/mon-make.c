@@ -82,7 +82,7 @@ static void init_race_allocs(void) {
 		}
 	}
 
-	/* Calculate the cumultive level totals */
+	/* Calculate the cumulative level totals */
 	for (i = 1; i < z_info->max_depth; i++) {
 		/* Group by level */
 		num[i] += num[i - 1];
