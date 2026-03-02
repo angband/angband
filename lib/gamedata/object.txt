@@ -50,9 +50,8 @@
 #
 # TELEPORT:  Mx or mx in the dice expression specifies that the base
 #    distance teleported is (x * MAX(dungeon height in grids, dungeon
-#    width in grids)) / 100.  The base amount is ignored in that case.
-#    Any die, i.e. 2d3 from the example, are ignored, regardless of
-#    whether 'M' is present or not.
+#    width in grids)) / 100.  The base, number of dice, and the number
+#    of sides are ignored when 'M' is in the dice.
 #
 # Besides the meaning of 'M' in an effect's dice, some effects abuse other
 # parts of the dice expression as a way to pass additional parameters to
