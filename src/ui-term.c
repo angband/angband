@@ -2592,7 +2592,7 @@ errr Term_keypress(keycode_t k, uint8_t mods)
  */
 errr Term_mousepress(int x, int y, char button)/*, uint8_t mods);*/
 {
-	/* Store the char, advance the queue */
+	/* Store the press, advance the queue */
 	Term->key_queue[Term->key_head] = (ui_event){
 		.mouse = {
 			.type   = EVT_MOUSE,
