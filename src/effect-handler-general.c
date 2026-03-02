@@ -2127,7 +2127,8 @@ bool effect_handler_ENCHANT(effect_handler_context_t *context)
 bool effect_handler_RECHARGE(effect_handler_context_t *context)
 {
 	int i, t;
-	int strength = context->value.base;
+	int strength = context->value.base
+		+ damroll(context->value.dice, context->value.sides);
 	int itemmode = (USE_INVEN | USE_FLOOR | SHOW_RECHARGE);
 	struct object *obj;
 	bool used = false;
@@ -2506,7 +2507,8 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 bool effect_handler_TELEPORT(effect_handler_context_t *context)
 {
 	struct loc start = loc(context->x, context->y);
-	int dis = context->value.base;
+	int dis = context->value.base
+		+ damroll(context->value.dice, context->value.sides);
 	int perc = context->value.m_bonus;
 	int pick;
 	struct loc grid;
@@ -2569,7 +2571,9 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 		dis = (MAX(vertical, horizontal) * perc) / 100;
 	}
 
-	/* Randomise the distance a little */
+	/*
+	 * Randomise the distance a little, besides what is allowed by the dice
+	 */
 	if (one_in_(2)) {
 		dis -= randint0(dis / 4);
 	} else {
