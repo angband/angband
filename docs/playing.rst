@@ -606,8 +606,8 @@ path that is feasible given your knowledge of the map:
 #. Look for paths that can pass through known or unknown terrain.  The paths can cross known traps.  Skip this class of paths when not finding a path for the autoexploration commands and the previous class of paths was considered and did reject a potentially shorter path that has a known trap.
 
 Note that magic mapping and enlightment do not mark floor grids as known
-terrain.  So, unless you have also also seen a floor that was revealed by
-magic mapping or enlightment, pathfinding treats that floor as unknown terrain.
+terrain.  So, unless you have also seen a floor that was revealed by magic
+mapping or enlightment, pathfinding treats that floor as unknown terrain.
 Paths are never allowed to cross passable, but damaging terrain, like lava.
 
 When the game move you along the selected path, you can interrupt the process
