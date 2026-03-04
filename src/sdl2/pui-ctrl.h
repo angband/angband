@@ -139,6 +139,16 @@ struct sdlpui_control_funcs {
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		const SDL_MouseWheelEvent *e);
 	/**
+	 * Return the name for the type of a specific control.  May not be
+	 * NULL.
+	 */
+	const char *(*get_type_name)(const struct sdlpui_control *c);
+	/**
+	 * Return the caption for the control.  May be NULL.  In that case,
+	 * tracing statements use "(none)" when displaying the caption.
+	 */
+	const char *(*get_caption)(const struct sdlpui_control *c);
+	/**
 	 * Change the caption for the control.  May be NULL if the control
 	 * does not have a caption or otherwise does not want
 	 * sdlpui_change_caption() to work with the control.  Does resize
@@ -379,7 +389,10 @@ struct sdlpui_menu_button {
 				different look */
 	enum sdlpui_menu_button_type subtype_code;
 	union {
-		struct { int min, max, curr, old; } ranged_int;
+		struct {
+			char *expanded_caption;
+			int min, max, curr, old;
+		} ranged_int;
 		struct {
 			struct sdlpui_dialog *(*creator)(
 				struct sdlpui_control*,

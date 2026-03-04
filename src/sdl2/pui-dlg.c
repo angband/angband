@@ -198,8 +198,11 @@ static SDL_bool handle_simple_menu_key(struct sdlpui_dialog *d,
 				}
 				if (mods == KMOD_NONE
 						&& c->ftb->respond_default) {
-					SDLPUI_EVENT_TRACER("control", c,
-						"(not extracted)",
+					SDLPUI_EVENT_TRACER(
+						(*c->ftb->get_type_name)(c), c,
+						(c->ftb->get_caption)
+						? (*c->ftb->get_caption)(c)
+						: "(none)",
 						"invoking default response");
 					(*c->ftb->respond_default)(c, d, w,
 						SDLPUI_ACTION_HINT_KEY);
@@ -347,8 +350,10 @@ static SDL_bool handle_simple_menu_textin(struct sdlpui_dialog *d,
 		 */
 		if (c) {
 			if (c->ftb->respond_default) {
-				SDLPUI_EVENT_TRACER("control", c,
-					"(not extracted)",
+				SDLPUI_EVENT_TRACER(
+					(*c->ftb->get_type_name)(c), c,
+					(c->ftb->get_caption)
+					? (*c->ftb->get_caption)(c) : "(none)",
 					"invoking default response");
 				(*c->ftb->respond_default)(c, d, w,
 					SDLPUI_ACTION_HINT_KEY);
@@ -1551,13 +1556,9 @@ SDL_bool sdlpui_dialog_handle_mousemove(struct sdlpui_dialog *d,
 		NULL;
 	if (c) {
 		if (c_mouse && c_mouse->ftb->lose_mouse) {
-			SDLPUI_EVENT_TRACER("control", d->c_mouse,
-				"(not extracted)", "loses mouse focus");
 			(*c_mouse->ftb->lose_mouse)(c_mouse, d, w, c, d);
 		}
 		if (c->ftb->gain_mouse) {
-			SDLPUI_EVENT_TRACER("control", c, "(not extracted)",
-				"gains mouse focus");
 			(*c->ftb->gain_mouse)(c, d, w, comp_ind);
 		}
 		d->c_mouse = c;
@@ -1565,14 +1566,10 @@ SDL_bool sdlpui_dialog_handle_mousemove(struct sdlpui_dialog *d,
 		/* Have keyboard focus follow the mouse. */
 		if (d->c_key != c) {
 			if (d->c_key && d->c_key->ftb->lose_key) {
-				SDLPUI_EVENT_TRACER("control", d->c_key,
-					"(not extracted)", "loses key focus");
 				(*d->c_key->ftb->lose_key)(d->c_key, d, w, c,
 					d);
 			}
 			if (c && c->ftb->gain_key) {
-				SDLPUI_EVENT_TRACER("control", c,
-					"(not extracted)", "gains key focus");
 				(c->ftb->gain_key)(c, d, w, comp_ind);
 			}
 			d->c_key = c;
@@ -1581,10 +1578,7 @@ SDL_bool sdlpui_dialog_handle_mousemove(struct sdlpui_dialog *d,
 	if (c || sdlpui_is_in_dialog(d, e->x, e->y)) {
 		if (!c) {
 			if (c_mouse) {
-				if (c_mouse && c_mouse->ftb->lose_mouse) {
-					SDLPUI_EVENT_TRACER("control",
-						c_mouse, "(not extracted)",
-						"loses mouse focus");
+				if (c_mouse->ftb->lose_mouse) {
 					(*c_mouse->ftb->lose_mouse)(
 						c_mouse, d, w, NULL, d);
 				}
@@ -1592,10 +1586,7 @@ SDL_bool sdlpui_dialog_handle_mousemove(struct sdlpui_dialog *d,
 			}
 			/* Have keyboard focus follow the mouse. */
 			if (d->c_key) {
-				if (d->c_key && d->c_key->ftb->lose_key) {
-					SDLPUI_EVENT_TRACER("control",
-						d->c_key, "(not extracted)",
-						"loses key focus");
+				if (d->c_key->ftb->lose_key) {
 					(*d->c_key->ftb->lose_key)(
 						d->c_key, d, w, NULL, d);
 				}
