@@ -28,7 +28,7 @@
  * This code provides both a "quick" random number generator (4 bytes of
  * state), and a "complex" random number generator (128 + 4 bytes of state).
  *
- * The complex RNG (used for most game entropy) is provided by the WELL102a
+ * The complex RNG (used for most game entropy) is provided by the WELL1024a
  * algorithm, used with permission. See below for copyright information
  * about the WELL implementation.
  *
