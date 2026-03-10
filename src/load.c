@@ -399,10 +399,10 @@ int rd_randomizer(void)
 	/* for safety, make sure state_i < RAND_DEG */
 	state_i = state_i % RAND_DEG;
     
-	/* RNG variables */
-	rd_u32b(&z0);
-	rd_u32b(&z1);
-	rd_u32b(&z2);
+	/* NULL padding for compatibility with previous versions */
+	rd_u32b(&noop);
+	rd_u32b(&noop);
+	rd_u32b(&noop);
     
 	/* RNG state */
 	for (i = 0; i < RAND_DEG; i++)

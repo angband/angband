@@ -112,9 +112,6 @@ extern uint32_t Rand_value;
  */
 extern uint32_t state_i;
 extern uint32_t STATE[RAND_DEG];
-extern uint32_t z0;
-extern uint32_t z1;
-extern uint32_t z2;
 
 
 /**
