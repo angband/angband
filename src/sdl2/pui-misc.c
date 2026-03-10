@@ -201,7 +201,7 @@ Uint32 sdlpui_register_code(const char *name)
 			break;
 		}
 
-		imid = (ilo + ihi) / 2;
+		imid = ilo + (ihi - ilo) / 2;
 		cmp = strcmp(my_registry.entries[imid].name, name);
 		if (cmp == 0) {
 			code = my_registry.entries[imid].code;
