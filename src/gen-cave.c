@@ -277,7 +277,7 @@ static struct loc choose_random_entrance(struct chunk *c, int ridx,
 					mem_free(accum);
 					return dun->ent[ridx][low];
 				}
-				mid = (low + high) / 2;
+				mid = low + (high - low) / 2;
 				if (accum[mid] <= chosen) {
 					low = mid;
 				} else {

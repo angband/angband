@@ -1167,7 +1167,7 @@ static int ui_entry_search(const char *name, int *ind)
 			*ind = ilow;
 			return 0;
 		}
-		imid = (ilow + ihigh) / 2;
+		imid = ilow + (ihigh - ilow) / 2;
 		cmp = strcmp(entries[imid]->name, name);
 		if (cmp == 0) {
 			*ind = imid;
@@ -1257,7 +1257,7 @@ static int ui_entry_search_categories(const struct ui_entry *entry,
 			*ind = ilow;
 			return 0;
 		}
-		imid = (ilow + ihigh) / 2;
+		imid = ilow + (ihigh - ilow) / 2;
 		cmp = strcmp(entry->categories[imid].name, name);
 		if (cmp == 0) {
 			*ind = imid;
@@ -1390,7 +1390,7 @@ static int search_embryo_categories(const struct embryonic_ui_entry *embryo,
 			*ind = ilow;
 			return 0;
 		}
-		imid = (ilow + ihigh) / 2;
+		imid = ilow + (ihigh - ilow) / 2;
 		cmp = strcmp(embryo->categories[imid].name, name);
 		if (cmp == 0) {
 			*ind = imid;

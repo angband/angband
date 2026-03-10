@@ -630,7 +630,7 @@ static struct sdlpui_control *find_simple_menu_control_containing(
 			}
 			return p->v_ctrls[ilo];
 		}
-		imid = (ilo + ihi) / 2;
+		imid = ilo + (ihi - ilo) / 2;
 		if (p->vertical) {
 			if (p->v_ctrls[imid]->rect.y > y) {
 				ihi = imid;
