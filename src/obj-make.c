@@ -324,7 +324,7 @@ static int binary_search_probtable(const uint32_t *tbl, int n, uint32_t p)
 			assert(tbl[ilow] <= p && tbl[ihigh] > p);
 			return ilow;
 		}
-		imid = (ilow + ihigh) / 2;
+		imid = ilow + (ihigh - ilow) / 2;
 		if (tbl[imid] <= p) {
 			ilow = imid;
 		} else {
