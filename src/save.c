@@ -293,10 +293,10 @@ void wr_randomizer(void)
 	/* state index */
 	wr_u32b(state_i);
 
-	/* RNG variables */
-	wr_u32b(z0);
-	wr_u32b(z1);
-	wr_u32b(z2);
+	/* NULL padding for backwards compatibility with previous versions */
+	wr_u32b(0);
+	wr_u32b(0);
+	wr_u32b(0);
 
 	/* RNG state */
 	for (i = 0; i < RAND_DEG; i++)
