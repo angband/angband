@@ -1240,8 +1240,12 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 					&& obj->kind) {
 				if (store->feat == FEAT_HOME) {
 					home_carry(obj);
-				} else {
-					store_carry(store, obj);
+				} else if (!store_carry(store, obj, false)) {
+					if (obj->known) {
+						object_delete(NULL, NULL,
+							&obj->known);
+					}
+					object_delete(NULL, NULL, &obj);
 				}
 			} else {
 				if (obj->known) {
