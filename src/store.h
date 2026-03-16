@@ -73,7 +73,8 @@ void store_init(void);
 void free_stores(void);
 void store_stock_list(struct store *store, struct object **list, int n);
 void home_carry(struct object *obj);
-struct object *store_carry(struct store *store, struct object *obj);
+struct object *store_carry(struct store *store, struct object *obj,
+		bool maintain);
 void store_reset(void);
 void store_shuffle(struct store *store);
 void store_update(void);

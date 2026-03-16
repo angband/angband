@@ -895,18 +895,22 @@ void home_carry(struct object *obj)
 
 
 /**
- * Add an object to a real stores inventory.
+ * Add an object to a real, not the home, store's inventory.
  *
- * If the object is "worthless", it is thrown away (except in the home).
- *
- * If the object cannot be combined with an object already in the inventory,
- * make a new slot for it, and calculate its "per item" price.  Note that
- * this price will be negative, since the price will not be "fixed" yet.
- * Adding an object to a "fixed" price stack will not change the fixed price.
- *
- * Returns the object inserted (for ease of use) or NULL if it disappears
+ * \param store points to the store of interest.  It must not be the home.
+ * \param obj points to the object to be added.
+ * \param maintain causes, if true, the full suite of maintenance actions to
+ * be performed when adding the object.  When false, maintenance actions that
+ * should not be repeated are skipped.  It should normally be true, unless
+ * the maintenance actions have already been done (reloading a store's
+ * inventory from a save file, for instance).
+ * \return a pointer to the stack added to.  If the store rejects the object,
+ * that will be NJULL.  In that case, the caller must handle cleanup for the
+ * object it tried to add.  Otherwise, the store assumes the responsibility
+ * for cleaning up the added object.
  */
-struct object *store_carry(struct store *store, struct object *obj)
+struct object *store_carry(struct store *store, struct object *obj,
+		bool maintain)
 {
 	unsigned int i;
 	uint32_t value;
@@ -943,7 +947,7 @@ struct object *store_carry(struct store *store, struct object *obj)
 		obj->known->pval = obj->pval;
 	} else if (tval_can_have_charges(obj)) {
 		/* If the store can stock this item kind, we recharge */
-		if (store_can_carry(store, obj->kind)) {
+		if (maintain && store_can_carry(store, obj->kind)) {
 			int charges = 0;
 
 			/* Calculate the recharged number of charges */
@@ -1236,7 +1240,7 @@ static bool store_create_random(struct store *store)
 		mass_produce(obj);
 
 		/* Attempt to carry the object */
-		if (!store_carry(store, obj)) {
+		if (!store_carry(store, obj, true)) {
 			object_delete(NULL, NULL, &known_obj);
 			obj->known = NULL;
 			object_delete(NULL, NULL, &obj);
@@ -1275,7 +1279,7 @@ static struct object *store_create_item(struct store *store,
 	obj->origin = ORIGIN_NONE;
 
 	/* Attempt to carry the object */
-	carried = store_carry(store, obj);
+	carried = store_carry(store, obj, true);
 	if (!carried) {
 		object_delete(NULL, NULL, &known_obj);
 		obj->known = NULL;
@@ -1982,7 +1986,7 @@ void do_cmd_sell(struct command *cmd)
 	handle_stuff(player);
 
 	/* The store gets that (known) object */
-	if (!store_carry(store, sold_item)) {
+	if (!store_carry(store, sold_item, true)) {
 		/* The store rejected it; delete. */
 		if (sold_item->artifact) {
 			history_lose_artifact(player, sold_item->artifact);
