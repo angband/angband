@@ -339,9 +339,9 @@ object:food:Ration of Food:0x89:0x88
 object:food:Piece of Elvish Waybread:0x89:0x8A
 object:food:Flask of Whisky:0x89:0x8B
 object:food:Pint of Fine Wine:0x89:0x8C
-#object:food:Sip of Miruvor
+object:food:Sip of Miruvor:0x8A:0x90
 #object:food:Swig of Orcish Liquor
-#object:food:Draught of the Ents
+object:food:Draught of the Ents:0x8A:0x91
 
 
 ### The shrooms, an interesting collection ###
