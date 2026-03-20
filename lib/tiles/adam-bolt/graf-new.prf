@@ -459,7 +459,7 @@ object:food:Ration of Food:0x8E:0x84
 object:food:Piece of Elvish Waybread:0x8E:0x86
 object:food:Flask of Whisky:0x8E:0x80
 object:food:Pint of Fine Wine:0x8E:0x81
-#object:food:Sip of Miruvor
+object:food:Sip of Miruvor:0x8E:0x87
 #object:food:Swig of Orcish Liquor
 #object:food:Draught of the Ents
 
@@ -1539,7 +1539,13 @@ monster:Shardstorm:0xAC:0x9A
 monster:Storm of Unmagic:0xAC:0x9C
 monster:mummified chieftain:0xBA:0x91
 monster:Multi-hued hound:0xB2:0x81
-
+monster:old forest tree:0xB9:0x82
+monster:witch:0xB2:0x8C
+monster:blackguard:0xB8:0x86
+monster:Old Man Willow:0xB8:0x83
+monster:red-hatted elf:0xB3:0x87
+monster:Father Christmas:0xB3:0x88
+monster:dúnadan of Angmar:0xB2:0x82
 
 # Load the special player pictures
 %:xtra-new.prf
