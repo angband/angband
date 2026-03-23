@@ -19,7 +19,7 @@ jobs:
       # with an arbitrary number of commits.  Only get the part of the
       # repository that affects building the documentation.
       - name: Clone Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           sparse-checkout: |
@@ -56,7 +56,7 @@ jobs:
           fi
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.DOC_ARTIFACT }}
           path: ${{ env.DOC_ARTIFACT_PATH }}

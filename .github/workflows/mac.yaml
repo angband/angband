@@ -11,7 +11,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Clone Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Build
         run: |
@@ -26,7 +26,7 @@ jobs:
           brew install ncurses
 
       - name: Clone Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Configure (CMake)
         run: |
@@ -48,7 +48,7 @@ jobs:
           brew install automake
 
       - name: Clone Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Build
         run: |

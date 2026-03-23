@@ -26,7 +26,7 @@ jobs:
             mingw-w64-x86_64-ncurses
 
       - name: Clone Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Build with CMake/Ninja
         run: |
@@ -58,7 +58,7 @@ jobs:
             mingw-w64-x86_64-SDL2_mixer
 
       - name: Clone Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Build with CMake/Ninja including sound and static linking
         run: |
@@ -88,7 +88,7 @@ jobs:
             mingw-w64-i686-gcc
 
       - name: Clone Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Build
         run: |
@@ -116,7 +116,7 @@ jobs:
             mingw-w64-i686-libpng
 
       - name: Clone Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Configure with CMake/Ninja and static linking
         run: |
@@ -159,7 +159,7 @@ jobs:
             mingw-w64-x86_64-libpng
 
       - name: Clone Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Configure with CMake/Ninja
         run: |
@@ -203,7 +203,7 @@ jobs:
             mingw-w64-clang-x86_64-libpng
 
       - name: Clone Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Build with ASAN/UBSAN
         run: |
