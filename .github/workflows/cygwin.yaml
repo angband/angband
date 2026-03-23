@@ -21,7 +21,7 @@ jobs:
           git config --global core.autocrlf false
           git config --global core.eol lf
           
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build (MinGW32 cross, inside Cygwin)
         shell: C:\tools\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
@@ -73,7 +73,7 @@ jobs:
           git config --global core.autocrlf false
           git config --global core.eol lf
           
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build & Test (MinGW32 cross, inside Cygwin)
         shell: C:\tools\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'

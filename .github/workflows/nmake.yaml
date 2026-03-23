@@ -13,12 +13,12 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Add nmake and compiler to PATH
-        uses: TheMrMilchmann/setup-msvc-dev@v3
+        uses: TheMrMilchmann/setup-msvc-dev@v4
         with:
           arch: x86
 
       - name: Clone Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Build
         run: |
