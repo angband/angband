@@ -2195,9 +2195,12 @@ static void show_sdl_details(struct sdlpui_window *window, int x, int y)
 
 			SDL_GetVersion(&vr);
 			SDL_VERSION(&vc);
-			label = format("SDL version: %u.%u.%u (runtime; %s) "
-				"%u.%u.%u (compiled; %s)", vr.major, vr.minor,
-				vr.patch, SDL_GetRevision(),
+			label = format("SDL runtime: %u.%u.%u (%s)",
+				vr.major, vr.minor, vr.patch,
+				SDL_GetRevision());
+			sdlpui_simple_info_add_label(window->detaild, label,
+				SDLPUI_HOR_LEFT);
+			label = format("SDL compiled: %u.%u.%u (%s)",
 				vc.major, vc.minor, vc.patch, SDL_REVISION);
 			sdlpui_simple_info_add_label(window->detaild, label,
 				SDLPUI_HOR_LEFT);
