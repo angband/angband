@@ -697,8 +697,6 @@ object:crown:Massive Iron Crown:0x80:0x92
 
 ##### "Special Artifacts" #####
 
-# These artifacts use numeric SVALs to ensure unique matches
-
 # The Phial of Galadriel
 object:light:Phial:0x87:0xB3
 
