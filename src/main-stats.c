@@ -1797,7 +1797,6 @@ static errr run_stats(void)
 		mem_free(a_info_save);
 	}
 	free_stats_memory();
-	cleanup_angband();
 	if (!quiet) printf("Done!\n");
 	quit(NULL);
 	exit(0);
