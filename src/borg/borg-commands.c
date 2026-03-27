@@ -1611,7 +1611,7 @@ void do_cmd_borg(void)
              * Force initialization or reinitialize if the game was closed
              * and restarted without exiting since the last initialization
              */
-            if (!borg_initialized) {
+            if (!borg_initialized || game_closed) {
                 if (borg_initialized) {
                     borg_free();
                 }
