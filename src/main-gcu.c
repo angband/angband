@@ -25,6 +25,8 @@
 #include "ui-display.h"
 #include "ui-prefs.h"
 
+#include <fcntl.h>
+
 #ifdef USE_GCU
 #include "main.h"
 
@@ -793,8 +795,13 @@ static errr Term_xtra_gcu_event(int v) {
 		/* Wait for a keypress; use halfdelay(1) so if the user takes more */
 		/* than 0.2 seconds we get a chance to do updates. */
 		halfdelay(2);
+		errno = 0;
 		i = getch();
 		while (i == ERR) {
+			/* This happens when the user forcefully */
+			/* closes their terminal (SIGHUP). */
+			if (fcntl(STDIN_FILENO, F_GETFD) == -1 && errno == EBADF)
+				quit("Input descriptor closed");
 			i = getch();
 			idle_update();
 		}
