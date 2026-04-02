@@ -360,10 +360,7 @@ static void get_cfg_display(struct menu* menu, int oid, bool cursor, int row,
     c_put_str(label_attr, borg_settings[oid].setting_string, row, col);
 
     if (borg_settings[oid].setting_type == 'b') {
-        if (borg_cfg[oid])
-            strcpy(value, "TRUE");
-        else
-            strcpy(value, "FALSE");
+        my_strcpy(value, (borg_cfg[oid]) ? "TRUE" : "FALSE", sizeof(value));
     }
     else { /* setting type i (integer) */
         snprintf(value, 30, "%d", borg_cfg[oid]);
