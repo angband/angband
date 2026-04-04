@@ -1906,7 +1906,7 @@ bool effect_handler_DETECT_FEARFUL_MONSTERS(effect_handler_context_t *context)
 /**
  * Detect evil monsters around the player.  The height to detect above and
  * below the player is context->y.  The width to either side of the player
- * context->x.
+ * is context->x.
  */
 bool effect_handler_DETECT_EVIL(effect_handler_context_t *context)
 {
