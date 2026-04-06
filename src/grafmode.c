@@ -167,43 +167,50 @@ static errr finish_parse_grafmode(struct parser *p) {
 static void print_error(const char *name, struct parser *p) {
 	struct parser_state s;
 	parser_getstate(p, &s);
-	msg("Parse error in %s line %d column %d: %s: %s", name,
+	plog_fmt("Parse error in %s line %d column %d: %s: %s", name,
 	           s.line, s.col, s.msg, parser_error_str[s.error]);
 	event_signal(EVENT_MESSAGE_FLUSH);
 }
 
 bool init_graphics_modes(void) {
-	char buf[1024];
-
+	char buf[1024], line[1024];
 	ang_file *f;
 	struct parser *p;
-	errr e = 0;
+	int maxe, counte;
+	bool result;
 
 	/* Build the filename */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_TILES, "list.txt");
 
 	f = file_open(buf, MODE_READ, FTYPE_TEXT);
 	if (!f) {
-		msg("Cannot open '%s'.", buf);
+		plog_fmt("Cannot open '%s'.", buf);
 		finish_parse_grafmode(NULL);
-	} else {
-		char line[1024];
+		return true;
+	}
+	result = true;
+	maxe = get_parser_error_limit();
+	counte = 0;
+	p = init_parse_grafmode();
+	while (file_getl(f, line, sizeof(line))) {
+		errr e = parser_parse(p, line);
 
-		p = init_parse_grafmode();
-		while (file_getl(f, line, sizeof line)) {
-			e = parser_parse(p, line);
-			if (e != PARSE_ERROR_NONE) {
-				print_error(buf, p);
-				break;
+		if (e != PARSE_ERROR_NONE) {
+			result = false;
+			print_error(buf, p);
+			if (maxe) {
+				if (counte >= maxe - 1) {
+					break;
+				}
+				++counte;
 			}
 		}
-
-		finish_parse_grafmode(p);
-		file_close(f);
 	}
 
-	/* Result */
-	return e == PARSE_ERROR_NONE;
+	finish_parse_grafmode(p);
+	file_close(f);
+
+	return result;
 }
 
 void close_graphics_modes(void) {

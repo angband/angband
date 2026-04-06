@@ -435,9 +435,17 @@ static errr finish_parse_projection(struct parser *p) {
 	}
 
 	if (element_count + 1 < (int) N_ELEMENTS(element_names)) {
-		quit_fmt("Too few elements in projection.txt!");
+		parser_destroy(p);
+		plog_fmt("Too few elements in projection.txt!  Expected %d "
+			"and got %d.", (int)N_ELEMENTS(element_names),
+			element_count + 1);
+		return PARSE_ERROR_TOO_FEW_ENTRIES;
 	} else if (element_count + 1 > (int) N_ELEMENTS(element_names)) {
-		quit_fmt("Too many elements in projection.txt!");
+		parser_destroy(p);
+		plog_fmt("Too many elements in projection.txt!  Expected %d "
+			"and got %d.", (int)N_ELEMENTS(element_names),
+			element_count + 1);
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
 	}
 
 	/* Allocate the direct access list and copy the data to it */
@@ -812,6 +820,7 @@ static errr finish_parse_slay(struct parser *p) {
 	slay = parser_priv(p);
 	while (slay) {
 		if (z_info->slay_max >= 254) {
+			plog("Cannot handle more than 254 slays in slay.txt.");
 			result = PARSE_ERROR_TOO_MANY_ENTRIES;
 			break;
 		}
@@ -984,6 +993,8 @@ static errr finish_parse_brand(struct parser *p) {
 	brand = parser_priv(p);
 	while (brand) {
 		if (z_info->brand_max >= 254) {
+			plog("Cannot handle more than 254 brands in "
+				"brand.txt.");
 			result = PARSE_ERROR_TOO_MANY_ENTRIES;
 			break;
 		}
@@ -1367,6 +1378,8 @@ static errr finish_parse_curse(struct parser *p) {
 	curse = parser_priv(p);
 	while (curse) {
 		if (z_info->curse_max >= 254) {
+			plog("Cannot handle more than 254 curses in "
+				"curse.txt.");
 			result = PARSE_ERROR_TOO_MANY_ENTRIES;
 			break;
 		}

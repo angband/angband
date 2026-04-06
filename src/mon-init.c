@@ -1757,6 +1757,8 @@ static errr finish_parse_monster(struct parser *p) {
 	struct monster_race *r, *n;
 	size_t i;
 	int ridx;
+	errr result = PARSE_ERROR_NONE;
+	int maxe = get_parser_error_limit(), counte = 0;
 
 	/* Scan the list for the max id and max blows */
 	z_info->r_max = 0;
@@ -1836,18 +1838,39 @@ static errr finish_parse_monster(struct parser *p) {
 				f->race = lookup_monster(f->name);
 			}
 			if (!f->race) {
-				quit_fmt("Couldn't find friend named '%s' for monster '%s'",
-						 f->name, race->name);
+				if (result == PARSE_ERROR_NONE) {
+					result = PARSE_ERROR_INVALID_MONSTER;
+				}
+				if (maxe) {
+					if (counte >= maxe) {
+						break;
+					}
+					++counte;
+				}
+				plog_fmt("Could not find friend named '%s' "
+					"for monster '%s'", f->name,
+					race->name);
 			}
 			string_free(f->name);
 		}
 		for (s = race->shapes; s; s = s->next) {
-			if (!s->base) {
-				s->race = lookup_monster(s->name);
-				if (!s->race) {
-					quit_fmt("Couldn't find shape named '%s' for monster '%s'",
-							 s->name, race->name);
+			if (s->base) {
+				continue;
+			}
+			s->race = lookup_monster(s->name);
+			if (!s->race) {
+				if (result == PARSE_ERROR_NONE) {
+					result = PARSE_ERROR_INVALID_MONSTER;
 				}
+				if (maxe) {
+					if (counte >= maxe) {
+						break;
+					}
+					++counte;
+				}
+				plog_fmt("Could not find shape named '%s' "
+					"for monster '%s'", s->name,
+					race->name);
 			}
 			string_free(s->name);
 		}
@@ -1862,7 +1885,7 @@ static errr finish_parse_monster(struct parser *p) {
 	}
 
 	parser_destroy(p);
-	return 0;
+	return result;
 }
 
 static void cleanup_monster(void)
