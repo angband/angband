@@ -1211,22 +1211,29 @@ static void print_error(const char *name, struct parser *p) {
  */
 static bool process_pref_file_named(const char *path, bool quiet, bool user) {
 	ang_file *f = file_open(path, MODE_READ, -1);
-	errr e = 0;
+	bool result = true;
 
 	if (!f) {
 		if (!quiet)
 			msg("Cannot open '%s'.", path);
-
-		e = PARSE_ERROR_INTERNAL; /* signal failure to callers */
+		result = false;
 	} else {
 		char line[1024];
+		int maxe = get_parser_error_limit(), counte = 0;
 
 		struct parser *p = init_parse_prefs(user);
 		while (file_getl(f, line, sizeof line)) {
-			e = parser_parse(p, line);
+			errr e = parser_parse(p, line);
+
 			if (e != PARSE_ERROR_NONE) {
+				result = false;
 				print_error(path, p);
-				break;
+				if (maxe) {
+					if (counte >= maxe - 1) {
+						break;
+					}
+					++counte;
+				}
 			}
 		}
 		finish_parse_prefs(p);
@@ -1236,8 +1243,7 @@ static bool process_pref_file_named(const char *path, bool quiet, bool user) {
 		parser_destroy(p);
 	}
 
-	/* Result */
-	return e == PARSE_ERROR_NONE;
+	return result;
 }
 
 

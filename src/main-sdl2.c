@@ -8048,27 +8048,37 @@ static bool read_config_file(struct my_app *a)
 	char line[1024];
 	ang_file *config = file_open(a->config_file, MODE_READ, FTYPE_TEXT);
 	struct parser *parser;
-	errr error = PARSE_ERROR_NONE;
+	int maxe, counte;
+	bool result;
 
 	if (config == NULL) {
 		/* not an error, its ok for a config file to not exist */
 		return false;
 	}
 
+	result = true;
+	maxe = get_parser_error_limit();
+	counte = 0;
 	parser = init_parse_config(a);
-
 	while (file_getl(config, line, sizeof(line))) {
-		error = parser_parse(parser, line);
+		errr error = parser_parse(parser, line);
+
 		if (error != PARSE_ERROR_NONE) {
+			result = false;
 			print_error(a->config_file, parser);
-			break;
+			if (maxe) {
+				if (counte >= maxe - 1) {
+					break;
+				}
+				++counte;
+			}
 		}
 	}
 
 	parser_destroy(parser);
 	file_close(config);
 
-	return error == PARSE_ERROR_NONE;
+	return result;
 }
 
 #endif /* USE_SDL2 */

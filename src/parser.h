@@ -63,6 +63,8 @@ extern unsigned int parser_getuint(struct parser *p, const char *name);
 extern struct random parser_getrand(struct parser *p, const char *name);
 extern wchar_t parser_getchar(struct parser *p, const char *name);
 extern int parser_getstate(struct parser *p, struct parser_state *s);
-extern void parser_setstate(struct parser *p, unsigned int col, const char *msg);
+extern void parser_setstate(struct parser *p, enum parser_error ecode,
+		unsigned int line, unsigned int col, const char *msg);
+extern int get_parser_error_limit(void);
 
 #endif /* !PARSER_H */

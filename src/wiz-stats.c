@@ -1538,7 +1538,9 @@ static void clearing_stats(void)
 			/* Restore the standard artifacts */
 			cleanup_parser(&randart_parser);
 			deactivate_randart_file();
-			run_parser(&artifact_parser);
+			if (run_parser(&artifact_parser)) {
+				quit("Could not parse artifact.txt.");
+			}
 
 			/* regen randarts */
 			do_randart(seed_randart, false);
@@ -1567,10 +1569,14 @@ static void clearing_stats(void)
 		cleanup_parser(&randart_parser);
 		if (OPT(player, birth_randarts)) {
 			activate_randart_file();
-			run_parser(&randart_parser);
+			if (run_parser(&randart_parser)) {
+				quit("Could not parse random artifacts.");
+			}
 			deactivate_randart_file();
 		} else {
-			run_parser(&artifact_parser);
+			if (run_parser(&artifact_parser)) {
+				quit("Could not parse artifact.txt.");
+			}
 		}
 	}
 
