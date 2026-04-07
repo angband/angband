@@ -123,7 +123,7 @@ const int16_t borg_ddy_ddd[24] = { 1, -1, 0, 0, 1, 1, -1, -1, -1, 0, 1, -1, 0,
 /*
  * Check if the borg can dig.
  *   check_fail = check if the spell failure rate is too high
- *   hard = check if hard things, like granite, can be dug
+ *   feat = the type of terrain to dig
  */
 bool borg_can_dig(bool check_fail, uint8_t feat)
 {
@@ -132,21 +132,33 @@ bool borg_can_dig(bool check_fail, uint8_t feat)
         return false;
 
     /* some features can't be dug out */
-    if (feat == FEAT_PERM || feat == FEAT_LAVA || feat < FEAT_SECRET)
+    if (feat == FEAT_PERM || feat == FEAT_LAVA || (feat < FEAT_SECRET && feat != FEAT_CLOSED))
         return false;
 
-    int dig_check = feat == FEAT_GRANITE ? BORG_DIG_HARD : BORG_DIG;
+    int dig_check;
 
-    /* try digging even if it is hard when out of moves */
+    if (feat == FEAT_GRANITE || feat == FEAT_CLOSED || feat == FEAT_SECRET) {
+        dig_check = BORG_DIG_HARD;
+    } else if (feat == FEAT_QUARTZ || feat == FEAT_QUARTZ_K) {
+        dig_check = BORG_DIG_MOD;
+    } else {
+        dig_check = BORG_DIG;
+    }
+
+    /*
+     * try digging even if it is hard when out of moves - without twitching,
+     * the check is twenty over the threshold so this still prevents trying
+     * the impossible
+     */
     if (borg.times_twitch > 10)
-        dig_check -= (borg.times_twitch - 10);
+        dig_check -= MIN(borg.times_twitch - 10, 19);
 
     if ((weapon_swap && borg.trait[BI_DIG] >= dig_check
             && borg_items[weapon_swap - 1].tval == TV_DIGGING)
         || (borg.trait[BI_DIG] >= dig_check + 20))
         return true;
 
-    if (feat == FEAT_RUBBLE && !borg.trait[BI_ISWEAK])
+    if ((feat == FEAT_RUBBLE || feat == FEAT_PASS_RUBBLE) && !borg.trait[BI_ISWEAK])
         return true;
 
     if (check_fail) {
