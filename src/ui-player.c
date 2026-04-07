@@ -1238,9 +1238,9 @@ void do_cmd_change_name(void)
 		Term_putstr(2, 23, -1, COLOUR_WHITE, p);
 
 		/* Query */
-		ke = inkey_ex();
+		ke = inkey_m();
 
-		if ((ke.type == EVT_KBRD)||(ke.type == EVT_BUTTON)) {
+		if (ke.type == EVT_KBRD) {
 			switch (ke.key.code) {
 				case ESCAPE: more = false; break;
 				case 'c': {

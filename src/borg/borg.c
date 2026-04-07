@@ -441,18 +441,22 @@ static struct keypress internal_borg_inkey(int flush_first)
     if (borg.trait[BI_CDEPTH] >= 1)
         borg.in_shop = false;
 
-    if (!borg.in_shop && (ch_evt.type & EVT_KBRD) && ch_evt.key.code > 0
-        && ch_evt.key.code != 10) {
+    if (!borg.in_shop && (((ch_evt.type & EVT_KBRD) && ch_evt.key.code > 0
+        && ch_evt.key.code != 10) || ch_evt.type == EVT_DISCONNECT)) {
         /* Oops */
-        if (ch_evt.key.code >= 32 && ch_evt.key.code <= 126) {
-            borg_note(format("# User key press <%lu><%c>",
-                (unsigned long)ch_evt.key.code, (char)ch_evt.key.code));
+        if (ch_evt.type == EVT_DISCONNECT) {
+            borg_oops("terminal disconnect abort");
         } else {
-            borg_note(format("# User key press <%lu>",
-                (unsigned long)ch_evt.key.code));
+            if (ch_evt.key.code >= 32 && ch_evt.key.code <= 126) {
+                borg_note(format("# User key press <%lu><%c>",
+                    (unsigned long)ch_evt.key.code, (char)ch_evt.key.code));
+            } else {
+                borg_note(format("# User key press <%lu>",
+                    (unsigned long)ch_evt.key.code));
+            }
+            borg_note(format("# Key type was <%d><%c>", ch_evt.type, ch_evt.type));
+            borg_oops("user abort");
         }
-        borg_note(format("# Key type was <%d><%c>", ch_evt.type, ch_evt.type));
-        borg_oops("user abort");
 
         key.code = ESCAPE;
         return key;

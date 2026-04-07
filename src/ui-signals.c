@@ -49,6 +49,17 @@ static Signal_Handler_t wrap_signal(int sig, Signal_Handler_t handler)
 static Signal_Handler_t (*signal_aux)(int, Signal_Handler_t) = wrap_signal;
 
 
+#ifdef SIGHUP
+/**
+ * Handle signals -- disconnect in an orderly fashion
+ */
+static void handle_signal_disconnect(int sig)
+{
+	terms_disconnecting = 1;
+}
+#endif
+
+
 #ifdef SIGTSTP
 /**
  * Handle signals -- suspend
@@ -285,11 +296,14 @@ void signals_handle_tstp(void)
 /**
  * Prepare to handle the relevant signals
  */
-void signals_init(void)
+void signals_init(bool hup_disconnects)
 {
 
 #ifdef SIGHUP
-	(void)(*signal_aux)(SIGHUP, SIG_IGN);
+	(void)(*signal_aux)(SIGHUP,
+		(hup_disconnects) ? handle_signal_disconnect : SIG_IGN);
+#else
+	(void)hup_disconnects;
 #endif
 
 
@@ -390,8 +404,9 @@ void signals_handle_tstp(void)
 /**
  * Do nothing
  */
-void signals_init(void)
+void signals_init(bool hup_disconnects)
 {
+	(void)hup_disconnects;
 }
 
 #endif	/* !WINDOWS */

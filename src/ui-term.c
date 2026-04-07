@@ -299,6 +299,7 @@ char angband_term_name[ANGBAND_TERM_MAX][16] =
 };
 
 uint32_t window_flag[ANGBAND_TERM_MAX];
+volatile sig_atomic_t terms_disconnecting = 0;
 
 int row_top_map[SIDEBAR_MAX] = {1, 4, 1};
 int row_bottom_map[SIDEBAR_MAX] = {1, 0, 0};
@@ -2654,18 +2655,23 @@ errr Term_event_push(const ui_event *ke)
 }
 
 
-
-
-
 /**
- * Check for a pending keypress on the key queue.
+ * Check for a pending event on the active terminal's input queue.
  *
- * Store the keypress, if any, in "ch", and return "0".
+ * Store the event, if any, in "ch", and return "0".
  * Otherwise store "zero" in "ch", and return "1".
  *
- * Wait for a keypress if "wait" is true.
+ * If terms_disconnecting is nonzero, the returned value is "0".  This
+ * function will never wait in that case or request more input events
+ * from the underlying terminal driver.  When disconnecting, ch->type will be
+ * set to EVT_DISCONNECT if there is no pending input in the terminal's queue.
  *
- * Remove the keypress if "take" is true.
+ * If "wait" is true, terms_disconnecting is zero, and the terminal has no
+ * queued input events, more input events will be requested from the
+ * underlying terminal driver and this function will wait until there is
+ * something in the terminal's input queue.
+ *
+ * Remove the input event if "take" is true.
  */
 errr Term_inkey(ui_event *ch, bool wait, bool take)
 {
@@ -2673,36 +2679,47 @@ errr Term_inkey(ui_event *ch, bool wait, bool take)
 	memset(ch, 0, sizeof *ch);
 
 	/* Get bored */
-	if (!Term->never_bored)
+	if (!Term->never_bored && !terms_disconnecting) {
 		/* Process random events */
 		Term_xtra(TERM_XTRA_BORED, 0);
+	}
 
-	/* Wait or not */
-	if (wait)
-		/* Process pending events while necessary */
-		while (Term->key_head == Term->key_tail)
-			/* Process events (wait for one) */
-			Term_xtra(TERM_XTRA_EVENT, true);
-	else
-		/* Process pending events if necessary */
-		if (Term->key_head == Term->key_tail)
+	if (Term->key_head == Term->key_tail) {
+		if (wait) {
+			do {
+				if (terms_disconnecting) {
+					ch->type = EVT_DISCONNECT;
+					return 0;
+				}
+
+				/* Process events (wait for one) */
+				Term_xtra(TERM_XTRA_EVENT, true);
+			} while (Term->key_head == Term->key_tail);
+		} else {
+			if (terms_disconnecting) {
+				ch->type = EVT_DISCONNECT;
+				return 0;
+			}
+
 			/* Process events (do not wait) */
 			Term_xtra(TERM_XTRA_EVENT, false);
 
-	/* No keys are ready */
-	if (Term->key_head == Term->key_tail) return (1);
+			/* No keys are ready */
+			if (Term->key_head == Term->key_tail) return 1;
+		}
+	}
 
 	/* Extract the next keypress */
 	(*ch) = Term->key_queue[Term->key_tail];
 
-	/* sketchy key loggin */
+	/* sketchy key logging */
 	log_keypress(*ch);
 
 	/* If requested, advance the queue, wrap around if necessary */
 	if (take && (++Term->key_tail == Term->key_size)) Term->key_tail = 0;
 
 	/* Success */
-	return (0);
+	return 0;
 }
 
 
