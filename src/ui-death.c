@@ -410,6 +410,11 @@ void death_screen(void)
 		{
 			done = get_check("Do you want to quit? ");
 		}
+		else if (e.type == EVT_ESCAPE)
+		{
+			if (terms_disconnecting) break;
+			done = get_check("Do you want to quit? ");
+		}
 	}
 
 	menu_free(death_menu);

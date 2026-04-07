@@ -740,9 +740,9 @@ int main(int argc, char *argv[])
 
 	/* Wait for response */
 	pause_line(Term);
-
-	/* Play the game */
-	play_game(GAME_LOAD);
+	if (!terms_disconnecting) {
+		play_game(GAME_LOAD);
+	}
 
 	/* Free resources */
 	textui_cleanup();

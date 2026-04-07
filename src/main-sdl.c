@@ -144,13 +144,6 @@ static int overdraw_max = 0;
 
 static char *sdl_settings_file;
 
-/**
- * One if the player requests an exit and the game is not at a command prompt;
- * any non-zero value other than one when ready to save the game at exit but
- * the game may request additional input; zero in all other cases
- */
-static int quit_when_ready = 0;
-
 /* Default point size for scalable fonts */
 #define DEFAULT_POINT_SIZE (10)
 /* Minimum allowed point size for scalable fonts */
@@ -1252,45 +1245,10 @@ static void hook_quit(const char *str)
 		string_free(FontList[i]);
 }
 
-/**
- * Respond to user interface events which either request an immediate
- * exit (forced is true) or a possible exit subject to requesting more
- * input from the user(forced is false).
- */
-static void handle_quit(bool forced)
+static bool sdl_deny_disconnect(void)
 {
-	if (character_generated) {
-		/*
-		 * Want to be at a command prompt so the game's state is ready
-		 * to save.  If not at a command prompt and not forcing an
-		 * exit, mark as ready to quit:  Term_extra_sdl_event() will
-		 * use that to either call back to here when it is safe to
-		 * save or send escapes to the game to satisfy its requests
-		 * for input.
-		 */
-		if (!inkey_flag && !forced) {
-			quit_when_ready = 1;
-			return;
-		}
-
-		/* Drop pending messages. */
-		msg_flag = false;
-		quit_when_ready = 2;
-		/*
-		 * If not forcing an exit, allow the player to abort the
-		 * exit if there is trouble saving the game.
-		 */
-		if (!forced && !save_game_checked()
-				&& SimpleConfirm("Saving failed.  Really quit?",
-				NULL, NULL, false) == 1) {
-			quit_when_ready = 0;
-			return;
-		}
-		close_game(false);
-	}
-
-	save_prefs();
-	quit(NULL);
+	return SimpleConfirm("Saving failed.  Really quit?", NULL, NULL,
+		false) == 1;
 }
 
 static void BringToTop(void)
@@ -1504,7 +1462,7 @@ static void RemovePopUp(void)
 
 static void QuitActivate(sdl_Button *sender)
 {
-	handle_quit(false);
+	terms_disconnecting = 1;
 }
 
 static void SetStatusButtons(void)
@@ -4811,7 +4769,7 @@ static errr sdl_HandleEvent(SDL_Event *event)
 		/* Shut down the game */
 		case SDL_QUIT:
 		{
-			handle_quit(false);
+			terms_disconnecting = 1;
 			break;
 		}
 
@@ -5008,32 +4966,19 @@ static errr Term_xtra_sdl_clear(void)
 }
 
 /**
- * Process at least one event
+ * Handle game core's request for input events, waiting for them if v is not
+ * zero.
  */
 static errr Term_xtra_sdl_event(int v)
 {
 	SDL_Event event;
 	errr error = 0;
 
-	/* Wait or check for an event with special casing when exiting */
-	if (quit_when_ready) {
-		if (inkey_flag && quit_when_ready == 1) {
-			/*
-			 * The game is at a command prompt and has a
-			 * consistent state so it is safe to quit and exit.
-			 */
-			handle_quit(false);
-		} else {
-			/*
-			 * Send an escape to satisfy whatever the game is
-			 * asking for.
-			 */
-			Term_keypress(ESCAPE, 0);
-		}
-	} else if (v) {
+	if (v) {
 		/* Wait in 0.02s increments while updating animations every 0.2s */
 		int i = 0;
 		while (!SDL_PollEvent(&event)) {
+			if (terms_disconnecting) return 0;
 			if (i == 0) idle_update();
 			usleep(20000);
 			i = (i + 1) % 10;
@@ -6123,8 +6068,14 @@ int init_sdl(int argc, char *argv[])
 	/* Prepare some more windows(!) */
 	init_morewindows();
 
-	/* Activate  quit hook */
+	/* Activate quit hook */
 	quit_aux = hook_quit;
+
+	/*
+	 * Allow for player intervention if saving the game fails while the UI
+	 * is disconnecting from the game.
+	 */
+	disconnect_denier_hook = sdl_deny_disconnect;
 
 	/* Paranoia */
 	return (0);

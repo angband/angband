@@ -64,35 +64,35 @@
 static const struct module modules[] =
 {
 #ifdef USE_X11
-	{ "x11", help_x11, init_x11 },
+	{ "x11", help_x11, init_x11, false },
 #endif /* USE_X11 */
 
 #ifdef USE_SDL
-	{ "sdl", help_sdl, init_sdl },
+	{ "sdl", help_sdl, init_sdl, false },
 #endif /* USE_SDL */
 
 #ifdef USE_SDL2
-	{ "sdl2", help_sdl2, init_sdl2 },
+	{ "sdl2", help_sdl2, init_sdl2, false },
 #endif /* USE_SDL2 */
 
 #ifdef USE_GCU
-	{ "gcu", help_gcu, init_gcu },
+	{ "gcu", help_gcu, init_gcu, true },
 #endif /* USE_GCU */
 
 #ifdef USE_TEST
-	{ "test", help_test, init_test },
+	{ "test", help_test, init_test, false },
 #endif /* !USE_TEST */
 
 #ifdef USE_STATS
-	{ "stats", help_stats, init_stats },
+	{ "stats", help_stats, init_stats, false },
 #endif /* USE_STATS */
 
 #ifdef USE_SPOIL
-	{ "spoil", help_spoil, init_spoil },
+	{ "spoil", help_spoil, init_spoil, false },
 #endif
 
 #ifdef USE_IBM
-	{ "ibm", help_ibm, init_ibm },
+	{ "ibm", help_ibm, init_ibm, false },
 #endif /* USE_IBM */
 };
 
@@ -545,7 +545,7 @@ int main(int argc, char *argv[])
 	if (!done) quit("Unable to prepare any 'display module'!");
 
 	/* Catch nasty signals */
-	signals_init();
+	signals_init(modules[i].hup_disconnects);
 
 	/* Set up the command hook */
 	cmd_get_hook = textui_get_cmd;
@@ -576,10 +576,11 @@ int main(int argc, char *argv[])
 
 	/* Wait for response */
 	pause_line(Term);
-
-	/* Play the game */
-	play_game((select_game) ?
-		GAME_SELECT : ((new_game) ? GAME_NEW : GAME_LOAD));
+	if (!terms_disconnecting) {
+		/* Play the game */
+		play_game((select_game) ?
+			GAME_SELECT : ((new_game) ? GAME_NEW : GAME_LOAD));
+	}
 
 	/* Quit */
 	quit(NULL);

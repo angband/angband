@@ -464,13 +464,6 @@ struct my_app {
 	/** Width and height on screen for the default font */
 	int def_font_w, def_font_h;
 	/**
-	 * one if the player requested an exit while the game was not at a
-	 * command prompt; any non-zero value other than one when ready to
-	 * save the game at exit but the game may prompt for additional input;
-	 * zero in all other cases
-	 */
-	int quit_when_ready;
-	/**
 	 * true if KC_MOD_KEYPAD will be sent for numeric keypad keys at the
 	 * expense of not handling some keyboard layouts properly
 	 */
@@ -547,7 +540,6 @@ static bool is_close_to(int a, int b, unsigned range);
 static void handle_window_closed(struct my_app *a,
 		struct sdlpui_window *window);
 static void refresh_angband_terms(struct my_app *a);
-static void handle_quit(struct my_app *a, bool forced);
 static void wait_anykey(struct my_app *a);
 static void keyboard_event_to_angband_key(const SDL_KeyboardEvent *key,
 		bool kp_as_mod, keycode_t *ch, uint8_t *mods);
@@ -2639,7 +2631,7 @@ static void handle_menu_quit(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
 {
 	sdlpui_popdown_dialog(dlg, window, SDL_TRUE);
-	handle_quit(window->app, false);
+	terms_disconnecting = 1;
 }
 
 static void handle_menu_tile_set(struct sdlpui_control *ctrl,
@@ -3594,7 +3586,7 @@ static void handle_window_closed(struct my_app *a, struct sdlpui_window *window)
 	assert(window != NULL);
 
 	if (window->index == MAIN_WINDOW) {
-		handle_quit(a, false);
+		terms_disconnecting = 1;
 	} else {
 		for (size_t i = 0; i < N_ELEMENTS(window->subwindows); i++) {
 			struct subwindow *subwindow = window->subwindows[i];
@@ -4571,7 +4563,7 @@ static void wait_anykey(struct my_app *a)
 				SDL_FlushEvent(SDL_MOUSEMOTION);
 				break;
 			case SDL_QUIT:
-				handle_quit(a, false);
+				terms_disconnecting = 1;
 				break;
 			case SDL_RENDER_TARGETS_RESET:
 				recreate_textures(a, false);
@@ -4584,64 +4576,6 @@ static void wait_anykey(struct my_app *a)
 				return;
 		}
 	}
-}
-
-static void handle_quit(struct my_app *a, bool forced)
-{
-	if (character_generated) {
-		/*
-		 * Want to be at a command prompt so the game's state is
-		 * ready to save.  If not at a command prompt and not forcing
-		 * an exit, mark as ready to quit: term_xtra_event() will use
-		 * that to either call back to here when it is safe to save or
-		 * send escapes to the game to satisfy its requests for input.
-		 */
-		if (!inkey_flag && !forced) {
-			a->quit_when_ready = 1;
-			return;
-		}
-
-		/* Drop pending messages. */
-		msg_flag = false;
-		a->quit_when_ready = 2;
-		/*
-		 * If not forcing an exit, allow the player to abort the exit
-		 * if there is trouble saving the game.
-		 */
-		if (!forced && !save_game_checked()) {
-			SDL_MessageBoxButtonData buttons[2] = {
-				{
-					0, 0, "Yes"
-				},
-				{
-					SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT
-					| SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,
-					1,
-					"No"
-				}
-			};
-			SDL_MessageBoxData dialog;
-			int button_pressed = 1;
-
-			dialog.flags = SDL_MESSAGEBOX_ERROR
-				| SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT;
-			dialog.window = a->windows[0].window;
-			dialog.title = "Confirm Quitting";
-			dialog.message = "Saving failed.  Really quit?";
-			dialog.numbuttons = 2;
-			dialog.buttons = buttons;
-			dialog.colorScheme = NULL;
-
-			(void)SDL_ShowMessageBox(&dialog, &button_pressed);
-			if (button_pressed != 0) {
-				a->quit_when_ready = 0;
-				return;
-			}
-		}
-		close_game(false);
-	}
-
-	quit(NULL);
 }
 
 static bool get_event(struct my_app *a)
@@ -4687,7 +4621,7 @@ static bool get_event(struct my_app *a)
 			recreate_textures(a, true);
 			return false;
 		case SDL_QUIT:
-			handle_quit(a, false);
+			terms_disconnecting = 1;
 			return false;
 		default:
 			return false;
@@ -4738,27 +4672,13 @@ static errr term_xtra_event(int v)
 
 	redraw_all_windows(subwindow->app, true);
 
-	if (subwindow->app->quit_when_ready) {
-		if (inkey_flag && subwindow->app->quit_when_ready == 1) {
-			/*
-			 * The game is at a command prompt and has a
-			 * consistent state so it is safe to save and exit.
-			 */
-			handle_quit(subwindow->app, false);
-		} else {
-			/*
-			 * Send an escape to satisfy whatever the game is
-			 * asking for.
-			 */
-			Term_keypress(ESCAPE, 0);
-		}
-		return 0;
-	}
-
 	if (v) {
 		while (true) {
 			for (int i = 0; i < DEFAULT_IDLE_UPDATE_PERIOD; i++) {
 				if (get_event(subwindow->app)) {
+					return 0;
+				}
+				if (terms_disconnecting) {
 					return 0;
 				}
 				SDL_Delay(subwindow->window->delay);
@@ -7163,6 +7083,33 @@ static void quit_hook(const char *s)
 	quit_systems();
 }
 
+static bool sdl2_deny_disconnect(void)
+{
+	SDL_MessageBoxButtonData buttons[2] = {
+		{ 0, 0, "Yes" },
+		{
+			SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT
+			| SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,
+			1,
+			"No"
+		}
+	};
+	SDL_MessageBoxData dialog;
+	int button_pressed = 1;
+
+	dialog.flags = SDL_MESSAGEBOX_ERROR
+		| SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT;
+	dialog.window = g_app.windows[0].window;
+	dialog.title = "Confirm Quitting";
+	dialog.message = "Saving failed.  Really quit?";
+	dialog.numbuttons = 2;
+	dialog.buttons = buttons;
+	dialog.colorScheme = NULL;
+
+	(void)SDL_ShowMessageBox(&dialog, &button_pressed);
+	return button_pressed != 0;
+}
+
 static void init_systems(void)
 {
 #if defined(SDLPUI_TRACE_EVENTS) || defined(SDLPUI_TRACE_RENDER)
@@ -7214,6 +7161,12 @@ errr init_sdl2(int argc, char **argv)
 	}
 
 	quit_aux = quit_hook;
+
+	/*
+	 * Allow for player intervention is saving the game fails while the UI
+	 * is disconnecting from the game.
+	 */
+	disconnect_denier_hook = sdl2_deny_disconnect;
 
 	/* Dump details about SDL that do not require SDL_Init(). */
 	if (g_app.print_sdl_details) {
@@ -7341,7 +7294,6 @@ static void init_globals(struct my_app *a)
 
 	a->w_mouse = NULL;
 	a->w_key = NULL;
-	a->quit_when_ready = 0;
 	a->kp_as_mod = true;
 	a->controller = NULL;
 	num_joysticks = SDL_NumJoysticks();

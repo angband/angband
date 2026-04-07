@@ -53,6 +53,8 @@ static bool inkey_xtra;
 uint32_t inkey_scan;		/* See the "inkey()" function */
 bool inkey_flag;		/* See the "inkey()" function */
 
+bool (*disconnect_denier_hook)(void) = NULL;
+
 /**
  * Flush all pending input.
  *
@@ -316,9 +318,11 @@ void anykey(void)
 {
 	ui_event ke = EVENT_EMPTY;
   
-	/* Only accept a keypress or mouse click */
-	while (ke.type != EVT_MOUSE && ke.type != EVT_KBRD)
+	/* Only accept a keypress, mouse click, or disconnect */
+	while (ke.type != EVT_MOUSE && ke.type != EVT_KBRD
+			&& ke.type != EVT_DISCONNECT) {
 		ke = inkey_ex();
+	}
 }
 
 /**
@@ -328,22 +332,26 @@ struct keypress inkey(void)
 {
 	ui_event ke = { .key = KEYPRESS_NULL };
 
-	while (ke.type != EVT_ESCAPE && ke.type != EVT_KBRD &&
-		   ke.type != EVT_MOUSE && ke.type != EVT_BUTTON)
+	while (ke.type != EVT_ESCAPE && ke.type != EVT_KBRD
+			&& ke.type != EVT_MOUSE && ke.type != EVT_BUTTON
+			&& ke.type != EVT_DISCONNECT) {
 		ke = inkey_ex();
+	}
 
 	/* Make the event a keypress */
-    if (ke.type == EVT_ESCAPE) {
-        ke = (ui_event){ .key = { .type = EVT_KBRD, .code = ESCAPE, .mods = 0 } };
-    } else if (ke.type == EVT_MOUSE) {
-        ke = (ui_event){ .key = { 
-            .type = EVT_KBRD,
-            .code = (ke.mouse.button == 1 ? '\n' : ESCAPE),
-            .mods = 0 
-        } };
-    } else if (ke.type == EVT_BUTTON) {
-        ke.key.type = EVT_KBRD;
-    }
+	if (ke.type == EVT_ESCAPE || ke.type == EVT_DISCONNECT) {
+		ke = (ui_event){ .key = {
+			.type = EVT_KBRD,
+			.code = ESCAPE,
+			.mods = 0 } };
+	} else if (ke.type == EVT_MOUSE) {
+		ke = (ui_event){ .key = {
+			.type = EVT_KBRD,
+			.code = (ke.mouse.button == 1 ? '\n' : ESCAPE),
+			.mods = 0 } };
+	} else if (ke.type == EVT_BUTTON) {
+		ke.key.type = EVT_KBRD;
+	}
 
 	return ke.key;
 }
@@ -356,17 +364,26 @@ ui_event inkey_m(void)
 {
 	ui_event ke = { .key = KEYPRESS_NULL };
 
-	/* Only accept a keypress */
-	while (ke.type != EVT_ESCAPE && ke.type != EVT_KBRD	&&
-		   ke.type != EVT_MOUSE  && ke.type != EVT_BUTTON)
+	/*
+	 * Only accept something that can be converted to a key or mouse press
+	 */
+	while (ke.type != EVT_ESCAPE && ke.type != EVT_KBRD
+			&& ke.type != EVT_MOUSE && ke.type != EVT_BUTTON
+			&& ke.type != EVT_DISCONNECT) {
 		ke = inkey_ex();
-	if (ke.type == EVT_ESCAPE) {
-		ke = (ui_event){ .key = { .type = EVT_KBRD, .code = ESCAPE, .mods = 0 } };
+	}
+
+	if (ke.type == EVT_ESCAPE || ke.type == EVT_DISCONNECT) {
+		ke = (ui_event){ .key = {
+			.type = EVT_KBRD,
+			.code = ESCAPE,
+			.mods = 0 }
+		};
 	} else if (ke.type == EVT_BUTTON) {
 		ke.key.type = EVT_KBRD;
 	}
 
-  return ke;
+	return ke;
 }
 
 
@@ -974,29 +991,13 @@ bool askfor_aux_ext(char *buf, size_t len,
 
 	/* Process input */
 	while (!done) {
-		ui_event in = { .key = KEYPRESS_NULL };
+		ui_event in;
 
 		/* Place cursor */
 		Term_gotoxy(x + k, y);
 
-		/*
-		 * Get input.  Emulate what inkey() does without the coercing
-		 * mouse events to look like keystrokes.
-		 */
-		while (1) {
-			in = inkey_ex();
-			if (in.type == EVT_KBRD || in.type == EVT_MOUSE) {
-				break;
-			}
-			if (in.type == EVT_BUTTON) {
-				in.key.type = EVT_KBRD;
-				break;
-			}
-			if (in.type == EVT_ESCAPE) {
-				in = (ui_event){.key = {.type = EVT_KBRD, .code = ESCAPE, .mods = 0}};
-				break;
-			}
-		}
+		/* Get input. */
+		in = inkey_m();
 
 		/* Pass on to the appropriate handler. */
 		if (in.type == EVT_KBRD) {
@@ -1518,6 +1519,13 @@ static bool textui_get_rep_dir(int *dp, bool allow_5)
 			ke = inkey_ex();
 		}
 
+		if (ke.type == EVT_ESCAPE || ke.type == EVT_DISCONNECT) {
+			/* Clear the prompt */
+			prt("", 0, 0);
+
+			return false;
+		}
+
 		/* Check mouse coordinates, or get keypresses until a dir is chosen */
 		if (ke.type == EVT_MOUSE) {
 			if (ke.mouse.button == 1) {
@@ -1853,6 +1861,9 @@ ui_event textui_get_command(int *count)
 			Term_set_cursor(false);
 		}
 
+		if (ke.type == EVT_DISCONNECT) {
+			break;
+		}
 		if (ke.type == EVT_KBRD) {
 			bool keymap_ok = true;
 			switch (ke.key.code) {

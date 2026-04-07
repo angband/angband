@@ -84,6 +84,18 @@ extern bool inkey_flag;
 extern uint8_t lazymove_delay;
 extern bool msg_flag;
 
+/**
+ * If exiting a game because the UI is disconnecting and this hook is not
+ * NULL, an attempt to save the game will be done before close_game() is
+ * called.   If that save attempt is not successful, the hook function will
+ * be called.  If it returns true, disconnecting will be canceled and the
+ * game will proceed.  Otherwise, the game exits.  Because this hook is
+ * called while the UI is disconnecting, collecting any input from the
+ * player should be done independently of Term_inkey() and the functions in
+ * game-input.h or ui-input.h.
+ */
+extern bool (*disconnect_denier_hook)(void);
+
 void flush(game_event_type unused, game_event_data *data, void *user);
 ui_event inkey_ex(void);
 void anykey(void);

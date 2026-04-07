@@ -810,6 +810,8 @@ ui_event menu_select(struct menu *menu, int notify, bool popup)
 			menu_calc_size(menu);
 			if (menu->row_funcs->resize)
 				menu->row_funcs->resize(menu);
+		} else if (in.type == EVT_DISCONNECT) {
+			in.type = EVT_ESCAPE;
 		}
 
 		/* Redraw menu here if cursor has moved */
