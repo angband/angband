@@ -1627,18 +1627,6 @@ static int term_windows_open;
 
 
 /**
- * Track progress towards quitting when the window manager requests closing the
- * main window.  Will be zero when no close request for the main window has
- * been received.  Will be one if a close request has been received, but either
- * the game is not yet ready to save or have not determined the status of the
- * game.  Will be a non-zero value other than one if a close request has been
- * received and the game is ready to save.
- */
-static int quit_when_ready = 0;
-
-
-
-/**
  * Remove a window and all the associated data.
  *
  * \param ind is the index of the window to remove.
@@ -1669,41 +1657,6 @@ static void nuke_window(int ind)
 		(void)term_nuke(t);
 		t->key_queue = NULL;
 	}
-}
-
-
-
-/**
- * Handle exiting the game due to events not triggered by the game's core.
- */
-static void handle_quit(void)
-{
-	if (character_generated) {
-		/*
-		 * Want to be at a command prompt so the game's state is ready
-		 * to save.  If not at a command prompt, mark as ready to quit:
-		 * CheckEvent() will use that to either call back to here when
-		 * it is safe to save or send escapes to the game to satisfy
-		 * its requests for input.
-		 */
-		if (!inkey_flag) {
-			quit_when_ready = 1;
-			return;
-		}
-
-		/* Drop pending messages. */
-		msg_flag = false;
-		quit_when_ready = 2;
-
-		/*
-		 * Other front ends (SDL, SDL2) try to explicitly save here,
-		 * and if that is not successful, confirm with the player
-		 * whether to proceed with quitting.  For now, skip that for
-		 * X11:  use the implicit save done within close_game().
-		 */
-		close_game(false);
-	}
-	quit(NULL);
 }
 
 
@@ -1852,29 +1805,13 @@ static errr CheckEvent(bool wait)
 	int i;
 	int window = 0;
 
-	if (quit_when_ready) {
-		if (inkey_flag && quit_when_ready == 1) {
-			/*
-			 * The game is at a command prompt and has a consistent
-			 * state so it is safe to save and exit.
-			 */
-			handle_quit();
-		} else {
-			/*
-			 * Send an escape to satisfy whatever the game is
-			 * asking for.
-			 */
-			Term_keypress(ESCAPE, 0);
-		}
-		return 0;
-	}
-
 	/* Do not wait unless requested */
 	if (!wait && !XPending(Metadpy->dpy)) return (1);
 
 	/* Wait in 0.02s increments while updating animations every 0.2s */
 	i = 0;
 	while (!XPending(Metadpy->dpy)) {
+		if (terms_disconnecting) return 1;
 		if (i == 0) idle_update();
 		usleep(20000);
 		i = (i + 1) % 10;
@@ -2049,9 +1986,7 @@ static errr CheckEvent(bool wait)
 					== Metadpy->wm_delete_msg) {
 				/* Requested close for window */
 				if (window == 0) {
-					if (!quit_when_ready) {
-						handle_quit();
-					}
+					terms_disconnecting = 1;
 				} else {
 					nuke_window(window);
 				}
@@ -2203,7 +2138,7 @@ static errr Term_xtra_x11(int n, int v)
 		case TERM_XTRA_EVENT: return (CheckEvent(v));
 
 		/* Flush the events XXX */
-		case TERM_XTRA_FLUSH: while (!quit_when_ready && !CheckEvent(false)); return (0);
+		case TERM_XTRA_FLUSH: while (!CheckEvent(false)); return (0);
 
 		/* Handle change in the "level" */
 		case TERM_XTRA_LEVEL: return (Term_xtra_x11_level(v));

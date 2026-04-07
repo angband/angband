@@ -23,6 +23,6 @@ extern int16_t signal_count;
 
 void signals_ignore_tstp(void);
 void signals_handle_tstp(void);
-void signals_init(void);
+void signals_init(bool hup_disconnects);
 
 #endif /* INCLUDED_UI_SIGNALS_H */

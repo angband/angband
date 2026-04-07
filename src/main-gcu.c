@@ -795,8 +795,9 @@ static errr Term_xtra_gcu_event(int v) {
 		halfdelay(2);
 		i = getch();
 		while (i == ERR) {
-			i = getch();
+			if (terms_disconnecting) return 1;
 			idle_update();
+			i = getch();
 		}
 		cbreak();
 	} else {

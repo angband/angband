@@ -68,6 +68,15 @@ struct module
 	const char *name;
 	const char *help;
 	errr (*init)(int argc, char **argv);
+	/**
+	 * If true, SIGHUP triggers the UI to disconnect from the game and
+	 * the game to exit.  In that case, the front end should either use
+	 * NULL for ui-input.h's disconnect_denier_hook (that is the default)
+	 * or have the hook it registers be able to deal with the case that
+	 * the communication channel with the player has indeed been lost.
+	 * If false, SIGHUP is ignored.
+	 */
+	bool hup_disconnects;
 };
 
 #endif /* INCLUDED_MAIN_H */

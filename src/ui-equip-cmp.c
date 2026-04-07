@@ -334,7 +334,6 @@ void equip_cmp_display(void)
 	}
 
 	while (istate != EQUIP_CMP_MENU_DONE) {
-		ui_event in;
 		int wid, hgt;
 
 		assert(istate >= 0 && istate < (int)N_ELEMENTS(states));
@@ -367,26 +366,8 @@ void equip_cmp_display(void)
 		Term_get_size(&wid, &hgt);
 		prt(states[istate].prompt, hgt - 1, 0);
 
-		/*
-		 * Emulate what inkey() would do without coercing mouse events
-		 * into keystrokes.
-		 */
-		while (1) {
-			in = inkey_ex();
-			if (in.type == EVT_KBRD || in.type == EVT_MOUSE) {
-				break;
-			}
-			if (in.type == EVT_BUTTON) {
-				in.type = EVT_KBRD;
-				break;
-			}
-			if (in.type == EVT_ESCAPE) {
-				in = (ui_event){ .key = { .type = EVT_KBRD, .code = ESCAPE, .mods = 0 } };
-				break;
-			}
-		}
-		istate = (*states[istate].inputfunc)(in, istate, the_summary,
-			player);
+		istate = (*states[istate].inputfunc)(inkey_m(), istate,
+			the_summary, player);
 	}
 
 	screen_load();

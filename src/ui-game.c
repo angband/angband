@@ -522,6 +522,21 @@ void textui_process_command(void)
 	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	switch (e.type) {
+		case EVT_DISCONNECT:
+			/*
+			 * If the front end provides a way to confirm with
+			 * the player, try to save before exiting, and if that
+			 * fails, check with the player whether to proceed with
+			 * the exit or to proceed with the game and cancel
+			 * disconnecting the UI.
+			 */
+			if (disconnect_denier_hook && !save_game_checked()
+					&& (*disconnect_denier_hook)()) {
+				terms_disconnecting = 0;
+				return;
+			}
+			textui_quit();
+			return;
 		case EVT_RESIZE: do_cmd_redraw(); return;
 		case EVT_MOUSE: textui_process_click(e); return;
 		case EVT_BUTTON:
@@ -1129,11 +1144,13 @@ void close_game(bool prompt_failed_save)
 	/* Handle death or life */
 	if (player->is_dead) {
 		death_knowledge(player);
-		death_screen();
+		if (Term->mapped_flag && !terms_disconnecting) {
+			death_screen();
+		}
 
 		/* Save dead player */
 		while (prompting && !savefile_save(savefile)) {
-			if (!prompt_failed_save
+			if (!prompt_failed_save || terms_disconnecting
 					|| !get_check("Saving failed.  Try again? ")) {
 				prompting = false;
 				msg("death save failed!");
@@ -1143,13 +1160,13 @@ void close_game(bool prompt_failed_save)
 	} else {
 		/* Save the game */
 		while (prompting && !save_game_checked()) {
-			if (!prompt_failed_save
+			if (!prompt_failed_save || terms_disconnecting
 					|| !get_check("Saving failed.  Try again? ")) {
 				prompting = false;
 			}
 		}
 
-		if (Term->mapped_flag) {
+		if (Term->mapped_flag && !terms_disconnecting) {
 			struct keypress ch;
 
 			prt("Press Return (or Escape).", 0, 40);

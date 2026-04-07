@@ -118,7 +118,8 @@ static enum birth_stage textui_birth_quickstart(void)
 		if (ke.code == 'N' || ke.code == 'n') {
 			cmdq_push(CMD_BIRTH_RESET);
 			next = BIRTH_RACE_CHOICE;
-		} else if (ke.code == KTRL('X')) {
+		} else if (ke.code == KTRL('X')
+				|| (ke.code == ESCAPE && terms_disconnecting)) {
 			quit(NULL);
 		} else if ( !arg_force_name && (ke.code == 'C' || ke.code == 'c')) {
 			next = BIRTH_NAME_CHOICE;
@@ -804,6 +805,9 @@ static enum birth_stage menu_question(enum birth_stage current,
 		   use of "back" (left arrow key or equivalent) to step back in 
 		   the proces as well as "escape". */
 		if (cx.type == EVT_ESCAPE) {
+			if (terms_disconnecting) {
+				quit(NULL);
+			}
 			next = BIRTH_BACK;
 		} else if (cx.type == EVT_SELECT) {
 			if (current == BIRTH_ROLLER_CHOICE) {
@@ -901,29 +905,15 @@ static enum birth_stage roller_command(bool first_call)
 	/* Prompt for it */
 	prt(prompt, Term->hgt - 1, Term->wid / 2 - promptlen / 2);
 	
-	/*
-	 * Get the response.  Emulate what inkey_does() without coercing mouse
-	 * events to look like keystrokes.
-	 */
-	while (1) {
-		in = inkey_ex();
-		if (in.type == EVT_KBRD || in.type == EVT_MOUSE) {
-			break;
-		}
-		if (in.type == EVT_BUTTON) {
-			in.type = EVT_KBRD;
-			break;
-		}
-		if (in.type == EVT_ESCAPE) {
-			in = (ui_event){ .key = { .type = EVT_KBRD, .code = ESCAPE, .mods = 0 } };
-			break;
-		}
-	}
+	/* Get the response. */
+	in = inkey_m();
 
 	/* Analyse the command */
 	if (in.type == EVT_KBRD) {
 		if (in.key.code == ESCAPE) {
-			action = ACT_CTX_BIRTH_ROLL_ESCAPE;
+			action = (terms_disconnecting)
+				? ACT_CTX_BIRTH_ROLL_QUIT
+				: ACT_CTX_BIRTH_ROLL_ESCAPE;
 		} else if (in.key.code == KC_ENTER) {
 			action = ACT_CTX_BIRTH_ROLL_ACCEPT;
 		} else if (in.key.code == ' ' || in.key.code == 'r') {
@@ -1132,30 +1122,17 @@ static enum birth_stage point_based_command(void)
 	/* Place cursor just after cost of current stat */
 	Term_gotoxy(COSTS_COL + 4, COSTS_ROW + stat);
 
-	/*
-	 * Get input.  Emulate what inkey() does without coercing mouse events
-	 * to look like keystrokes.
-	 */
-	while (1) {
-		in = inkey_ex();
-		if (in.type == EVT_KBRD || in.type == EVT_MOUSE) {
-			break;
-		}
-		if (in.type == EVT_BUTTON) {
-			in.type = EVT_KBRD;
-		}
-		if (in.type == EVT_ESCAPE) {
-			in = (ui_event){ .key = { .type = EVT_KBRD, .code = ESCAPE, .mods = 0 } };
-			break;
-		}
-	}
+	/* Get input. */
+	in = inkey_m();
 
 	/* Figure out what to do. */
 	if (in.type == EVT_KBRD) {
 		if (in.key.code == KTRL('X')) {
 			action = ACT_CTX_BIRTH_PTS_QUIT;
 		} else if (in.key.code == ESCAPE) {
-			action = ACT_CTX_BIRTH_PTS_ESCAPE;
+			action = (terms_disconnecting)
+				? ACT_CTX_BIRTH_PTS_QUIT
+				: ACT_CTX_BIRTH_PTS_ESCAPE;
 		} else if (in.key.code == 'r' || in.key.code == 'R') {
 			action = ACT_CTX_BIRTH_PTS_RESET;
 		} else if (in.key.code == KC_ENTER) {
@@ -1535,6 +1512,9 @@ static enum birth_stage get_history_command(void)
 	if (ke.code == KTRL('X')) {
 		quit(NULL);
 	} else if (ke.code == ESCAPE) {
+		if (terms_disconnecting) {
+			quit(NULL);
+		}
 		next = BIRTH_BACK;
 	} else if (ke.code == 'N' || ke.code == 'n') {
 		char history[240];
@@ -1542,6 +1522,9 @@ static enum birth_stage get_history_command(void)
 
 		switch (edit_text(history, sizeof(history))) {
 			case -1:
+				if (terms_disconnecting) {
+					quit(NULL);
+				}
 				next = BIRTH_BACK;
 				break;
 			case 0:
@@ -1579,6 +1562,9 @@ static enum birth_stage get_confirm_command(void)
 	} else if (ke.code == KTRL('X')) {
 		quit(NULL);
 	} else if (ke.code == ESCAPE) {
+		if (terms_disconnecting) {
+			quit(NULL);
+		}
 		next = BIRTH_BACK;
 	} else {
 		cmdq_push(CMD_ACCEPT_CHARACTER);
