@@ -254,6 +254,22 @@ static void handle_signal_abort(int sig)
 	quit(msg);
 }
 
+/**
+ * Handle signal -- sighup
+ *
+ * If the controlling terminal disconnects, we can no longer
+ * read from these file descriptors. Hence, we invalidate them
+ * by closing them on our end, preventing accidental reads/writes.
+ *
+ * This only matters for the curses frontend, see
+ * https://github.com/angband/angband/issues/6558.
+ */
+static void handle_signal_hang_up(int sig)
+{
+	fclose(stdin);
+	fclose(stdout);
+	fclose(stderr);
+}
 
 
 
@@ -289,7 +305,7 @@ void signals_init(void)
 {
 
 #ifdef SIGHUP
-	(void)(*signal_aux)(SIGHUP, SIG_IGN);
+	(void)(*signal_aux)(SIGHUP, handle_signal_hang_up);
 #endif
 
 
