@@ -303,7 +303,10 @@ errr init_spoil(int argc, char *argv[]) {
 
 				if (result == 0) {
 					cleanup_parser(&artifact_parser);
-					run_parser(&randart_parser);
+					if (run_parser(&randart_parser)) {
+						quit("Could not parse random "
+							"artifacts.");
+					}
 					if (randart_name) {
 						file_delete(defname);
 					} else {

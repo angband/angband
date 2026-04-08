@@ -1004,19 +1004,25 @@ static int check_critical_levels(const struct critical_level *head)
 }
 
 static errr finish_parse_constants(struct parser *p) {
+	errr result = PARSE_ERROR_NONE;
+
 	z_info = parser_priv(p);
 	parser_destroy(p);
 	if (check_critical_levels(z_info->m_crit_level_head)) {
 		plog("The cutoffs for melee criticals in constants.txt are "
 			"not strictly increasing.");
-		return PARSE_ERROR_NON_SEQUENTIAL_RECORDS;
+		if (result == PARSE_ERROR_NONE) {
+			result = PARSE_ERROR_NON_SEQUENTIAL_RECORDS;
+		}
 	}
 	if (check_critical_levels(z_info->r_crit_level_head)) {
 		plog("The cutoffs for ranged criticals in constants.txt are "
 			"not strictly increasing.");
-		return PARSE_ERROR_NON_SEQUENTIAL_RECORDS;
+		if (result == PARSE_ERROR_NONE) {
+			result = PARSE_ERROR_NON_SEQUENTIAL_RECORDS;
+		}
 	}
-	return 0;
+	return result;
 }
 
 static void cleanup_critical_levels(struct critical_level *head)
@@ -1115,6 +1121,8 @@ static errr run_parse_world(struct parser *p) {
 
 static errr finish_parse_world(struct parser *p) {
 	struct level *level_check;
+	errr result = PARSE_ERROR_NONE;
+	int maxe = get_parser_error_limit(), counte = 0;
 
 	/* Check that all levels referred to exist */
 	for (level_check = world; level_check; level_check = level_check->next) {
@@ -1126,7 +1134,18 @@ static errr finish_parse_world(struct parser *p) {
 				level_find = level_find->next;
 			}
 			if (!level_find) {
-				quit_fmt("Invalid level reference %s", level_check->up);
+				if (result == PARSE_ERROR_NONE) {
+					result = PARSE_ERROR_INVALID_VALUE;
+				}
+				plog_fmt("Invalid up level reference, %s, "
+					"for level %s", level_check->up,
+					level_check->name);
+				if (maxe) {
+					if (counte >= maxe - 1) {
+						break;
+					}
+					++counte;
+				}
 			}
 		}
 
@@ -1137,13 +1156,24 @@ static errr finish_parse_world(struct parser *p) {
 				level_find = level_find->next;
 			}
 			if (!level_find) {
-				quit_fmt("Invalid level reference %s", level_check->down);
+				if (result == PARSE_ERROR_NONE) {
+					result = PARSE_ERROR_INVALID_VALUE;
+				}
+				plog_fmt("Invalid down level reference, %s, "
+					"for level %s", level_check->down,
+					level_check->name);
+				if (maxe) {
+					if (counte >= maxe - 1) {
+						break;
+					}
+					++counte;
+				}
 			}
 		}
 	}
 
 	parser_destroy(p);
-	return 0;
+	return result;
 }
 
 static void cleanup_world(void)
@@ -2491,6 +2521,9 @@ static errr run_parse_history(struct parser *p) {
 static errr finish_parse_history(struct parser *p) {
 	struct history_chart *c;
 	struct history_entry *e, *prev, *next;
+	errr result = PARSE_ERROR_NONE;
+	int maxe = get_parser_error_limit(), counte = 0;
+
 	histories = parser_priv(p);
 
 	/* Go fix up the entry successor pointers. We can't compute them at
@@ -2513,13 +2546,24 @@ static errr finish_parse_history(struct parser *p) {
 				continue;
 			e->succ = findchart(histories, e->isucc);
 			if (!e->succ) {
-				return -1;
+				if (result == PARSE_ERROR_NONE) {
+					result = PARSE_ERROR_INVALID_VALUE;
+				}
+				plog_fmt("No successor found for history "
+					"entry, '%s': requested successor "
+					"is %d", e->text, e->isucc);
+				if (maxe) {
+					if (counte >= maxe - 1) {
+						break;
+					}
+					++counte;
+				}
 			}
 		}
 	}
 
 	parser_destroy(p);
-	return 0;
+	return result;
 }
 
 static void cleanup_history(void)

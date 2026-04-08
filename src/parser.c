@@ -27,6 +27,17 @@
 #include "z-virt.h"
 
 
+#ifndef PARSE_ERROR_LIMIT
+/**
+ * This is a compile-time limit on the number of error messages reported when
+ * parsing a file.  It can be overridden at runtime by setting the
+ * PARSE_ERROR_LIMIT environment variable to the desired limit as a positive
+ * decimal integer.  A limit of zero imposes no limit on the number of error
+ * messages.
+ */
+#define PARSE_ERROR_LIMIT (20)
+#endif
+
 /**
  * A parser has a list of hooks (which are run across new lines given to
  * parser_parse()) and a list of the set of named values for the current line.
@@ -610,8 +621,38 @@ int parser_getstate(struct parser *p, struct parser_state *s) {
 /**
  * Sets the parser's detailed error description and field number.
  */
-void parser_setstate(struct parser *p, unsigned int col, const char *msg) {
+void parser_setstate(struct parser *p, enum parser_error ecode,
+		unsigned int line, unsigned int col, const char *msg) {
+	p->error = ecode;
+	p->lineno = line;
 	p->colno = col;
 	my_strcpy(p->errmsg, msg, sizeof(p->errmsg));
 }
 
+/**
+ * Return the maximum number of error messages to display while parsing a file.
+ *
+ * If the maximum is zero, then there is no limit.
+ */
+int get_parser_error_limit(void)
+{
+	static int elimit = -1;
+
+	if (elimit < 0) {
+		const char *envlimit = getenv("PARSE_ERROR_LIMIT");
+		long llimit;
+		char *end;
+
+		if (envlimit && *envlimit
+				&& (llimit = strtol(envlimit, &end, 10)) >= 0
+				&& !*end) {
+			elimit = (llimit < INT_MAX) ? (int)llimit : INT_MAX;
+		} else {
+#if PARSE_ERROR_LIMIT < 0
+#error "PARSE_ERROR_LIMIT is negative."
+#endif
+			elimit = PARSE_ERROR_LIMIT;
+		}
+	}
+	return elimit;
+}

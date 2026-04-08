@@ -980,7 +980,9 @@ int rd_misc(void)
 		if (randart_file_exists()) {
 			cleanup_parser(&artifact_parser);
 			activate_randart_file();
-			run_parser(&randart_parser);
+			if (run_parser(&randart_parser)) {
+				quit("Could not parse random artifacts.");
+			}
 		} else {
 			do_randart(seed_randart, true);
 		}

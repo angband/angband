@@ -1757,6 +1757,8 @@ static int hatch_embryo(struct embryonic_ui_entry *embryo)
 
 		/* Check that required fields are valid. */
 		if (embryo->entry->combiner_index == 0) {
+			plog_fmt("No combine directive specified for %s",
+				embryo->entry->name);
 			string_free(embryo->entry->name);
 			mem_free(embryo->entry->label);
 			mem_free(embryo->entry);
@@ -2263,7 +2265,7 @@ static errr run_parse_ui_entry(struct parser *p)
 		return result;
 	}
 	if (hatch_last_embryo(p)) {
-		return 1;
+		return PARSE_ERROR_INVALID_VALUE;
 	}
 	/*
 	 * Mark those as templates only so they'll never be directly displayed.
@@ -2277,11 +2279,13 @@ static errr run_parse_ui_entry(struct parser *p)
 
 static errr finish_parse_ui_entry(struct parser *p)
 {
-	errr result = 0;
+	errr result = PARSE_ERROR_NONE;
+	int maxe = get_parser_error_limit(), counte = 0;
 	int i;
 
 	if (hatch_last_embryo(p)) {
-		result = -1;
+		result = PARSE_ERROR_INVALID_VALUE;
+		counte = 1;
 	}
 	for (i = 0; i < n_entry; ++i) {
 		int j;
@@ -2302,10 +2306,39 @@ static errr finish_parse_ui_entry(struct parser *p)
 				if (n2 != (size_t)-1) {
 					entries[i]->nlabel = n;
 				} else {
-					result = -1;
+					entries[i]->label[0] = 0;
+					entries[i]->nlabel = 0;
+					if (result == PARSE_ERROR_NONE) {
+						result = PARSE_ERROR_INTERNAL;
+					}
+					plog_fmt("Internal error:  "
+						"text_mbstowcs() could not "
+						"convert an empty string "
+						"while transferring name to "
+						"label for '%s'",
+						entries[i]->name);
+					if (maxe) {
+						if (counte >= maxe - 1) {
+							break;
+						}
+						++counte;
+					}
 				}
 			} else {
-				result = -1;
+				entries[i]->label[0] = 0;
+				entries[i]->nlabel = 0;
+				if (result == PARSE_ERROR_NONE) {
+					result = PARSE_ERROR_INVALID_VALUE;
+				}
+				plog_fmt("Invalid text encoding detected "
+					"while transferring name to label "
+					"for '%s'", entries[i]->name);
+				if (maxe) {
+					if (counte >= maxe - 1) {
+						break;
+					}
+					++counte;
+				}
 			}
 		}
 		fill_out_shortened(entries[i]);
