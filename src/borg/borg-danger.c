@@ -1505,7 +1505,7 @@ static int borg_danger_spell(
                 p = p / spot_safe;
             }
             /* reduce the fear if it is a unique */
-            if (rf_has(r_info->flags, RF_UNIQUE))
+            if (rf_has(r_ptr->flags, RF_UNIQUE))
                 p = p * 75 / 100;
 
             break;
@@ -1552,7 +1552,7 @@ static int borg_danger_spell(
                 p = p / spot_safe;
             }
             /* reduce the fear if it is a unique */
-            if (rf_has(r_info->flags, RF_UNIQUE))
+            if (rf_has(r_ptr->flags, RF_UNIQUE))
                 p = p * 75 / 100;
             break;
 
@@ -1633,7 +1633,7 @@ static int borg_danger_spell(
                 p = p / spot_safe;
             }
             /* reduce the fear if it is a unique */
-            if (rf_has(r_info->flags, RF_UNIQUE))
+            if (rf_has(r_ptr->flags, RF_UNIQUE))
                 p = p * 75 / 100;
             break;
 
@@ -1675,7 +1675,7 @@ static int borg_danger_spell(
                 p = p / spot_safe;
             }
             /* reduce the fear if it is a unique */
-            if (rf_has(r_info->flags, RF_UNIQUE))
+            if (rf_has(r_ptr->flags, RF_UNIQUE))
                 p = p * 75 / 100;
             break;
 
@@ -1717,7 +1717,7 @@ static int borg_danger_spell(
                 p = p / spot_safe;
             }
             /* reduce the fear if it is a unique */
-            if (rf_has(r_info->flags, RF_UNIQUE))
+            if (rf_has(r_ptr->flags, RF_UNIQUE))
                 p = p * 75 / 100;
             break;
 
@@ -1759,7 +1759,7 @@ static int borg_danger_spell(
                 p = p / spot_safe;
             }
             /* reduce the fear if it is a unique */
-            if (rf_has(r_info->flags, RF_UNIQUE))
+            if (rf_has(r_ptr->flags, RF_UNIQUE))
                 p = p * 75 / 100;
             break;
 
@@ -1805,7 +1805,7 @@ static int borg_danger_spell(
                 p = p / spot_safe;
             }
             /* reduce the fear if it is a unique */
-            if (rf_has(r_info->flags, RF_UNIQUE))
+            if (rf_has(r_ptr->flags, RF_UNIQUE))
                 p = p * 75 / 100;
             break;
 
@@ -1851,7 +1851,7 @@ static int borg_danger_spell(
                 p = p / spot_safe;
             }
             /* reduce the fear if it is a unique */
-            if (rf_has(r_info->flags, RF_UNIQUE))
+            if (rf_has(r_ptr->flags, RF_UNIQUE))
                 p = p * 75 / 100;
             break;
 
@@ -1897,7 +1897,7 @@ static int borg_danger_spell(
                 p = p / spot_safe;
             }
             /* reduce the fear if it is a unique */
-            if (rf_has(r_info->flags, RF_UNIQUE))
+            if (rf_has(r_ptr->flags, RF_UNIQUE))
                 p = (p * 75) / 100;
             break;
 
@@ -1943,7 +1943,7 @@ static int borg_danger_spell(
                 p = p / spot_safe;
             }
             /* reduce the fear if it is a unique */
-            if (rf_has(r_info->flags, RF_UNIQUE))
+            if (rf_has(r_ptr->flags, RF_UNIQUE))
                 p = p * 75 / 100;
             break;
 
@@ -1989,7 +1989,7 @@ static int borg_danger_spell(
                 p = p / spot_safe;
             }
             /* reduce the fear if it is a unique */
-            if (rf_has(r_info->flags, RF_UNIQUE))
+            if (rf_has(r_ptr->flags, RF_UNIQUE))
                 p = p * 75 / 100;
             break;
 
@@ -2035,7 +2035,7 @@ static int borg_danger_spell(
                 p = p / spot_safe;
             }
             /* reduce the fear if it is a unique */
-            if (rf_has(r_info->flags, RF_UNIQUE))
+            if (rf_has(r_ptr->flags, RF_UNIQUE))
                 p = p * 75 / 100;
             break;
 
@@ -2080,7 +2080,7 @@ static int borg_danger_spell(
                 p = p / spot_safe;
             }
             /* reduce the fear if it is a unique */
-            if (rf_has(r_info->flags, RF_UNIQUE))
+            if (rf_has(r_ptr->flags, RF_UNIQUE))
                 p = p * 75 / 100;
             break;
 
@@ -2126,7 +2126,7 @@ static int borg_danger_spell(
                 p = p / spot_safe;
             }
             /* reduce the fear if it is a unique */
-            if (rf_has(r_info->flags, RF_UNIQUE))
+            if (rf_has(r_ptr->flags, RF_UNIQUE))
                 p = p * 75 / 100;
             break;
 
@@ -2173,7 +2173,7 @@ static int borg_danger_spell(
                 p = p / spot_safe;
             }
             /* reduce the fear if it is a unique */
-            if (rf_has(r_info->flags, RF_UNIQUE))
+            if (rf_has(r_ptr->flags, RF_UNIQUE))
                 p = p * 75 / 100;
             break;
         }

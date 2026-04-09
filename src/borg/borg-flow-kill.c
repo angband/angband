@@ -2722,86 +2722,85 @@ void borg_near_monster_type(int dist)
          * Looking for scary guys on level, not scary guys
          * near me
          */
-
         /* run from certain scaries */
-        if (borg.trait[BI_CLEVEL] <= 5 && (strstr(r_ptr->name, "Squint")))
+        if (borg.trait[BI_CLEVEL] <= 5 && (strstr(r_ptr->name, "squint")))
             scaryguy_on_level = true;
 
         /* Mage and priest are extra fearful */
         if (borg.trait[BI_CLEVEL] <= 6
             && (borg.trait[BI_CLASS] == CLASS_MAGE
                 || borg.trait[BI_CLASS] == CLASS_PRIEST)
-            && (strstr(r_ptr->name, "Squint")))
+            && (strstr(r_ptr->name, "squint")))
             scaryguy_on_level = true;
 
         /* run from certain dungeon scaries */
         if (borg.trait[BI_CLEVEL] <= 5
             && (strstr(r_ptr->name, "Grip") || strstr(r_ptr->name, "Fang")
-                || strstr(r_ptr->name, "Small kobold")))
+                || strstr(r_ptr->name, "small kobold")))
             scaryguy_on_level = true;
 
         /* run from certain scaries */
         if (borg.trait[BI_CLEVEL] <= 8
-            && (strstr(r_ptr->name, "Novice") || strstr(r_ptr->name, "Kobold")
-                || strstr(r_ptr->name, "Kobold archer")
-                || strstr(r_ptr->name, "Jackal")
-                || strstr(r_ptr->name, "Shrieker")
+            && (strstr(r_ptr->name, "novice") || strstr(r_ptr->name, "kobold")
+                || strstr(r_ptr->name, "kobold archer")
+                || strstr(r_ptr->name, "jackal")
+                || strstr(r_ptr->name, "shrieker")
                 || strstr(r_ptr->name, "Farmer Maggot")
-                || strstr(r_ptr->name, "Filthy street urchin")
-                || strstr(r_ptr->name, "Battle-scarred veteran")
-                || strstr(r_ptr->name, "Mean-looking mercenary")))
+                || strstr(r_ptr->name, "filthy street urchin")
+                || strstr(r_ptr->name, "battle-scarred veteran")
+                || strstr(r_ptr->name, "mean-looking mercenary")))
             scaryguy_on_level = true;
 
         if (borg.trait[BI_CLEVEL] <= 15
             && (strstr(r_ptr->name, "Bullr")
-                || ((strstr(r_ptr->name, "Giant white mouse")
-                        || strstr(r_ptr->name, "White worm mass")
-                        || strstr(r_ptr->name, "Green worm mass"))
+                || ((strstr(r_ptr->name, "giant white mouse")
+                        || strstr(r_ptr->name, "white worm mass")
+                        || strstr(r_ptr->name, "green worm mass"))
                     && breeder_count >= borg.trait[BI_CLEVEL])))
             scaryguy_on_level = true;
 
         if (borg.trait[BI_CLEVEL] <= 20
-            && (strstr(r_ptr->name, "Cave spider")
-                || strstr(r_ptr->name, "Pink naga")
-                || strstr(r_ptr->name, "Giant pink frog")
-                || strstr(r_ptr->name, "Radiation eye")
-                || (strstr(r_ptr->name, "Yellow worm mass")
+            && (strstr(r_ptr->name, "cave spider")
+                || strstr(r_ptr->name, "pink naga")
+                || strstr(r_ptr->name, "giant pink frog")
+                || strstr(r_ptr->name, "radiation eye")
+                || (strstr(r_ptr->name, "yellow worm mass")
                     && breeder_count >= borg.trait[BI_CLEVEL])))
             scaryguy_on_level = true;
 
         if (borg.trait[BI_CLEVEL] < 45
-            && (strstr(r_ptr->name, "Gravity") || strstr(r_ptr->name, "Inertia")
-                || strstr(r_ptr->name, "Ancient")
+            && (strstr(r_ptr->name, "gravity") || strstr(r_ptr->name, "inertia")
+                || strstr(r_ptr->name, "ancient")
                 || strstr(r_ptr->name, "Beorn")
-                || strstr(r_ptr->name, "Dread") /* Appear in Groups */))
+                || strstr(r_ptr->name, "dread") /* Appear in Groups */))
             scaryguy_on_level = true;
 
         /* Nether breath is bad */
         if (!borg.trait[BI_SRNTHR]
             && (strstr(r_ptr->name, "Ossë, Herald of Ulmo")
-                || strstr(r_ptr->name, "Dracolich")
-                || strstr(r_ptr->name, "Dracolisk")))
+                || strstr(r_ptr->name, "dracolich")
+                || strstr(r_ptr->name, "dracolisk")))
             scaryguy_on_level = true;
 
         /* Blindness is really bad */
         if ((!borg.trait[BI_SRBLIND])
-            && ((strstr(r_ptr->name, "Light hound") && !borg.trait[BI_SRLITE])
-                || (strstr(r_ptr->name, "Dark hound")
+            && ((strstr(r_ptr->name, "light hound") && !borg.trait[BI_SRLITE])
+                || (strstr(r_ptr->name, "dark hound")
                     && !borg.trait[BI_SRDARK])))
             scaryguy_on_level = true;
 
         /* Chaos and Confusion are really bad */
         if ((!borg.trait[BI_SRKAOS] && !borg.trait[BI_SRCONF])
-            && (strstr(r_ptr->name, "Chaos")))
+            && (strstr(r_ptr->name, "chaos")))
             scaryguy_on_level = true;
         if (!borg.trait[BI_SRCONF]
-            && (strstr(r_ptr->name, "Pukelman")
-                || strstr(r_ptr->name, "Nightmare")))
+            && (strstr(r_ptr->name, "pukelman")
+                || strstr(r_ptr->name, "nightmare")))
             scaryguy_on_level = true;
 
         /* Poison is really Bad */
         if (!borg.trait[BI_RPOIS] && /* Note the RPois not SRPois */
-            (strstr(r_ptr->name, "Drolem")))
+            (strstr(r_ptr->name, "drolem")))
             scaryguy_on_level = true;
 
         /* Now do distance considerations */
