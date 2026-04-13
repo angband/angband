@@ -21,7 +21,10 @@
 
 int sdlpui_init(void);
 void sdlpui_quit(void);
+void sdlpui_register_dialog(struct sdlpui_dialog *d);
+void sdlpui_unregister_dialog(struct sdlpui_dialog *d);
 Uint32 sdlpui_register_code(const char *name);
+Uint32 sdlpui_reserve_id(void);
 SDL_Keymod sdlpui_get_interesting_keymods(void);
 struct sdlpui_stipple sdlpui_compute_stipple(SDL_Renderer *r);
 void sdlpui_stipple_rect(SDL_Renderer *r, struct sdlpui_stipple *stp,

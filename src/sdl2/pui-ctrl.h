@@ -329,6 +329,10 @@ struct sdlpui_control {
 	 * upper left corner, and size of the control.
 	 */
 	SDL_Rect rect;
+	/**
+	 * Holds a number from sdlpui_reserve_id() to use in identity checks.
+	 */
+	Uint32 id;
 	/** Allow for a check before casting priv to another type. */
 	Uint32 type_code;
 };

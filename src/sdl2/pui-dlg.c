@@ -48,6 +48,7 @@ static void query_simple_menu_natural_size(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, int *width, int *height);
 static void query_simple_menu_minimum_size(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, int *width, int *height);
+static Uint32 reassign_simple_menu_ids(struct sdlpui_dialog *d, Uint32 start);
 static void cleanup_simple_menu(struct sdlpui_dialog *d);
 
 static void render_simple_info(struct sdlpui_dialog *d,
@@ -61,6 +62,7 @@ static void resize_simple_info(struct sdlpui_dialog *d, struct sdlpui_window *w,
 		int width, int height);
 static void query_simple_info_natural_size(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, int *width, int *height);
+static Uint32 reassign_simple_info_ids(struct sdlpui_dialog *d, Uint32 start);
 static void cleanup_simple_info(struct sdlpui_dialog *d);
 
 Uint32 SDLPUI_DIALOG_SIMPLE_MENU = 0;
@@ -89,6 +91,7 @@ static const struct sdlpui_dialog_funcs simple_menu_funcs = {
 	resize_simple_menu,
 	query_simple_menu_natural_size,
 	query_simple_menu_minimum_size,
+	reassign_simple_menu_ids,
 	cleanup_simple_menu
 };
 
@@ -115,6 +118,7 @@ static const struct sdlpui_dialog_funcs simple_info_funcs = {
 	resize_simple_info,
 	query_simple_info_natural_size,
 	NULL,
+	reassign_simple_info_ids,
 	cleanup_simple_info
 };
 
@@ -484,7 +488,7 @@ static void goto_simple_menu_first_control(struct sdlpui_dialog *d,
 		if (comp_ind) {
 			SDLPUI_EVENT_TRACER("dialog", d, "(not extracted)",
 				"gains key focus");
-			if (d->c_key && d->c_key != p->v_ctrls[i]
+			if (d->c_key && d->c_key->id != p->v_ctrls[i]->id
 					&& d->c_key->ftb->lose_key) {
 				(*d->c_key->ftb->lose_key)(d->c_key, d, w,
 					p->v_ctrls[i], d);
@@ -510,7 +514,6 @@ static void step_simple_menu_control(struct sdlpui_dialog *d,
 
 	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_MENU && d->priv);
 	p = d->priv;
-	SDL_assert(c >= p->controls && c < p->controls + p->number);
 
 	if (c->ftb->step_within && (*c->ftb->step_within)(c, forward)) {
 		d->dirty = SDL_TRUE;
@@ -528,7 +531,7 @@ static void step_simple_menu_control(struct sdlpui_dialog *d,
 			SDL_assert(0);
 			return;
 		}
-		if (c == p->v_ctrls[istart]) {
+		if (c->id == p->v_ctrls[istart]->id) {
 			break;
 		}
 		++istart;
@@ -553,14 +556,14 @@ static void step_simple_menu_control(struct sdlpui_dialog *d,
 			 * Wrapped around without finding another control that
 			 * can accept focus.
 			 */
-			SDL_assert(d->c_key == c);
+			SDL_assert(d->c_key && d->c_key->id == c->id);
 			break;
 		}
 		comp_ind = (p->v_ctrls[itry]->ftb->get_interactable_component) ?
 			(*p->v_ctrls[itry]->ftb->get_interactable_component)(
 				p->v_ctrls[itry], forward) : 0;
 		if (comp_ind) {
-			if (d->c_key && d->c_key != p->v_ctrls[itry]
+			if (d->c_key && d->c_key->id != p->v_ctrls[itry]->id
 					&& d->c_key->ftb->lose_key) {
 				(*d->c_key->ftb->lose_key)(d->c_key, d, w,
 					p->v_ctrls[itry], d);
@@ -972,6 +975,26 @@ static void query_simple_menu_minimum_size(struct sdlpui_dialog *d,
 }
 
 
+static Uint32 reassign_simple_menu_ids(struct sdlpui_dialog *d, Uint32 start)
+{
+	struct sdlpui_simple_menu *p;
+	int i;
+
+	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_MENU && d->priv);
+	p = d->priv;
+
+	if (start > SDL_MAX_UINT32 - 1 - p->number) {
+		return 0;
+	}
+	d->id = start;
+	for (i = 0; i < p->number; ++i) {
+		p->controls[i].id = start + 1 + i;
+	}
+
+	return p->number + 1;
+}
+
+
 static void cleanup_simple_menu(struct sdlpui_dialog *d)
 {
 	struct sdlpui_simple_menu *p;
@@ -1047,7 +1070,7 @@ static void goto_simple_info_first_control(struct sdlpui_dialog *d,
 
 	SDL_assert(id->button.ftb->gain_key);
 	(*id->button.ftb->gain_key)(&id->button, d, w, 0);
-	SDL_assert(!d->c_key || d->c_key == &id->button);
+	SDL_assert(!d->c_key || d->c_key->id == id->button.id);
 	d->c_key = &id->button;
 	sdlpui_dialog_gain_key_focus(w, d);
 }
@@ -1139,6 +1162,26 @@ static void query_simple_info_natural_size(struct sdlpui_dialog *d,
 }
 
 
+static Uint32 reassign_simple_info_ids(struct sdlpui_dialog *d, Uint32 start)
+{
+	struct sdlpui_simple_info *p;
+	int i;
+
+	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_INFO && d->priv);
+	p = d->priv;
+
+	if (start > SDL_MAX_UINT32 - 1 - p->number) {
+		return 0;
+	}
+	d->id = start;
+	for (i = 0; i < p->number; ++i) {
+		p->labels[i].id = start + 1 + i;
+	}
+
+	return p->number + 1;
+}
+
+
 static void cleanup_simple_info(struct sdlpui_dialog *d)
 {
 	struct sdlpui_simple_info *id;
@@ -1193,6 +1236,9 @@ SDL_bool sdlpui_is_in_dialog(const struct sdlpui_dialog *d, Sint32 x, Sint32 y)
 SDL_bool sdlpui_is_descendant_dialog(struct sdlpui_dialog *ancestor,
 		const struct sdlpui_dialog *other)
 {
+	if (!other) {
+		return SDL_FALSE;
+	}
 	while (1) {
 		struct sdlpui_dialog *child =
 			sdlpui_get_dialog_child(ancestor);
@@ -1200,7 +1246,7 @@ SDL_bool sdlpui_is_descendant_dialog(struct sdlpui_dialog *ancestor,
 		if (!child) {
 			return SDL_FALSE;
 		}
-		if (child == other) {
+		if (child->id == other->id) {
 			return SDL_TRUE;
 		}
 		ancestor = child;
@@ -1275,8 +1321,11 @@ void sdlpui_popdown_dialog(struct sdlpui_dialog *d, struct sdlpui_window *w,
 			 * If the parent control has key focus but not mouse
 			 * focus, lose that focus when the child is lost.
 			 */
-			if (parent_ctrl && parent->c_key == parent_ctrl
-					&& parent->c_mouse != parent_ctrl) {
+			if (parent_ctrl && parent->c_key
+					&& parent->c_key->id == parent_ctrl->id
+					&& (!parent->c_mouse
+					|| parent->c_mouse->id
+					!= parent_ctrl->id)) {
 				if (parent_ctrl->ftb->lose_key) {
 					(*parent_ctrl->ftb->lose_key)(
 						parent_ctrl, parent, w,
@@ -1288,9 +1337,13 @@ void sdlpui_popdown_dialog(struct sdlpui_dialog *d, struct sdlpui_window *w,
 		if (d->ftb->cleanup) {
 			(*d->ftb->cleanup)(d);
 		}
+		sdlpui_unregister_dialog(d);
 		SDL_free(d);
 
-		if (parent == stopping_point || (parent && parent->pinned)) {
+		if ((parent && parent->pinned)
+				|| (!parent && !stopping_point)
+				|| (parent && stopping_point
+				&& parent->id == stopping_point->id)) {
 			break;
 		}
 		d = parent;
@@ -1312,7 +1365,7 @@ void sdlpui_dialog_give_key_focus_to_parent(struct sdlpui_dialog *d,
 	struct sdlpui_dialog *parent = sdlpui_get_dialog_parent(d);
 
 	if (parent) {
-		if (d->c_key != NULL && d->c_key->ftb->lose_key) {
+		if (d->c_key && d->c_key->ftb->lose_key) {
 			(*d->c_key->ftb->lose_key)(d->c_key, d, w, NULL,
 				parent);
 		}
@@ -1564,7 +1617,7 @@ SDL_bool sdlpui_dialog_handle_mousemove(struct sdlpui_dialog *d,
 		d->c_mouse = c;
 
 		/* Have keyboard focus follow the mouse. */
-		if (d->c_key != c) {
+		if (!d->c_key || d->c_key->id != c->id) {
 			if (d->c_key && d->c_key->ftb->lose_key) {
 				(*d->c_key->ftb->lose_key)(d->c_key, d, w, c,
 					d);
@@ -1668,13 +1721,14 @@ void sdlpui_dialog_handle_window_loses_mouse(struct sdlpui_dialog *d,
 				NULL);
 		}
 		/* Key focus follows mouse. */
-		if (d->c_key == d->c_mouse && d->c_mouse->ftb->lose_key) {
+		if (d->c_key && d->c_key->id == d->c_mouse->id
+				&& d->c_mouse->ftb->lose_key) {
 			(*d->c_mouse->ftb->lose_key)(d->c_mouse, d, w, NULL,
 				NULL);
 		}
 	}
 	/* Key focus follows mouse. */
-	if (d->c_key && d->c_key != d->c_mouse) {
+	if (d->c_key && (!d->c_mouse || d->c_key->id != d->c_mouse->id)) {
 		if (d->c_key->ftb->disarm) {
 			(*d->c_key->ftb->disarm)(d->c_key, d, w,
 				SDLPUI_ACTION_HINT_NONE);
@@ -1767,9 +1821,10 @@ void sdlpui_menu_handle_window_loses_key(struct sdlpui_dialog *d,
 			sdlpui_get_dialog_parent_ctrl(deepest);
 
 		if (deepest->pinned || deepest->c_mouse
-				|| deepest == d_mouse
-				|| (parent && parent->c_mouse == parent_ctrl)) {
-			if (deepest == d) {
+				|| (d_mouse && deepest->id == d_mouse->id)
+				|| (parent && parent->c_mouse && parent_ctrl
+				&& parent->c_mouse->id == parent_ctrl->id)) {
+			if (deepest->id == d->id) {
 				sdlpui_dialog_handle_window_loses_key(d, w);
 			}
 			break;
@@ -1835,7 +1890,8 @@ void sdlpui_menu_handle_loses_mouse(struct sdlpui_dialog *d,
 		struct sdlpui_control *parent_c =
 			sdlpui_get_dialog_parent_ctrl(d);
 
-		if (new_d == parent_d && new_c == parent_c) {
+		if ((parent_d && new_d->id == parent_d->id)
+				&& (parent_c && new_c->id == parent_c->id)) {
 			struct sdlpui_dialog *child_d =
 				sdlpui_get_dialog_child(d);
 
@@ -1856,7 +1912,8 @@ void sdlpui_menu_handle_loses_mouse(struct sdlpui_dialog *d,
 				sdlpui_get_dialog_parent(d);
 
 			if (!parent_d || parent_d->pinned
-					|| parent_d == new_d) {
+					|| (new_d
+					&& parent_d->id == new_d->id)) {
 				SDLPUI_EVENT_TRACER("dialog", d,
 					"(not extracted)", "popping down");
 				sdlpui_popdown_dialog(d, w, SDL_FALSE);
@@ -1866,8 +1923,9 @@ void sdlpui_menu_handle_loses_mouse(struct sdlpui_dialog *d,
 				struct sdlpui_control *parent_c =
 					sdlpui_get_dialog_parent_ctrl(d);
 
-				if (new_c && new_d == parent_d
-						&& new_c == parent_c) {
+				if (new_c && parent_c
+						&& new_d->id == parent_d->id
+						&& new_c->id == parent_c->id) {
 					struct sdlpui_dialog *child_d =
 						sdlpui_get_dialog_child(d);
 
@@ -1879,7 +1937,7 @@ void sdlpui_menu_handle_loses_mouse(struct sdlpui_dialog *d,
 					sdlpui_popdown_dialog(child_d, w,
 						SDL_FALSE);
 					break;
-				} else if (new_d == parent_d) {
+				} else if (new_d->id == parent_d->id) {
 					SDLPUI_EVENT_TRACER("dialog", d,
 						"(not extracted)",
 						"popping down");
@@ -1900,14 +1958,15 @@ void sdlpui_menu_handle_loses_mouse(struct sdlpui_dialog *d,
 					w, new_c, new_d);
 			}
 			/* Key focus follows mouse. */
-			if (d->c_key == d->c_mouse
+			if (d->c_key && d->c_key->id == d->c_mouse->id
 					&& d->c_mouse->ftb->lose_key) {
 				(*d->c_mouse->ftb->lose_key)(d->c_mouse, d,
 					w, new_c, new_d);
 			}
 		}
 		/* Key focus follows mouse. */
-		if (d->c_key && d->c_key != d->c_mouse) {
+		if (d->c_key && (!d->c_mouse
+				|| d->c_key->id != d->c_mouse->id)) {
 			if (d->c_key->ftb->disarm) {
 				(*d->c_key->ftb->disarm)(d->c_key, d, w,
 					SDLPUI_ACTION_HINT_NONE);
@@ -1979,10 +2038,10 @@ void sdlpui_menu_handle_loses_key(struct sdlpui_dialog *d,
 		struct sdlpui_control *parent_c =
 			sdlpui_get_dialog_parent_ctrl(d);
 
-		if ((new_c && new_d && new_d == parent_d
-				&& new_c == parent_c)
-				|| (parent_d && parent_c
-				&& parent_d->c_mouse == parent_c)) {
+		if (parent_c && parent_d && ((parent_d->c_mouse
+				&& parent_d->c_mouse->id == parent_c->id)
+				|| (new_c && new_d && new_c->id == parent_c->id
+				&& new_d->id == parent_d->id))) {
 			struct sdlpui_dialog *child_d =
 				sdlpui_get_dialog_child(d);
 			struct sdlpui_dialog *mouse_d =
@@ -2023,10 +2082,13 @@ void sdlpui_menu_handle_loses_key(struct sdlpui_dialog *d,
 				sdlpui_get_dialog_parent_ctrl(deepest);
 
 			if (deepest->pinned || deepest->c_mouse
-					|| deepest == d_mouse
+					|| (d_mouse
+					&& deepest->id == d_mouse->id)
 					|| (parent && parent->c_mouse
-					== parent_ctrl)) {
-				if (deepest == d) {
+					&& parent_ctrl
+					&& parent->c_mouse->id
+					== parent_ctrl->id)) {
+				if (deepest->id == d->id) {
 					pop_parents = SDL_FALSE;
 				}
 				break;
@@ -2095,8 +2157,29 @@ struct sdlpui_dialog *sdlpui_start_simple_menu(struct sdlpui_dialog *parent,
 			struct sdlpui_window *w, SDL_bool all),
 		int tag)
 {
-	struct sdlpui_dialog *result = SDL_malloc(sizeof(*result));
-	struct sdlpui_simple_menu *psm = SDL_malloc(sizeof(*psm));
+	Uint32 id = sdlpui_reserve_id();
+	struct sdlpui_dialog *result;
+	struct sdlpui_simple_menu *psm;
+
+	if (!id) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"could not acquire dialog ID in "
+			"sdlpui_start_simple_menu()");
+		sdlpui_force_quit();
+	}
+	result = SDL_malloc(sizeof(*result));
+	psm = SDL_malloc(sizeof(*psm));
+	if (!result || !psm) {
+		if (result) {
+			SDL_free(result);
+		}
+		if (psm) {
+			SDL_free(psm);
+		}
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"out of memory in sdlpui_start_simple_menu()");
+		sdlpui_force_quit();
+	}
 
 	psm->parent = parent;
 	psm->child = NULL;
@@ -2107,6 +2190,21 @@ struct sdlpui_dialog *sdlpui_start_simple_menu(struct sdlpui_dialog *parent,
 		psm->v_ctrls = SDL_malloc(psm->size * sizeof(*psm->v_ctrls));
 		psm->control_flags = SDL_malloc(psm->size
 			* sizeof(*psm->control_flags));
+		if (!psm->controls || !psm->v_ctrls || !psm->control_flags) {
+			psm->size = 0;
+			if (psm->controls) {
+				SDL_free(psm->controls);
+				psm->controls = NULL;
+			}
+			if (psm->v_ctrls) {
+				SDL_free(psm->v_ctrls);
+				psm->v_ctrls = NULL;
+			}
+			if (psm->control_flags) {
+				SDL_free(psm->control_flags);
+				psm->control_flags = NULL;
+			}
+		}
 	} else {
 		psm->size = 0;
 		psm->controls = NULL;
@@ -2123,14 +2221,18 @@ struct sdlpui_dialog *sdlpui_start_simple_menu(struct sdlpui_dialog *parent,
 	result->recreate_textures_callback = recreate_textures_callback;
 	result->next = NULL;
 	result->prev = NULL;
+	result->next_r = NULL;
+	result->prev_r = NULL;
 	result->texture = NULL;
 	result->c_mouse = NULL;
 	result->c_key = NULL;
 	result->priv = psm;
+	result->id = id;
 	result->type_code = SDLPUI_DIALOG_SIMPLE_MENU;
 	result->tag = tag;
 	result->pinned = SDL_FALSE;
 	result->dirty = SDL_TRUE;
+	sdlpui_register_dialog(result);
 
 	return result;
 }
@@ -2185,6 +2287,21 @@ struct sdlpui_control* sdlpui_get_simple_menu_next_unused(
 			psm->size * sizeof(*psm->v_ctrls));
 		psm->control_flags = SDL_realloc(psm->control_flags,
 			psm->size * sizeof(*psm->control_flags));
+		if (!psm->controls || !psm->v_ctrls || !psm->control_flags) {
+			if (psm->controls) {
+				SDL_free(psm->controls);
+			}
+			if (psm->v_ctrls) {
+				SDL_free(psm->v_ctrls);
+			}
+			if (psm->control_flags) {
+				SDL_free(psm->control_flags);
+			}
+			SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+				"out of memory in "
+				"sdlpui_get_simple_menu_next_unused()");
+			sdlpui_force_quit();
+		}
 	}
 	n = psm->number;
 	++psm->number;
@@ -2240,8 +2357,29 @@ struct sdlpui_dialog *sdlpui_start_simple_info(const char *button_label,
 			struct sdlpui_window *w, SDL_bool all),
 		int tag)
 {
-	struct sdlpui_dialog *result = SDL_malloc(sizeof(*result));
-	struct sdlpui_simple_info *psi = SDL_malloc(sizeof(*psi));
+	Uint32 id = sdlpui_reserve_id();
+	struct sdlpui_dialog *result;
+	struct sdlpui_simple_info *psi;
+
+	if (!id) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"could not acquire dialog ID in "
+			"sdlpui_start_simple_info()");
+		sdlpui_force_quit();
+	}
+	result = SDL_malloc(sizeof(*result));
+	psi = SDL_malloc(sizeof(*psi));
+	if (!result || !psi) {
+		if (result) {
+			SDL_free(result);
+		}
+		if (psi) {
+			SDL_free(psi);
+		}
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"out of memory in sdlpui_start_simple_info()");
+		sdlpui_force_quit();
+	}
 
 	psi->labels = NULL;
 	sdlpui_create_push_button(&psi->button, button_label,
@@ -2255,14 +2393,18 @@ struct sdlpui_dialog *sdlpui_start_simple_info(const char *button_label,
 	result->recreate_textures_callback = recreate_textures_callback;
 	result->next = NULL;
 	result->prev = NULL;
+	result->next_r = NULL;
+	result->prev_r = NULL;
 	result->texture = NULL;
 	result->c_mouse = NULL;
 	result->c_key = NULL;
 	result->priv = psi;
+	result->id = id;
 	result->type_code = SDLPUI_DIALOG_SIMPLE_INFO;
 	result->tag = tag;
 	result->pinned = SDL_FALSE;
 	result->dirty = SDL_TRUE;
+	sdlpui_register_dialog(result);
 
 	return result;
 }
@@ -2308,6 +2450,12 @@ void sdlpui_simple_info_add_image(struct sdlpui_dialog *d, SDL_Texture *image,
 		psi->size = (psi->size) ? psi->size + psi->size : 8;
 		psi->labels = SDL_realloc(psi->labels,
 			psi->size * sizeof(*psi->labels));
+		if (!psi->labels) {
+			SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+				"out of memory in "
+				"sdlpui_simple_info_add_image()");
+			sdlpui_force_quit();
+		}
 	}
 	n = psi->number;
 	++psi->number;
@@ -2347,6 +2495,12 @@ void sdlpui_simple_info_add_label(struct sdlpui_dialog *d, const char *label,
 		psi->size = (psi->size) ? psi->size + psi->size : 8;
 		psi->labels = SDL_realloc(psi->labels,
 			psi->size * sizeof(*psi->labels));
+		if (!psi->labels) {
+			SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+				"out of memory in "
+				"sdlpui_simple_info_add_label()");
+			sdlpui_force_quit();
+		}
 	}
 	n = psi->number;
 	++psi->number;
