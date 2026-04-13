@@ -110,8 +110,8 @@ bool borg_fighting_evil_unique; /* Need to know if evil for Priest Banishment */
 bool borg_fighting_summoner;
 
 /*
- * Helper to get the name of a kill.  Adds safeguards against 
- * player ghosts or dead monsters 
+ * Helper to get the name of a kill.  Adds safeguards against
+ * player ghosts or dead monsters
  */
 const char *borg_race_name(int r_idx)
 {
@@ -2093,68 +2093,68 @@ bool borg_flow_kill_corridor(void)
     bool b_e        = false;
     bool b_w        = false;
 
-    int n_array[25] = { 1, 0, 0, 0, 1, 
-                        1, 0, 1, 0, 1, 
-                        0, 1, 0, 1, 0, 
-                        0, 0, 1, 0, 0, 
+    int n_array[25] = { 1, 0, 0, 0, 1,
+                        1, 0, 1, 0, 1,
+                        0, 1, 0, 1, 0,
+                        0, 0, 1, 0, 0,
                         1, 1, 1, 1, 1 };
-    int ny[25] = { -4, -4, -4, -4, -4, 
-                   -3, -3, -3, -3, -3, 
+    int ny[25] = { -4, -4, -4, -4, -4,
+                   -3, -3, -3, -3, -3,
                    -2, -2, -2, -2, -2,
-                   -1, -1, -1, -1, -1, 
+                   -1, -1, -1, -1, -1,
                     0,  0,  0,  0,  0 };
-    int nx[25] = { -2, -1,  0,  1,  2, 
-                   -2, -1,  0,  1,  2, 
-                   -2, -1,  0,  1,  2, 
-                   -2, -1,  0,  1,  2, 
+    int nx[25] = { -2, -1,  0,  1,  2,
+                   -2, -1,  0,  1,  2,
+                   -2, -1,  0,  1,  2,
+                   -2, -1,  0,  1,  2,
                    -2, -1,  0,  1,  2 };
 
-    int s_array[25] = { 1, 1, 1, 1, 1, 
-                        0, 0, 1, 0, 0, 
-                        0, 1, 0, 1, 0, 
-                        1, 0, 1, 0, 1, 
+    int s_array[25] = { 1, 1, 1, 1, 1,
+                        0, 0, 1, 0, 0,
+                        0, 1, 0, 1, 0,
+                        1, 0, 1, 0, 1,
                         1, 0, 0, 0, 1 };
-    int sy[25] = { 0, 0, 0, 0, 0, 
-                   1, 1, 1, 1, 1, 
-                   2, 2, 2, 2, 2, 
+    int sy[25] = { 0, 0, 0, 0, 0,
+                   1, 1, 1, 1, 1,
+                   2, 2, 2, 2, 2,
                    3, 3, 3, 3, 3,
                    4, 4, 4, 4, 4 };
-    int sx[25] = { -2, -1,  0,  1,  2, 
-                   -2, -1,  0,  1,  2, 
-                   -2, -1,  0,  1,  2, 
-                   -2, -1,  0,  1,  2, 
+    int sx[25] = { -2, -1,  0,  1,  2,
+                   -2, -1,  0,  1,  2,
+                   -2, -1,  0,  1,  2,
+                   -2, -1,  0,  1,  2,
                    -2, -1,  0,  1,  2 };
 
-    int e_array[25] = { 1, 0, 0, 1, 1, 
-                        1, 0, 1, 0, 0, 
-                        1, 1, 0, 1, 0, 
-                        1, 0, 1, 0, 0, 
+    int e_array[25] = { 1, 0, 0, 1, 1,
+                        1, 0, 1, 0, 0,
+                        1, 1, 0, 1, 0,
+                        1, 0, 1, 0, 0,
                         1, 0, 0, 1, 1 };
-    int ey[25] = { -2, -2, -2, -2, -2, 
-                   -1, -1, -1, -1, -1, 
-                    0,  0,  0,  0,  0, 
-                    1,  1,  1,  1,  1, 
+    int ey[25] = { -2, -2, -2, -2, -2,
+                   -1, -1, -1, -1, -1,
+                    0,  0,  0,  0,  0,
+                    1,  1,  1,  1,  1,
                     2,  2,  2,  2,  2 };
-    int ex[25] = { 0, 1, 2, 3, 4, 
-                   0, 1, 2, 3, 4, 
-                   0, 1, 2, 3, 4, 
+    int ex[25] = { 0, 1, 2, 3, 4,
+                   0, 1, 2, 3, 4,
+                   0, 1, 2, 3, 4,
                    0, 1, 2, 3, 4,
                    0, 1, 2, 3, 4 };
 
-    int w_array[25] = { 1, 1, 0, 0, 1, 
-                        0, 0, 1, 0, 1, 
-                        0, 1, 0, 1, 1, 
-                        0, 0, 1, 0, 1, 
+    int w_array[25] = { 1, 1, 0, 0, 1,
+                        0, 0, 1, 0, 1,
+                        0, 1, 0, 1, 1,
+                        0, 0, 1, 0, 1,
                         1, 1, 0, 0, 1 };
-    int wy[25] = { -2, -2, -2, -2, -2, 
-                   -1, -1, -1, -1, -1, 
-                    0,  0,  0,  0,  0, 
-                    1,  1,  1,  1,  1, 
+    int wy[25] = { -2, -2, -2, -2, -2,
+                   -1, -1, -1, -1, -1,
+                    0,  0,  0,  0,  0,
+                    1,  1,  1,  1,  1,
                     2,  2,  2,  2,  2 };
-    int wx[25] = { -4, -3, -2, -1, 0, 
-                   -4, -3, -2, -1, 0, 
-                   -4, -3, -2, -1, 0, 
-                   -4, -3, -2, -1, 0, 
+    int wx[25] = { -4, -3, -2, -1, 0,
+                   -4, -3, -2, -1, 0,
+                   -4, -3, -2, -1, 0,
+                   -4, -3, -2, -1, 0,
                    -4, -3, -2, -1, 0 };
 
     int wall_north = 0;
@@ -2686,188 +2686,194 @@ bool borg_flow_kill_direct(bool twitchy)
  */
 void borg_near_monster_type(int dist)
 {
-    borg_kill           *kill;
-    struct monster_race *r_ptr;
+	borg_kill* kill;
+	struct monster_race* r_ptr;
 
-    int x9, y9, ax, ay, d;
-    int i;
-    int breeder_count = 0;
+	int x9, y9, ax, ay, d;
+	int i;
+	int breeder_count = 0;
 
-    /* reset the borg flags */
-    borg_fighting_summoner    = false;
-    borg_fighting_unique      = 0;
-    borg_fighting_evil_unique = false;
-    borg_kills_summoner       = -1;
+	/* reset the borg flags */
+	borg_fighting_summoner = false;
+	borg_fighting_unique = 0;
+	borg_fighting_evil_unique = false;
+	borg_kills_summoner = -1;
 
-    /* Scan the monsters */
-    for (i = 1; i < borg_kills_nxt; i++) {
-        kill  = &borg_kills[i];
-        r_ptr = &r_info[kill->r_idx];
+	/* Scan the monsters */
+	for (i = 1; i < borg_kills_nxt; i++) {
+		kill = &borg_kills[i];
+		r_ptr = &r_info[kill->r_idx];
 
-        /* Skip dead monsters */
-        if (!kill->r_idx)
-            continue;
+		/* Skip dead monsters */
+		if (!kill->r_idx)
+			continue;
 
-        /* "player ghosts" */
-        if (kill->r_idx >= z_info->r_max - 1)
-            continue;
+		/* "player ghosts" */
+		if (kill->r_idx >= z_info->r_max - 1)
+			continue;
 
-        /* Count breeders */
-        if (rf_has(r_ptr->flags, RF_MULTIPLY))
-            breeder_count++;
+		/* Count breeders */
+		if (rf_has(r_ptr->flags, RF_MULTIPLY))
+			breeder_count++;
 
-        /*** Scan for Scary Guys ***/
+		/*** Scan for Scary Guys ***/
 
-        /* Do ScaryGuys now, before distance checks.  We are
-         * Looking for scary guys on level, not scary guys
-         * near me
-         */
-        /* run from certain scaries */
-        if (borg.trait[BI_CLEVEL] <= 5 && (strstr(r_ptr->name, "squint")))
-            scaryguy_on_level = true;
+		/* Do ScaryGuys now, before distance checks.  We are
+		 * Looking for scary guys on level, not scary guys
+		 * near me
+		 */
+		 /* run from certain scaries */
+		 /* !FIX this should be rewritten to not use specific names but */
+		 /* instead track certain attacks that are particularly scary */
+		if (borg.trait[BI_CLEVEL] <= 5 && (prefix_i(r_ptr->name, "squint")))
+			scaryguy_on_level = true;
 
-        /* Mage and priest are extra fearful */
-        if (borg.trait[BI_CLEVEL] <= 6
-            && (borg.trait[BI_CLASS] == CLASS_MAGE
-                || borg.trait[BI_CLASS] == CLASS_PRIEST)
-            && (strstr(r_ptr->name, "squint")))
-            scaryguy_on_level = true;
+		/* Mage and priest are extra fearful */
+		if (borg.trait[BI_CLEVEL] <= 6
+			&& (borg.trait[BI_CLASS] == CLASS_MAGE
+				|| borg.trait[BI_CLASS] == CLASS_PRIEST)
+			&& (prefix_i(r_ptr->name, "squint")))
+			scaryguy_on_level = true;
 
-        /* run from certain dungeon scaries */
-        if (borg.trait[BI_CLEVEL] <= 5
-            && (strstr(r_ptr->name, "Grip") || strstr(r_ptr->name, "Fang")
-                || strstr(r_ptr->name, "small kobold")))
-            scaryguy_on_level = true;
+		/* run from certain dungeon scaries */
+		if (borg.trait[BI_CLEVEL] <= 5
+			&& (prefix_i(r_ptr->name, "Grip") || prefix_i(r_ptr->name, "Fang")
+				|| prefix_i(r_ptr->name, "small kobold")))
+			scaryguy_on_level = true;
 
-        /* run from certain scaries */
-        if (borg.trait[BI_CLEVEL] <= 8
-            && (strstr(r_ptr->name, "novice") || strstr(r_ptr->name, "kobold")
-                || strstr(r_ptr->name, "kobold archer")
-                || strstr(r_ptr->name, "jackal")
-                || strstr(r_ptr->name, "shrieker")
-                || strstr(r_ptr->name, "Farmer Maggot")
-                || strstr(r_ptr->name, "filthy street urchin")
-                || strstr(r_ptr->name, "battle-scarred veteran")
-                || strstr(r_ptr->name, "mean-looking mercenary")))
-            scaryguy_on_level = true;
+		/* run from certain scaries */
+		if (borg.trait[BI_CLEVEL] <= 8
+			&& (prefix_i(r_ptr->name, "soldier")
+				|| prefix_i(r_ptr->name, "cutpurse")
+				|| prefix_i(r_ptr->name, "acolyte")
+				|| prefix_i(r_ptr->name, "apprentice")
+				|| prefix_i(r_ptr->name, "kobold")
+				|| prefix_i(r_ptr->name, "jackal")
+				|| prefix_i(r_ptr->name, "shrieker")
+				|| prefix_i(r_ptr->name, "Farmer Maggot")
+				|| prefix_i(r_ptr->name, "filthy street urchin")
+				|| prefix_i(r_ptr->name, "battle-scarred veteran")
+				|| prefix_i(r_ptr->name, "mean-looking mercenary")))
+			scaryguy_on_level = true;
 
-        if (borg.trait[BI_CLEVEL] <= 15
-            && (strstr(r_ptr->name, "Bullr")
-                || ((strstr(r_ptr->name, "giant white mouse")
-                        || strstr(r_ptr->name, "white worm mass")
-                        || strstr(r_ptr->name, "green worm mass"))
-                    && breeder_count >= borg.trait[BI_CLEVEL])))
-            scaryguy_on_level = true;
+		if (borg.trait[BI_CLEVEL] <= 15
+			&& (prefix_i(r_ptr->name, "Bullroarer")
+				|| ((prefix_i(r_ptr->name, "giant white mouse")
+					|| prefix_i(r_ptr->name, "white worm mass")
+					|| prefix_i(r_ptr->name, "green worm mass"))
+					&& breeder_count >= borg.trait[BI_CLEVEL])))
+			scaryguy_on_level = true;
 
-        if (borg.trait[BI_CLEVEL] <= 20
-            && (strstr(r_ptr->name, "cave spider")
-                || strstr(r_ptr->name, "pink naga")
-                || strstr(r_ptr->name, "giant pink frog")
-                || strstr(r_ptr->name, "radiation eye")
-                || (strstr(r_ptr->name, "yellow worm mass")
-                    && breeder_count >= borg.trait[BI_CLEVEL])))
-            scaryguy_on_level = true;
+		if (borg.trait[BI_CLEVEL] <= 20
+			&& (prefix_i(r_ptr->name, "cave spider")
+				|| prefix_i(r_ptr->name, "red naga")
+				|| prefix_i(r_ptr->name, "giant red frog")
+				|| prefix_i(r_ptr->name, "radiation eye")
+				|| (prefix_i(r_ptr->name, "yellow worm mass")
+					&& breeder_count >= borg.trait[BI_CLEVEL])))
+			scaryguy_on_level = true;
 
-        if (borg.trait[BI_CLEVEL] < 45
-            && (strstr(r_ptr->name, "gravity") || strstr(r_ptr->name, "inertia")
-                || strstr(r_ptr->name, "ancient")
-                || strstr(r_ptr->name, "Beorn")
-                || strstr(r_ptr->name, "dread") /* Appear in Groups */))
-            scaryguy_on_level = true;
+		if (borg.trait[BI_CLEVEL] < 45
+			&& (prefix_i(r_ptr->name, "gravity")
+				|| prefix_i(r_ptr->name, "inertia")
+				|| prefix_i(r_ptr->base->name, "ancient dragon")
+				|| prefix_i(r_ptr->name, "Beorn")
+				|| prefix_i(r_ptr->name, "dread") /* Appear in Groups */))
+			scaryguy_on_level = true;
 
-        /* Nether breath is bad */
-        if (!borg.trait[BI_SRNTHR]
-            && (strstr(r_ptr->name, "Ossë, Herald of Ulmo")
-                || strstr(r_ptr->name, "dracolich")
-                || strstr(r_ptr->name, "dracolisk")))
-            scaryguy_on_level = true;
+		/* Nether breath is bad */
+		if (!borg.trait[BI_SRNTHR]
+			&& (prefix_i(r_ptr->name, "Oss") /* Ossë, Herald of Ulmo */
+				|| prefix_i(r_ptr->name, "dracolich")
+				|| prefix_i(r_ptr->name, "dracolisk")))
+			scaryguy_on_level = true;
 
-        /* Blindness is really bad */
-        if ((!borg.trait[BI_SRBLIND])
-            && ((strstr(r_ptr->name, "light hound") && !borg.trait[BI_SRLITE])
-                || (strstr(r_ptr->name, "dark hound")
-                    && !borg.trait[BI_SRDARK])))
-            scaryguy_on_level = true;
+		/* Blindness is really bad */
+		if ((!borg.trait[BI_SRBLIND])
+			&& ((prefix_i(r_ptr->name, "light hound") && !borg.trait[BI_SRLITE])
+				|| (prefix_i(r_ptr->name, "dark hound")
+					&& !borg.trait[BI_SRDARK])))
+			scaryguy_on_level = true;
 
-        /* Chaos and Confusion are really bad */
-        if ((!borg.trait[BI_SRKAOS] && !borg.trait[BI_SRCONF])
-            && (strstr(r_ptr->name, "chaos")))
-            scaryguy_on_level = true;
-        if (!borg.trait[BI_SRCONF]
-            && (strstr(r_ptr->name, "pukelman")
-                || strstr(r_ptr->name, "nightmare")))
-            scaryguy_on_level = true;
+		/* Chaos and Confusion are really bad */
+		if ((!borg.trait[BI_SRKAOS] && !borg.trait[BI_SRCONF])
+			&& (my_stristr(r_ptr->name, "chaos")))
+			scaryguy_on_level = true;
+		if (!borg.trait[BI_SRCONF]
+			&& (prefix_i(r_ptr->name, "pukelman")
+				|| prefix_i(r_ptr->name, "night mare")))
+			scaryguy_on_level = true;
 
-        /* Poison is really Bad */
-        if (!borg.trait[BI_RPOIS] && /* Note the RPois not SRPois */
-            (strstr(r_ptr->name, "drolem")))
-            scaryguy_on_level = true;
+		/* Poison is really Bad */
+		if (!borg.trait[BI_RPOIS] && /* Note the RPois not SRPois */
+			(prefix_i(r_ptr->name, "drolem")))
+			scaryguy_on_level = true;
 
-        /* Now do distance considerations */
-        x9 = kill->pos.x;
-        y9 = kill->pos.y;
+		/* Now do distance considerations */
+		x9 = kill->pos.x;
+		y9 = kill->pos.y;
 
-        /* Distance components */
-        ax = (x9 > borg.c.x) ? (x9 - borg.c.x) : (borg.c.x - x9);
-        ay = (y9 > borg.c.y) ? (y9 - borg.c.y) : (borg.c.y - y9);
+		/* Distance components */
+		ax = (x9 > borg.c.x) ? (x9 - borg.c.x) : (borg.c.x - x9);
+		ay = (y9 > borg.c.y) ? (y9 - borg.c.y) : (borg.c.y - y9);
 
-        /* Distance */
-        d = MAX(ax, ay);
+		/* Distance */
+		d = MAX(ax, ay);
 
-        /* if the guy is too far then skip it unless in town. */
-        if (d > dist && borg.trait[BI_CDEPTH])
-            continue;
+		/* if the guy is too far then skip it unless in town. */
+		if (d > dist && borg.trait[BI_CDEPTH])
+			continue;
 
-        /*** Scan for Uniques ***/
+		/*** Scan for Uniques ***/
 
-        /* this is a unique. */
-        if (rf_has(r_ptr->flags, RF_UNIQUE))
+		/* this is a unique. */
+		if (rf_has(r_ptr->flags, RF_UNIQUE))
 
-        {
-            /* Set a flag for use with certain types of spells */
-            unique_on_level = kill->r_idx;
+		{
+			/* Set a flag for use with certain types of spells */
+			unique_on_level = kill->r_idx;
 
-            /* return 1 if not Morgy, +10 if it is Morgy or Sauron */
-            if (rf_has(r_ptr->flags, RF_QUESTOR)) {
-                borg_fighting_unique += 10;
-            }
+			/* return 1 if not Morgy, +10 if it is Morgy or Sauron */
+			if (rf_has(r_ptr->flags, RF_QUESTOR)) {
+				borg_fighting_unique += 10;
+			}
 
-            /* regular unique */
-            borg_fighting_unique++;
+			/* regular unique */
+			borg_fighting_unique++;
 
-            /* Note that fighting a Questor would result in a 11 value */
-            if (rf_has(r_ptr->flags, RF_EVIL))
-                borg_fighting_evil_unique = true;
-        }
+			/* Note that fighting a Questor would result in a 11 value */
+			if (rf_has(r_ptr->flags, RF_EVIL))
+				borg_fighting_evil_unique = true;
+		}
 
-        /*** Scan for Summoners ***/
-        if ((rsf_has(r_ptr->spell_flags, RSF_S_KIN))
-            || (rsf_has(r_ptr->spell_flags, RSF_S_HI_DEMON))
-            || (rsf_has(r_ptr->spell_flags, RSF_S_MONSTER))
-            || (rsf_has(r_ptr->spell_flags, RSF_S_MONSTERS))
-            || (rsf_has(r_ptr->spell_flags, RSF_S_ANIMAL))
-            || (rsf_has(r_ptr->spell_flags, RSF_S_SPIDER))
-            || (rsf_has(r_ptr->spell_flags, RSF_S_HOUND))
-            || (rsf_has(r_ptr->spell_flags, RSF_S_HYDRA))
-            || (rsf_has(r_ptr->spell_flags, RSF_S_AINU))
-            || (rsf_has(r_ptr->spell_flags, RSF_S_DEMON))
-            || (rsf_has(r_ptr->spell_flags, RSF_S_UNDEAD))
-            || (rsf_has(r_ptr->spell_flags, RSF_S_DRAGON))
-            || (rsf_has(r_ptr->spell_flags, RSF_S_HI_DRAGON))
-            || (rsf_has(r_ptr->spell_flags, RSF_S_HI_UNDEAD))
-            || (rsf_has(r_ptr->spell_flags, RSF_S_WRAITH))
-            || (rsf_has(r_ptr->spell_flags, RSF_S_UNIQUE))) {
-            /* mark the flag */
-            borg_fighting_summoner = true;
+		/*** Scan for Summoners ***/
+		if ((rsf_has(r_ptr->spell_flags, RSF_S_KIN))
+			|| (rsf_has(r_ptr->spell_flags, RSF_S_HI_DEMON))
+			|| (rsf_has(r_ptr->spell_flags, RSF_S_MONSTER))
+			|| (rsf_has(r_ptr->spell_flags, RSF_S_MONSTERS))
+			|| (rsf_has(r_ptr->spell_flags, RSF_S_ANIMAL))
+			|| (rsf_has(r_ptr->spell_flags, RSF_S_SPIDER))
+			|| (rsf_has(r_ptr->spell_flags, RSF_S_HOUND))
+			|| (rsf_has(r_ptr->spell_flags, RSF_S_HYDRA))
+			|| (rsf_has(r_ptr->spell_flags, RSF_S_AINU))
+			|| (rsf_has(r_ptr->spell_flags, RSF_S_DEMON))
+			|| (rsf_has(r_ptr->spell_flags, RSF_S_UNDEAD))
+			|| (rsf_has(r_ptr->spell_flags, RSF_S_DRAGON))
+			|| (rsf_has(r_ptr->spell_flags, RSF_S_HI_DRAGON))
+			|| (rsf_has(r_ptr->spell_flags, RSF_S_HI_UNDEAD))
+			|| (rsf_has(r_ptr->spell_flags, RSF_S_WRAITH))
+			|| (rsf_has(r_ptr->spell_flags, RSF_S_UNIQUE))) {
+			/* mark the flag */
+			borg_fighting_summoner = true;
 
-            /* recheck the distance to see if close
-             * and mark the index for as-corridor
-             */
-            if (d < 8) {
-                borg_kills_summoner = i;
-            }
-        }
-    }
+			/* recheck the distance to see if close
+			 * and mark the index for as-corridor
+			 */
+			if (d < 8) {
+				borg_kills_summoner = i;
+			}
+		}
+	}
 }
 
 /*
