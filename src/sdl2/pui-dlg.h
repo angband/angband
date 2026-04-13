@@ -191,6 +191,13 @@ struct sdlpui_dialog_funcs {
 	void (*query_minimum_size)(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, int *width, int *height);
 	/**
+	 * Reassign IDs for the dialog and the controls it contains so the
+	 * first is start and the rest follow consecutively from there.
+	 * Return the number of IDs reassigned if successful.  Otherwise,
+	 * return zero.  May not be NULL.
+	 */
+	Uint32 (*reassign_ids)(struct sdlpui_dialog *id, Uint32 start);
+	/**
 	 * Handle releasing resources for the private data, if any.  May
 	 * be NULL to have no special cleanup done.
 	 */
@@ -221,6 +228,11 @@ struct sdlpui_dialog {
 	 */
 	struct sdlpui_dialog *next, *prev;
 	/**
+	 * Managed by sdlpui_register_dialog() and sdlpui_unregister_dialog()
+	 * to use when reassigning IDs.
+	 */
+	struct sdlpui_dialog *next_r, *prev_r;
+	/**
 	 * Holds the rendered contents of the dialog/menu.  May be NULL to
 	 * directly render to the window's backing buffer.
 	 */
@@ -238,6 +250,10 @@ struct sdlpui_dialog {
 	 * and size of the dialog/menu.
 	 */
 	SDL_Rect rect;
+	/**
+	 * Holds a number from sdlpui_reserve_id() to use in identity checks.
+	 */
+	Uint32 id;
 	/** Allow for a check before casting priv to another type. */
 	Uint32 type_code;
 	/**

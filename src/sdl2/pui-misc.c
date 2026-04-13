@@ -33,8 +33,14 @@ struct sdlpui_code_registry {
 	Uint32 count;
 };
 
-static struct sdlpui_code_registry my_codes = { NULL, NULL, 0, 0 };
+struct sdlpui_id_registry {
+	SDL_mutex *lock;
+	struct sdlpui_dialog *d_head;
+	Uint32 count;
+};
 
+static struct sdlpui_code_registry my_codes = { NULL, NULL, 0, 0 };
+static struct sdlpui_id_registry my_ids = { NULL, NULL, 0 };
 
 /**
  * Initialize the resources needed by the sdlpui_*() calls.
@@ -85,6 +91,17 @@ int sdlpui_init(void)
 		}
 	}
 
+	if (!my_ids.lock) {
+		my_ids.lock = SDL_CreateMutex();
+		if (!my_ids.lock) {
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+				"Could not create id mutex in "
+				"sdlpui_init(): %s", SDL_GetError());
+			sdlpui_quit();
+			return 1;
+		}
+	}
+
 	return 0;
 }
 
@@ -127,6 +144,90 @@ void sdlpui_quit(void)
 				"Could not acquire code mutex in "
 				"sdlpui_quit()");
 		}
+	}
+
+	lock = my_ids.lock;
+	if (lock) {
+		if (!SDL_LockMutex(lock)) {
+			my_ids.lock = NULL;
+			my_ids.d_head = NULL;
+			my_ids.count = 0;
+			if (SDL_UnlockMutex(lock)) {
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+					"Could not release id mutex in "
+					"sdlpui_quit()");
+			}
+			SDL_DestroyMutex(lock);
+		} else {
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+				"Could not acquire id mutex in sdlpui_quit()");
+		}
+	}
+}
+
+
+/**
+ * Remember a dialog so that its ID and the IDs of the controls it contains
+ * can be reassigned, as necessary.
+ *
+ * \param d points to the dialog to forget.  It may not be NULL.
+ */
+void sdlpui_register_dialog(struct sdlpui_dialog *d)
+{
+	if (SDL_LockMutex(my_ids.lock)) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"Could not acquire mutex in sdlpui_register_dialog()");
+		sdlpui_force_quit();
+	}
+	/* Only register if not already registered. */
+	if (!d->next_r && !d->prev_r && (!my_ids.d_head
+			|| my_ids.d_head->id != d->id)) {
+		d->next_r = my_ids.d_head;
+		if (my_ids.d_head) {
+			my_ids.d_head->prev_r = d;
+		}
+		my_ids.d_head = d;
+	}
+	if (SDL_UnlockMutex(my_ids.lock)) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"Could not release mutex in sdlpui_register_dialog()");
+		sdlpui_force_quit();
+	}
+}
+
+
+/**
+ * Forget a dialog so that it is no longer considered when reassigning IDs.
+ *
+ * \param d points to the dialog to forget.  It may not be NULL.
+ */
+void sdlpui_unregister_dialog(struct sdlpui_dialog *d)
+{
+	if (SDL_LockMutex(my_ids.lock)) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"Could not acquire mutex in "
+			"sdlpui_unregister_dialog()");
+		sdlpui_force_quit();
+	}
+	/* Only unregister if already registered. */
+	if (d->next_r || d->prev_r || (my_ids.d_head
+			&& my_ids.d_head->id == d->id)) {
+		if (d->next_r) {
+			d->next_r->prev_r = d->prev_r;
+		}
+		if (d->prev_r) {
+			d->prev_r->next_r = d->next_r;
+		} else {
+			my_ids.d_head = d->next_r;
+		}
+		d->next_r = NULL;
+		d->prev_r = NULL;
+	}
+	if (SDL_UnlockMutex(my_ids.lock)) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"Could not release mutex in "
+			"sdlpui_unregister_dialog()");
+		sdlpui_force_quit();
 	}
 }
 
@@ -226,6 +327,49 @@ Uint32 sdlpui_register_code(const char *name)
 	}
 
 	return code;
+}
+
+
+Uint32 sdlpui_reserve_id(void)
+{
+	Uint32 result = 0;
+
+	if (SDL_LockMutex(my_ids.lock)) {
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+			"Could not acquire mutex in sdlpui_reserve_id()");
+		return result;
+	}
+
+	if (my_ids.count == SDL_MAX_UINT32) {
+		struct sdlpui_dialog *d = my_ids.d_head;
+		Uint32 start = 1;
+
+		while (1) {
+			Uint32 count;
+
+			if (!d) {
+				result = start;
+				my_ids.count = start;
+				break;
+			}
+			count = (d->ftb->reassign_ids)(d, start);
+			if (!count || start > SDL_MAX_UINT32 - count) {
+				break;
+			}
+			start += count;
+			d = d->next_r;
+		}
+	} else {
+		result = ++my_ids.count;
+	}
+
+	if (SDL_UnlockMutex(my_ids.lock)) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"Could not release mutex in sdlpui_reserve_id()");
+		sdlpui_force_quit();
+	}
+
+	return result;
 }
 
 
