@@ -619,12 +619,12 @@ void sdlpui_dialog_push_to_top(struct sdlpui_window *w, struct sdlpui_dialog *d)
 	/* Unlink. */
 	if (d->next) {
 		d->next->prev = d->prev;
-	} else if (w->d_tail == d) {
+	} else if (w->d_tail && w->d_tail->id == d->id) {
 		w->d_tail = d->prev;
 	}
 	if (d->prev) {
 		d->prev->next = d->next;
-	} else if (w->d_head == d) {
+	} else if (w->d_head && w->d_head->id == d->id) {
 		redraw = false;
 		w->d_head = d->next;
 	}
@@ -647,22 +647,22 @@ void sdlpui_dialog_push_to_top(struct sdlpui_window *w, struct sdlpui_dialog *d)
 
 void sdlpui_dialog_pop(struct sdlpui_window *w, struct sdlpui_dialog *d)
 {
-	if (w->d_mouse == d) {
+	if (w->d_mouse && w->d_mouse->id == d->id) {
 		w->d_mouse = NULL;
 	}
-	if (w->d_key == d) {
+	if (w->d_key && w->d_key->id == d->id) {
 		w->d_key = NULL;
 	}
 	if (d->next) {
 		d->next->prev = d->prev;
 	} else {
-		SDL_assert(w->d_tail == d);
+		SDL_assert(w->d_tail && w->d_tail->id == d->id);
 		w->d_tail = d->prev;
 	}
 	if (d->prev) {
 		d->prev->next = d->next;
 	} else {
-		SDL_assert(w->d_head == d);
+		SDL_assert(w->d_head && w->d_head->id == d->id);
 		w->d_head = d->next;
 	}
 	w->dirty = true;
@@ -677,7 +677,7 @@ void sdlpui_dialog_gain_key_focus(struct sdlpui_window *w,
 void sdlpui_dialog_yield_key_focus(struct sdlpui_window *w,
 		struct sdlpui_dialog *d)
 {
-	if (w->d_key == d) {
+	if (w->d_key && w->d_key->id == d->id) {
 		w->d_key = NULL;
 	}
 }
@@ -691,7 +691,7 @@ void sdlpui_dialog_gain_mouse_focus(struct sdlpui_window *w,
 void sdlpui_dialog_yield_mouse_focus(struct sdlpui_window *w,
 		struct sdlpui_dialog *d)
 {
-	if (w->d_mouse == d) {
+	if (w->d_mouse && w->d_mouse->id == d->id) {
 		w->d_mouse = NULL;
 	}
 }
@@ -1584,7 +1584,7 @@ static void goto_shortcut_editor_first_control(struct sdlpui_dialog *d,
 	SDL_assert(d->type_code == SHORTCUT_EDITOR_CODE && d->priv);
 	pse = d->priv;
 	SDL_assert(pse->change_buttons[0].ftb->gain_key);
-	SDL_assert(!d->c_key || d->c_key == &pse->change_buttons[0]);
+	SDL_assert(!d->c_key || d->c_key->id == pse->change_buttons[0].id);
 	(*pse->change_buttons[0].ftb->gain_key)(
 		&pse->change_buttons[0], d, w, 0);
 	d->c_key = &pse->change_buttons[0];
@@ -1603,11 +1603,11 @@ static void step_shortcut_editor_control(struct sdlpui_dialog *d,
 	pse = d->priv;
 	while (1) {
 		if (i >= MAX_WINDOWS) {
-			if (c == &pse->close_button) {
+			if (c->id == pse->close_button.id) {
 				new_c = (forward) ?
 					&pse->reset_button :
 					&pse->clear_buttons[MAX_WINDOWS - 1];
-			} else if (c == &pse->reset_button) {
+			} else if (c->id == pse->reset_button.id) {
 				new_c = (forward) ?
 					&pse->change_buttons[0] :
 					&pse->close_button;
@@ -1620,12 +1620,12 @@ static void step_shortcut_editor_control(struct sdlpui_dialog *d,
 			}
 			break;
 		}
-		if (c == &pse->change_buttons[i]) {
+		if (c->id == pse->change_buttons[i].id) {
 			new_c = (forward) ? &pse->clear_buttons[i] :
 				((i > 0) ? &pse->clear_buttons[i - 1] :
 				&pse->reset_button);
 			break;
-		} else if (c == &pse->clear_buttons[i]) {
+		} else if (c->id == pse->clear_buttons[i].id) {
 			new_c = (forward) ? ((i < MAX_WINDOWS - 1) ?
 				&pse->change_buttons[i + 1] :
 				&pse->close_button) : &pse->change_buttons[i];
@@ -1633,7 +1633,7 @@ static void step_shortcut_editor_control(struct sdlpui_dialog *d,
 		}
 		++i;
 	}
-	if (d->c_key && d->c_key != new_c &&
+	if (d->c_key && (!new_c || d->c_key->id != new_c->id) &&
 			d->c_key->ftb->lose_key) {
 		(*d->c_key->ftb->lose_key)(d->c_key, d, w, new_c, d);
 	}
@@ -1869,6 +1869,31 @@ static void resize_shortcut_editor(struct sdlpui_dialog *d,
 	d->rect.h = height;
 }
 
+static Uint32 reassign_shortcut_editor_ids(struct sdlpui_dialog *d,
+		Uint32 start)
+{
+	struct shortcut_editor_data *pse;
+	int i;
+
+	if (start > SDL_MAX_UINT32 - 4 * (MAX_WINDOWS + 1)) {
+		return 0;
+	}
+	SDL_assert(d->type_code == SHORTCUT_EDITOR_CODE && d->priv);
+	pse = d->priv;
+	d->id = start;
+	for (i = 0; i < MAX_WINDOWS; ++i) {
+		pse->labels[i].id = start + 1 + 4 * i;
+		pse->shortcut_displays[i].id = start + 2 + 4 * i;
+		pse->change_buttons[i].id = start + 3 + 4 * i;
+		pse->clear_buttons[i].id = start + 4 + 4 * i;
+	}
+	pse->prompt_label.id = start + 1 + 4 * MAX_WINDOWS;
+	pse->close_button.id = start + 2 + 4 * MAX_WINDOWS;
+	pse->reset_button.id = start + 3 + 4 * MAX_WINDOWS;
+
+	return 4 * (MAX_WINDOWS + 1);
+}
+
 static void cleanup_shortcut_editor(struct sdlpui_dialog *d)
 {
 	struct shortcut_editor_data *pse;
@@ -1977,7 +2002,7 @@ static void hide_shortcut_editor(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, SDL_bool up)
 {
 	if (!up) {
-		SDL_assert(w->shorte == d);
+		SDL_assert(w->shorte && w->shorte->id == d->id);
 		w->shorte = NULL;
 	}
 }
@@ -2007,9 +2032,11 @@ static void show_shortcut_editor(struct sdlpui_window *w, int x, int y)
 		resize_shortcut_editor,
 		query_shortcut_editor_natural_size,
 		NULL,
+		reassign_shortcut_editor_ids,
 		cleanup_shortcut_editor
 	};
 	struct shortcut_editor_data *pse;
+	Uint32 id;
 	int i;
 	int dw, dh;
 
@@ -2017,8 +2044,25 @@ static void show_shortcut_editor(struct sdlpui_window *w, int x, int y)
 		sdlpui_popup_dialog(w->shorte, w, SDL_TRUE);
 		return;
 	}
+	id = sdlpui_reserve_id();
+	if (!id) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"could not acquire dialog ID in "
+			"show_shortcut_editor()");
+		sdlpui_force_quit();
+	}
 	w->shorte = SDL_malloc(sizeof(*w->shorte));
 	pse = SDL_malloc(sizeof(*pse));
+	if (!w->shorte || !pse) {
+		if (w->shorte) {
+			SDL_free(w->shorte);
+		}
+		if (pse) {
+			SDL_free(pse);
+		}
+		sdlpui_force_quit();
+	}
+
 	for (i = 0; i < MAX_WINDOWS; ++i) {
 		char keypress_desc[40];
 
@@ -2053,14 +2097,18 @@ static void show_shortcut_editor(struct sdlpui_window *w, int x, int y)
 	w->shorte->recreate_textures_callback = NULL;
 	w->shorte->next = NULL;
 	w->shorte->prev = NULL;
+	w->shorte->next_r = NULL;
+	w->shorte->prev_r = NULL;
 	w->shorte->texture = NULL;
 	w->shorte->c_mouse = NULL;
 	w->shorte->c_key = NULL;
 	w->shorte->priv = pse;
+	w->shorte->id = id;
 	w->shorte->type_code = SHORTCUT_EDITOR_CODE;
 	w->shorte->tag = 0;
 	w->shorte->pinned = SDL_FALSE;
 	w->shorte->dirty = SDL_TRUE;
+	sdlpui_register_dialog(w->shorte);
 
 	(*w->shorte->ftb->query_natural_size)(w->shorte, w, &dw, &dh);
 	if (w->shorte->ftb->resize) {
@@ -2078,7 +2126,7 @@ static void hide_about(struct sdlpui_dialog *d, struct sdlpui_window *w,
 		SDL_bool up)
 {
 	if (!up) {
-		SDL_assert(w->infod == d);
+		SDL_assert(w->infod && w->infod->id == d->id);
 		w->infod = NULL;
 	}
 }
@@ -2165,7 +2213,7 @@ static void hide_sdl_details(struct sdlpui_dialog *d, struct sdlpui_window *w,
 		SDL_bool up)
 {
 	if (!up) {
-		SDL_assert(w->detaild == d);
+		SDL_assert(w->detaild && w->detaild->id == d->id);
 		w->detaild = NULL;
 	}
 }
@@ -3594,13 +3642,13 @@ static void handle_window_closed(struct my_app *a, struct sdlpui_window *window)
 				clear_pw_flag(subwindow);
 			}
 		}
-		free_window(window);
-		if (a->w_mouse == window) {
+		if (a->w_mouse && a->w_mouse->index == window->index) {
 			a->w_mouse = NULL;
 		}
-		if (a->w_key == window) {
+		if (a->w_key && a->w_key->index == window->index) {
 			a->w_key = NULL;
 		}
+		free_window(window);
 	}
 }
 
@@ -3613,7 +3661,7 @@ static void handle_window_focus(struct my_app *a, const SDL_WindowEvent *event)
 			new_w = get_window_by_id(a, event->windowID);
 			SDLPUI_EVENT_TRACER("window", new_w,
 				"(not extracted)", "mouse entered");
-			if (a->w_mouse && a->w_mouse != new_w
+			if (a->w_mouse && a->w_mouse->index != new_w->index
 					&& a->w_mouse->d_mouse) {
 				if (a->w_mouse->d_mouse->ftb->handle_window_loses_mouse) {
 					(*a->w_mouse->d_mouse->ftb->handle_window_loses_mouse)(
@@ -3641,7 +3689,7 @@ static void handle_window_focus(struct my_app *a, const SDL_WindowEvent *event)
 			new_w = get_window_by_id(a, event->windowID);
 			SDLPUI_EVENT_TRACER("window", new_w,
 				"(not extracted)", "gained key focus");
-			if (a->w_key && a->w_key != new_w
+			if (a->w_key && a->w_key->index != new_w->index
 					&& a->w_key->d_key) {
 				if (a->w_key->d_key->ftb->handle_window_loses_key) {
 					(*a->w_key->d_key->ftb->handle_window_loses_key)(
@@ -3887,7 +3935,8 @@ static bool handle_mousemotion(struct my_app *a,
 				tgt, a->w_mouse, mouse->x, mouse->y,
 				&comp_ind);
 
-			if (a->w_mouse->d_mouse != tgt) {
+			if (!a->w_mouse->d_mouse
+					|| a->w_mouse->d_mouse->id != tgt->id) {
 				struct sdlpui_dialog *old_d =
 					a->w_mouse->d_mouse;
 
@@ -3898,7 +3947,7 @@ static bool handle_mousemotion(struct my_app *a,
 				a->w_mouse->d_mouse = tgt;
 			}
 			/* Have key focus follow mouse. */
-			if (a->w_key != a->w_mouse) {
+			if (!a->w_key || a->w_key->index != a->w_mouse->index) {
 				if (a->w_key && a->w_key->d_key
 						&& a->w_key->d_key->ftb->handle_loses_key) {
 					(*a->w_key->d_key->ftb->handle_loses_key)(
@@ -3911,7 +3960,8 @@ static bool handle_mousemotion(struct my_app *a,
 				SDL_assert(!a->w_key
 					|| !a->w_key->d_mouse);
 				a->w_key = a->w_mouse;
-			} else if (a->w_key->d_key && a->w_key->d_key != tgt) {
+			} else if (a->w_key->d_key
+					&& a->w_key->d_key->id != tgt->id) {
 				if (a->w_key->d_key->ftb->handle_loses_key) {
 					(*a->w_key->d_key->ftb->handle_loses_key)(
 						a->w_key->d_key, a->w_key,
@@ -4217,7 +4267,8 @@ static bool trigger_menu_shortcut(struct my_app *a, keycode_t ch, uint8_t mods)
 				&& a->menu_shortcuts[i].type == EVT_KBRD
 				&& a->menu_shortcuts[i].code == ch
 				&& a->menu_shortcuts[i].mods == mods) {
-			if (a->w_key != a->windows + i) {
+			if (!a->w_key || a->w_key->index !=
+					a->windows[i].index) {
 				struct sdlpui_window *old_w = a->w_key;
 				struct sdlpui_dialog *old_d = a->w_key->d_key;
 
@@ -4236,8 +4287,9 @@ static bool trigger_menu_shortcut(struct my_app *a, keycode_t ch, uint8_t mods)
 				if (old_w) {
 					old_w->d_key = NULL;
 				}
-			} else if (a->w_key->d_key
-					!= a->windows[i].status_bar) {
+			} else if (!a->w_key->d_key ||
+					a->w_key->d_key->id
+					!= a->windows[i].status_bar->id) {
 				struct sdlpui_dialog *old_d = a->w_key->d_key;
 
 				SDL_assert(a->windows[i].status_bar->ftb->goto_first_control);

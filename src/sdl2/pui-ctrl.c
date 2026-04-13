@@ -2271,8 +2271,21 @@ void sdlpui_create_image(struct sdlpui_control *c, SDL_Texture *image,
 		enum sdlpui_hor_align halign, int top_margin, int bottom_margin,
 		int left_margin, int right_margin)
 {
-	struct sdlpui_image *ip = SDL_malloc(sizeof(*ip));
+	Uint32 id = sdlpui_reserve_id();
+	struct sdlpui_image *ip;
 
+	if (!id) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"could not acquire control ID in "
+			"sdlpui_create_image()");
+		sdlpui_force_quit();
+	}
+	ip = SDL_malloc(sizeof(*ip));
+	if (!ip) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"out of memory in sdlpui_create_image()");
+		sdlpui_force_quit();
+	}
 	ip->image = image;
 	ip->halign = halign;
 	ip->top_margin = (top_margin > 0) ? top_margin : 0;
@@ -2281,6 +2294,7 @@ void sdlpui_create_image(struct sdlpui_control *c, SDL_Texture *image,
 	ip->right_margin = (right_margin > 0) ? right_margin : 0;
 	c->ftb = &image_funcs;
 	c->priv = ip;
+	c->id = id;
 	c->type_code = SDLPUI_CTRL_IMAGE;
 }
 
@@ -2303,12 +2317,34 @@ void sdlpui_create_image(struct sdlpui_control *c, SDL_Texture *image,
 void sdlpui_create_label(struct sdlpui_control *c, const char *caption,
 		enum sdlpui_hor_align halign)
 {
-	struct sdlpui_label *lp = SDL_malloc(sizeof(*lp));
+	Uint32 id = sdlpui_reserve_id();
+	struct sdlpui_label *lp;
+	char *caption_copy;
 
-	lp->caption = SDL_strdup(caption);
+	if (!id) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"could not acquire control ID in "
+			"sdlpui_create_label()");
+		sdlpui_force_quit();
+	}
+	lp = SDL_malloc(sizeof(*lp));
+	caption_copy = SDL_strdup(caption);
+	if (!lp || !caption_copy) {
+		if (lp) {
+			SDL_free(lp);
+		}
+		if (caption_copy) {
+			SDL_free(caption_copy);
+		}
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"out of memory in sdlpui_create_label()");
+		sdlpui_force_quit();
+	}
+	lp->caption = caption_copy;
 	lp->halign = halign;
 	c->ftb = &label_funcs;
 	c->priv = lp;
+	c->id = id;
 	c->type_code = SDLPUI_CTRL_LABEL;
 }
 
@@ -2340,9 +2376,30 @@ void sdlpui_create_push_button(struct sdlpui_control *c, const char *caption,
 		struct sdlpui_control*, struct sdlpui_dialog*,
 		struct sdlpui_window*), int tag, SDL_bool disabled)
 {
-	struct sdlpui_push_button *pbp = SDL_malloc(sizeof(*pbp));
+	Uint32 id = sdlpui_reserve_id();
+	struct sdlpui_push_button *pbp;
+	char *caption_copy;
 
-	pbp->caption = SDL_strdup(caption);
+	if (!id) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"could not acquire control ID in "
+			"sdlpui_create_push_button()");
+		sdlpui_force_quit();
+	}
+	pbp = SDL_malloc(sizeof(*pbp));
+	caption_copy = SDL_strdup(caption);
+	if (!pbp || !caption_copy) {
+		if (pbp) {
+			SDL_free(pbp);
+		}
+		if (caption_copy) {
+			SDL_free(caption_copy);
+		}
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"out of memory in sdlpui_create_push_button()");
+		sdlpui_force_quit();
+	}
+	pbp->caption = caption_copy;
 	pbp->callback = callback;
 	pbp->halign = halign;
 	pbp->tag = tag;
@@ -2352,6 +2409,7 @@ void sdlpui_create_push_button(struct sdlpui_control *c, const char *caption,
 	pbp->armed = SDL_FALSE;
 	c->ftb = &push_button_funcs;
 	c->priv = pbp;
+	c->id = id;
 	c->type_code = SDLPUI_CTRL_PUSH_BUTTON;
 }
 
@@ -2383,9 +2441,30 @@ void sdlpui_create_menu_button(struct sdlpui_control *c, const char *caption,
 		struct sdlpui_control*, struct sdlpui_dialog*,
 		struct sdlpui_window *w), int tag, SDL_bool disabled)
 {
-	struct sdlpui_menu_button *mbp = SDL_malloc(sizeof(*mbp));
+	Uint32 id = sdlpui_reserve_id();
+	struct sdlpui_menu_button *mbp;
+	char *caption_copy;
 
-	mbp->caption = SDL_strdup(caption);
+	if (!id) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"could not acquire control ID in "
+			"sdlpui_create_menu_button()");
+		sdlpui_force_quit();
+	}
+	mbp = SDL_malloc(sizeof(*mbp));
+	caption_copy = SDL_strdup(caption);
+	if (!mbp || !caption_copy) {
+		if (mbp) {
+			SDL_free(mbp);
+		}
+		if (caption_copy) {
+			SDL_free(caption_copy);
+		}
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"out of memory in sdlpui_create_menu_button()");
+		sdlpui_force_quit();
+	}
+	mbp->caption = caption_copy;
 	mbp->callback = callback;
 	mbp->halign = halign;
 	mbp->tag = tag;
@@ -2396,6 +2475,7 @@ void sdlpui_create_menu_button(struct sdlpui_control *c, const char *caption,
 	mbp->subtype_code = SDLPUI_MB_NONE;
 	c->ftb = &menu_button_funcs;
 	c->priv = mbp;
+	c->id = id;
 	c->type_code = SDLPUI_CTRL_MENU_BUTTON;
 }
 
@@ -2421,9 +2501,30 @@ void sdlpui_create_menu_button(struct sdlpui_control *c, const char *caption,
 void sdlpui_create_menu_indicator(struct sdlpui_control *c, const char *caption,
 		enum sdlpui_hor_align halign, int tag, SDL_bool curr_value)
 {
-	struct sdlpui_menu_button *mbp = SDL_malloc(sizeof(*mbp));
+	Uint32 id = sdlpui_reserve_id();
+	struct sdlpui_menu_button *mbp;
+	char *caption_copy;
 
-	mbp->caption = SDL_strdup(caption);
+	if (!id) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"could not acquire control ID in "
+			"sdlpui_create_menu_indicator()");
+		sdlpui_force_quit();
+	}
+	mbp = SDL_malloc(sizeof(*mbp));
+	caption_copy = SDL_strdup(caption);
+	if (!mbp || !caption_copy) {
+		if (mbp) {
+			SDL_free(mbp);
+		}
+		if (caption_copy) {
+			SDL_free(caption_copy);
+		}
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"out of memory in sdlpui_create_menu_indicator()");
+		sdlpui_force_quit();
+	}
+	mbp->caption = caption_copy;
 	mbp->callback = NULL;
 	mbp->halign = halign;
 	mbp->tag = tag;
@@ -2435,6 +2536,7 @@ void sdlpui_create_menu_indicator(struct sdlpui_control *c, const char *caption,
 	mbp->v.toggled = (curr_value) ? SDL_TRUE : SDL_FALSE;
 	c->ftb = &menu_button_funcs;
 	c->priv = mbp;
+	c->id = id;
 	c->type_code = SDLPUI_CTRL_MENU_BUTTON;
 }
 
@@ -2474,9 +2576,30 @@ void sdlpui_create_menu_ranged_int(struct sdlpui_control *c,
 		struct sdlpui_window*), int tag, SDL_bool disabled,
 		int curr_value, int min_value, int max_value)
 {
-	struct sdlpui_menu_button *mbp = SDL_malloc(sizeof(*mbp));
+	Uint32 id = sdlpui_reserve_id();
+	struct sdlpui_menu_button *mbp;
+	char *caption_copy;
 
-	mbp->caption = SDL_strdup(caption);
+	if (!id) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"could not acquire control ID in "
+			"sdlpui_create_menu_ranged_int()");
+		sdlpui_force_quit();
+	}
+	mbp = SDL_malloc(sizeof(*mbp));
+	caption_copy = SDL_strdup(caption);
+	if (!mbp || !caption_copy) {
+		if (mbp) {
+			SDL_free(mbp);
+		}
+		if (caption_copy) {
+			SDL_free(caption_copy);
+		}
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"out of memory in sdlpui_create_menu_ranged_int()");
+		sdlpui_force_quit();
+	}
+	mbp->caption = caption_copy;
 	mbp->callback = callback;
 	mbp->halign = halign;
 	mbp->tag = tag;
@@ -2492,6 +2615,7 @@ void sdlpui_create_menu_ranged_int(struct sdlpui_control *c,
 	mbp->v.ranged_int.old = curr_value;
 	c->ftb = &menu_button_funcs;
 	c->priv = mbp;
+	c->id = id;
 	c->type_code = SDLPUI_CTRL_MENU_BUTTON;
 }
 
@@ -2526,9 +2650,30 @@ void sdlpui_create_menu_toggle(struct sdlpui_control *c, const char *caption,
 		struct sdlpui_window*), int tag, SDL_bool disabled,
 		SDL_bool curr_value)
 {
-	struct sdlpui_menu_button *mbp = SDL_malloc(sizeof(*mbp));
+	Uint32 id = sdlpui_reserve_id();
+	struct sdlpui_menu_button *mbp;
+	char *caption_copy;
 
-	mbp->caption = SDL_strdup(caption);
+	if (!id) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"could not acquire control ID in "
+			"sdlpui_create_menu_toggle()");
+		sdlpui_force_quit();
+	}
+	mbp = SDL_malloc(sizeof(*mbp));
+	caption_copy = SDL_strdup(caption);
+	if (!mbp || !caption_copy) {
+		if (mbp) {
+			SDL_free(mbp);
+		}
+		if (caption_copy) {
+			SDL_free(caption_copy);
+		}
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"out of memory in sdlpui_create_menu_toggle()");
+		sdlpui_force_quit();
+	}
+	mbp->caption = caption_copy;
 	mbp->callback = callback;
 	mbp->halign = halign;
 	mbp->tag = tag;
@@ -2540,6 +2685,7 @@ void sdlpui_create_menu_toggle(struct sdlpui_control *c, const char *caption,
 	mbp->v.toggled = (curr_value) ? SDL_TRUE : SDL_FALSE;
 	c->ftb = &menu_button_funcs;
 	c->priv = mbp;
+	c->id = id;
 	c->type_code = SDLPUI_CTRL_MENU_BUTTON;
 }
 
@@ -2581,9 +2727,30 @@ void sdlpui_create_submenu_button(struct sdlpui_control *c, const char *caption,
 		enum sdlpui_child_menu_placement placement, int tag,
 		SDL_bool disabled)
 {
-	struct sdlpui_menu_button *mbp = SDL_malloc(sizeof(*mbp));
+	Uint32 id = sdlpui_reserve_id();
+	struct sdlpui_menu_button *mbp;
+	char *caption_copy;
 
-	mbp->caption = SDL_strdup(caption);
+	if (!id) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"could not acquire control ID in "
+			"sdlpui_create_submenu_button()");
+		sdlpui_force_quit();
+	}
+	mbp = SDL_malloc(sizeof(*mbp));
+	caption_copy = SDL_strdup(caption);
+	if (!mbp || !caption_copy) {
+		if (mbp) {
+			SDL_free(mbp);
+		}
+		if (caption_copy) {
+			SDL_free(caption_copy);
+		}
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"out of memory in sdlpui_create_submenu_button()");
+		sdlpui_force_quit();
+	}
+	mbp->caption = caption_copy;
 	mbp->callback = NULL;
 	mbp->halign = halign;
 	mbp->tag = tag;
@@ -2597,5 +2764,6 @@ void sdlpui_create_submenu_button(struct sdlpui_control *c, const char *caption,
 	mbp->v.submenu.placement = placement;
 	c->ftb = &menu_button_funcs;
 	c->priv = mbp;
+	c->id = id;
 	c->type_code = SDLPUI_CTRL_MENU_BUTTON;
 }
