@@ -553,25 +553,27 @@ static bool borg_refuel_lantern(void)
         /* get first lantern */
         i = borg_slot(TV_LIGHT, sv_light_lantern);
 
-        /* loop through lanterns (they should be next to each other) */
-        for (; i < z_info->pack_size; i++) {
-            if (borg_items[i].tval != TV_LIGHT ||
-                borg_items[i].sval != sv_light_lantern) {
-                i = -1;
-                break;
+        if (i >= 0) {
+            /* loop through lanterns (they should be next to each other) */
+            for (; i < z_info->pack_size; i++) {
+                if (borg_items[i].tval != TV_LIGHT ||
+                    borg_items[i].sval != sv_light_lantern) {
+                    i = -1;
+                    break;
+                }
+
+                /* if this lantern is "Everburning" skip it */
+                if (of_has(borg_items[i].flags, OF_NO_FUEL))
+                    continue;
+
+                /* It better have some oil left */
+                if (borg_items[i].timeout > 0)
+                    break;
             }
 
-            /* if this lantern is "Everburning" skip it */
-            if (of_has(borg_items[i].flags, OF_NO_FUEL)) 
-                continue;
-
-            /* It better have some oil left */
-            if (borg_items[i].timeout > 0) 
-                break;
+            if (i >= z_info->pack_size)
+                i = -1;
         }
-
-        if (i >= z_info->pack_size) 
-            i = -1;
     }
 
     /* Still none */
