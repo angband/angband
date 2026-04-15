@@ -594,7 +594,7 @@ static void free_birth_menu(struct menu *menu)
 	struct birthmenu_data *data = menu->menu_data;
 
 	if (data) {
-		mem_free(data->items);
+		mem_free((char**)data->items);
 		mem_free(data);
 	}
 }

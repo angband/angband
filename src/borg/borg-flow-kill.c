@@ -3226,7 +3226,7 @@ static void borg_free_monster_names(void)
         for (i = 0; i < borg_normal_size; ++i) {
             string_free((char *)borg_normal_text[i]);
         }
-        mem_free(borg_normal_text);
+        mem_free((char**)borg_normal_text);
         borg_normal_text = NULL;
     }
     borg_normal_size = 0;
@@ -3236,7 +3236,7 @@ static void borg_free_monster_names(void)
         for (i = 0; i < borg_unique_size; ++i) {
             string_free((char *)borg_unique_text[i]);
         }
-        mem_free(borg_unique_text);
+        mem_free((char**)borg_unique_text);
         borg_unique_text = NULL;
     }
     borg_unique_size = 0;
