@@ -55,10 +55,14 @@
 # endif
 
 /**
- * May need to be tightened:  without autoconf.h assume all Unixes have mkdir().
+ * May need to be tightened:  without autoconf.h assume all Unixes have mkdir()
+ * and sigaction().
  */
 # if !defined(HAVE_MKDIR) && !defined(HAVE_CONFIG_H)
 #   define HAVE_MKDIR
+# endif
+# if !defined(HAVE_SIGACTION) && !defined(HAVE_CONFIG_H)
+#   define HAVE_SIGACTION 1
 # endif
 
 #endif
