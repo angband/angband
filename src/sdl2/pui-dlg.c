@@ -751,6 +751,12 @@ static void resize_simple_menu(struct sdlpui_dialog *d, struct sdlpui_window *w,
 	 * the buttons attached to the end
 	 */
 	vis = SDL_calloc(p->number, sizeof(*vis));
+	if (!vis) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"could not allocate working space in "
+			"resize_simple_menu()");
+		sdlpui_force_quit();
+	}
 	first_end = p->number;
 	work = 0;
 	for (i = 0; i < p->number; ++i) {

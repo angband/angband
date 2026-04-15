@@ -1191,6 +1191,12 @@ static const char *get_mb_caption(const struct sdlpui_control *c)
 		size_t ecap_sz = SDL_strlen(mbp->caption) + 16;
 
 		mbp->v.ranged_int.expanded_caption = SDL_malloc(ecap_sz);
+		if (!mbp->v.ranged_int.expanded_caption) {
+			SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+				"could not allocate expanded caption in "
+				"get_mb_caption()");
+			sdlpui_force_quit();
+		}
 		(void)SDL_snprintf(mbp->v.ranged_int.expanded_caption,
 			ecap_sz, mbp->caption, mbp->v.ranged_int.curr);
 
@@ -1799,6 +1805,12 @@ static void resize_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 		char *ecap = SDL_malloc(ecap_sz);
 		int wtmp, htmp;
 
+		if (!ecap) {
+			SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+				"could not allocate expanded caption in "
+				"resize_mb()");
+			sdlpui_force_quit();
+		}
 		(void)SDL_snprintf(ecap, ecap_sz, mbp->caption,
 			mbp->v.ranged_int.min);
 		sdlpui_get_utf8_metrics(font, ecap, &sw, &sh);
@@ -1890,6 +1902,12 @@ static void query_mb_natural_size(struct sdlpui_control *c,
 		char *ecap = SDL_malloc(ecap_sz);
 		int wtmp, htmp;
 
+		if (!ecap) {
+			SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+				"could not allocate expanded caption in "
+				"query_mb_natural_size()");
+			sdlpui_force_quit();
+		}
 		(void)SDL_snprintf(ecap, ecap_sz, mbp->caption,
 			mbp->v.ranged_int.min);
 		sdlpui_get_utf8_metrics(font, ecap, width, height);
