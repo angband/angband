@@ -36,17 +36,23 @@ int16_t signal_count;	/* Count interrupts ("I'm going to count to five") */
 
 typedef void (*Signal_Handler_t)(int);
 
-/**
- * Wrapper around signal() which it is safe to take the address
- * of, in case signal itself is hidden by some some macro magic.
- */
-static Signal_Handler_t wrap_signal(int sig, Signal_Handler_t handler)
+static int install_handler(int sig, Signal_Handler_t handler)
 {
-	return signal(sig, handler);
-}
+#ifdef HAVE_SIGACTION
+	struct sigaction a;
 
-/* Call this instead of calling signal() directly. */  
-static Signal_Handler_t (*signal_aux)(int, Signal_Handler_t) = wrap_signal;
+	a.sa_handler = handler;
+	(void)sigemptyset(&a.sa_mask);
+#ifdef SA_RESTART
+	a.sa_flags = SA_RESTART;
+#else
+	a.sa_flags = 0;
+#endif
+	return sigaction(sig, &a, NULL);
+#else
+	return (signal(sig, handler) == SIG_ERR) ? -1 : 0;
+#endif
+}
 
 
 #ifdef SIGHUP
@@ -71,8 +77,10 @@ static void handle_signal_suspend(int sig)
 	/* Protect errno from library calls in signal handler */
 	int save_errno = errno;
 
+#ifndef HAVE_SIGACTION
 	/* Disable handler */
-	(void)(*signal_aux)(sig, SIG_IGN);
+	(void)install_handler(sig, SIG_IGN);
+#endif
 
 #ifdef SIGSTOP
 
@@ -96,8 +104,10 @@ static void handle_signal_suspend(int sig)
 
 #endif
 
+#ifndef HAVE_SIGACTION
 	/* Restore handler */
-	(void)(*signal_aux)(sig, handle_signal_suspend);
+	(void)install_handler(sig, handle_signal_suspend);
+#endif
 
 	/* Restore errno */
 	errno = save_errno;
@@ -129,8 +139,10 @@ static void handle_signal_simple(int sig)
 	 */
 	char msg[48];
 
+#ifndef HAVE_SIGACTION
 	/* Disable handler */
-	(void)(*signal_aux)(sig, SIG_IGN);
+	(void)install_handler(sig, SIG_IGN);
+#endif
 
 	/* Construct the exit message in case it is needed */
 	(void)strnfmt(msg, sizeof(msg), "Exiting on signal %d!", sig);
@@ -204,8 +216,10 @@ static void handle_signal_simple(int sig)
 		Term_xtra(TERM_XTRA_NOISE, 0);
 	}
 
+#ifndef HAVE_SIGACTION
 	/* Restore handler */
-	(void)(*signal_aux)(sig, handle_signal_simple);
+	(void)install_handler(sig, handle_signal_simple);
+#endif
 
 	/* Restore errno */
 	errno = save_errno;
@@ -223,8 +237,10 @@ static void handle_signal_abort(int sig)
 	 */
 	char msg[48];
 
+#ifndef HAVE_SIGACTION
 	/* Disable handler */
-	(void)(*signal_aux)(sig, SIG_IGN);
+	(void)install_handler(sig, SIG_IGN);
+#endif
 
 	/* Construct the exit message */
 	(void)strnfmt(msg, sizeof(msg), "Exiting on signal %d!", sig);
@@ -275,7 +291,7 @@ void signals_ignore_tstp(void)
 {
 
 #ifdef SIGTSTP
-	(void)(*signal_aux)(SIGTSTP, SIG_IGN);
+	(void)install_handler(SIGTSTP, SIG_IGN);
 #endif
 
 }
@@ -287,7 +303,7 @@ void signals_handle_tstp(void)
 {
 
 #ifdef SIGTSTP
-	(void)(*signal_aux)(SIGTSTP, handle_signal_suspend);
+	(void)install_handler(SIGTSTP, handle_signal_suspend);
 #endif
 
 }
@@ -300,7 +316,7 @@ void signals_init(bool hup_disconnects)
 {
 
 #ifdef SIGHUP
-	(void)(*signal_aux)(SIGHUP,
+	(void)install_handler(SIGHUP,
 		(hup_disconnects) ? handle_signal_disconnect : SIG_IGN);
 #else
 	(void)hup_disconnects;
@@ -308,56 +324,56 @@ void signals_init(bool hup_disconnects)
 
 
 #ifdef SIGTSTP
-	(void)(*signal_aux)(SIGTSTP, handle_signal_suspend);
+	(void)install_handler(SIGTSTP, handle_signal_suspend);
 #endif
 
 
 #ifdef SIGINT
-	(void)(*signal_aux)(SIGINT, handle_signal_simple);
+	(void)install_handler(SIGINT, handle_signal_simple);
 #endif
 
 #ifdef SIGQUIT
-	(void)(*signal_aux)(SIGQUIT, handle_signal_simple);
+	(void)install_handler(SIGQUIT, handle_signal_simple);
 #endif
 
 
 #ifdef SIGFPE
-	(void)(*signal_aux)(SIGFPE, handle_signal_abort);
+	(void)install_handler(SIGFPE, handle_signal_abort);
 #endif
 
 #ifdef SIGILL
-	(void)(*signal_aux)(SIGILL, handle_signal_abort);
+	(void)install_handler(SIGILL, handle_signal_abort);
 #endif
 
 #ifdef SIGTRAP
-	(void)(*signal_aux)(SIGTRAP, handle_signal_abort);
+	(void)install_handler(SIGTRAP, handle_signal_abort);
 #endif
 
 #ifdef SIGIOT
-	(void)(*signal_aux)(SIGIOT, handle_signal_abort);
+	(void)install_handler(SIGIOT, handle_signal_abort);
 #endif
 
 /* Set to 0 to suppress signal handlers when debugging */
 #if 1
 # ifdef SIGBUS
-	(void)(*signal_aux)(SIGBUS, handle_signal_abort);
+	(void)install_handler(SIGBUS, handle_signal_abort);
 # endif
 
 # ifdef SIGSEGV
-	(void)(*signal_aux)(SIGSEGV, handle_signal_abort);
+	(void)install_handler(SIGSEGV, handle_signal_abort);
 # endif
 #endif
 
 #ifdef SIGTERM
-	(void)(*signal_aux)(SIGTERM, handle_signal_abort);
+	(void)install_handler(SIGTERM, handle_signal_abort);
 #endif
 
 #ifdef SIGPIPE
-	(void)(*signal_aux)(SIGPIPE, handle_signal_abort);
+	(void)install_handler(SIGPIPE, handle_signal_abort);
 #endif
 
 #ifdef SIGEMT
-	(void)(*signal_aux)(SIGEMT, handle_signal_abort);
+	(void)install_handler(SIGEMT, handle_signal_abort);
 #endif
 
 /**
@@ -366,19 +382,19 @@ void signals_init(bool hup_disconnects)
  * signal that the system will soon be out of memory.
  */
 #ifdef SIGDANGER
-	(void)(*signal_aux)(SIGDANGER, handle_signal_abort);
+	(void)install_handler(SIGDANGER, handle_signal_abort);
 #endif
 
 #ifdef SIGSYS
-	(void)(*signal_aux)(SIGSYS, handle_signal_abort);
+	(void)install_handler(SIGSYS, handle_signal_abort);
 #endif
 
 #ifdef SIGXCPU
-	(void)(*signal_aux)(SIGXCPU, handle_signal_abort);
+	(void)install_handler(SIGXCPU, handle_signal_abort);
 #endif
 
 #ifdef SIGPWR
-	(void)(*signal_aux)(SIGPWR, handle_signal_abort);
+	(void)install_handler(SIGPWR, handle_signal_abort);
 #endif
 
 }

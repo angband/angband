@@ -85,6 +85,25 @@ AC_DEFUN([MY_EXPAND_DIR],
 	)`]
 )
 
+dnl Set HAVE_SIGACTION if sigaction() is available.
+AC_DEFUN([MY_CHECK_SIGACTION], [
+	AC_MSG_CHECKING([availability of sigaction()])
+	AC_LINK_IFELSE([AC_LANG_SOURCE([[
+#include <signal.h>
+int main(int argc, char *argv[]) {
+	struct sigaction a;
+
+	a.sa_handler = SIG_IGN;
+	(void)sigemptyset(&a.sa_mask);
+	a.sa_flags = 0;
+	return sigaction(SIGINT, &a, 0);
+}
+]])],
+		[AC_MSG_RESULT([yes])
+			AC_DEFINE([HAVE_SIGACTION], [1], [System supports sigaction().])],
+		[AC_MSG_RESULT([no])])]
+)
+
 
 # Configure paths for SDL2
 # Sam Lantinga 9/21/99
