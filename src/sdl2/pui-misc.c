@@ -436,6 +436,9 @@ struct sdlpui_stipple sdlpui_compute_stipple(SDL_Renderer *r)
 
 	SDL_assert(!(width & 1) && !(height & 1));
 	pixels = SDL_malloc(width * height * sizeof(*pixels));
+	if (!pixels) {
+		return result;
+	}
 	for (y = 0; y < height; y += 2) {
 		uint32_t *row = pixels + y * width;
 		int x;

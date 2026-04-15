@@ -2187,11 +2187,14 @@ static void show_about(struct sdlpui_window *window, int x, int y)
 			char *line = SDL_malloc((size_t)(copyright_eol
 				- copyright) + 1);
 
-			(void)SDL_strlcpy(line, copyright,
-				(size_t)(copyright_eol - copyright) + 1);
-			sdlpui_simple_info_add_label(window->infod, line,
-				SDLPUI_HOR_CENTER);
-			SDL_free(line);
+			if (line) {
+				(void)SDL_strlcpy(line, copyright,
+					(size_t)(copyright_eol - copyright)
+					+ 1);
+				sdlpui_simple_info_add_label(window->infod,
+					line, SDLPUI_HOR_CENTER);
+				SDL_free(line);
+			}
 		} else {
 			sdlpui_simple_info_add_label(window->infod, copyright,
 				SDLPUI_HOR_CENTER);
