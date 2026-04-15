@@ -3447,14 +3447,14 @@ static bool open_local_docs(void)
 {
 	char exe_path[MAX_PATH];
 	char *slash;
-	char doc_path[MAX_PATH];
-	char url[MAX_PATH + 8];
+	char doc_path[MAX_PATH + 16];
+	char url[MAX_PATH + 24];
 	DWORD attrs;
 
 	if (!GetModuleFileNameA(NULL, exe_path, sizeof(exe_path)))
 		return false;
 	slash = strrchr(exe_path, '\\');
-	if (!slash)
+	if (!slash || (slash - exe_path) >= MAX_PATH - 16)
 		return false;
 	*slash = '\0';
 	snprintf(doc_path, sizeof(doc_path),
