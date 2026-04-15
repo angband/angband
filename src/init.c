@@ -1524,9 +1524,9 @@ static void cleanup_names(void)
 		for (j = 0; name_sections[i][j]; j++) {
 			string_free((char *)name_sections[i][j]);
 		}
-		mem_free(name_sections[i]);
+		mem_free((char**)name_sections[i]);
 	}
-	mem_free(name_sections);
+	mem_free((char***)name_sections);
 }
 
 struct file_parser names_parser = {
