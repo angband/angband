@@ -1813,7 +1813,8 @@ static void resize_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 			sh = htmp;
 		}
 	} else {
-		sdlpui_get_utf8_metrics(font, mbp->caption, &sw, &sh);
+		sdlpui_get_utf8_metrics(font, (*c->ftb->get_caption)(c),
+			&sw, &sh);
 	}
 	if (mbp->subtype_code == SDLPUI_MB_TOGGLE
 			|| mbp->subtype_code == SDLPUI_MB_INDICATOR) {
@@ -1903,7 +1904,8 @@ static void query_mb_natural_size(struct sdlpui_control *c,
 			*height = htmp;
 		}
 	} else {
-		sdlpui_get_utf8_metrics(font, mbp->caption, width, height);
+		sdlpui_get_utf8_metrics(font, (*c->ftb->get_caption)(c),
+			width, height);
 	}
 	if (mbp->subtype_code == SDLPUI_MB_TOGGLE
 			|| mbp->subtype_code == SDLPUI_MB_INDICATOR) {
