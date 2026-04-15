@@ -57,7 +57,7 @@ AS_IF([test "x$wsetgid$with_private_dirs$with_no_install" != "xyes"],
 "
 	AC_MSG_ERROR([Please specify an installation method.])])
 
-AS_IF([test "x$with_no_install" = "x"],
+AS_IF([test "x$with_no_install" = "x" && test "x$enable_win" != "xyes"],
 	[echo "Note: You have chosen to compile for installation, with data files
     in standard locations. For development, you may wish to consider using
     --with-no-install which will leave the game to run from the directory
