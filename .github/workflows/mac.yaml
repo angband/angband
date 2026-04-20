@@ -16,7 +16,7 @@ jobs:
       - name: Build
         run: |
           cd src
-          env OPT="-Werror" make -f Makefile.osx -j$(sysctl -n hw.ncpu)
+          env OPT="-Werror" make -f Makefile.osx -j$(sysctl -n hw.activecpu)
 
   cmake-curses:
     runs-on: macos-latest
@@ -54,4 +54,4 @@ jobs:
         run: |
           ./autogen.sh
           ./configure --with-no-install --enable-curses --disable-ncursestest
-          make -j$(sysctl -n hw.ncpu)
+          make -j$(sysctl -n hw.activecpu)
