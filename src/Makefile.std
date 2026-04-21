@@ -15,8 +15,7 @@
 
 # What systems to try.
 #
-# By default, this tries to compile both the X11 and "curses" terminal mode
-# ports in the same executable.
+# By default, this tries to compile the "curses" terminal mode.
 
 
 # Recent, known-to-work ports
