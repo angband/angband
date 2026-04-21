@@ -1084,8 +1084,10 @@ spell:Vampire Strike:20:5:50:10
 effect:JUMP_AND_BITE
 dice:$B
 expr:B:PLAYER_LEVEL:* 2
-desc:Teleports you to the nearest living monster and drains a level-dependent
-desc: number of hitpoints, healing and nourishing the player.
+desc:Teleports you to the nearest living monster and drains its hitpoints
+desc: to heal and nourish you.  The number of hitpoints drained is twice your
+desc: level or one more than the monster's current hitpoints, whichever is
+desc: smaller.
 
 spell:Dispel Life:22:20:50:10
 effect:PROJECT_LOS_AWARE:MON_DRAIN
