@@ -410,7 +410,7 @@ jobs:
         id: create_mac_archive
         run: |
           cd src
-          env OPT="-O2 -DNDEBUG -Werror" make -f Makefile.osx -j$(sysctl -n hw.ncpu) dist
+          env OPT="-O2 -DNDEBUG -Werror" make -f Makefile.osx -j$(sysctl -n hw.activecpu) dist
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}-osx
           echo "archive_file=${archive_prefix}.dmg" >> $GITHUB_OUTPUT
 
