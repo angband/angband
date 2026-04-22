@@ -55,7 +55,7 @@ static int install_handler(int sig, Signal_Handler_t handler)
 }
 
 
-#ifdef SIGHUP
+#if defined(SIGHUP) || defined(SIGPWR) || defined(SIGDANGER)
 /**
  * Handle signals -- disconnect in an orderly fashion
  */
@@ -382,7 +382,7 @@ void signals_init(bool hup_disconnects)
  * signal that the system will soon be out of memory.
  */
 #ifdef SIGDANGER
-	(void)install_handler(SIGDANGER, handle_signal_abort);
+	(void)install_handler(SIGDANGER, handle_signal_disconnect);
 #endif
 
 #ifdef SIGSYS
@@ -394,7 +394,7 @@ void signals_init(bool hup_disconnects)
 #endif
 
 #ifdef SIGPWR
-	(void)install_handler(SIGPWR, handle_signal_abort);
+	(void)install_handler(SIGPWR, handle_signal_disconnect);
 #endif
 
 }
