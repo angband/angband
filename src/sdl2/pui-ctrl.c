@@ -439,12 +439,18 @@ static void change_label_caption(struct sdlpui_control *c,
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		const char *new_caption)
 {
+	char *caption_copy = SDL_strdup(new_caption);
 	struct sdlpui_label *lp;
 
+	if (!caption_copy) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"could not allocate caption in change_label_caption()");
+		sdlpui_force_quit();
+	}
 	SDL_assert(c->type_code == SDLPUI_CTRL_LABEL && c->priv);
 	lp = c->priv;
 	SDL_free(lp->caption);
-	lp->caption = SDL_strdup(new_caption);
+	lp->caption = caption_copy;
 	resize_label(c, d, w, c->rect.w, c->rect.h);
 	d->dirty = SDL_TRUE;
 	sdlpui_signal_redraw(w);
@@ -583,12 +589,18 @@ static void change_pb_caption(struct sdlpui_control *c,
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		const char *new_caption)
 {
+	char *caption_copy = SDL_strdup(new_caption);
 	struct sdlpui_label *pbp;
 
+	if (!caption_copy) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"could not allocate caption in change_pb_caption()");
+		sdlpui_force_quit();
+	}
 	SDL_assert(c->type_code == SDLPUI_CTRL_PUSH_BUTTON && c->priv);
 	pbp = c->priv;
 	SDL_free(pbp->caption);
-	pbp->caption = SDL_strdup(new_caption);
+	pbp->caption = caption_copy;
 	resize_pb(c, d, w, c->rect.w, c->rect.h);
 	d->dirty = SDL_TRUE;
 	sdlpui_signal_redraw(w);
@@ -1209,12 +1221,18 @@ static void change_mb_caption(struct sdlpui_control *c,
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		const char *new_caption)
 {
+	char *caption_copy = SDL_strdup(new_caption);
 	struct sdlpui_menu_button *mbp;
 
+	if (!caption_copy) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"could not allocate caption in change_mb_caption()");
+		sdlpui_force_quit();
+	}
 	SDL_assert(c->type_code == SDLPUI_CTRL_MENU_BUTTON && c->priv);
 	mbp = c->priv;
 	SDL_free(mbp->caption);
-	mbp->caption = SDL_strdup(new_caption);
+	mbp->caption = caption_copy;
 	if (mbp->subtype_code == SDLPUI_MB_RANGED_INT
 			&& mbp->v.ranged_int.expanded_caption) {
 		SDL_free(mbp->v.ranged_int.expanded_caption);
