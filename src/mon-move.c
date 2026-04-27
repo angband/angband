@@ -24,6 +24,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "game-input.h"
 #include "game-world.h"
 #include "init.h"
 #include "monster.h"
@@ -1950,6 +1951,13 @@ void process_monsters(int minimum_energy)
 			/* Process timed effects - skip turn if necessary */
 			if (process_monster_timed(mon))
 				continue;
+
+			/*
+			 * Cannot break (only want to do so when it is the
+			 * player's turn to act), but keep the user interface
+			 * responsive.
+			 */
+			(void)check_break(false, 0);
 
 			/* Set this monster to be the current actor */
 			cave->mon_current = i;

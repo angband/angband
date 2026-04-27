@@ -66,6 +66,7 @@ extern bool (*panel_contains_hook)(unsigned int y, unsigned int x);
 extern bool (*map_is_visible_hook)(void);
 extern void (*view_abilities_hook)(struct player_ability *ability_list,
 								   int num_abilities);
+extern bool (*check_break_hook)(bool user_event, int messaging);
 
 bool get_string(const char *prompt, char *buf, size_t len);
 int get_quantity(const char *prompt, int max);
@@ -92,5 +93,6 @@ bool panel_contains(unsigned int y, unsigned int x);
 bool map_is_visible(void);
 void view_ability_menu(struct player_ability *ability_list,
 						 int num_abilities);
+bool check_break(bool user_event, int messaging);
 
 #endif /* INCLUDED_GAME_INPUT_H */
