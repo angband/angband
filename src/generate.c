@@ -1117,6 +1117,12 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		int y, x;
 		struct dun_data dun_body;
 
+		/*
+		 * Can not break out (need to generate a level), but keep the
+		 * user interface responsive.
+		 */
+		(void)check_break(false, 0);
+
 		error = NULL;
 
 		/* Mark the dungeon as being unready (to avoid artifact loss, etc) */
