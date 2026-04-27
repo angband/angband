@@ -28,6 +28,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "effects.h"
+#include "game-input.h"
 #include "generate.h"
 #include "init.h"
 #include "mon-make.h"
@@ -1496,22 +1497,33 @@ static void revive_uniques(void)
 static void diving_stats(void)
 {
 	int depth;
+	bool running;
 
 	/* Iterate through levels */
-	for (depth = 0; depth < MAX_LVL; depth += 5) {
-		player->depth = depth;
-		if (player->depth == 0) player->depth = 1;
+	event_signal(EVENT_MESSAGE_FLUSH);
+	running = !check_break(true, 1);
+	for (depth = 0; depth < MAX_LVL && running; depth += 5) {
+		player->depth = (depth == 0) ? 1 : depth;
 
 		/* Do many iterations of each level */
-		for (iter = 0; iter < tries; iter++)
-		     stats_collect_level();
+		for (iter = 0; iter < tries; iter++) {
+			if (check_break(true, 0)) {
+				running = false;
+				break;
+			}
+			stats_collect_level();
+		}
 
 		/* Print the output to the file */
-		print_stats(depth);
+		if (running) {
+			print_stats(depth);
+		}
 
 		/* Show the level to check on status */
 		do_cmd_redraw();
 	}
+
+	(void)check_break(true, 2);
 }
 
 /**
@@ -1521,9 +1533,12 @@ static void diving_stats(void)
 static void clearing_stats(void)
 {
 	int depth;
+	bool running;
 
 	/* Do many iterations of the game */
-	for (iter = 0; iter < tries; iter++) {
+	event_signal(EVENT_MESSAGE_FLUSH);
+	running = !check_break(true, 1);
+	for (iter = 0; iter < tries && running; iter++) {
 		/* Move all artifacts to uncreated */
 		uncreate_all_artifacts();
 
@@ -1531,7 +1546,7 @@ static void clearing_stats(void)
 		revive_uniques();
 
 		/* Do randart regen */
-		if ((regen) && (iter<tries)) {
+		if (regen) {
 			/* Get seed */
 			int seed_randart = randint0(0x10000000);
 
@@ -1548,20 +1563,28 @@ static void clearing_stats(void)
 
 		/* Do game iterations */
 		for (depth = 1 ; depth < MAX_LVL; depth++) {
-			/* Debug 
-			msg_format("Attempting level %d",depth); */
+			if (check_break(true, 0)) {
+				running = false;
+				break;
+			}
 
 			/* Move player to that depth */
 			player->depth = depth;
 
 			/* Get stats */
 			stats_collect_level();
-
-			/* Debug
-			msg_format("Finished level %d,depth"); */
 		}
 
-		msg("Iteration %d complete",iter);
+		if (running) {
+			if (iter == 0) {
+				(void)check_break(true, 2);
+			}
+			msg("Iteration %d complete", iter);
+		}
+	}
+
+	if (!running && iter == 0) {
+		(void)check_break(true, 2);
 	}
 
 	/* Restore original artifacts */
@@ -1799,6 +1822,7 @@ void pit_stats(int nsim, int pittype, int depth_min, int depth_max)
 	char path[1024];
 	ang_file *pitfile;
 	int depth, p;
+	bool running;
 
 	/* Initialize hist */
 	hist = mem_alloc(z_info->pit_max * sizeof(*hist));
@@ -1864,7 +1888,9 @@ void pit_stats(int nsim, int pittype, int depth_min, int depth_max)
 		pitfile = NULL;
 	}
 
-	for (depth = depth_min; depth <= depth_max; ++depth) {
+	event_signal(EVENT_MESSAGE_FLUSH);
+	running = !check_break(true, 1);
+	for (depth = depth_min; depth <= depth_max && running; ++depth) {
 		int j;
 
 		for (p = 0; p < z_info->pit_max; ++p) {
@@ -1876,6 +1902,10 @@ void pit_stats(int nsim, int pittype, int depth_min, int depth_max)
 			int pit_idx = 0;
 			int pit_dist = 999;
 
+			if (check_break(true, 0)) {
+				running = false;
+				break;
+			}
 			for (i = 0; i < z_info->pit_max; i++) {
 				int offset, dist;
 				const struct pit_profile *pit = &pit_info[i];
@@ -1896,7 +1926,7 @@ void pit_stats(int nsim, int pittype, int depth_min, int depth_max)
 			hist[pit_idx]++;
 		}
 
-		if (pitfile) {
+		if (pitfile && running) {
 			(void)file_putf(pitfile, "%d", depth);
 			for (p = 0; p < z_info->pit_max; ++p) {
 				const struct pit_profile *pit = &pit_info[p];
@@ -1909,13 +1939,14 @@ void pit_stats(int nsim, int pittype, int depth_min, int depth_max)
 			(void)file_putf(pitfile, "\n");
 		}
 
-		if (sum_hist) {
+		if (sum_hist && running) {
 			for (p = 0; p < z_info->pit_max; ++p) {
 				sum_hist[p] += hist[p];
 			}
 		}
 	}
 
+	(void)check_break(true, 2);
 	for (p = 0; p < z_info->pit_max; ++p) {
 		const struct pit_profile *pit = &pit_info[p];
 
@@ -2899,6 +2930,7 @@ void disconnect_stats(int nsim, bool stop_on_disconnect)
 	ang_file *disfile;
 	struct cgen_stats gs;
 	ang_file *gstfile;
+	bool running;
 
 	path_build(path, sizeof(path), ANGBAND_DIR_USER, "disconnect.html");
 	disfile = file_open(path, MODE_WRITE, FTYPE_TEXT);
@@ -2916,7 +2948,9 @@ void disconnect_stats(int nsim, bool stop_on_disconnect)
 	 */
 	initialize_generation_stats(&gs);
 
-	for (i = 1; i <= nsim; i++) {
+	event_signal(EVENT_MESSAGE_FLUSH);
+	running = !check_break(true, 1);
+	for (i = 1; i <= nsim && running; i++) {
 		/* Assume no disconnected areas */
 		bool has_dsc = false;
 		/* Assume you can't get to the down staircase */
@@ -3048,15 +3082,20 @@ void disconnect_stats(int nsim, bool stop_on_disconnect)
 				dump_level_body(disfile, label, cave,
 					cave_dist);
 			}
-			if (stop_on_disconnect) i = nsim;
+			if (stop_on_disconnect) running = false;
 		}
 
 		/* Free arrays */
 		for (y = 0; y < cave->height; y++)
 			mem_free(cave_dist[y]);
 		mem_free(cave_dist);
+
+		if (check_break(true, 0)) {
+			running = false;
+		}
 	}
 
+	(void)check_break(true, 2);
 	msg("Total levels with bad starts: %ld", bad_starts);
 	msg("Total levels with disconnected areas: %ld",dsc_area);
 	msg("Total levels isolated from stairs: %ld",dsc_from_stairs);
