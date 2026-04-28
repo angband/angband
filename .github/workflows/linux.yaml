@@ -26,8 +26,8 @@ jobs:
           ninja -j$(nproc)
           ninja -j$(nproc) alltests
 
-  x11:
-    name: X11
+  x11-statsbackend:
+    name: X11 and Statistics Backend
     runs-on: ubuntu-latest
     steps:
       - name: Install Build Dependencies
@@ -42,7 +42,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" ..
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_STATS_BACKEND=ON ..
           ninja -j$(nproc)
 
   ncurses:
