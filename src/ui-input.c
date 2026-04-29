@@ -1776,10 +1776,12 @@ static bool textui_check_break(bool user_event, int messaging)
 			result = true;
 			break;
 		}
-		if (user_event && ((ch.type == EVT_KBRD
-				&& ch.key.code == ESCAPE)
+		if (!user_event) {
+			break;
+		}
+		if ((ch.type == EVT_KBRD && ch.key.code == ESCAPE)
 				|| (ch.type == EVT_MOUSE
-				&& ch.mouse.button == 2))) {
+				&& ch.mouse.button == 2)) {
 			result = true;
 			break;
 		}
