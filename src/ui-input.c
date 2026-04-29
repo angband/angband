@@ -160,9 +160,6 @@ struct keypress(*inkey_hack)(int flush_first) = NULL;
  * function, so that the various "main-xxx.c" files can assume that input
  * is only requested (via "Term_inkey()") when "angband_term[0]" is active.
  *
- * Mega-Hack -- This function is used as the entry point for clearing the
- * "signal_count" variable, and of the "character_saved" variable.
- *
  * Mega-Hack -- Note the use of "inkey_hack" to allow the "Borg" to steal
  * control of the keyboard from the user.
  */
@@ -275,9 +272,6 @@ ui_event inkey_ex(void)
 
 			/* Mega-Hack -- reset saved flag */
 			character_saved = false;
-
-			/* Mega-Hack -- reset signal counter */
-			signal_count = 0;
 
 			/* Only once */
 			done = true;
@@ -1885,10 +1879,14 @@ ui_event textui_get_command(int *count)
 
 	const struct keypress *act = NULL;
 
-
-
 	/* Get command */
 	while (1) {
+		/*
+		 * Reset the signal count.  Since we are prompting for a
+		 * command, the game has the opportunity to exit normally.
+		 */
+		signal_count = 0;
+
 		/* No flush needed */
 		msg_flag = false;
 
