@@ -524,13 +524,13 @@ void textui_process_command(void)
 	switch (e.type) {
 		case EVT_DISCONNECT:
 			/*
-			 * If the front end provides a way to confirm with
-			 * the player, try to save before exiting, and if that
-			 * fails, check with the player whether to proceed with
-			 * the exit or to proceed with the game and cancel
-			 * disconnecting the UI.
+			 * Try to save before exiting.  If the front end
+			 * provides a way to confirm with the player, check
+			 * with the player whether to proceed with the exit
+			 * when the save fails or to proceed with the game and
+			 * cancel disconnecting the UI.
 			 */
-			if (disconnect_denier_hook && !save_game_checked()
+			if (!save_game_checked() && disconnect_denier_hook
 					&& (*disconnect_denier_hook)()) {
 				terms_disconnecting = 0;
 				return;
