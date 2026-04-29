@@ -300,6 +300,7 @@ char angband_term_name[ANGBAND_TERM_MAX][16] =
 
 uint32_t window_flag[ANGBAND_TERM_MAX];
 volatile sig_atomic_t terms_disconnecting = 0;
+volatile sig_atomic_t terms_suspending = 0;
 
 int row_top_map[SIDEBAR_MAX] = {1, 4, 1};
 int row_bottom_map[SIDEBAR_MAX] = {1, 0, 0};

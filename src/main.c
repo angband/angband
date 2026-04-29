@@ -64,35 +64,35 @@
 static const struct module modules[] =
 {
 #ifdef USE_X11
-	{ "x11", help_x11, init_x11, false },
+	{ "x11", help_x11, init_x11, false, true },
 #endif /* USE_X11 */
 
 #ifdef USE_SDL
-	{ "sdl", help_sdl, init_sdl, false },
+	{ "sdl", help_sdl, init_sdl, false, false },
 #endif /* USE_SDL */
 
 #ifdef USE_SDL2
-	{ "sdl2", help_sdl2, init_sdl2, false },
+	{ "sdl2", help_sdl2, init_sdl2, false, false },
 #endif /* USE_SDL2 */
 
 #ifdef USE_GCU
-	{ "gcu", help_gcu, init_gcu, true },
+	{ "gcu", help_gcu, init_gcu, true, false },
 #endif /* USE_GCU */
 
 #ifdef USE_TEST
-	{ "test", help_test, init_test, false },
+	{ "test", help_test, init_test, false, true },
 #endif /* !USE_TEST */
 
 #ifdef USE_STATS
-	{ "stats", help_stats, init_stats, false },
+	{ "stats", help_stats, init_stats, false, true },
 #endif /* USE_STATS */
 
 #ifdef USE_SPOIL
-	{ "spoil", help_spoil, init_spoil, false },
+	{ "spoil", help_spoil, init_spoil, false, true },
 #endif
 
 #ifdef USE_IBM
-	{ "ibm", help_ibm, init_ibm, false },
+	{ "ibm", help_ibm, init_ibm, false, true },
 #endif /* USE_IBM */
 };
 
@@ -545,7 +545,7 @@ int main(int argc, char *argv[])
 	if (!done) quit("Unable to prepare any 'display module'!");
 
 	/* Catch nasty signals */
-	signals_init(modules[i].hup_disconnects);
+	signals_init(modules[i].hup_disconnects, modules[i].tstp_default);
 
 	/* Set up the command hook */
 	cmd_get_hook = textui_get_cmd;

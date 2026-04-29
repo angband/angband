@@ -24,6 +24,7 @@
 #include "ui-command.h"
 #include "ui-display.h"
 #include "ui-prefs.h"
+#include "ui-signals.h"
 
 #ifdef USE_GCU
 #include "main.h"
@@ -789,6 +790,7 @@ static void do_gcu_resize(void) {
 static errr Term_xtra_gcu_event(int v) {
 	int i, j, k, mods=0;
 
+	if (terms_suspending) signals_perform_deferred_suspend();
 	if (v) {
 		/* Wait for a keypress; use halfdelay(1) so if the user takes more */
 		/* than 0.2 seconds we get a chance to do updates. */
@@ -796,6 +798,11 @@ static errr Term_xtra_gcu_event(int v) {
 		i = getch();
 		while (i == ERR) {
 			if (terms_disconnecting) return 1;
+			if (terms_suspending) {
+				cbreak();
+				signals_perform_deferred_suspend();
+				halfdelay(2);
+			}
 			idle_update();
 			i = getch();
 		}

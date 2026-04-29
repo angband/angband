@@ -77,6 +77,21 @@ struct module
 	 * If false, SIGHUP is ignored.
 	 */
 	bool hup_disconnects;
+	/**
+	 * If true, the default disposition, stopping, is used for SIGTSTP.
+	 * Otherwise, a handler is installed that sets ui-term.h's
+	 * terms_stopping to be non-zero.  The front end should check
+	 * terms_stopping when its xtra_hook is called with TERM_XTRA_EVENT,
+	 * and suspend if it is non-zero.  ui-signal.h's
+	 * signals_perform_deferred_stop() provides a standardized way to
+	 * suspend and then resume when ready.  It relies on the front end's
+	 * xtra_hook performing the front-end specific suspend operations
+	 * when called with TERM_XTRA_ALIVE as the first argument and zero
+	 * as the second argument and performing the front-end specific resume
+	 * operations when called with TERM_XTRA_ALIVE as the first argument and
+	 * a non-zero value as the second argument.
+	 */
+	bool tstp_default;
 };
 
 #endif /* INCLUDED_MAIN_H */
