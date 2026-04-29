@@ -96,13 +96,34 @@ int main(int argc, char *argv[]) {
 	a.sa_handler = SIG_IGN;
 	(void)sigemptyset(&a.sa_mask);
 	a.sa_flags = 0;
-	return sigaction(SIGINT, &a, 0);
+	return (sigaction(SIGINT, &a, 0) == 0) ? 0 : 1;
 }
 ]])],
 		[AC_MSG_RESULT([yes])
 			AC_DEFINE([HAVE_SIGACTION], [1], [System supports sigaction().])],
 		[AC_MSG_RESULT([no])])]
 )
+
+dnl Set HAVE_SIGPROCMASK if sigprocmask() is available.
+AC_DEFUN([MY_CHECK_SIGPROCMASK], [
+	AC_MSG_CHECKING([availability of sigprocmask()])
+	AC_LINK_IFELSE([AC_LANG_SOURCE([[
+#include <signal.h>
+int main(int argc, char *argv[]) {
+	sigset_t s1, s2;
+
+	(void)sigemptyset(&s1);
+	(void)sigaddset(&s1, SIGINT);
+	if (sigprocmask(SIG_BLOCK, &s1, 0) != 0) return 1;
+	if (sigprocmask(SIG_UNBLOCK, &s1, &s2) != 0) return 1;
+	return (sigprocmask(SIG_SETMASK, &s2, 0) == 0) ? 0 : 1;
+}
+]])],
+		[AC_MSG_RESULT([yes])
+			AC_DEFINE([HAVE_SIGPROCMASK], [1], [System supports sigprocmask().])],
+		[AC_MSG_RESULT([no])])]
+)
+
 
 
 # Configure paths for SDL2

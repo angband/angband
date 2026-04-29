@@ -29,6 +29,7 @@
 #include "ui-map.h"
 #include "ui-output.h"
 #include "ui-prefs.h"
+#include "ui-signals.h"
 
 /**
  * Comments and suggestions are welcome. The UI probably needs some
@@ -138,6 +139,11 @@ static int full_h;
 
 /* Want fullscreen? */
 static bool fullscreen = false;
+/*
+ * If true, temporarily not in fullscreen mode because the application
+ * was stopped
+ */
+static bool withdrawn_fullscreen = false;
 
 static int overdraw = 0;
 static int overdraw_max = 0;
@@ -559,6 +565,7 @@ static int SelectedGfx;				/* Current selected gfx */
 static bool SimpleConfirm(const char *msg, const char *label1,
 		const char *label2, bool first_default);
 static int sdl_ModalEventLoop(void);
+static void perform_video_resize(bool immediate);
 
 /**
  * Verify if the given path refers to a font file that can be used.
@@ -3589,15 +3596,7 @@ static void AcceptChanges(sdl_Button *sender)
 		if (character_dungeon) do_cmd_redraw();
 
 	if (do_video_reset) {
-		SDL_Event Event;
-		
-		memset(&Event, 0, sizeof(SDL_Event));
-		
-		Event.type = SDL_VIDEORESIZE;
-		Event.resize.w = screen_w;
-		Event.resize.h = screen_h;
-		
-		SDL_PushEvent(&Event);
+		perform_video_resize(false);
 	}
 
 	do_update = false;
@@ -4716,6 +4715,21 @@ static void sdl_VideoResize(SDL_Event *e)
 	init_windows();
 }
 
+static void perform_video_resize(bool immediate)
+{
+	SDL_Event e;
+
+	(void)memset(&e, 0, sizeof(e));
+	e.type = SDL_VIDEORESIZE;
+	e.resize.w = screen_w;
+	e.resize.h = screen_h;
+	if (immediate) {
+		sdl_VideoResize(&e);
+	} else {
+		SDL_PushEvent(&e);
+	}
+}
+
 /**
  * Handle a single message sent to the application.
  *
@@ -4974,6 +4988,9 @@ static errr Term_xtra_sdl_event(int v)
 	SDL_Event event;
 	errr error = 0;
 
+	if (terms_suspending) {
+		signals_perform_deferred_suspend();
+	}
 	if (v) {
 		/* Wait in 0.02s increments while updating animations every 0.2s */
 		int i = 0;
@@ -4982,6 +4999,9 @@ static errr Term_xtra_sdl_event(int v)
 			if (i == 0) idle_update();
 			usleep(20000);
 			i = (i + 1) % 10;
+			if (terms_suspending) {
+				signals_perform_deferred_suspend();
+			}
 		}
 
 		/* Handle it */
@@ -5143,7 +5163,31 @@ static errr Term_xtra_sdl(int n, int v)
 				text_colours[i].g = angband_color_table[i][2];
 				text_colours[i].b = angband_color_table[i][3];
 			}
+			return 0;
 		}
+		case TERM_XTRA_ALIVE:
+			if (v) {
+				/*
+				 * Resuming:  if we were fullscreen go back
+				 * to that
+				 */
+				if (withdrawn_fullscreen) {
+					fullscreen = true;
+					withdrawn_fullscreen = false;
+					perform_video_resize(false);
+				}
+			} else {
+				/*
+				 * Suspending:  if we are fullscreen, withdraw
+				 * from that
+				 */
+				if (fullscreen) {
+					fullscreen = false;
+					withdrawn_fullscreen = true;
+					perform_video_resize(true);
+				}
+			}
+			return 0;
 	}
 
 	return (1);

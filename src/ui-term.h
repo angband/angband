@@ -357,6 +357,12 @@ extern uint32_t window_flag[ANGBAND_TERM_MAX];
  * behavior of Term_inkey().
  */
 extern volatile sig_atomic_t terms_disconnecting;
+/**
+ * Flags whether there's been a request to suspend the terminals.  Used by
+ * front ends that do not use the default response to SIGTSTP.  See main.h's
+ * struct module for more details about how to implement such front ends.
+ */
+extern volatile sig_atomic_t terms_suspending;
 
 /**
  * The main "screen"
