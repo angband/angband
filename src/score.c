@@ -153,20 +153,41 @@ static void highscore_write(const struct high_score scores[], size_t sz)
 		return;
 	}
 
-	file_write(scorefile, (const char *)scores, sizeof(struct high_score)*n);
-	file_close(scorefile);
+	if (!file_write(scorefile, (const char *)scores,
+			sizeof(struct high_score)*n)) {
+		msg("Failed to write new scores.");
+		(void)file_close(scorefile);
+		(void)file_close(lok);
+		safe_setuid_grab();
+		file_delete(lok_name);
+		file_delete(new_name);
+		safe_setuid_drop();
+		return;
+	}
+
+	if (!file_close(scorefile)) {
+		msg("Failed to close new scores.");
+		(void)file_close(lok);
+		safe_setuid_grab();
+		(void)file_delete(lok_name);
+		(void)file_delete(new_name);
+		safe_setuid_drop();
+		return;
+	}
 
 	/* Now move things around */
 	safe_setuid_grab();
 
-	if (file_exists(old_name) && !file_delete(old_name))
+	if (file_exists(old_name) && !file_delete(old_name)) {
 		msg("Couldn't delete old scorefile");
-
-	if (file_exists(cur_name) && !file_move(cur_name, old_name))
+		(void)file_delete(new_name);
+	} else if (file_exists(cur_name) && !file_move(cur_name, old_name)) {
 		msg("Couldn't move old scores.raw out of the way");
-
-	if (!file_move(new_name, cur_name))
+		(void)file_delete(new_name);
+	} else if (!file_move(new_name, cur_name)) {
 		msg("Couldn't rename new scorefile to scores.raw");
+		(void)file_move(old_name, cur_name);
+	}
 
 	/* Remove the lock */
 	file_close(lok);
