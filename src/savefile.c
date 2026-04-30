@@ -432,7 +432,11 @@ bool savefile_save(const char *path)
 
 		safe_setuid_drop();
 
-		return err ? false : true;
+		if (err) {
+			character_saved = false;
+			return false;
+		}
+		return true;
 	}
 
 	/* Delete temp file if the save failed */
