@@ -386,6 +386,7 @@ bool savefile_save(const char *path)
 	ang_file *file;
 	char new_savefile[1024];
 	char old_savefile[1024];
+	bool ok = false;
 
 	/* Generate a CharOutput.txt, mainly for angband.live, when saving. */
 	(void) save_charoutput();
@@ -401,38 +402,38 @@ bool savefile_save(const char *path)
 	safe_setuid_drop();
 
 	if (file) {
-		if (file_write(file, (char *) &savefile_magic, 4)
-			&& file_write(file, (char *) &savefile_name, 4)) {
-			character_saved = try_save(file);
-		} else {
-			character_saved = false;
+		if (file_write(file, (char*)&savefile_magic, 4)
+				&& file_write(file, (char*)&savefile_name, 4)) {
+			ok = try_save(file);
 		}
-		file_close(file);
-	} else {
-		character_saved = false;
+		if (!file_close(file)) {
+			ok = false;
+		}
 	}
 
-	if (character_saved) {
-		bool err = false;
+	if (ok) {
+		/*
+		 * Moving the files about, if interrupted, could leave no save
+		 * file in place.
+		 */
+		character_saved = false;
 
 		safe_setuid_grab();
 
-		if (file_exists(path) && !file_move(path, old_savefile))
-			err = true;
-
-		if (!err) {
-			if (!file_move(new_savefile, path))
-				err = true;
-
-			if (err)
-				file_move(old_savefile, path);
-			else
-				file_delete(old_savefile);
+		if (file_exists(path) && !file_move(path, old_savefile)) {
+			ok = false;
+		} else if (!file_move(new_savefile, path)) {
+			ok = false;
+			(void)file_move(old_savefile, path);
+		} else {
+			(void)file_delete(old_savefile);
 		} 
 
 		safe_setuid_drop();
 
-		return err ? false : true;
+		character_saved = ok;
+
+		return ok;
 	}
 
 	/* Delete temp file if the save failed */
