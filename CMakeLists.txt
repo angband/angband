@@ -817,6 +817,9 @@ if(SC_INSTALL)
         COMMENT "Copying needed files"
         VERBATIM
     )
+    if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.15.0")
+        set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES "$<TARGET_FILE_DIR:OurExecutable>/lib")
+    endif()
 
     if(SUPPORT_WINDOWS_FRONTEND AND PNG_DLLS)
         # Transfer the packaged DLLs so there in the same directory as the
@@ -830,6 +833,9 @@ if(SC_INSTALL)
                     "$<TARGET_FILE_DIR:OurExecutable>"
                 COMMENT "Copying ${dll} to executable directory"
             )
+            if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.15.0")
+                set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES "$<TARGET_FILE_DIR:OurExecutable>/${dll}")
+            endif()
         endforeach()
     endif()
 endif()
@@ -933,17 +939,20 @@ if(SUPPORT_TEST_FRONTEND)
             "${CMAKE_CURRENT_SOURCE_DIR}/tests"
             "$<TARGET_FILE_DIR:OurExecutable>/tests"
     )
+    add_custom_command(TARGET OurExecutable POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_CURRENT_SOURCE_DIR}/run-tests"
+            "$<TARGET_FILE_DIR:OurExecutable>/run-tests"
+    )
+    add_custom_command(TARGET OurExecutable POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/run-test"
+            "$<TARGET_FILE_DIR:OurExecutable>/tests/run-test"
+    )
+    if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.15.0")
+        set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES "$<TARGET_FILE_DIR:OurExecutable>/run-tests;$<TARGET_FILE_DIR:OurExecutable>/tests")
+    endif()
 endif()
-add_custom_command(TARGET OurExecutable POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-        "${CMAKE_CURRENT_SOURCE_DIR}/run-tests"
-        "$<TARGET_FILE_DIR:OurExecutable>/run-tests"
-)
-add_custom_command(TARGET OurExecutable POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/run-test"
-        "$<TARGET_FILE_DIR:OurExecutable>/tests/run-test"
-)
 
 # Set up target for running all tests.  Those (from tests in the source tree)
 # using the test front end will be run directly.  The unit tests will be
