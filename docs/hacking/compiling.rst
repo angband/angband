@@ -763,12 +763,11 @@ User Documentation
 To convert the user manual from restructured text to the desired output
 format, you'll need Sphinx ( https://www.sphinx-doc.org/en/master/ )
 and, unless you change the theme in the documentation configuration, the
-sphinx-better-theme ( https://pypi.org/project/sphinx-better-theme/ ; which
-can be installed via pip using::
+sphinx-better-theme ( https://pypi.org/project/sphinx-better-theme/ ); which
+can be installed via pip ( https://packaging.python.org/en/latest/tutorials/installing-packages/ )
+using::
 
-    pip install sphinx-better-theme
-
-).
+    python3 -m pip install sphinx-better-theme
 
 With CMake
 ~~~~~~~~~~
