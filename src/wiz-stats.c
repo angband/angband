@@ -221,7 +221,7 @@ struct stat_data
 static const struct stat_data stat_message[] =
 {
 	{ST_BEGIN, ""},
-	{ST_EQUIPMENT, "\n ***EQUIPMENT*** \n All:       "},
+	{ST_EQUIPMENT, "\n ***EQUIPMENT***\n All         "},
 	{ST_FA_EQUIPMENT, " Free Action "},
 	{ST_SI_EQUIPMENT, " See Invis   "},
 	{ST_RESIST_EQUIPMENT, " Low Resist  "},
@@ -232,17 +232,17 @@ static const struct stat_data stat_message[] =
 	{ST_RCONF_EQUIPMENT, " Res. Conf.  "},
 	{ST_SPEED_EQUIPMENT, " Speed       "},
 	{ST_TELEP_EQUIPMENT, " Telepathy   "},
-	{ST_ARMORS,  "\n ***ARMOR***      \n All:      "},
+	{ST_ARMORS,  "\n ***ARMOR***\n All         "},
 	{ST_BAD_ARMOR, " Bad         "},
 	{ST_AVERAGE_ARMOR, " Average     "},
-	{ST_GOOD_ARMOR, " Good        "},	
+	{ST_GOOD_ARMOR, " Good        "},
 	{ST_STR_ARMOR, " +Strength   "},
 	{ST_INT_ARMOR, " +Intel.     "},
 	{ST_WIS_ARMOR, " +Wisdom     "},
 	{ST_DEX_ARMOR, " +Dexterity  "},
 	{ST_CON_ARMOR, " +Const.     "},
-	{ST_CURSED_ARMOR, " Cursed       "},
-	{ST_WEAPONS, "\n ***WEAPONS***   \n All:       "},
+	{ST_CURSED_ARMOR, " Cursed      "},
+	{ST_WEAPONS, "\n ***WEAPONS***\n All         "},
 	{ST_BAD_WEAPONS, " Bad         "},
 	{ST_AVERAGE_WEAPONS, " Average     "},
 	{ST_GOOD_WEAPONS, " Good        "},
@@ -259,7 +259,7 @@ static const struct stat_data stat_message[] =
 	{ST_HUGE_WEAPONS, " Huge        "},//MoD, SoS and BoC
 	{ST_ENDGAME_WEAPONS, " Endgame     "},//MoD, SoS and BoC with slay evil or x2B
 	{ST_MORGUL_WEAPONS, " Morgul      "},
-	{ST_BOWS, "\n ***LAUNCHERS*** \n All:        "},
+	{ST_BOWS, "\n ***LAUNCHERS***\n All         "},
 	{ST_BAD_BOWS, " Bad         "},
 	{ST_AVERAGE_BOWS, " Average     "},
 	{ST_GOOD_BOWS, " Good        "},
@@ -269,27 +269,27 @@ static const struct stat_data stat_message[] =
 	{ST_BUCKLAND_BOWS, " Buckland    "},
 	{ST_TELEP_BOWS, " Telepathy   "},
 	{ST_CURSED_BOWS, " Cursed      "},
-	{ST_POTIONS, "\n ***POTIONS***   \n All:        "},
+	{ST_POTIONS, "\n ***POTIONS***\n All         "},
 	{ST_GAINSTAT_POTIONS, " Gain stat   "},//includes *enlight*
 	{ST_HEALING_POTIONS, " Healing     "},
 	{ST_BIGHEAL_POTIONS, " Big heal    "},//*heal* and life
 	{ST_RESTOREMANA_POTIONS, " Rest. Mana  "},
-	{ST_SCROLLS, "\n ***SCROLLS***   \n All:        "},
+	{ST_SCROLLS, "\n ***SCROLLS***\n All         "},
 	{ST_ENDGAME_SCROLLS, " Endgame     "},// destruction, banish, mass banish, rune
 	{ST_ACQUIRE_SCROLLS, " Acquire.    "},
-	{ST_RODS, "\n ***RODS***      \n All:        "},
+	{ST_RODS, "\n ***RODS***\n All         "},
 	{ST_UTILITY_RODS, " Utility     "},//dtrap, dstairs, dobj, light, illum
 	{ST_TELEPOTHER_RODS, " Tele Other  "},
 	{ST_DETECTALL_RODS, " Detect all  "},
 	{ST_ENDGAME_RODS, " Endgame     "},//speed, healing
-	{ST_STAVES, "\n ***STAVES***    \n All:        "},
+	{ST_STAVES, "\n ***STAVES***\n All         "},
 	{ST_SPEED_STAVES, " Speed       "},
 	{ST_DESTRUCTION_STAVES, " Destruction "},
 	{ST_KILL_STAVES, " Kill        "},//dispel evil, power, holiness
 	{ST_ENDGAME_STAVES, " Endgame     "},//healing, magi, banishment
-	{ST_WANDS, "\n ***WANDS***     \n All:        "},
+	{ST_WANDS, "\n ***WANDS***\n All         "},
 	{ST_TELEPOTHER_WANDS, " Tele Other  "},
-	{ST_RINGS, "\n ***RINGS***     \n All:        "},
+	{ST_RINGS, "\n ***RINGS***\n All         "},
 	{ST_SPEEDS_RINGS, " Speed       "},
 	{ST_STAT_RINGS, " Stat        "},//str, dex, con, int
 	{ST_RPOIS_RINGS, " Res. Pois.  "},
@@ -299,12 +299,12 @@ static const struct stat_data stat_message[] =
 	{ST_ELVEN_RINGS, " Elven       "},
 	{ST_ONE_RINGS, " The One     "},
 	{ST_CURSED_RINGS, " Cursed      "},
-	{ST_RINGS, "\n ***AMULETS***   \n All:        "},
+	{ST_RINGS, "\n ***AMULETS***\n All         "},
 	{ST_WIS_AMULETS, " Wisdom      "},
 	{ST_TELEP_AMULETS, " Telepathy   "},
 	{ST_ENDGAME_AMULETS, " Endgame     "},//Trickery, weaponmastery, magi
 	{ST_CURSED_AMULETS, " Cursed      "},
-	{ST_AMMO, "\n ***AMMO***      \n All:        "},
+	{ST_AMMO, "\n ***AMMO***\n All:        "},
 	{ST_BAD_AMMO, " Bad         "},
 	{ST_AVERAGE_AMMO, " Average     "},
 	{ST_GOOD_AMMO, " Good        "},
@@ -313,7 +313,7 @@ static const struct stat_data stat_message[] =
 	{ST_AWESOME_AMMO, " Awesome     "},//seeker, mithril + brand
 	{ST_SLAYEVIL_AMMO, " Slay evil   "},
 	{ST_HOLY_AMMO, " Holy might  "},
-	{ST_BOOKS, "\n ***BOOKS***     \n All:        "},
+	{ST_BOOKS, "\n ***BOOKS***\n All         "},
 	{ST_1ST_BOOKS, " Book 1      "},
 	{ST_2ND_BOOKS, " Book 2      "},
 	{ST_3RD_BOOKS, " Book 3      "},
@@ -376,7 +376,7 @@ static const struct stat_ff_data stat_ff_message[] =
 	{ST_FF_BOOK5,	ST_5TH_BOOKS,	"Book5  \t"},
 	{ST_FF_BOOK6,	ST_6TH_BOOKS,	"Book6  \t"},
 	{ST_FF_BOOK7,	ST_7TH_BOOKS,	"Book7  \t"},
-	{ST_FF_BOOK8,	ST_8TH_BOOKS,	"Book8	\t"},
+	{ST_FF_BOOK8,	ST_8TH_BOOKS,	"Book8  \t"},
 	{ST_FF_BOOK9,	ST_9TH_BOOKS,	"Book9  \t"},
 };
 
@@ -1199,27 +1199,45 @@ static bool stats_monster(struct monster *mon, int i)
 static void print_heading(void)
 {
 	/* PRINT INFO STUFF */
-	file_putf(stats_log," This is a Monte Carlo simulation, results are arranged by level \n");
-	file_putf(stats_log," Monsters:  OOD means between 1 and 10 levels deep, deadly is more than \n");
-	file_putf(stats_log,"            10 levels deep \n");
-	file_putf(stats_log," Artifacts: info on artifact location (vault, floor, etc) \n");
-	file_putf(stats_log,"		     do not include special artifacts, only weapons and armor \n");
-	file_putf(stats_log," Weapons  : Big dice weapons are either BoC, SoS, or Mod.  Uber \n");
-	file_putf(stats_log,"            weapons, are one of the above with xblows or slay evil\n");
-	file_putf(stats_log," Launchers: xtra shots and xtra might are only logged for x3 or\n");
-	file_putf(stats_log,"            better.  Very good has +to hit or + to dam > 15\n");
-	file_putf(stats_log," Amulets:   Endgame amulets are trickery, weaponmaster and magi\n");
-	file_putf(stats_log," Armor:     Low resist armor may have more than one basic resist (acid, \n");
-	file_putf(stats_log,"		     elec, fire, cold) but not all. \n");
-	file_putf(stats_log," Books:     Prayer and Magic books have the same probability. \n");
-	file_putf(stats_log," Potions:   Aug counts as 5 potions, *enlight* as 2.  Healing potions are \n");
-	file_putf(stats_log,"			 only *Healing* and Life\n");
-	file_putf(stats_log," Scrolls:   Endgame scrolls include *Dest*, Rune, MBan and Ban \n");
-	file_putf(stats_log,"    		 *Acq* counts as two Acq scrolls");
-	file_putf(stats_log," Rods: 	 Utility rods: d-obj, d-stairs, d-traps, light, illum \n");
-	file_putf(stats_log,"    		 Endgame rods: Speed, Healing \n");
-	file_putf(stats_log," Staves: 	 Kill staves: dispel evil, power, holiness. \n");
-	file_putf(stats_log,"    		 Power staves: healing, magi, banishment \n");
+	file_putf(stats_log, " This is a Monte Carlo simulation, results are "
+		"arranged by level\n");
+	file_putf(stats_log, " Monsters:  OOD means between 1 and 10 levels "
+		"deep, deadly is more than\n");
+	file_putf(stats_log, "            10 levels deep\n");
+	file_putf(stats_log, " Artifacts: info on artifact location (vault, "
+		"floor, etc)\n");
+	file_putf(stats_log, "		     do not include special artifacts, "
+		"only weapons and armor\n");
+	file_putf(stats_log, " Weapons  : Big dice weapons are either BoC, "
+		"SoS, or Mod.  Endgame\n");
+	file_putf(stats_log, "            weapons, are one of the above with "
+		"xblows or slay evil\n");
+	file_putf(stats_log, " Launchers: xtra shots and xtra might are only "
+		"logged for x3 or\n");
+	file_putf(stats_log, "            better.  Very good has +to hit or "
+		"+to dam > 15\n");
+	file_putf(stats_log, " Amulets:   Endgame amulets are trickery, "
+		"weaponmaster and magi\n");
+	file_putf(stats_log, " Armor:     Low resist armor may have more than "
+		"one basic resist (acid,\n");
+	file_putf(stats_log, "		     elec, fire, cold) but not all.\n");
+	file_putf(stats_log, " Books:     Prayer and Magic books have the "
+		"same probability.\n");
+	file_putf(stats_log, " Potions:   Aug counts as 5 potions, *enlight* "
+		"as 2.  Healing potions are\n");
+	file_putf(stats_log, "			 only *Healing* and Life\n");
+	file_putf(stats_log, " Scrolls:   Endgame scrolls include *Dest*, "
+		"Rune, MBan and Ban\n");
+	file_putf(stats_log, "    		 *Acq* counts as two Acq "
+		"scrolls");
+	file_putf(stats_log, " Rods: 	 Utility rods: d-obj, d-stairs, "
+		"d-traps, light, illum\n");
+	file_putf(stats_log, "    		 Endgame rods: Speed, "
+		"Healing\n");
+	file_putf(stats_log, " Staves: 	 Kill staves: dispel evil, power, "
+		"holiness.\n");
+	file_putf(stats_log, "    		 Power staves: healing, magi, "
+		"banishment\n");
 }
 
 /**
@@ -1234,48 +1252,45 @@ static void print_stats(int lvl)
 	if ((lvl < 0) || (lvl > 100)) return;
 
 	/* print level heading */
-	file_putf(stats_log,"\n");
-	file_putf(stats_log,"******** LEVEL %d , %d tries********* \n",lvl, tries);
-	file_putf(stats_log,"\n");
+	file_putf(stats_log, "\n");
+	file_putf(stats_log, "******** LEVEL %d , %d tries*********\n", lvl,
+		tries);
+	file_putf(stats_log, "\n");
 
 	/* print gold info */
-	file_putf(stats_log," GOLD INFO \n");
-	file_putf(stats_log," Gold total: %f\n", gold_total[lvl]);
-	file_putf(stats_log," Gold monster: %f\n", gold_mon[lvl]);
-	file_putf(stats_log," Gold floor: %f\n", gold_floor[lvl]);
+	file_putf(stats_log, " GOLD INFO\n");
+	file_putf(stats_log, " Gold total: %f\n", gold_total[lvl]);
+	file_putf(stats_log, " Gold monster: %f\n", gold_mon[lvl]);
+	file_putf(stats_log, " Gold floor: %f\n", gold_floor[lvl]);
 
 	/* print monster heading */
-	file_putf(stats_log," MONSTER INFO \n");
-	file_putf(stats_log," Total monsters: %f OOD: %f Deadly: %f \n",
-				mon_total[lvl], mon_ood[lvl], mon_deadly[lvl]);
-	file_putf(stats_log," Unique monsters: %f OOD: %f Deadly: %f \n",
-				uniq_total[lvl], uniq_ood[lvl], uniq_deadly[lvl]);
+	file_putf(stats_log, " MONSTER INFO\n");
+	file_putf(stats_log, " Total monsters: %f OOD: %f Deadly: %f\n",
+		mon_total[lvl], mon_ood[lvl], mon_deadly[lvl]);
+	file_putf(stats_log, " Unique monsters: %f OOD: %f Deadly: %f\n",
+		uniq_total[lvl], uniq_ood[lvl], uniq_deadly[lvl]);
+
 	/* print artifact heading */
-
-	
-
-	file_putf(stats_log,"\n ARTIFACT INFO \n");
+	file_putf(stats_log, "\n ARTIFACT INFO\n");
 
 	/* basic artifact info */
-	file_putf(stats_log,"Total artifacts: %f  Special artifacts: %f  Weapons/armor: %f \n",
-		art_total[lvl], art_spec[lvl], art_norm[lvl]);
+	file_putf(stats_log, " Total artifacts: %f  Special artifacts: %f  "
+		"Weapons/armor: %f\n", art_total[lvl], art_spec[lvl],
+		art_norm[lvl]);
 
 	/* artifact depth info */
-	file_putf(stats_log,"Shallow: %f  Average: %f  Ood: %f \n",
+	file_putf(stats_log, " Shallow: %f  Average: %f  Ood: %f\n",
 		art_shal[lvl],art_ave[lvl],art_ood[lvl]);
 		
 	/* more advanced info */
-	file_putf(stats_log,"From vaults: %f  From floor (no vault): %f \n",
+	file_putf(stats_log, " From vaults: %f  From floor (no vault): %f\n",
 		art_vault[lvl],art_floor[lvl]);
-	file_putf(stats_log,"Uniques: %f  Monsters: %f  Vault denizens: %f \n",
+	file_putf(stats_log, " Uniques: %f  Monsters: %f  Vault denizens: %f\n",
 		art_uniq[lvl], art_mon[lvl], art_mon_vault[lvl]);
 
-		
-	for (i=ST_BEGIN; i<ST_END; i++){	
-		file_putf(stats_log, "%s%f From Monsters: %f In Vaults: %f \n",	stat_message[i].name, stat_all[i][0][lvl], stat_all[i][1][lvl], stat_all[i][2][lvl]);
-	}	
-
-
+	for (i = 1; i < ST_END; i++) {
+		file_putf(stats_log, "%s%f From Monsters: %f In Vaults: %f\n",	stat_message[i].name, stat_all[i][0][lvl], stat_all[i][1][lvl], stat_all[i][2][lvl]);
+	}
 }
 
 /**
@@ -1297,7 +1312,7 @@ static void mean_and_stdv(int array[TRIES_SIZE])
 	stdev = sqrt((double)ivar + (double)fvar.n / (double)fvar.d);
 
 	/* Print to file */
-	file_putf(stats_log," mean: %f  std-dev: %f \n", avg, stdev);
+	file_putf(stats_log, "        mean: %f  std-dev: %f\n", avg, stdev);
 }
 
 /**
@@ -1308,6 +1323,7 @@ static void mean_and_stdv(int array[TRIES_SIZE])
 static void prob_of_find(double stat[MAX_LVL])
 {
 	static int lvl, tmpcount;
+	const char *prefix = "";
 	double find = 0.0, tmpfind = 0.0;
 
 	/* Skip town level */
@@ -1327,12 +1343,12 @@ static void prob_of_find(double stat[MAX_LVL])
 
 		/* Print output every 5 levels */
 		if (tmpcount == 5) {
-
 			/* print it */
-			file_putf(stats_log,"%f \t",1-find);
+			file_putf(stats_log, "%s%f", prefix, 1.0 - find);
+			prefix = " \t";
 
 			/* reset temp counter */
-			tmpcount=0;
+			tmpcount = 0;
 		}
 	}
 
@@ -1365,13 +1381,13 @@ static void post_process_stats(void)
 	int i,k;
 
 	/* Output a title */
-	file_putf(stats_log,"\n");
-	file_putf(stats_log,"***** POST PROCESSING *****\n");
-	file_putf(stats_log,"\n");
-	file_putf(stats_log,"Item \t5\t\t\t10\t\t\t15\t\t\t20\t\t\t25\t\t\t");
-	file_putf(stats_log,"30\t\t\t35\t\t\t40\t\t\t45\t\t\t50\t\t\t");
-	file_putf(stats_log,"55\t\t\t60\t\t\t65\t\t\t70\t\t\t75\t\t\t");
-	file_putf(stats_log,"80\t\t\t85\t\t\t90\t\t\t95\t\t\t100\n");
+	file_putf(stats_log, "\n");
+	file_putf(stats_log, "***** POST PROCESSING *****\n");
+	file_putf(stats_log, "\n");
+	file_putf(stats_log, "Item \t5\t\t10\t\t15\t\t20\t\t25\t\t");
+	file_putf(stats_log, "30\t\t35\t\t40\t\t45\t\t50\t\t");
+	file_putf(stats_log, "55\t\t60\t\t65\t\t70\t\t75\t\t");
+	file_putf(stats_log, "80\t\t85\t\t90\t\t95\t\t100\n");
 	
 	for (i = 1; i < ST_FF_END; i++) {
 			file_putf(stats_log, "%s", stat_ff_message[i].name);
@@ -1385,8 +1401,8 @@ static void post_process_stats(void)
 	for (k = 0; k < MAX_LVL; k++)
 		arttot += art_total[k];
 
-	file_putf(stats_log,"\n");
-	file_putf(stats_log,"Total number of artifacts found %f \n",arttot);
+	file_putf(stats_log, "\n");
+	file_putf(stats_log, "Total number of artifacts found %f\n", arttot);
 	mean_and_stdv(art_it);
 
 	/* Temporary stuff goes here */
