@@ -37,6 +37,7 @@
 #include "obj-init.h"
 #include "obj-pile.h"
 #include "obj-randart.h"
+#include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
@@ -92,6 +93,9 @@ static double addval;
 bool clearing = false;
 /* flag for regenning randart */
 bool regen = false;
+
+/* remember which slay is slay evil */
+static int slay_evil_ind;
 
 /*** These are items to track for each iteration ***/
 /* total number of artifacts found */
@@ -488,6 +492,11 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 	/* check for some stuff that we will use regardless of type */
 	/* originally this was armor, but I decided to generalize it */
 
+	/* wearable */
+	if (tval_is_wearable(obj)) {
+		add_stats(ST_EQUIPMENT, vault, mon, number);
+	}
+
 	/* has free action (hack: don't include Inertia)*/
 	if (of_has(obj->flags, OF_FREE_ACT) && 
 		!((obj->tval == TV_AMULET) &&
@@ -583,9 +592,9 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 			/* check if bad, good, or average */
 			if (obj->to_a < 0)
 				add_stats(ST_BAD_ARMOR, vault, mon, number);
-			if (obj->to_h == 0)
+			if (obj->to_a == 0)
 				add_stats(ST_AVERAGE_ARMOR, vault, mon, number);
-			if (obj->to_h > 0)
+			if (obj->to_a > 0)
 				add_stats(ST_GOOD_ARMOR, vault, mon, number);
 
 			/* has str boost */
@@ -679,18 +688,21 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 				add_stats(ST_TELEP_WEAPONS, vault, mon, number);
 
 			/* is a top of the line weapon */
-			if (((obj->tval == TV_HAFTED) &&
-				 (!strstr(obj->kind->name, "Disruption"))) ||
-				((obj->tval == TV_POLEARM) &&
-				 (!strstr(obj->kind->name, "Slicing"))) ||
-				((obj->tval == TV_SWORD) &&
-				 (!strstr(obj->kind->name, "Chaos")))) {
+			if ((obj->tval == TV_HAFTED
+					&& strstr(obj->kind->name, "Disruption"))
+					|| (obj->tval == TV_POLEARM
+					&& strstr(obj->kind->name, "Slicing"))
+					|| (obj->tval == TV_SWORD
+					&& strstr(obj->kind->name, "Chaos"))) {
 				add_stats(ST_HUGE_WEAPONS, vault, mon, number);
 
-				/* is uber need to fix ACB
-				if ((of_has(obj->flags, OF_SLAY_EVIL)) || (obj->modifiers[OBJ_MOD_BLOWS] > 0))
-				add_stats(ST_UBWE, vault, mon, number); */
-
+				if (obj->modifiers[OBJ_MOD_BLOWS] > 0
+						|| (obj->slays
+						&& slay_evil_ind > 0
+						&& obj->slays[slay_evil_ind])) {
+					add_stats(ST_ENDGAME_WEAPONS, vault,
+						mon, number);
+				}
 			}
 
 			break;
@@ -1516,7 +1528,7 @@ static void diving_stats(void)
 
 		/* Print the output to the file */
 		if (running) {
-			print_stats(depth);
+			print_stats(player->depth);
 		}
 
 		/* Show the level to check on status */
@@ -1639,12 +1651,22 @@ void stats_collect(int nsim, int simtype)
 {
 	bool auto_flag;
 	char buf[1024];
+	int i;
 
 	/* Make sure the inputs are good! */
 	if (nsim < 1 || simtype < 1 || simtype > 3) return;
 
 	tries = nsim;
 	addval = 1.0 / tries;
+
+	/* Remember which slay is slay evil. */
+	slay_evil_ind = -1;
+	for (i = 1; i < z_info->slay_max; ++i) {
+		if (slays[i].name && slays[i].race_flag == RF_EVIL) {
+			slay_evil_ind = i;
+			break;
+		}
+	}
 
 	/* Are we in diving or clearing mode */
 	if (simtype == 1) {
