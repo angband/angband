@@ -2122,34 +2122,43 @@ errr Term_addch(int a, wchar_t c)
  */
 errr Term_addstr(int n, int a, const char *buf)
 {
-	int k;
-
-	int w = Term->wid;
-
+	int w = Term->wid, k;
 	errr res = 0;
-
 	wchar_t s[1024];
+	size_t nc;
 
-	/* Copy to a rewriteable string */
- 	text_mbstowcs(s, buf, 1024);
+	assert(w > 0);
 
 	/* Handle "unusable" cursor */
 	if (Term->scr->cu) return (-1);
 
-	/* Obtain maximal length */
-	k = (n < 0) ? (w + 1) : n;
+	/* Convert to wide characters */
+	nc = text_mbstowcs(s, buf, 1024);
+	if (nc == (size_t)-1) {
+		return -1;
+	}
+	if (nc == 0) {
+		return 0;
+	}
+	k = (int)nc;
 
-	/* Obtain the usable string length */
-	for (n = 0; (n < k) && s[n]; n++) /* loop */;
+	/* Obtain maximal length */
+	if (n < 0) {
+		if (k > w) {
+			k = w + 1;
+		}
+	} else if (k > n) {
+		k = n;
+	}
 
 	/* React to reaching the edge of the screen */
-	if (Term->scr->cx + n >= w) res = n = w - Term->scr->cx;
+	if (Term->scr->cx + k >= w) res = k = w - Term->scr->cx;
 
-	/* Queue the first "n" characters for display */
-	Term_queue_chars(Term->scr->cx, Term->scr->cy, n, a, s);
+	/* Queue the first "k" characters for display */
+	Term_queue_chars(Term->scr->cx, Term->scr->cy, k, a, s);
 
 	/* Advance the cursor */
-	Term->scr->cx += n;
+	Term->scr->cx += k;
 
 	/* Notice "Useless" cursor */
 	if (res) Term->scr->cu = 1;
