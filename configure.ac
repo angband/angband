@@ -97,6 +97,7 @@ AC_CHECK_HEADERS([fcntl.h])
 AC_HEADER_STDBOOL
 AC_CHECK_FUNCS([mkdir setresgid setegid stat])
 MY_CHECK_SIGACTION
+MY_CHECK_SIGPROCMASK
 
 dnl needed because h-basic.h checks for this define for autoconf support.
 CPPFLAGS="$CPPFLAGS -DHAVE_CONFIG_H"

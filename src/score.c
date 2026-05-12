@@ -241,7 +241,11 @@ void build_score(struct high_score *entry, const struct player *p,
  * \param p is the player to enter
  * \param death_time points to the time at which the player died; may be NULL
  * for a player that's not dead yet
- * Assumes "signals_ignore_tstp()" has been called.
+ *
+ * To reduce opportunities for corruption of the high score file or leaving a
+ * lock file in place, this function should only be called if user-requested
+ * suspends or interruptions have been disabled.  With the textui interface,
+ * that can be done by calling signals_protect(true).
  */
 void enter_score(const struct player *p, const time_t *death_time)
 {

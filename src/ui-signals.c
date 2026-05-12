@@ -36,6 +36,10 @@ int16_t signal_count;	/* Count interrupts ("I'm going to count to five") */
 
 typedef void (*Signal_Handler_t)(int);
 
+#ifdef SIGTSTP
+static Signal_Handler_t tstp_handler = SIG_DFL;
+#endif
+
 static int install_handler(int sig, Signal_Handler_t handler)
 {
 #ifdef HAVE_SIGACTION
@@ -68,49 +72,11 @@ static void handle_signal_disconnect(int sig)
 
 #ifdef SIGTSTP
 /**
- * Handle signals -- suspend
- *
- * Actually suspend the game, and then resume cleanly
+ * Handle signals -- request suspend
  */
 static void handle_signal_suspend(int sig)
 {
-	/* Protect errno from library calls in signal handler */
-	int save_errno = errno;
-
-#ifndef HAVE_SIGACTION
-	/* Disable handler */
-	(void)install_handler(sig, SIG_IGN);
-#endif
-
-#ifdef SIGSTOP
-
-	/* Flush output */
-	Term_fresh();
-
-	/* Suspend the "Term" */
-	Term_xtra(TERM_XTRA_ALIVE, 0);
-
-	/* Suspend ourself */
-	(void)kill(0, SIGSTOP);
-
-	/* Resume the "Term" */
-	Term_xtra(TERM_XTRA_ALIVE, 1);
-
-	/* Redraw the term */
-	Term_redraw();
-
-	/* Flush the term */
-	Term_fresh();
-
-#endif
-
-#ifndef HAVE_SIGACTION
-	/* Restore handler */
-	(void)install_handler(sig, handle_signal_suspend);
-#endif
-
-	/* Restore errno */
-	errno = save_errno;
+	terms_suspending = 1;
 }
 #endif /* ifdef SIGTSTP */
 
@@ -266,7 +232,7 @@ static void handle_signal_abort(int sig)
 	savefile_get_panic_name(panicfile, sizeof(panicfile), savefile);
 
 	/* Forbid suspend */
-	signals_ignore_tstp();
+	signals_protect(true);
 
 	/* Attempt to save */
 	if (panicfile[0] && savefile_save(panicfile))
@@ -282,29 +248,68 @@ static void handle_signal_abort(int sig)
 }
 
 
-
-
 /**
- * Ignore SIGTSTP signals (keyboard suspend)
+ * Temporarily modify whether certain signals have an effect.
+ *
+ * \param on will, if true, disable certain signals' effects.  If false, those
+ * signals' effects are restored.
+ *
+ * The signals affected are those that are typically user-initiated, could
+ * lead to denial of service (lock file left in place) or partially written
+ * important data, and, if blocked or ignored still allow for normal execution
+ * to proceed:  SIGINT, SIGQUIT, SIGTERM, and SIGTSTP.  Whether the signals
+ * are only blocked from delivery or ignored depends on what the platform
+ * allows.
  */
-void signals_ignore_tstp(void)
+void signals_protect(bool on)
 {
+#ifdef HAVE_SIGPROCMASK
+	sigset_t s;
 
-#ifdef SIGTSTP
-	(void)install_handler(SIGTSTP, SIG_IGN);
+	(void)sigemptyset(&s);
+#ifdef SIGINT
+	(void)sigaddset(&s, SIGINT);
 #endif
-
-}
-
-/**
- * Handle SIGTSTP signals (keyboard suspend)
- */
-void signals_handle_tstp(void)
-{
-
-#ifdef SIGTSTP
-	(void)install_handler(SIGTSTP, handle_signal_suspend);
+#ifdef SIGQUIT
+	(void)sigaddset(&s, SIGQUIT);
 #endif
+#ifdef SIGTERM
+	(void)sigaddset(&s, SIGTERM);
+#endif
+#ifdef SIGTSTP
+	(void)sigaddset(&s, SIGTSTP);
+#endif
+	(void)sigprocmask((on) ? SIG_BLOCK : SIG_UNBLOCK, &s, NULL);
+
+#else
+	if (on) {
+#ifdef SIGINT
+		(void)install_handler(SIGINT, SIG_IGN);
+#endif
+#ifdef SIGQUIT
+		(void)install_handler(SIGQUIT, SIG_IGN);
+#endif
+#ifdef SIGTERM
+		(void)install_handler(SIGTERM, SIG_IGN);
+#endif
+#ifdef SIGTSTP
+		(void)install_handler(SIGTSTP, SIG_IGN);
+#endif
+	} else {
+#ifdef SIGINT
+		(void)install_handler(SIGINT, handle_signal_simple);
+#endif
+#ifdef SIGQUIT
+		(void)install_handler(SIGQUIT, handle_signal_abort);
+#endif
+#ifdef SIGTERM
+		(void)install_handler(SIGTERM, handle_signal_simple);
+#endif
+#ifdef SIGTSTP
+		(void)install_handler(SIGTSTP, tstp_handler);
+#endif
+	}
+#endif /* else HAVE_SIGPROCMASK */
 
 }
 
@@ -312,7 +317,7 @@ void signals_handle_tstp(void)
 /**
  * Prepare to handle the relevant signals
  */
-void signals_init(bool hup_disconnects)
+void signals_init(bool hup_disconnects, bool tstp_default)
 {
 
 #ifdef SIGHUP
@@ -324,7 +329,10 @@ void signals_init(bool hup_disconnects)
 
 
 #ifdef SIGTSTP
-	(void)install_handler(SIGTSTP, handle_signal_suspend);
+	tstp_handler = (tstp_default) ? SIG_DFL : handle_signal_suspend;
+	(void)install_handler(SIGTSTP, tstp_handler);
+#else
+	(void)tstp_default;
 #endif
 
 
@@ -402,28 +410,55 @@ void signals_init(bool hup_disconnects)
 
 #else	/* !WINDOWS */
 
-
 /**
  * Do nothing
  */
-void signals_ignore_tstp(void)
+void signals_protect(bool on)
 {
+	(void)on;
 }
 
-/**
- * Do nothing
- */
-void signals_handle_tstp(void)
-{
-}
 
 /**
  * Do nothing
  */
-void signals_init(bool hup_disconnects)
+void signals_init(bool hup_disconnects, bool tstp_default)
 {
 	(void)hup_disconnects;
+	(void)tstp_default;
 }
 
 #endif	/* !WINDOWS */
 
+
+/**
+ * Suspend the user interface and then resume upon receiving SIGCONT.
+ */
+void signals_perform_deferred_suspend(void)
+{
+#ifdef SIGSTOP
+	/* Flush output */
+	Term_fresh();
+
+	/* Suspend the "Term" */
+	Term_xtra(TERM_XTRA_ALIVE, 0);
+
+	/* Suspend ourself */
+	(void)kill(0, SIGSTOP);
+
+	/* Clear the indicator. */
+	terms_suspending = 0;
+
+	/* Resume the "Term" */
+	Term_xtra(TERM_XTRA_ALIVE, 1);
+
+	/* Redraw the term */
+	Term_redraw();
+
+	/* Flush the term */
+	Term_fresh();
+#else
+	/* Clear the indicator. */
+	terms_suspending = 0;
+#endif
+}
