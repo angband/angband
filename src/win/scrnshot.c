@@ -158,9 +158,9 @@ bool SaveWindow_PNG(HWND hWnd, LPSTR lpFileName)
 			data = row_pointers[y];
 			for (x = 0; x < width; ++x) {
 				bgr = GetPixel(hDC, x,y);
-				b[2] = ((bgr&0x000000FF));
-				b[1] = ((bgr&0x0000FF00)>>8);
-				b[0] = ((bgr&0x00FF0000)>>16);
+				b[2] = (bgr & 0x000000FF);
+				b[1] = ((bgr >> 8) & 0x000000FF);
+				b[0] = ((bgr >> 16) & 0x000000FF);
 				*(data++) = b[2];
 				*(data++) = b[1];
 				*(data++) = b[0];
