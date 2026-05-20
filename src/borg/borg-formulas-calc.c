@@ -75,8 +75,8 @@ static struct token *new_token(
     return tok;
 }
 
-/* 
- * grab an operator (+, -, and, or etc) from the line 
+/*
+ * grab an operator (+, -, and, or etc) from the line
  */
 static bool get_operator(char **in, enum token_type *ttype)
 {
@@ -191,7 +191,7 @@ static bool tokenize_math(
     struct borg_calculation *f, char *line, const char *full_line)
 {
     bool fail              = false;
-    bool not               = false;
+    bool negate            = false;
     int             pdepth = 0;
     char           *start  = line;
     enum token_type type;
@@ -215,13 +215,13 @@ static bool tokenize_math(
             if (pdepth > f->max_depth)
                 f->max_depth = pdepth;
             borg_array_add(
-                f->token_array, new_token(TOK_VALUE, v, pdepth, not ));
-            not = false;
+                f->token_array, new_token(TOK_VALUE, v, pdepth, negate));
+            negate = false;
             continue;
         }
 
         if (*line == '!') {
-            not = true;
+            negate = true;
             line++;
             continue;
         }
@@ -244,19 +244,25 @@ static bool tokenize_math(
             continue;
         }
 
-        if (isdigit((int)(*line))
-            || (*line == '-' && isdigit((int)(*(line + 1))))) {
+        if (isdigit((unsigned char)(*line))
+            || (*line == '-' && isdigit((unsigned char)(*(line + 1))))) {
 
+            char* val_start = line;
             int32_t *val = mem_alloc(sizeof(int32_t));
             *val         = atol(line);
 
             if (pdepth > f->max_depth)
                 f->max_depth = pdepth;
             borg_array_add(
-                f->token_array, new_token(TOK_NUMBER, val, pdepth, not ));
-            not = false;
-            while (isdigit((unsigned char)*line) || *line == '-')
+                f->token_array, new_token(TOK_NUMBER, val, pdepth, negate));
+            negate = false;
+            while (isdigit((unsigned char)*line) ||
+                (*line == '-' && line == val_start))
                 line++;
+            if ((*line == '-' && line != val_start))
+                borg_formula_error(start, full_line, "calculation",
+                    "** number parsing error");
+
             continue;
         }
 
@@ -267,7 +273,7 @@ static bool tokenize_math(
                 f->max_depth = pdepth;
             borg_array_add(
                 f->token_array, new_token(type, NULL, pdepth, false));
-            if (not ) {
+            if (negate) {
                 borg_formula_error(start, full_line, "calculation",
                     "** not (!) can only be applied to values");
                 fail = true;
@@ -285,7 +291,7 @@ static bool tokenize_math(
     return fail;
 }
 
-/* 
+/*
  * Quick helper to return if this token is an operator or a value
  */
 static bool is_operator(enum token_type type) { return type >= TOK_MINUS; }
@@ -309,7 +315,7 @@ static int operation_level(enum token_type type)
 }
 
 /*
- * This takes a calculation and the position of an operation and adds 
+ * This takes a calculation and the position of an operation and adds
  * "depth" (virtual parenthesis) to that operation.
  */
 static void add_depth(struct borg_calculation *f, int pos)
@@ -464,8 +470,8 @@ static bool adjust_order_operations(struct borg_calculation *f)
     return fail;
 }
 
-/* 
- * check for format of a formula 
+/*
+ * check for format of a formula
  */
 static bool validate_calculation(
     struct borg_calculation *f, char *line, const char *full_line)
@@ -630,7 +636,15 @@ static int32_t calculate_value_from_formula_depth(
         total = left_value * right_value;
         break;
     case TOK_DIV:
-        total = left_value / right_value;
+        if (right_value == 0) {
+            borg_note("** borg formula failure ** ");
+            borg_note("** divide by zero error calculating a formula value");
+            borg_note("** setting denominator to one");
+            total = left_value;
+        }
+        else {
+            total = left_value / right_value;
+        }
         break;
     case TOK_AND:
         total = left_value && right_value;
