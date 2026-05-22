@@ -626,7 +626,7 @@ This will generate a debugging build like that described in the Linux section::
 
     cd src
     make -f Makefile.osx clean
-    make -f Makefile.osx OPT="-g -O1 -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=address"
+    make -f Makefile.osx OPT="-g -O1 -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=address" DEBUGGED_ENTITLEMENT=yes
 
 The clean step is there to clean out object files that were compiled with the
 default options.  The "-g" adds debugging symbols.
@@ -635,7 +635,15 @@ traces that are easier to interpret.  For even clearer call stack traces, you
 could add "-fno-optimize-sibling-calls" to the options or omit optimization
 entirely by replacing "-O1 -fno-omit-frame-pointer" with "-O0".
 "-fsanitize=address -fsanitize=undefined" enables the AddressSanitizer and
-UndefinedBehaviorSanitizer tools.
+UndefinedBehaviorSanitizer tools.  "DEBUGGED_ENTITLEMENT=yes" only has an
+effect with versions of Makefile.osx newer than May 2026 and allows XCode's
+tools to attach to the executable for debugging and tracing (it is not, however,
+currently needed to use the executable with lldb).  If you are using an older
+version of Makefile.osx and are having trouble with XCode's tools failing to
+attach to the executable, see https://github.com/cmyr/cargo-instruments/issues/40#issuecomment-894287229
+for how to sign the executable so it has the get-task-allow entitlement.
+Because that entitlement allows for code injection, take care about choosing to
+distribute an executable with that entitlement.
 
 To run the generated executable under Xcode's command-line debugger, lldb, do
 this if you are already in the src directory from the compilation step::

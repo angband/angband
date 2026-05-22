@@ -10,6 +10,15 @@ CC = clang
 LD = ld
 OPT ?= -O2
 
+# If set and equal to yes, sign the executable with an ad-hoc identity and with
+# the get-task-allow entitlement.  While not currently necessary to run the
+# executable under lldb, that became necessary, at some point between XCode 14.2
+# and XCode 26.2, for the executable to be usable with XCode's Leaks instrument,
+# and likely other debugging or tracing functions within XCode.  Because that
+# entitlement allows code injection, take care about choosing to distribute
+# an executable with that entitlement.
+#DEBUGGED_ENTITLEMENT ?= yes
+
 # for consistency with older versions, use a lower case bundle ID
 BUNDLE_IDENTIFIER = org.rephial.angband
 
@@ -76,6 +85,10 @@ $(PROGNAME).a: $(OBJS)
 
 $(EXE): $(PROGNAME).a $(OSX_OBJS)
 	$(DEPLOYMENT_TARGET) $(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OSX_OBJS) $(PROGNAME).a $(LIBS)
+	@if test x"${DEBUGGED_ENTITLEMENT}" = xyes ; then \
+		echo "signing $(EXE) with the get-task-allow entitlement ..." ; \
+		codesign -s - -f --entitlement cocoa/get-task-allow.plist "${EXE}" ; \
+	fi
 
 #
 # Clean up old junk; $(EXE).o and $(addprefix $(EXE).o,$(ARCHS)) are relics
