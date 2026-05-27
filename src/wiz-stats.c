@@ -41,6 +41,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
+#include "player-quest.h"
 #include "ui-command.h"
 #include "wizard.h"
 #include <math.h>
@@ -64,7 +65,7 @@
  * At the end of the "level-clearing" log file, extra post-processing is done
  * to find the mean and standard deviation for the level you are likely to
  * first gain an item with a key resistance or item.
- * 
+ *
  * In addition to these sims there is a shorter sim that tests for dungeon
  * connectivity.
 */
@@ -73,43 +74,55 @@
 
 /*** Statsgen ***/
 
-/* Logfile to store results in */
-static ang_file *stats_log = NULL;
+/**
+ * This is the maximum size of arrays used to track results from each trial:
+ * keep at most TRIES_LIMIT or the number of trials, whichever is smaller.
+ */
+#define TRIES_LIMIT 500
 
- /* this is the size of arrays used to calculate mean and std_dev.
-  * these values will be calculated over the first TRIES_SIZE attempts
-  * or less if TRIES_SIZE is less than tries
-  */
- #define TRIES_SIZE 100
- #define MAX_LVL 101
- 
- /* default for number of tries */
-int tries=50;
-/* the simulation number that we are on */
-int iter;
-/* amount to add each time an item comes up */
-static double addval;
-/* flag for whether we are in clearing mode */
-bool clearing = false;
-/* flag for regenning randart */
-bool regen = false;
+/** Store the information about a tval that represents books. */
+struct book_tval {
+	uint32_t *ids;	/**< the kind indices for the books with this tval in
+				ascending order */
+	int tval;	/**< the tval */
+	int ind;	/**< mapping of the first book with this tval to
+				[0, total number of book kinds - 1] */
+	int kind_count;	/**< number of kinds of books with this tval */
+};
 
-/* remember which slay is slay evil */
-static int slay_evil_ind;
+/** Store how kinds of books are tracked in the statistics arrays. */
+struct book_lookup {
+	struct book_tval *tvals;	/**< tvals for which tval_is_book_k()
+						is true; in monotonically
+						increasing order in both tval
+						and ind */
+	const struct object_kind **rev;	/**< reverse lookup:  rev[i], where i
+						is in [0, total number of book
+						kinds - 1], points to the kind
+						for the ith book in the
+						statistics arrays */
+	int tval_count;			/**< total number of tvals that are
+						books */
+	int book_count;			/**< total number of kinds of books */
+};
 
-/*** These are items to track for each iteration ***/
-/* total number of artifacts found */
-static int art_it[TRIES_SIZE];
+/**
+ * Groups of item classes that have separate storage in struct collect_results
+ */
+typedef enum stgrp_code {
+	STGRP_GENERAL,	/**< item class index is in [0, ST_END - 1] or [0,
+				ST_FF_END - 1] and storage is in
+				collect_result's stat_all or stat_ff_all */
+	STGRP_BOOK,	/**< item class index is in [0, total number of book
+				kinds - 1] and storage is in collect_result's
+				stat_book or stat_ff_book */
+} stgrp_code;
 
-/*** handle gold separately ***/
-/* gold */
-static double gold_total[MAX_LVL], gold_floor[MAX_LVL], gold_mon[MAX_LVL];
-
-
-typedef enum stat_code
-{
-	ST_BEGIN,
-	ST_EQUIPMENT,
+/**
+ * Classes of items to count
+ */
+typedef enum stat_code {
+	ST_EQUIPMENT = 0,
 	ST_FA_EQUIPMENT,
 	ST_SI_EQUIPMENT,
 	ST_RESIST_EQUIPMENT,
@@ -123,7 +136,7 @@ typedef enum stat_code
 	ST_ARMORS,
 	ST_BAD_ARMOR,
 	ST_AVERAGE_ARMOR,
-	ST_GOOD_ARMOR,	
+	ST_GOOD_ARMOR,
 	ST_STR_ARMOR,
 	ST_INT_ARMOR,
 	ST_WIS_ARMOR,
@@ -202,29 +215,176 @@ typedef enum stat_code
 	ST_SLAYEVIL_AMMO,
 	ST_HOLY_AMMO,
 	ST_BOOKS,
-	ST_1ST_BOOKS,
-	ST_2ND_BOOKS,
-	ST_3RD_BOOKS,
-	ST_4TH_BOOKS,
-	ST_5TH_BOOKS,
-	ST_6TH_BOOKS,
-	ST_7TH_BOOKS,
-	ST_8TH_BOOKS,
-	ST_9TH_BOOKS,
 	ST_END
-}	
-stat_code;
+} stat_code;
 
-
-struct stat_data
-{
+struct stat_data {
 	stat_code st;
 	const char *name;
 };
 
-static const struct stat_data stat_message[] =
-{
-	{ST_BEGIN, ""},
+/**
+ * Classes of items for which we want to find the level where it is most likely
+ * to be first found
+ */
+typedef enum stat_first_find {
+	ST_FF_FA = 0,
+	ST_FF_SI,
+	ST_FF_RPOIS,
+	ST_FF_RNEXUS,
+	ST_FF_RCONF,
+	ST_FF_RBLIND,
+	ST_FF_TELEP,
+	ST_FF_END
+} stat_first_find;
+
+struct stat_ff_data {
+	stat_first_find st_ff;
+	const char *name;
+};
+
+/**
+ * Hold results for first find tracking.
+ */
+struct first_find_arrays {
+	int *level;	/**< level[i] is the first level where the item class,
+				i / tries_lim, (that will either be in
+				[0, ST_FF_END - 1] or [0, total number of book
+				kinds - 1]) for trial i % tries_lim */
+	int *count;	/**< count[i] is the number of iterations where the item
+				class, i / max_lvl, (that will either be in
+				[0, ST_FF_END - 1] or [0, total number of book
+				kinds - 1]) was found on level i % max_lvl */
+	bool *yet;	/**< yet[i] is whether the ith item class (i is
+				either in [0, ST_FF_END - 1] or [0, total
+				number of book kinds - 1] has been found yet
+				at the current level in the current trial */
+};
+
+/**
+ * Hold the results while stats_collect() runs.
+ *
+ * Note that for the per-level array members, a reference to level index is for
+ * the clearing case.  In the diving case, the level index will be zero and that
+ * represents the current level, i.e. player->depth.
+ */
+struct collect_results {
+	ang_file *log;	/**< where results are logged */
+	int *art_it;	/**< art_it[i] is the total number of artifacts found in
+				trial i, i in [0, tries_lim - 1] */
+	double *gold_total;	/**< gold_total[i] is the average amount of
+					gold, across all trials, found on
+					level i */
+	double *gold_floor;	/**< gold_floor[i] is the average amount of
+					gold, across all trials, found on the
+					floor on level i */
+	double *gold_mon;	/**< gold_mon[i] is the average amount of gold,
+					across all trials, dropped by monsters
+					on level i */
+	double *stat_all;	/**< stat_all[i] is the average number found,
+					across all trials, for the group of
+					items, (i / 3) % ST_END, on level
+					i / (3 * ST_END); the sources of items
+					included in that average are all
+					sources if i % 3 is 0, monster drops
+					if i % 3 is 1, or items on vault floors
+					if i % 3 is 2 */
+	struct first_find_arrays stat_ff_all;
+				/**< first find tracking for item classes in
+					[0, ST_FF_END - 1] */
+	double *stat_book;	/**< stat_book[i] is the average number found,
+					across all trials, for the kind of book
+					with index, (i / 3) % total number of
+					book kinds, on level i / (3 * total
+					number of book kinds); the source of
+					books included in that average are all
+					sources if i % 3 is 0, monster drops
+					if i % 3 is 1, or books on vault floors
+					if i % 3 is 2 */
+	struct first_find_arrays stat_ff_book;
+				/**< first find tracking for book kinds */
+	double *art_total;	/**< art_total[i] is the average number, across
+					all trials, of artifacts found on
+					level i */
+	double *art_spec;	/**< art_spec[i] is the average number, across
+					all trials, of artifacts found on level
+					i that are lights, amulets, or rings */
+	double *art_norm;	/**< art_norm[i] is the average number, across
+					all trials, of artifacts found on level
+					i that are neither lights, amulets,
+					nor rings */
+	double *art_shal;	/**< art_shal[i] is the average number, across
+					all trials, of artifacts found on level
+					i whose alloc_min is less than i - 20 */
+	double *art_ave;	/**< art_ave[i] is the average number, across
+					all trials, of artifacts found on level
+					i whose alloc_min is between i - 20 and
+					i, inclusive */
+	double *art_ood;	/**< art_ood[i] is the average number, across
+					all trials, of artifacts found on level
+					i whose alloc_min is greater than i */
+	double *art_mon;	/**< art_mon[i] is the average number, across
+					all trials, of artifacts found on level
+					i which are neither lights, amulets, nor
+					rings and were dropped by a monster
+					(either unique or not) */
+	double *art_uniq;	/**< art_uniq[i] is the average number, across
+					all trials, of artifacts found on level
+					i which are neither lights, amulets, nor
+					rings and were dropped by a unique
+					monster */
+	double *art_floor;	/**< art_floor[i] is the average number, across
+					all trials, of artifacts found on level
+					i which are neither lights, amulets,
+					nor rings and were on the floor and
+					not within a vault */
+	double *art_vault;	/**< art_vault[i] is the average number, across
+					all trials, of artifacts found on level
+					i which are neither lights, amulets,
+					nor rings and were on the floor in a
+					vault */
+	double *art_mon_vault;	/**< art_mon_vault[i] is the average number,
+					across all trials, of artifacts found
+					on level i which were dropped by
+					a monster (either unique or not) from
+					a vault */
+	double *mon_total;	/**< mon_total[i] is the average number, across
+					all trials, of monsters (either unique
+					or not) found on level i */
+	double *mon_ood;	/**< mon_ood[i] is the average number, across
+					all trials, of monsters (either unique
+					or not) found on level i whose
+					native depth is greater than i and
+					less than or equal to i + 10 */
+	double *mon_deadly;	/**< mon_deadly[i] is the average number, across
+					all trials, of monsters (either unique
+					or not) found on level i whose native
+					depth is greater than i + 10 */
+	double *uniq_total;	/**< uniq_total[i] is the average number, across
+					all trials, of unique monsters found
+					on level i */
+	double *uniq_ood;	/**< uniq_ood[i] is the average number, across
+					all trials, of unique monsters found
+					on level i whose native depth is greater
+					than i and less than or equal to
+					i + 10 */
+	double *uniq_deadly;	/**< uniq_deadly[i] is the average number,
+					across all trials, of unique monsters
+					found on level i whose native depth is
+					greater than i + 10 */
+	struct book_lookup books;	/**< track how books are included in the
+						statistics */
+	double addval;	/**< 1.0 / number of trials */
+	int slay_evil_ind;	/**< remember which slay is slay evil */
+	int max_lvl;	/**< collect statistics for levels 0 to max_lvl - 1 */
+	int tries;	/**< number of trials */
+	int tries_lim;	/**< MIN(TRIES_LIMIT, tries) */
+	int iter;	/**< index, [0, tries - 1], of the current trial */
+	bool clearing;	/**< are the trials done in clearing mode */
+	bool regen;	/**< are random artifacts regnerated between trials */
+};
+
+static const struct stat_data stat_message[] = {
 	{ST_EQUIPMENT, "\n ***EQUIPMENT***\n All         "},
 	{ST_FA_EQUIPMENT, " Free Action "},
 	{ST_SI_EQUIPMENT, " See Invis   "},
@@ -232,7 +392,7 @@ static const struct stat_data stat_message[] =
 	{ST_RBASE_EQUIPMENT, " Resist Base "},
 	{ST_RPOIS_EQUIPMENT, " Resist Pois "},
 	{ST_RNEXUS_EQUIPMENT, " Res. Nexus  "},
-	{ST_RBLIND_EQUIPMENT, " Res. Blind  "},	
+	{ST_RBLIND_EQUIPMENT, " Res. Blind  "},
 	{ST_RCONF_EQUIPMENT, " Res. Conf.  "},
 	{ST_SPEED_EQUIPMENT, " Speed       "},
 	{ST_TELEP_EQUIPMENT, " Telepathy   "},
@@ -308,7 +468,7 @@ static const struct stat_data stat_message[] =
 	{ST_TELEP_AMULETS, " Telepathy   "},
 	{ST_ENDGAME_AMULETS, " Endgame     "},//Trickery, weaponmastery, magi
 	{ST_CURSED_AMULETS, " Cursed      "},
-	{ST_AMMO, "\n ***AMMO***\n All:        "},
+	{ST_AMMO, "\n ***AMMO***\n All         "},
 	{ST_BAD_AMMO, " Bad         "},
 	{ST_AVERAGE_AMMO, " Average     "},
 	{ST_GOOD_AMMO, " Good        "},
@@ -318,796 +478,821 @@ static const struct stat_data stat_message[] =
 	{ST_SLAYEVIL_AMMO, " Slay evil   "},
 	{ST_HOLY_AMMO, " Holy might  "},
 	{ST_BOOKS, "\n ***BOOKS***\n All         "},
-	{ST_1ST_BOOKS, " Book 1      "},
-	{ST_2ND_BOOKS, " Book 2      "},
-	{ST_3RD_BOOKS, " Book 3      "},
-	{ST_4TH_BOOKS, " Book 4      "},
-	{ST_5TH_BOOKS, " Book 5      "},
-	{ST_6TH_BOOKS, " Book 6      "},
-	{ST_7TH_BOOKS, " Book 7      "},
-	{ST_8TH_BOOKS, " Book 8      "},
-	{ST_9TH_BOOKS, " Book 9      "},	
-};	
-
-double stat_all[ST_END][3][MAX_LVL];
-	
-/* Values for things we want to find the level where it's
- * most likely to be first found */
-typedef enum stat_first_find
-{
-	ST_FF_BEGIN,
-	ST_FF_FA,
-	ST_FF_SI,
-	ST_FF_RPOIS,
-	ST_FF_RNEXUS,
-	ST_FF_RCONF,
-	ST_FF_RBLIND,
-	ST_FF_TELEP,
-	ST_FF_BOOK1,
-	ST_FF_BOOK2,
-	ST_FF_BOOK3,
-	ST_FF_BOOK4,
-	ST_FF_BOOK5,
-	ST_FF_BOOK6,
-	ST_FF_BOOK7,
-	ST_FF_BOOK8,
-	ST_FF_BOOK9,
-	ST_FF_END
-}	
-stat_first_find;
-
-struct stat_ff_data
-{
-	stat_first_find st_ff;
-	stat_code st;
-	const char *name;
+	{ST_END, ""}
 };
 
-static const struct stat_ff_data stat_ff_message[] =
-{
-	{ST_FF_BEGIN,ST_BEGIN,""},
-	{ST_FF_FA,	ST_FA_EQUIPMENT,		"FA     \t"},
-	{ST_FF_SI,	ST_SI_EQUIPMENT,		"SI     \t"},
-	{ST_FF_RPOIS,	ST_RPOIS_EQUIPMENT,	"Rpois  \t"},
-	{ST_FF_RNEXUS,	ST_RNEXUS_EQUIPMENT,  "Rnexus \t"},
-	{ST_FF_RCONF,	ST_RCONF_EQUIPMENT,	"Rconf  \t"},
-	{ST_FF_RBLIND,	ST_RBLIND_EQUIPMENT,	"Rblind \t"},
-	{ST_FF_TELEP,	ST_TELEP_EQUIPMENT,	"Telep  \t"},
-	{ST_FF_BOOK1,	ST_1ST_BOOKS,	"Book1  \t"},
-	{ST_FF_BOOK2,	ST_2ND_BOOKS, 	"Book2  \t"},
-	{ST_FF_BOOK3,	ST_3RD_BOOKS,	"Book3  \t"},
-	{ST_FF_BOOK4,	ST_4TH_BOOKS,	"Book4  \t"},
-	{ST_FF_BOOK5,	ST_5TH_BOOKS,	"Book5  \t"},
-	{ST_FF_BOOK6,	ST_6TH_BOOKS,	"Book6  \t"},
-	{ST_FF_BOOK7,	ST_7TH_BOOKS,	"Book7  \t"},
-	{ST_FF_BOOK8,	ST_8TH_BOOKS,	"Book8  \t"},
-	{ST_FF_BOOK9,	ST_9TH_BOOKS,	"Book9  \t"},
+static const struct stat_ff_data stat_ff_message[] = {
+	{ST_FF_FA,	"FA     \t"},
+	{ST_FF_SI,	"SI     \t"},
+	{ST_FF_RPOIS,	"Rpois  \t"},
+	{ST_FF_RNEXUS,	"Rnexus \t"},
+	{ST_FF_RCONF,	"Rconf  \t"},
+	{ST_FF_RBLIND,	"Rblind \t"},
+	{ST_FF_TELEP,	"Telep  \t"},
+	{ST_FF_END,	""}
 };
 
-int stat_ff_all[ST_FF_END][TRIES_SIZE];
 
-
-
-/* basic artifact info */
-static double art_total[MAX_LVL], art_spec[MAX_LVL], art_norm[MAX_LVL];
-
-/* artifact level info */
-static double art_shal[MAX_LVL], art_ave[MAX_LVL], art_ood[MAX_LVL];
-
-/* where normal artifacts come from */
-static double art_mon[MAX_LVL], art_uniq[MAX_LVL], art_floor[MAX_LVL], art_vault[MAX_LVL], art_mon_vault[MAX_LVL];
-
-
-
-/* monster info */
-static double mon_total[MAX_LVL], mon_ood[MAX_LVL], mon_deadly[MAX_LVL];
-
-/* unique info */
-static double uniq_total[MAX_LVL], uniq_ood[MAX_LVL], uniq_deadly[MAX_LVL];
-
-
-/* set everything to 0.0 to begin */
-static void init_stat_vals(void)
-{
-	int i,j,k;
-
-	for (i = 0; i < ST_END;i++)
-		for (j = 0; j < 3; k = j++)
-			for (k = 0; k < MAX_LVL; k++)
-				stat_all[i][j][k] = 0.0;
-				
-	for (i = 1; i < TRIES_SIZE; i++)
-		art_it[i] = 0;
-	
-	for (i = 0; i < ST_FF_END; i++)
-		for (j = 0; j < TRIES_SIZE; j++)
-			stat_ff_all[i][j] = 0.0;
-}
-
-/*
- *	Record the first level we find something
+/**
+ * Record the first level we find something.
+ *
+ * \param st is the index, in [0, ST_FF_END - 1] if gp is STGRP_GENERAL or
+ * [0, total number of book kinds - 1] if gp is STGRP_BOOK, for the class of
+ * items of interest.
+ * \param gp is STGRP_GENERAL if the class of items of interest is stored in
+ * stat_ff_all or STGRP_BOOK if the class of items of interest is stored in
+ * stat_ff_book.
+ * \param lvl is the depth where an item in the class referenced by st was
+ * found.  It must be in [0, cr->max_lvl - 1].
+ * \param cr points to the storage for the accumulated statistics.
  */
-static bool first_find(stat_first_find st)
+static bool first_find(int st, stgrp_code gp, int lvl,
+		struct collect_results *cr)
 {
-	/* make sure we're not on an iteration above our array limit */
-	if (iter >= TRIES_SIZE) return false;
+	struct first_find_arrays *a;
+	size_t offset;
 
-	/* make sure we haven't found it earlier on this iteration */
-	if (stat_ff_all[st][iter] > 0) return false;
+	assert(lvl >= 0 && lvl < cr->max_lvl);
 
-	/* assign the depth to this value */
-	stat_ff_all[st][iter] = player->depth;
+	/*
+	 * Do nothing in the diving case as first find results are unused and,
+	 * to save space, the associated storage has not been allocated.
+	 */
+	if (!cr->clearing) {
+		return false;
+	}
 
-	/* success */
+	switch (gp) {
+	case STGRP_GENERAL:
+		assert(st >= 0 && st < ST_FF_END);
+		a = &cr->stat_ff_all;
+		break;
+
+	case STGRP_BOOK:
+		assert(st >= 0 && st < cr->books.book_count);
+		a = &cr->stat_ff_book;
+		break;
+
+	default:
+		assert(0);
+		return false;
+	}
+
+	/*
+	 * Mark that an item of this class has been found on this level in
+	 * this iteration.
+	 */
+	if (!a->yet[st]) {
+		++a->count[lvl + st * (size_t)cr->max_lvl];
+		a->yet[st] = true;
+	}
+
+	/* Make sure we are not on an iteration above our array limit. */
+	if (cr->iter >= cr->tries_lim) return false;
+
+	/* Make sure we have not already found it earlier in this iteration. */
+	offset = cr->iter + st * (size_t)cr->tries_lim;
+	if (a->level[offset] < cr->max_lvl) return false;
+
+	/* It is a first find.  Record the depth. */
+	a->level[offset] = lvl;
 	return true;
 }
 
-/*
- * Add the number of drops for a specific stat
+/**
+ * Add the number of drops for a specific class of items.
+ *
+ * \param st is the index, in [0, ST_END - 1] if gp is STGRP_GENERAL or
+ * [0, total number of book kinds - 1] if gp is STGRP_BOOK, for the class of
+ * items of interest.
+ * \param gp is STGRP_GENERAL if the class of items of interest is stored in
+ * st_all or STGRP_BOOK if the class of items of interest is stored in st_book.
+ * \param vault is true if the item was found on the floor in a vault or in
+ * the possession of a monster from a vault.
+ * \param mon is true if the item was dropped by a monster (either unique or
+ * not).
+ * \param number is the number of items in the drop.
+ * \param lvl is the depth where an item in the class referenced by st was
+ * found.  It must be in [0, cr->max_lvl - 1].
+ * \param cr points to the storage for the accumulated statistics.
  */
-static void add_stats(stat_code st, bool vault, bool mon, int number)
+static void add_stats(int st, stgrp_code gp, bool vault, bool mon, int number,
+		int lvl, struct collect_results *cr)
 {
-	int lvl;
-	
-	/* get player level */
-	lvl=player->depth;
-	
-	/* be careful about bounds */
-	if ((lvl > MAX_LVL) || (lvl < 0)) return;
-	
-	/* add to the total */
-	stat_all[st][0][lvl] += addval * number;
-	
-	/* add to the total from vaults */
-	if ((!mon) && (vault)) stat_all[st][2][lvl] += addval * number;
-	
-	/* add to the total from monsters */
-	if (mon) stat_all[st][1][lvl] += addval * number;
+	double *a;
+	size_t offset;
+	int n;
 
-}	
-	
-/*
+	switch (gp) {
+	case STGRP_GENERAL:
+		a = cr->stat_all;
+		n = ST_END;
+		break;
+
+	case STGRP_BOOK:
+		a = cr->stat_book;
+		n = cr->books.book_count;
+		break;
+
+	default:
+		assert(0);
+		return;
+	}
+
+	assert(st >= 0 && st < n);
+	assert(lvl >= 0 && lvl < cr->max_lvl);
+	offset = 3 * ((size_t)st
+		+ ((cr->clearing) ? n * (size_t)lvl : (size_t)0));
+
+	/* add to the total */
+	a[offset] += cr->addval * number;
+
+	if (mon) {
+		/* add to the total from monsters */
+		a[offset + 1] += cr->addval * number;
+	} else if (vault) {
+		/* add to the total from vaults */
+		a[offset + 2] += cr->addval * number;
+	}
+}
+
+/**
+ * Determine the statistic index for a kind of book.
+ *
+ * \param k is the kind of interest.
+ * \param b points to the data set up by initialize_books().
+ * \return -1 if k does not correspond to a kind of book.  Otherwise, return
+ * the index, in [0, b->book_count - 1], corresponding to k.
+ *
+ * Since the number of different tvals and kinds in a tval are generally small,
+ * use simpler O(N) searches here rather than O(log(N)) binary searches.
+ */
+static int get_book_index(const struct object_kind *k,
+		const struct book_lookup *b)
+{
+	int i, j;
+
+	for (i = 0; i < b->tval_count; ++i) {
+		if (k->tval == b->tvals[i].tval) {
+			for (j = 0; j < b->tvals[i].kind_count; ++j) {
+				if (k->kidx == b->tvals[i].ids[j]) {
+					return b->tvals[i].ind + j;
+				}
+			}
+			return -1;
+		}
+	}
+	return -1;
+}
+
+/**
  * This will get data on an object
  * It gets a lot of stuff, pretty much everything that I
  * thought was reasonable to get.  However, you might have
  * a much different opinion.  Luckily, I tried to make it
  * trivial to add new items to log.
-*/ 
+ */
 static void get_obj_data(const struct object *obj, int y, int x, bool mon,
-						 bool uniq)
+		bool uniq, struct collect_results *cr)
 {
-
 	bool vault = square_isvault(cave, loc(x, y));
 	int number = obj->number;
-	static int lvl;
-	const struct artifact *art;
-
-	double gold_temp = 0;
+	int lvl, lvl_ind;
+	double gold_temp;
 
 	assert(obj->kind);
 
 	/* get player depth */
 	lvl = player->depth;
+	assert(lvl >= 0 && lvl < cr->max_lvl);
+	lvl_ind = (cr->clearing) ? lvl : 0;
 
 	/* check for some stuff that we will use regardless of type */
 	/* originally this was armor, but I decided to generalize it */
 
 	/* wearable */
 	if (tval_is_wearable(obj)) {
-		add_stats(ST_EQUIPMENT, vault, mon, number);
+		add_stats(ST_EQUIPMENT, STGRP_GENERAL, vault, mon, number,
+			lvl, cr);
 	}
-
 	/* has free action (hack: don't include Inertia)*/
-	if (of_has(obj->flags, OF_FREE_ACT) && 
-		!((obj->tval == TV_AMULET) &&
-		  (!strstr(obj->kind->name, "Inertia")))) {
-
-			/* add the stats */
-			add_stats(ST_FA_EQUIPMENT, vault, mon, number);
-
-			/* record first level */
-			first_find(ST_FF_FA);
-		}
-
-
+	if (of_has(obj->flags, OF_FREE_ACT) &&
+			!((obj->tval == TV_AMULET) &&
+			(!strstr(obj->kind->name, "Inertia")))) {
+		add_stats(ST_FA_EQUIPMENT, STGRP_GENERAL, vault, mon, number,
+			lvl, cr);
+		first_find(ST_FF_FA, STGRP_GENERAL, lvl, cr);
+	}
 	/* has see invis */
 	if (of_has(obj->flags, OF_SEE_INVIS)){
-
-		add_stats(ST_SI_EQUIPMENT, vault, mon, number);
-		first_find(ST_FF_SI);
+		add_stats(ST_SI_EQUIPMENT, STGRP_GENERAL, vault, mon, number,
+			lvl, cr);
+		first_find(ST_FF_SI, STGRP_GENERAL, lvl, cr);
 	}
 	/* has at least one basic resist */
- 	if ((obj->el_info[ELEM_ACID].res_level == 1) ||
-		(obj->el_info[ELEM_ELEC].res_level == 1) ||
-		(obj->el_info[ELEM_COLD].res_level == 1) ||
-		(obj->el_info[ELEM_FIRE].res_level == 1)){
-
-			add_stats(ST_RESIST_EQUIPMENT, vault, mon, number);
+	if ((obj->el_info[ELEM_ACID].res_level == 1) ||
+			(obj->el_info[ELEM_ELEC].res_level == 1) ||
+			(obj->el_info[ELEM_COLD].res_level == 1) ||
+			(obj->el_info[ELEM_FIRE].res_level == 1)) {
+		add_stats(ST_RESIST_EQUIPMENT, STGRP_GENERAL, vault, mon,
+			number, lvl, cr);
 	}
-
 	/* has rbase */
 	if ((obj->el_info[ELEM_ACID].res_level == 1) &&
-		(obj->el_info[ELEM_ELEC].res_level == 1) &&
-		(obj->el_info[ELEM_COLD].res_level == 1) &&
-		(obj->el_info[ELEM_FIRE].res_level == 1))
-		add_stats(ST_RBASE_EQUIPMENT, vault, mon, number);
-
+			(obj->el_info[ELEM_ELEC].res_level == 1) &&
+			(obj->el_info[ELEM_COLD].res_level == 1) &&
+			(obj->el_info[ELEM_FIRE].res_level == 1)) {
+		add_stats(ST_RBASE_EQUIPMENT, STGRP_GENERAL, vault, mon,
+			number, lvl, cr);
+	}
 	/* has resist poison */
-	if (obj->el_info[ELEM_POIS].res_level == 1){
-
-		add_stats(ST_RPOIS_EQUIPMENT, vault, mon, number);
-		first_find(ST_FF_RPOIS);
-		
+	if (obj->el_info[ELEM_POIS].res_level == 1) {
+		add_stats(ST_RPOIS_EQUIPMENT, STGRP_GENERAL, vault, mon,
+			number, lvl, cr);
+		first_find(ST_FF_RPOIS, STGRP_GENERAL, lvl, cr);
 	}
 	/* has resist nexus */
-	if (obj->el_info[ELEM_NEXUS].res_level == 1){
-
-		add_stats(ST_RNEXUS_EQUIPMENT, vault, mon, number);
-		first_find(ST_FF_RNEXUS);
+	if (obj->el_info[ELEM_NEXUS].res_level == 1) {
+		add_stats(ST_RNEXUS_EQUIPMENT, STGRP_GENERAL, vault, mon,
+			number, lvl, cr);
+		first_find(ST_FF_RNEXUS, STGRP_GENERAL, lvl, cr);
 	}
 	/* has resist blind */
-	if (of_has(obj->flags, OF_PROT_BLIND)){
-
-		add_stats(ST_RBLIND_EQUIPMENT, vault, mon, number);
-		first_find(ST_FF_RBLIND);
+	if (of_has(obj->flags, OF_PROT_BLIND)) {
+		add_stats(ST_RBLIND_EQUIPMENT, STGRP_GENERAL, vault, mon,
+			number, lvl, cr);
+		first_find(ST_FF_RBLIND, STGRP_GENERAL, lvl, cr);
 	}
-
 	/* has resist conf */
-	if (of_has(obj->flags, OF_PROT_CONF)){
-
-		add_stats(ST_RCONF_EQUIPMENT, vault, mon, number);
-		first_find(ST_FF_RCONF);
+	if (of_has(obj->flags, OF_PROT_CONF)) {
+		add_stats(ST_RCONF_EQUIPMENT, STGRP_GENERAL, vault, mon,
+			number, lvl, cr);
+		first_find(ST_FF_RCONF, STGRP_GENERAL, lvl, cr);
 	}
-
 	/* has speed */
-	if (obj->modifiers[OBJ_MOD_SPEED] != 0)
-		add_stats(ST_SPEED_EQUIPMENT, vault, mon, number);
-
+	if (obj->modifiers[OBJ_MOD_SPEED] != 0) {
+		add_stats(ST_SPEED_EQUIPMENT, STGRP_GENERAL, vault, mon,
+			number, lvl, cr);
+	}
 	/* has telepathy */
-	if (of_has(obj->flags, OF_TELEPATHY)){
-
-		add_stats(ST_TELEP_EQUIPMENT, vault, mon, number);
-		first_find(ST_FF_TELEP);
+	if (of_has(obj->flags, OF_TELEPATHY)) {
+		add_stats(ST_TELEP_EQUIPMENT, STGRP_GENERAL, vault, mon,
+			number, lvl, cr);
+		first_find(ST_FF_TELEP, STGRP_GENERAL, lvl, cr);
 	}
 
-	switch(obj->tval){
+	switch(obj->tval) {
+	case TV_GOLD:
+		gold_temp = obj->pval * cr->addval;
+		cr->gold_total[lvl_ind] += gold_temp;
+		/* From a monster? */
+		if (mon || uniq) {
+			cr->gold_mon[lvl_ind] += gold_temp;
+		} else {
+			cr->gold_floor[lvl_ind] += gold_temp;
+		}
+		break;
 
-		/* armor */
-		case TV_BOOTS:
-		case TV_GLOVES:
-		case TV_HELM:
-		case TV_CROWN:
-		case TV_SHIELD:
-		case TV_CLOAK:
-		case TV_SOFT_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:{
+	/* armor */
+	case TV_BOOTS:
+	case TV_GLOVES:
+	case TV_HELM:
+	case TV_CROWN:
+	case TV_SHIELD:
+	case TV_CLOAK:
+	case TV_SOFT_ARMOR:
+	case TV_HARD_ARMOR:
+	case TV_DRAG_ARMOR:
+		/* do not include artifacts */
+		if (obj->artifact) break;
 
-			/* do not include artifacts */
-			if (obj->artifact) break;
+		/* add to armor total */
+		add_stats(ST_ARMORS, STGRP_GENERAL, vault, mon, number,
+			lvl, cr);
 
-			/* add to armor total */
-			add_stats(ST_ARMORS, vault, mon, number);
-
-			/* check if bad, good, or average */
-			if (obj->to_a < 0)
-				add_stats(ST_BAD_ARMOR, vault, mon, number);
-			if (obj->to_a == 0)
-				add_stats(ST_AVERAGE_ARMOR, vault, mon, number);
-			if (obj->to_a > 0)
-				add_stats(ST_GOOD_ARMOR, vault, mon, number);
-
-			/* has str boost */
-			if (obj->modifiers[OBJ_MOD_STR] != 0)
-				add_stats(ST_STR_ARMOR, vault, mon, number);
-
-			/* has dex boost */
-			if (obj->modifiers[OBJ_MOD_DEX] != 0)
-				add_stats(ST_DEX_ARMOR, vault, mon, number);
-
-			/* has int boost */
-			if (obj->modifiers[OBJ_MOD_INT] != 0)
-				add_stats(ST_INT_ARMOR, vault, mon, number);
-
-			if (obj->modifiers[OBJ_MOD_WIS] != 0)
-				add_stats(ST_WIS_ARMOR, vault, mon, number);
-
-			if (obj->modifiers[OBJ_MOD_CON] != 0)
-				add_stats(ST_CON_ARMOR, vault, mon, number);
-
-			if (obj->curses)
-				add_stats(ST_CURSED_ARMOR, vault, mon, number);
-
-			break;
+		/* check if bad, good, or average */
+		if (obj->to_a < 0) {
+			add_stats(ST_BAD_ARMOR, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else if (obj->to_a == 0) {
+			add_stats(ST_AVERAGE_ARMOR, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else {
+			add_stats(ST_GOOD_ARMOR, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
 		}
 
-		/* weapons */
-		case TV_DIGGING:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD:{
+		if (obj->modifiers[OBJ_MOD_STR] != 0) {
+			add_stats(ST_STR_ARMOR, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		if (obj->modifiers[OBJ_MOD_DEX] != 0) {
+			add_stats(ST_DEX_ARMOR, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		if (obj->modifiers[OBJ_MOD_INT] != 0) {
+			add_stats(ST_INT_ARMOR, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		if (obj->modifiers[OBJ_MOD_WIS] != 0) {
+			add_stats(ST_WIS_ARMOR, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		if (obj->modifiers[OBJ_MOD_CON] != 0) {
+			add_stats(ST_CON_ARMOR, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
 
-			/* do not include artifacts */
-			if (obj->artifact) break;
+		if (obj->curses) {
+			add_stats(ST_CURSED_ARMOR, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		break;
 
-			/* add to weapon total */
-			add_stats(ST_WEAPONS, vault, mon, number);
+	/* weapons */
+	case TV_DIGGING:
+	case TV_HAFTED:
+	case TV_POLEARM:
+	case TV_SWORD:
+		/* do not include artifacts */
+		if (obj->artifact) break;
 
-			/* check if bad, good, or average */
-			if ((obj->to_h < 0)  && (obj->to_d < 0))
-				add_stats(ST_BAD_WEAPONS, vault, mon, number);
-			if ((obj->to_h == 0) && (obj->to_d == 0))
-				add_stats(ST_AVERAGE_WEAPONS, vault, mon, number);
-			if ((obj->to_h > 0) && (obj->to_d > 0))
-				add_stats(ST_GOOD_WEAPONS, vault, mon, number);
+		/* add to weapon total */
+		add_stats(ST_WEAPONS, STGRP_GENERAL, vault, mon, number,
+			lvl, cr);
 
-			/* Egos by name - changes results a little */
+		/* check if bad, good, or average */
+		if (obj->to_h < 0 && obj->to_d < 0) {
+			add_stats(ST_BAD_WEAPONS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		if (obj->to_h == 0 && obj->to_d == 0) {
+			add_stats(ST_AVERAGE_WEAPONS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		if (obj->to_h > 0 && obj->to_d > 0) {
+			add_stats(ST_GOOD_WEAPONS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+
+		/* Egos by name - changes results a little */
+		if (obj->ego) {
+			if (strstr(obj->ego->name, "of Slay Evil")) {
+				add_stats(ST_SLAYEVIL_WEAPONS, STGRP_GENERAL,
+					vault, mon, number, lvl, cr);
+			} else if (strstr(obj->ego->name, "of Slay")) {
+				add_stats(ST_SLAY_WEAPONS, STGRP_GENERAL,
+					vault, mon, number, lvl, cr);
+			} else if (strstr(obj->ego->name, "of *Slay")) {
+				add_stats(ST_KILL_WEAPONS, STGRP_GENERAL,
+					vault, mon, number, lvl, cr);
+			}
+
+			if (strstr(obj->ego->name, "Westernesse")) {
+				add_stats(ST_WESTERNESSE_WEAPONS, STGRP_GENERAL,
+					vault, mon, number, lvl, cr);
+			}
+			if (strstr(obj->ego->name, "Defender")) {
+				add_stats(ST_DEFENDER_WEAPONS, STGRP_GENERAL,
+					vault, mon, number, lvl, cr);
+			}
+			if (strstr(obj->ego->name, "Gondolin")) {
+				add_stats(ST_GONDOLIN_WEAPONS, STGRP_GENERAL,
+					vault, mon, number, lvl, cr);
+			}
+			if (strstr(obj->ego->name, "Avenger")) {
+				add_stats(ST_HOLY_WEAPONS, STGRP_GENERAL,
+					vault, mon, number, lvl, cr);
+			}
+			if (strstr(obj->ego->name, "Morgul")) {
+				add_stats(ST_MORGUL_WEAPONS, STGRP_GENERAL,
+					vault, mon, number, lvl, cr);
+			}
+		}
+
+		/* branded weapons */
+		if (obj->brands) {
+			add_stats(ST_BRAND_WEAPONS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+
+		/* extra blows */
+		if (obj->modifiers[OBJ_MOD_BLOWS] > 0) {
+			add_stats(ST_XTRABLOWS_WEAPONS, STGRP_GENERAL, vault,
+				mon, number, lvl, cr);
+		}
+
+		/* telepathy */
+		if (of_has(obj->flags, OF_TELEPATHY)) {
+			add_stats(ST_TELEP_WEAPONS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+
+		/* is a top of the line weapon */
+		if ((obj->tval == TV_HAFTED
+				&& strstr(obj->kind->name, "Disruption"))
+				|| (obj->tval == TV_POLEARM
+				&& strstr(obj->kind->name, "Slicing"))
+				|| (obj->tval == TV_SWORD
+				&& strstr(obj->kind->name, "Chaos"))) {
+			add_stats(ST_HUGE_WEAPONS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+
+			if (obj->modifiers[OBJ_MOD_BLOWS] > 0
+					|| (obj->slays
+					&& cr->slay_evil_ind > 0
+					&& obj->slays[cr->slay_evil_ind])) {
+				add_stats(ST_ENDGAME_WEAPONS, STGRP_GENERAL,
+					vault, mon, number, lvl, cr);
+			}
+		}
+		break;
+
+	/* launchers */
+	case TV_BOW:
+		/* do not include artifacts */
+		if (obj->artifact) break;
+
+		/* add to launcher total */
+		add_stats(ST_BOWS, STGRP_GENERAL, vault, mon, number, lvl, cr);
+
+		/* check if bad, average, good, or very good */
+		if (obj->to_h < 0 && obj->to_d < 0) {
+			add_stats(ST_BAD_BOWS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		if (obj->to_h == 0 && obj->to_d == 0) {
+			add_stats(ST_AVERAGE_BOWS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		if (obj->to_h > 0 && obj->to_d > 0) {
+			add_stats(ST_GOOD_BOWS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		if (obj->to_h > 15 || obj->to_d > 15) {
+			add_stats(ST_VERYGOOD_BOWS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+
+		/* check long bows and xbows for xtra might and/or shots */
+		if (obj->pval > 2) {
+			if (obj->modifiers[OBJ_MOD_SHOTS] > 0) {
+				add_stats(ST_XTRASHOTS_BOWS, STGRP_GENERAL,
+					vault, mon, number, lvl, cr);
+			}
+			if (obj->modifiers[OBJ_MOD_MIGHT] > 0) {
+				add_stats(ST_XTRAMIGHT_BOWS, STGRP_GENERAL,
+					vault, mon, number, lvl, cr);
+			}
+		}
+
+		/* check for buckland */
+		if (obj->pval == 2
+				&& kf_has(obj->kind->kind_flags, KF_SHOOTS_SHOTS)
+				&& obj->modifiers[OBJ_MOD_MIGHT] > 0
+				&& obj->modifiers[OBJ_MOD_SHOTS] > 0) {
+			add_stats(ST_BUCKLAND_BOWS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+
+		/* has telep */
+		if (of_has(obj->flags, OF_TELEPATHY)) {
+			add_stats(ST_TELEP_BOWS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		/* is cursed */
+		if (obj->curses) {
+			add_stats(ST_CURSED_BOWS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		break;
+
+	/* potion */
+	case TV_POTION:
+		/* Add total amounts */
+		add_stats(ST_POTIONS, STGRP_GENERAL, vault, mon, number,
+			lvl, cr);
+
+		/* Stat gain */
+		if (strstr(obj->kind->name, "Strength")
+				|| strstr(obj->kind->name, "Intelligence")
+				|| strstr(obj->kind->name, "Wisdom")
+				|| strstr(obj->kind->name, "Dexterity")
+				|| strstr(obj->kind->name, "Constitution")) {
+			add_stats(ST_GAINSTAT_POTIONS, STGRP_GENERAL, vault,
+				mon, number, lvl, cr);
+		} else if (strstr(obj->kind->name, "Augmentation")) {
+			/* Augmentation counts as 5 stat gain pots */
+			add_stats(ST_GAINSTAT_POTIONS, STGRP_GENERAL, vault,
+				mon, number * 5, lvl, cr);
+		} else if (strstr(obj->kind->name, "*Enlightenment*")) {
+			/* *Enlight* counts as 2 stat pots */
+			add_stats(ST_GAINSTAT_POTIONS, STGRP_GENERAL, vault,
+				mon, number * 2, lvl, cr);
+		} else if (strstr(obj->kind->name, "Restore Mana")) {
+			add_stats(ST_RESTOREMANA_POTIONS, STGRP_GENERAL, vault,
+				mon, number, lvl, cr);
+		} else if (strstr(obj->kind->name, "Life")
+				|| strstr(obj->kind->name, "*Healing*")) {
+			add_stats(ST_BIGHEAL_POTIONS, STGRP_GENERAL, vault,
+				mon, number, lvl, cr);
+		} else if (strstr(obj->kind->name, "Healing")) {
+			add_stats(ST_HEALING_POTIONS, STGRP_GENERAL, vault,
+				mon, number, lvl, cr);
+		}
+		break;
+
+	/* scrolls */
+	case TV_SCROLL:
+		/* add total amounts */
+		add_stats(ST_SCROLLS, STGRP_GENERAL, vault, mon, number,
+			lvl, cr);
+
+		if (strstr(obj->kind->name, "Banishment")
+				|| strstr(obj->kind->name, "Mass Banishment")
+				|| strstr(obj->kind->name, "Rune of Protection")
+				|| strstr(obj->kind->name, "*Destruction*")) {
+			add_stats(ST_ENDGAME_SCROLLS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else if (strstr(obj->kind->name, "Acquirement")) {
+			add_stats(ST_ACQUIRE_SCROLLS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else if (strstr(obj->kind->name, "*Acquirement*")) {
+			/* do the effect of 2 acquires */
+			add_stats(ST_ACQUIRE_SCROLLS, STGRP_GENERAL, vault, mon,
+				number * 2, lvl, cr);
+		}
+		break;
+
+	/* rods */
+	case TV_ROD:
+		/* add to total */
+		add_stats(ST_RODS, STGRP_GENERAL, vault, mon, number, lvl, cr);
+
+		if (strstr(obj->kind->name, "Trap Detection")
+				|| strstr(obj->kind->name, "Treasure Detection")
+				|| strstr(obj->kind->name, "Door/Stair Location")
+				|| strstr(obj->kind->name, "Illumination")
+				|| strstr(obj->kind->name, "Light")) {
+			add_stats(ST_UTILITY_RODS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else if (strstr(obj->kind->name, "Teleport Other")) {
+			add_stats(ST_TELEPOTHER_RODS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else if (strstr(obj->kind->name, "Detection")) {
+			add_stats(ST_DETECTALL_RODS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else if (strstr(obj->kind->name, "Speed")
+				|| strstr(obj->kind->name, "Healing")) {
+			add_stats(ST_ENDGAME_RODS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		break;
+
+	/* staves */
+	case TV_STAFF:
+		add_stats(ST_STAVES, STGRP_GENERAL, vault, mon, number,
+			lvl, cr);
+
+		if (strstr(obj->kind->name, "Speed")) {
+			add_stats(ST_SPEED_STAVES, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else if (strstr(obj->kind->name, "*Destruction*")) {
+			add_stats(ST_DESTRUCTION_STAVES, STGRP_GENERAL, vault,
+				mon, number, lvl, cr);
+		} else if (strstr(obj->kind->name, "Dispel Evil")
+				|| strstr(obj->kind->name, "Power")
+				|| strstr(obj->kind->name, "Holiness")) {
+			add_stats(ST_KILL_STAVES, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else if (strstr(obj->kind->name, "Healing")
+				|| strstr(obj->kind->name, "Banishment")
+				|| strstr(obj->kind->name, "the Magi")) {
+			add_stats(ST_ENDGAME_STAVES, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		break;
+
+	case TV_WAND:
+		add_stats(ST_WANDS, STGRP_GENERAL, vault, mon, number, lvl, cr);
+		if (strstr(obj->kind->name, "Teleport Other")) {
+			add_stats(ST_TELEPOTHER_WANDS, STGRP_GENERAL, vault,
+				mon, number, lvl, cr);
+		}
+		break;
+
+	case TV_RING:
+		add_stats(ST_RINGS, STGRP_GENERAL, vault, mon, number, lvl, cr);
+
+		/* is it cursed */
+		if (obj->curses) {
+			add_stats(ST_CURSED_RINGS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		if (strstr(obj->kind->name, "Speed")) {
+			add_stats(ST_SPEEDS_RINGS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else if (strstr(obj->kind->name, "Strength")
+				|| strstr(obj->kind->name, "Intelligence")
+				|| strstr(obj->kind->name, "Dexterity")
+				|| strstr(obj->kind->name, "Constitution")) {
+			add_stats(ST_STAT_RINGS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else if (strstr(obj->kind->name, "Resist Poison")) {
+			add_stats(ST_RPOIS_RINGS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else if (strstr(obj->kind->name, "Free Action")) {
+			add_stats(ST_FA_RINGS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else if (strstr(obj->kind->name, "See invisible")) {
+			add_stats(ST_SI_RINGS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else if (strstr(obj->kind->name, "Flames")
+				|| strstr(obj->kind->name, "Ice")
+				|| strstr(obj->kind->name, "Acid")
+				|| strstr(obj->kind->name, "Lightning")) {
+			add_stats(ST_BRAND_RINGS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else if (strstr(obj->kind->name, "Fire")
+				|| strstr(obj->kind->name, "Adamant")
+				|| strstr(obj->kind->name, "Firmament")) {
+			add_stats(ST_ELVEN_RINGS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else if (strstr(obj->kind->name, "Power")) {
+			add_stats(ST_ONE_RINGS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		break;
+
+	case TV_AMULET:
+		add_stats(ST_AMULETS, STGRP_GENERAL, vault, mon, number,
+			lvl, cr);
+
+		if (strstr(obj->kind->name, "Wisdom")) {
+			add_stats(ST_WIS_AMULETS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		} else if (strstr(obj->kind->name, "Magi")
+				|| strstr(obj->kind->name, "Trickery")
+				|| strstr(obj->kind->name, "Weaponmastery")) {
+			add_stats(ST_ENDGAME_AMULETS, STGRP_GENERAL, vault,
+				mon, number, lvl, cr);
+		} else if (strstr(obj->kind->name, "ESP")) {
+			add_stats(ST_TELEP_AMULETS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+
+		/* is cursed */
+		if (obj->curses) {
+			add_stats(ST_CURSED_AMULETS, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		break;
+
+	case TV_SHOT:
+	case TV_ARROW:
+	case TV_BOLT:
+		add_stats(ST_AMMO, STGRP_GENERAL, vault, mon, number, lvl, cr);
+
+		/* check if bad, average, good */
+		if (obj->to_h < 0 && obj->to_d < 0) {
+			add_stats(ST_BAD_AMMO, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		if (obj->to_h == 0 && obj->to_d == 0) {
+			add_stats(ST_AVERAGE_AMMO, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+		if (obj->to_h > 0 && obj->to_d > 0) {
+			add_stats(ST_GOOD_AMMO, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+
+		if (obj->ego) {
+			add_stats(ST_BRANDSLAY_AMMO, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+		}
+
+		if (strstr(obj->kind->name, "Seeker")
+				|| strstr(obj->kind->name, "Mithril")) {
+			/* Mithril and seeker ammo */
+			add_stats(ST_VERYGOOD_AMMO, STGRP_GENERAL, vault, mon,
+				number, lvl, cr);
+
+			/* Ego mithril and seeker ammo */
 			if (obj->ego) {
-				/* slay evil */
-				if (strstr(obj->ego->name, "of Slay Evil"))
-					add_stats(ST_SLAYEVIL_WEAPONS, vault, mon, number);
+				add_stats(ST_AWESOME_AMMO, STGRP_GENERAL, vault,
+					mon, number, lvl, cr);
 
-				/* slay weapons */
-				else if (strstr(obj->ego->name, "of Slay"))
-					add_stats(ST_SLAY_WEAPONS, vault, mon, number);
-				/* kill flag */
-				if (strstr(obj->ego->name, "of *Slay"))
-					add_stats(ST_KILL_WEAPONS, vault, mon, number);
-
-				/* determine westernesse by flags */
-				if (strstr(obj->ego->name, "Westernesse"))
-					add_stats(ST_WESTERNESSE_WEAPONS, vault, mon, number);
-
-				/* determine defender by flags */
-				if (strstr(obj->ego->name, "Defender"))
-					add_stats(ST_DEFENDER_WEAPONS, vault, mon, number);
-
-				/* determine gondolin by flags */
-				if (strstr(obj->ego->name, "Gondolin"))
-					add_stats(ST_GONDOLIN_WEAPONS, vault, mon, number);
-
-				/* determine holy avenger by flags */
-				if (strstr(obj->ego->name, "Avenger"))
-					add_stats(ST_HOLY_WEAPONS, vault, mon, number);
-
-				/* is morgul */
-				if (strstr(obj->ego->name, "Morgul"))
-					add_stats(ST_MORGUL_WEAPONS, vault, mon, number);
-			}
-
-			/* branded weapons */
-			if (obj->brands)
-				add_stats(ST_BRAND_WEAPONS, vault, mon, number);
-
-			/* extra blows */
-			if (obj->modifiers[OBJ_MOD_BLOWS] > 0)
-				add_stats(ST_XTRABLOWS_WEAPONS, vault, mon, number);
-
-			/* telepathy */
-			if (of_has(obj->flags, OF_TELEPATHY))
-				add_stats(ST_TELEP_WEAPONS, vault, mon, number);
-
-			/* is a top of the line weapon */
-			if ((obj->tval == TV_HAFTED
-					&& strstr(obj->kind->name, "Disruption"))
-					|| (obj->tval == TV_POLEARM
-					&& strstr(obj->kind->name, "Slicing"))
-					|| (obj->tval == TV_SWORD
-					&& strstr(obj->kind->name, "Chaos"))) {
-				add_stats(ST_HUGE_WEAPONS, vault, mon, number);
-
-				if (obj->modifiers[OBJ_MOD_BLOWS] > 0
-						|| (obj->slays
-						&& slay_evil_ind > 0
-						&& obj->slays[slay_evil_ind])) {
-					add_stats(ST_ENDGAME_WEAPONS, vault,
-						mon, number);
-				}
-			}
-
-			break;
-		}
-
-		/* launchers */
-		case TV_BOW:{
-
-			/* do not include artifacts */
-			if (obj->artifact) break;
-
-			/* add to launcher total */
-			add_stats(ST_BOWS, vault, mon, number);
-
-			/* check if bad, average, good, or very good */
-			if ((obj->to_h < 0) && (obj->to_d < 0))
-				add_stats(ST_BAD_BOWS, vault, mon, number);
-			if ((obj->to_h == 0) && (obj->to_d == 0))
-				add_stats(ST_AVERAGE_BOWS, vault, mon, number);
-			if ((obj->to_h > 0) && (obj->to_d > 0))
-				add_stats(ST_GOOD_BOWS, vault, mon, number);
-			if ((obj->to_h > 15) || (obj->to_d > 15))
-				add_stats(ST_VERYGOOD_BOWS, vault, mon, number);
-
-			/* check long bows and xbows for xtra might and/or shots */
-			if (obj->pval > 2)
-			{
-				if (obj->modifiers[OBJ_MOD_SHOTS] > 0)
-					add_stats(ST_XTRASHOTS_BOWS, vault, mon, number);
-
-				if (obj->modifiers[OBJ_MOD_MIGHT] > 0)
-					add_stats(ST_XTRAMIGHT_BOWS, vault, mon, number);
-			}
-
-			/* check for buckland */
-			if ((obj->pval == 2) &&
-				kf_has(obj->kind->kind_flags, KF_SHOOTS_SHOTS) &&
-				(obj->modifiers[OBJ_MOD_MIGHT] > 0) &&
-				(obj->modifiers[OBJ_MOD_SHOTS] > 0))
-					add_stats(ST_BUCKLAND_BOWS, vault, mon, number);
-
-			/* has telep */
-			if (of_has(obj->flags, OF_TELEPATHY))
-				add_stats(ST_TELEP_BOWS, vault, mon, number);
-
-			/* is cursed */
-			if (obj->curses)
-				add_stats(ST_CURSED_BOWS, vault, mon, number);
-			break;
-		}
-
-		/* potion */
-		case TV_POTION:{
-
-			/* Add total amounts */
-			add_stats(ST_POTIONS, vault, mon, number);
-
-			/* Stat gain */
-			if (strstr(obj->kind->name, "Strength") ||
-				strstr(obj->kind->name, "Intelligence") ||
-				strstr(obj->kind->name, "Wisdom") ||
-				strstr(obj->kind->name, "Dexterity") ||
-				strstr(obj->kind->name, "Constitution")) {
-				add_stats(ST_GAINSTAT_POTIONS, vault, mon, number);
-			} else if (strstr(obj->kind->name, "Augmentation")) {
-				/* Augmentation counts as 5 stat gain pots */
-				add_stats(ST_GAINSTAT_POTIONS, vault, mon, number * 5);
-			} else if (strstr(obj->kind->name, "*Enlightenment*")) {
-				/* *Enlight* counts as 2 stat pots */
-				add_stats(ST_GAINSTAT_POTIONS, vault, mon, number * 2);
-			} else if (strstr(obj->kind->name, "Restore Mana")) {
-				add_stats(ST_RESTOREMANA_POTIONS, vault, mon, number);
-			} else if ((strstr(obj->kind->name, "Life")) ||
-					   (strstr(obj->kind->name, "*Healing*"))) {
-				add_stats(ST_BIGHEAL_POTIONS, vault, mon, number);
-			} else if (strstr(obj->kind->name, "Healing")) {
-				add_stats(ST_HEALING_POTIONS, vault, mon, number);
-			}
-			break;
-		}
-
-		/* scrolls */
-		case TV_SCROLL:{
-
-			/* add total amounts */
-			add_stats(ST_SCROLLS, vault, mon, number);
-
-			if (strstr(obj->kind->name, "Banishment") ||
-				strstr(obj->kind->name, "Mass Banishment") ||
-				strstr(obj->kind->name, "Rune of Protection") ||
-				strstr(obj->kind->name, "*Destruction*")) {
-				add_stats(ST_ENDGAME_SCROLLS, vault, mon, number);
-			} else if (strstr(obj->kind->name, "Acquirement")) {
-				add_stats(ST_ACQUIRE_SCROLLS, vault, mon, number);
-			} else if (strstr(obj->kind->name, "*Acquirement*")) {
-				/* do the effect of 2 acquires */
-				add_stats(ST_ACQUIRE_SCROLLS, vault, mon, number * 2);
-			}
-			break;
-		}
-
-		/* rods */
-		case TV_ROD:{
-
-			/* add to total */
-			add_stats(ST_RODS, vault, mon, number);
-
-			if (strstr(obj->kind->name, "Trap Detection") ||
-				strstr(obj->kind->name, "Treasure Detection") ||
-				strstr(obj->kind->name, "Door/Stair Location") ||
-				strstr(obj->kind->name, "Illumination") ||
-				strstr(obj->kind->name, "Light")) {
-				add_stats(ST_UTILITY_RODS, vault, mon, number);
-			} else if (strstr(obj->kind->name, "Teleport Other")) {
-				add_stats(ST_TELEPOTHER_RODS, vault, mon, number);
-			} else if (strstr(obj->kind->name, "Detection")) {
-				add_stats(ST_DETECTALL_RODS, vault, mon, number);
-			} else if (strstr(obj->kind->name, "Speed") ||
-					   strstr(obj->kind->name, "Healing")) {
-				add_stats(ST_ENDGAME_RODS, vault, mon, number);
-			}
-			break;
-		}
-
-		/* staves */
-		case TV_STAFF:{
-
-			add_stats(ST_STAVES, vault, mon, number);
-
-			if (strstr(obj->kind->name, "Speed")) {
-				add_stats(ST_SPEED_STAVES, vault, mon, number);
-			} else if (strstr(obj->kind->name, "*Destruction*")) {
-				add_stats(ST_DESTRUCTION_STAVES, vault, mon, number);
-			} else if (strstr(obj->kind->name, "Dispel Evil") ||
-					   strstr(obj->kind->name, "Power") ||
-					   strstr(obj->kind->name, "Holiness")) {
-				add_stats(ST_KILL_STAVES, vault, mon, number);
-			} else if (strstr(obj->kind->name, "Healing") ||
-					   strstr(obj->kind->name, "Banishment") ||
-					   strstr(obj->kind->name, "the Magi")) {
-				add_stats(ST_ENDGAME_STAVES, vault, mon, number);
-			}
-			break;
-		}
-
-		case TV_WAND:{
-
-			add_stats(ST_WANDS, vault, mon, number);
-
-			if (strstr(obj->kind->name, "Teleport Other"))
-				add_stats(ST_TELEPOTHER_WANDS, vault, mon, number);
-			break;
-		}
-
-		case TV_RING:{
-
-			add_stats(ST_RINGS, vault, mon, number);
-
-			/* is it cursed */
-			if (obj->curses)
-				add_stats(ST_CURSED_RINGS, vault, mon, number);
-
-			if (strstr(obj->kind->name, "Speed")) {
-				add_stats(ST_SPEEDS_RINGS, vault, mon, number);
-			} else if ((strstr(obj->kind->name, "Strength")) ||
-					   (strstr(obj->kind->name, "Intelligence")) ||
-					   (strstr(obj->kind->name, "Dexterity")) ||
-					   (strstr(obj->kind->name, "Constitution"))) {
-				add_stats(ST_STAT_RINGS, vault, mon, number);
-			} else if (strstr(obj->kind->name, "Resist Poison")) {
-				add_stats(ST_RPOIS_RINGS, vault, mon, number);
-			} else if (strstr(obj->kind->name, "Free Action")) {
-				add_stats(ST_FA_RINGS, vault, mon, number);
-			} else if (strstr(obj->kind->name, "See invisible")) {
-				add_stats(ST_SI_RINGS, vault, mon, number);
-			} else if ((strstr(obj->kind->name, "Flames")) ||
-					   (strstr(obj->kind->name, "Ice")) ||
-					   (strstr(obj->kind->name, "Acid")) ||
-					   (strstr(obj->kind->name, "Lightning"))) {
-				add_stats(ST_BRAND_RINGS, vault, mon, number);
-			} else if ((strstr(obj->kind->name, "Fire")) ||
-					   (strstr(obj->kind->name, "Adamant")) ||
-					   (strstr(obj->kind->name, "Firmament"))) {
-				add_stats(ST_ELVEN_RINGS, vault, mon, number);
-			} else if (strstr(obj->kind->name, "Power")) {
-				add_stats(ST_ONE_RINGS, vault, mon, number);
-			}
-
-
-			break;
-		}
-
-		case TV_AMULET:{
-
-			add_stats(ST_AMULETS, vault, mon, number);
-
-			if (strstr(obj->kind->name, "Wisdom")) {
-				add_stats(ST_WIS_AMULETS, vault, mon, number);
-			} else if ((strstr(obj->kind->name, "Magi")) || 
-					   (strstr(obj->kind->name, "Trickery")) ||
-					   (strstr(obj->kind->name, "Weaponmastery"))) {
-				add_stats(ST_ENDGAME_AMULETS, vault, mon, number);
-			} else if (strstr(obj->kind->name, "ESP")) {
-				add_stats(ST_TELEP_AMULETS, vault, mon, number);
-			}
-
-			/* is cursed */
-			if (obj->curses)
-				add_stats(ST_CURSED_AMULETS, vault, mon, number);
-
-			break;
-		}
-
-		case TV_SHOT:
-		case TV_ARROW:
-		case TV_BOLT:{
-
-			add_stats(ST_AMMO, vault, mon, number);
-
-			/* check if bad, average, good */
-			if ((obj->to_h < 0) && (obj->to_d < 0))
-				add_stats(ST_BAD_AMMO, vault, mon, number);
-			if ((obj->to_h == 0) && (obj->to_d == 0))
-				add_stats(ST_AVERAGE_AMMO, vault, mon, number);
-			if ((obj->to_h > 0) && (obj->to_d > 0))
-				add_stats(ST_GOOD_AMMO, vault, mon, number);
-
-			if (obj->ego)
-				add_stats(ST_BRANDSLAY_AMMO, vault, mon, number);
-
-			if (strstr(obj->kind->name, "Seeker") ||
-				strstr(obj->kind->name, "Mithril")) {
-
-				/* Mithril and seeker ammo */
-				add_stats(ST_VERYGOOD_AMMO, vault, mon, number);
-
-				/* Ego mithril and seeker ammo */
-				if (obj->ego) {
-					add_stats(ST_AWESOME_AMMO, vault, mon, number);
-
-					if (strstr(obj->ego->name, "of Slay Evil"))
-						add_stats(ST_SLAYEVIL_AMMO, vault, mon, number);
-
-					if (strstr(obj->ego->name, "of Holy Might"))
-						add_stats(ST_HOLY_AMMO, vault, mon, number);
-				}
-			}
-			break;
-		}
-
-		/* books have the same probability, only track one realm of them */
-		case TV_MAGIC_BOOK:{
-
-			switch(obj->sval){
-
-				/* svals begin at 0 and end at 8 */
-				case 0:{
-
-					add_stats(ST_1ST_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK1);
-					break;
+				if (strstr(obj->ego->name, "of Slay Evil")) {
+					add_stats(ST_SLAYEVIL_AMMO,
+						STGRP_GENERAL, vault, mon,
+						number, lvl, cr);
 				}
 
-				case 1:{
-
-					add_stats(ST_2ND_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK2);
-					break;
+				if (strstr(obj->ego->name, "of Holy Might")) {
+					add_stats(ST_HOLY_AMMO, STGRP_GENERAL,
+						vault, mon, number, lvl, cr);
 				}
-
-				case 2:{
-
-					add_stats(ST_3RD_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK3);
-					break;
-				}
-
-				case 3:{
-
-					add_stats(ST_4TH_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK4);
-					break;
-				}
-
-				case 4:{
-
-					add_stats(ST_5TH_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK5);
-					break;
-				}
-
-				case 5:{
-
-					add_stats(ST_6TH_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK6);
-					break;
-				}
-
-				case 6:{
-
-					add_stats(ST_7TH_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK7);
-					break;
-				}
-
-				case 7:{
-
-					add_stats(ST_8TH_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK8);
-					break;
-				}
-
-				case 8:{
-
-					add_stats(ST_9TH_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK9);
-					break;
-				}
-
-
 			}
-			break;
 		}
+		break;
+
+	default:
+		if (tval_is_book_k(obj->kind)) {
+			int stind = get_book_index(obj->kind, &cr->books);
+
+			if (stind >= 0) {
+				add_stats(ST_BOOKS, STGRP_GENERAL, vault, mon,
+					number, lvl, cr);
+				add_stats(stind, STGRP_BOOK, vault, mon,
+					number, lvl, cr);
+				first_find(stind, STGRP_BOOK, lvl, cr);
+			} else {
+				msg("Unrecognized book: %s", obj->kind->name);
+			}
+		}
+		break;
 	}
+
 	/* check to see if we have an artifact */
-	if (obj->artifact){
+	if (obj->artifact) {
+		const struct artifact *art = obj->artifact;
 
 		/* add to artifact level total */
-		art_total[lvl] += addval;
+		cr->art_total[lvl_ind] += cr->addval;
 
 		/* add to the artifact iteration total */
-		if (iter < TRIES_SIZE) art_it[iter]++;
-
-		/* Obtain the artifact info */
-		art = obj->artifact;
+		if (cr->iter < cr->tries_lim) {
+			cr->art_it[cr->iter]++;
+		}
 
 		//debugging, print out that we found the artifact
-		//msg_format("Found artifact %s",art->name);
+		//msg("Found artifact %s", art->name);
 
 		/* artifact is shallow */
-		if (art->alloc_min < (player->depth - 20)) art_shal[lvl] += addval;
+		if (art->alloc_min < lvl - 20) {
+			cr->art_shal[lvl_ind] += cr->addval;
+		}
 
 		/* artifact is close to the player depth */
-		if ((art->alloc_min >= player->depth - 20) &&
-			(art->alloc_min <= player->depth )) art_ave[lvl] += addval;
+		if (art->alloc_min >= lvl - 20 && art->alloc_min <= lvl) {
+			cr->art_ave[lvl_ind] += cr->addval;
+		}
 
 		/* artifact is out of depth */
-		if (art->alloc_min > (player->depth)) art_ood[lvl] += addval;
+		if (art->alloc_min > lvl) {
+			cr->art_ood[lvl_ind] += cr->addval;
+		}
 
 		/* check to see if it's a special artifact */
-		if ((obj->tval == TV_LIGHT) || (obj->tval == TV_AMULET)
-			|| (obj->tval == TV_RING)){
-
+		if (obj->tval == TV_LIGHT || obj->tval == TV_AMULET
+				|| obj->tval == TV_RING) {
 			/* increment special artifact counter */
-			art_spec[lvl] += addval;
+			cr->art_spec[lvl_ind] += cr->addval;
 		} else {
 			/* increment normal artifacts */
-			art_norm[lvl] += addval;
+			cr->art_norm[lvl_ind] += cr->addval;
 
 			/* did it come from a monster? */
-			if (mon) art_mon[lvl] += addval;
+			if (mon) cr->art_mon[lvl_ind] += cr->addval;
 
 			/* did it come from a unique? */
-			if (uniq) art_uniq[lvl] += addval;
+			if (uniq) cr->art_uniq[lvl_ind] += cr->addval;
 
 			/* was it in a vault? */
-			if (vault){
-
+			if (vault) {
 				/* did a monster drop it ?*/
-				if ((mon) || (uniq)) art_mon_vault[lvl] += addval;
-				else art_vault[lvl] += addval;
+				if (mon || uniq) {
+					cr->art_mon_vault[lvl_ind] +=
+						cr->addval;
+				} else {
+					cr->art_vault[lvl_ind] += cr->addval;
+				}
 			} else {
 				/* was it just lyin' on the floor? */
-				if ((!uniq) && (!mon)) art_floor[lvl] += addval;
+				if (!uniq && !mon) {
+					cr->art_floor[lvl_ind] += cr->addval;
+				}
 			}
 		}
 		/* preserve the artifact */
-		if (!(clearing)) mark_artifact_created(art, false);
+		if (!cr->clearing) {
+			mark_artifact_created(art, false);
+		}
 	}
-
-	/* Get info on gold. */
-	if (obj->tval == TV_GOLD){
-
-		int temp = obj->pval;
-		gold_temp = temp;
-	    gold_total[lvl] += (gold_temp / tries);
-
-		/*From a monster? */
-		if ((mon) || (uniq)) gold_mon[lvl] += (gold_temp / tries);
-		else gold_floor[lvl] += (gold_temp / tries);
-	}
-
 }
 
 
 
-/* 
+/*
  * A rewrite of monster death that gets rid of some features
- * That we don't want to deal with.  Namely, no notifying the
- * player and no generation of Morgoth artifacts
- * 
- * It also replaces drop near with a new function that drops all 
+ * that we don't want to deal with:  namely, no notifying the
+ * player.
+ *
+ * It also replaces drop near with a new function that drops all
  * the items on the exact square that the monster was on.
  */
-static void monster_death_stats(int m_idx)
+static void monster_death_stats(int m_idx, struct collect_results *cr)
 {
 	struct object *obj;
 	struct monster *mon;
@@ -1130,7 +1315,7 @@ static void monster_death_stats(int m_idx)
 		obj->held_m_idx = 0;
 
 		/* Get data */
-		get_obj_data(obj, mon->grid.y, mon->grid.x, true, uniq);
+		get_obj_data(obj, mon->grid.y, mon->grid.x, true, uniq, cr);
 
 		/* Delete the object */
 		delist_object(cave, obj);
@@ -1150,52 +1335,50 @@ static void monster_death_stats(int m_idx)
  * This will collect stats on a monster avoiding all unique monsters.
  * Afterwards it will kill the monsters.
  */
-static bool stats_monster(struct monster *mon, int i)
+static bool stats_monster(struct monster *mon, int i,
+		struct collect_results *cr)
 {
-	static int lvl;
-
 	/* get player depth */
-	lvl = player->depth;
+	int lvl = player->depth, lvl_ind;
 
+	assert(lvl >= 0 && lvl < cr->max_lvl);
+	lvl_ind = (cr->clearing) ? lvl : 0;
 
 	/* Increment monster count */
-	mon_total[lvl] += addval;
+	cr->mon_total[lvl_ind] += cr->addval;
 
 	/* Increment unique count if appropriate */
 	if (monster_is_unique(mon)) {
-
 		/* add to total */
-		uniq_total[lvl] += addval;
+		cr->uniq_total[lvl_ind] += cr->addval;
 
 		/* kill the unique if we're in clearing mode */
-		if (clearing) mon->race->max_num = 0;
+		if (cr->clearing) mon->race->max_num = 0;
 
 		/* debugging print that we killed it
-		   msg_format("Killed %s",race->name); */
+		msg("Killed %s", mon->race->name); */
 	}
 
-	/* Is it mostly dangerous (10 levels ood or less?)*/
-	if ((mon->race->level > player->depth) && 
-		(mon->race->level <= player->depth + 10)) {
+	/* Is it mostly dangerous (10 levels ood or less)? */
+	if (mon->race->level > lvl && mon->race->level <= lvl + 10) {
+		cr->mon_ood[lvl_ind] += cr->addval;
 
-			mon_ood[lvl] += addval;
-
-			if (monster_is_unique(mon))
-				uniq_ood[lvl] += addval;
+		if (monster_is_unique(mon)) {
+			cr->uniq_ood[lvl_ind] += cr->addval;
+		}
 	}
-
 
 	/* Is it deadly? */
-	if (mon->race->level > player->depth + 10){
+	if (mon->race->level > lvl + 10) {
+		cr->mon_deadly[lvl_ind] += cr->addval;
 
-		mon_deadly[lvl] += addval;
-
-		if (monster_is_unique(mon))
-			uniq_deadly[lvl] += addval;
+		if (monster_is_unique(mon)) {
+			cr->uniq_deadly[lvl_ind] += cr->addval;
+		}
 	}
 
 	/* Generate treasure */
-	monster_death_stats(i);
+	monster_death_stats(i, cr);
 
 	/* remove the monster */
 	delete_monster_idx(cave, i);
@@ -1208,147 +1391,182 @@ static bool stats_monster(struct monster *mon, int i)
 /**
  * Print heading info for the file
  */
-static void print_heading(void)
+static void print_heading(struct collect_results *cr)
 {
 	/* PRINT INFO STUFF */
-	file_putf(stats_log, " This is a Monte Carlo simulation, results are "
+	file_putf(cr->log, " This is a Monte Carlo simulation, results are "
 		"arranged by level\n");
-	file_putf(stats_log, " Monsters:  OOD means between 1 and 10 levels "
+	file_putf(cr->log, " Monsters:  OOD means between 1 and 10 levels "
 		"deep, deadly is more than\n");
-	file_putf(stats_log, "            10 levels deep\n");
-	file_putf(stats_log, " Artifacts: info on artifact location (vault, "
+	file_putf(cr->log, "            10 levels deep\n");
+	file_putf(cr->log, " Artifacts: info on artifact location (vault, "
 		"floor, etc)\n");
-	file_putf(stats_log, "		     do not include special artifacts, "
+	file_putf(cr->log, "            do not include special artifacts, "
 		"only weapons and armor\n");
-	file_putf(stats_log, " Weapons  : Big dice weapons are either BoC, "
+	file_putf(cr->log, " Weapons  : Big dice weapons are either BoC, "
 		"SoS, or Mod.  Endgame\n");
-	file_putf(stats_log, "            weapons, are one of the above with "
+	file_putf(cr->log, "            weapons, are one of the above with "
 		"xblows or slay evil\n");
-	file_putf(stats_log, " Launchers: xtra shots and xtra might are only "
+	file_putf(cr->log, " Launchers: xtra shots and xtra might are only "
 		"logged for x3 or\n");
-	file_putf(stats_log, "            better.  Very good has +to hit or "
+	file_putf(cr->log, "            better.  Very good has +to hit or "
 		"+to dam > 15\n");
-	file_putf(stats_log, " Amulets:   Endgame amulets are trickery, "
+	file_putf(cr->log, " Amulets:   Endgame amulets are trickery, "
 		"weaponmaster and magi\n");
-	file_putf(stats_log, " Armor:     Low resist armor may have more than "
+	file_putf(cr->log, " Armor:     Low resist armor may have more than "
 		"one basic resist (acid,\n");
-	file_putf(stats_log, "		     elec, fire, cold) but not all.\n");
-	file_putf(stats_log, " Books:     Prayer and Magic books have the "
-		"same probability.\n");
-	file_putf(stats_log, " Potions:   Aug counts as 5 potions, *enlight* "
+	file_putf(cr->log, "            elec, fire, cold) but not all.\n");
+	file_putf(cr->log, " Potions:   Aug counts as 5 potions, *enlight* "
 		"as 2.  Healing potions are\n");
-	file_putf(stats_log, "			 only *Healing* and Life\n");
-	file_putf(stats_log, " Scrolls:   Endgame scrolls include *Dest*, "
+	file_putf(cr->log, "            only *Healing* and Life\n");
+	file_putf(cr->log, " Scrolls:   Endgame scrolls include *Dest*, "
 		"Rune, MBan and Ban\n");
-	file_putf(stats_log, "    		 *Acq* counts as two Acq "
-		"scrolls");
-	file_putf(stats_log, " Rods: 	 Utility rods: d-obj, d-stairs, "
+	file_putf(cr->log, "            *Acq* counts as two Acq "
+		"scrolls\n");
+	file_putf(cr->log, " Rods:      Utility rods: d-obj, d-stairs, "
 		"d-traps, light, illum\n");
-	file_putf(stats_log, "    		 Endgame rods: Speed, "
-		"Healing\n");
-	file_putf(stats_log, " Staves: 	 Kill staves: dispel evil, power, "
+	file_putf(cr->log, "            Endgame rods: Speed, Healing\n");
+	file_putf(cr->log, " Staves:    Kill staves: dispel evil, power, "
 		"holiness.\n");
-	file_putf(stats_log, "    		 Power staves: healing, magi, "
+	file_putf(cr->log, "            Power staves: healing, magi, "
 		"banishment\n");
 }
 
 /**
  * Print all the stats for each level
  */
-static void print_stats(int lvl)
+static void print_stats(int lvl, struct collect_results *cr)
 {
+	int i, lvl_ind;
 
-	int i;
-	
-	/* check bounds on lvl */
-	if ((lvl < 0) || (lvl > 100)) return;
+	assert(lvl >= 0 && lvl < cr->max_lvl);
+	lvl_ind = (cr->clearing) ? lvl : 0;
 
 	/* print level heading */
-	file_putf(stats_log, "\n");
-	file_putf(stats_log, "******** LEVEL %d , %d tries*********\n", lvl,
-		tries);
-	file_putf(stats_log, "\n");
+	file_putf(cr->log, "\n");
+	file_putf(cr->log, "******** LEVEL %d , %d tries*********\n", lvl,
+		cr->tries);
+	file_putf(cr->log, "\n");
 
 	/* print gold info */
-	file_putf(stats_log, " GOLD INFO\n");
-	file_putf(stats_log, " Gold total: %f\n", gold_total[lvl]);
-	file_putf(stats_log, " Gold monster: %f\n", gold_mon[lvl]);
-	file_putf(stats_log, " Gold floor: %f\n", gold_floor[lvl]);
+	file_putf(cr->log, " GOLD INFO\n");
+	file_putf(cr->log, " Gold total: %f\n", cr->gold_total[lvl_ind]);
+	file_putf(cr->log, " Gold monster: %f\n", cr->gold_mon[lvl_ind]);
+	file_putf(cr->log, " Gold floor: %f\n", cr->gold_floor[lvl_ind]);
 
 	/* print monster heading */
-	file_putf(stats_log, " MONSTER INFO\n");
-	file_putf(stats_log, " Total monsters: %f OOD: %f Deadly: %f\n",
-		mon_total[lvl], mon_ood[lvl], mon_deadly[lvl]);
-	file_putf(stats_log, " Unique monsters: %f OOD: %f Deadly: %f\n",
-		uniq_total[lvl], uniq_ood[lvl], uniq_deadly[lvl]);
+	file_putf(cr->log, " MONSTER INFO\n");
+	file_putf(cr->log, " Total monsters: %f OOD: %f Deadly: %f\n",
+		cr->mon_total[lvl_ind], cr->mon_ood[lvl_ind],
+		cr->mon_deadly[lvl_ind]);
+	file_putf(cr->log, " Unique monsters: %f OOD: %f Deadly: %f\n",
+		cr->uniq_total[lvl_ind], cr->uniq_ood[lvl_ind],
+		cr->uniq_deadly[lvl_ind]);
 
 	/* print artifact heading */
-	file_putf(stats_log, "\n ARTIFACT INFO\n");
+	file_putf(cr->log, "\n ARTIFACT INFO\n");
 
 	/* basic artifact info */
-	file_putf(stats_log, " Total artifacts: %f  Special artifacts: %f  "
-		"Weapons/armor: %f\n", art_total[lvl], art_spec[lvl],
-		art_norm[lvl]);
+	file_putf(cr->log, " Total artifacts: %f  Special artifacts: %f  "
+		"Weapons/armor: %f\n", cr->art_total[lvl_ind],
+		cr->art_spec[lvl_ind], cr->art_norm[lvl_ind]);
 
 	/* artifact depth info */
-	file_putf(stats_log, " Shallow: %f  Average: %f  Ood: %f\n",
-		art_shal[lvl],art_ave[lvl],art_ood[lvl]);
-		
-	/* more advanced info */
-	file_putf(stats_log, " From vaults: %f  From floor (no vault): %f\n",
-		art_vault[lvl],art_floor[lvl]);
-	file_putf(stats_log, " Uniques: %f  Monsters: %f  Vault denizens: %f\n",
-		art_uniq[lvl], art_mon[lvl], art_mon_vault[lvl]);
+	file_putf(cr->log, " Shallow: %f  Average: %f  Ood: %f\n",
+		cr->art_shal[lvl_ind], cr->art_ave[lvl_ind],
+		cr->art_ood[lvl_ind]);
 
-	for (i = 1; i < ST_END; i++) {
-		file_putf(stats_log, "%s%f From Monsters: %f In Vaults: %f\n",	stat_message[i].name, stat_all[i][0][lvl], stat_all[i][1][lvl], stat_all[i][2][lvl]);
+	/* more advanced info */
+	file_putf(cr->log, " From vaults: %f  From floor (no vault): %f\n",
+		cr->art_vault[lvl_ind], cr->art_floor[lvl_ind]);
+	file_putf(cr->log, " Uniques: %f  Monsters: %f  Vault denizens: %f\n",
+		cr->art_uniq[lvl_ind], cr->art_mon[lvl_ind],
+		cr->art_mon_vault[lvl_ind]);
+
+	for (i = 0; i < ST_END; i++) {
+		size_t offset = 3 * ((size_t)i + ST_END * (size_t)lvl_ind);
+
+		file_putf(cr->log, "%s%f From Monsters: %f In Vaults: %f\n",
+			stat_message[i].name, cr->stat_all[offset],
+			cr->stat_all[offset + 1], cr->stat_all[offset + 2]);
+	}
+	for (i = 0; i < cr->books.book_count; i++) {
+		size_t offset = 3 * ((size_t)i + cr->books.book_count
+			* (size_t)lvl_ind);
+
+		if (i == 0 || cr->books.rev[i]->tval
+				!= cr->books.rev[i - 1]->tval) {
+			file_putf(cr->log, " %s\n",
+				tval_find_name(cr->books.rev[i]->tval));
+		}
+		file_putf(cr->log, " %11.11s %f From Monsters: %f In "
+			"Vaults: %f\n", cr->books.rev[i]->name,
+			cr->stat_book[offset], cr->stat_book[offset + 1],
+			cr->stat_book[offset + 2]);
 	}
 }
 
 /**
- *Compute and print the mean and standard deviation for an array of known size
+ * Compute and print the mean and standard deviation for an array of known size
  */
-static void mean_and_stdv(int array[TRIES_SIZE])
+static void mean_and_stdv(const int *array, int n, ang_file *log)
 {
-	int maxiter, iavg, ivar;
+	int iavg, ivar;
 	struct my_rational favg, fvar;
 	double avg, stdev;
 
-	/* Get the maximum iteration value */
-	maxiter = MIN(tries, TRIES_SIZE); 
-
 	/* Get the statistics. */
-	iavg = mean(array, maxiter, &favg);
+	iavg = mean(array, n, &favg);
 	avg = (double)iavg + (double)favg.n / (double)favg.d;
-	ivar = variance(array, maxiter, false, false, &fvar);
+	ivar = variance(array, n, false, false, &fvar);
 	stdev = sqrt((double)ivar + (double)fvar.n / (double)fvar.d);
 
 	/* Print to file */
-	file_putf(stats_log, "        mean: %f  std-dev: %f\n", avg, stdev);
+	file_putf(log, "        mean: %f  std-dev: %f\n", avg, stdev);
 }
 
 /**
  * Calculated the probability of finding an item by a specific level,
  * and print it to the output file
+ *
+ * This can only generate useful results in the clearing case.  For the
+ * diving case, we do not retain the per-level counts necessary.
  */
-
-static void prob_of_find(double stat[MAX_LVL])
+static void prob_of_find(int st, stgrp_code gp,
+		const struct collect_results *cr)
 {
-	static int lvl, tmpcount;
+	int lvl, tmpcount;
+	const int *counts;
+	double pnot = 1.0;
 	const char *prefix = "";
-	double find = 0.0, tmpfind = 0.0;
+
+	assert(cr->clearing);
+
+	switch (gp) {
+	case STGRP_GENERAL:
+		assert(st >= 0 && st < ST_FF_END);
+		counts = cr->stat_ff_all.count;
+		break;
+
+	case STGRP_BOOK:
+		assert(st >= 0 && st < cr->books.book_count);
+		counts = cr->stat_ff_book.count;
+		break;
+
+	default:
+		assert(0);
+		return;
+	}
+	counts += st * (size_t)cr->max_lvl;
 
 	/* Skip town level */
-	for (lvl = 1; lvl < MAX_LVL ; lvl++) {
+	for (lvl = 1, tmpcount = 0; lvl < cr->max_lvl; lvl++) {
+		double pnot_lvl;
 
-		/* Calculate the probability of not finding the stat */
-		tmpfind=(1 - stat[lvl]);
-
-		/* Maximum probability is 98% */
-		if (tmpfind < 0.02) tmpfind = 0.02;
-
-		/* Multiply probabilities of not finding */
-		if (find <= 0) find = tmpfind; else find *= tmpfind;
+		assert(counts[lvl] >= 0 && counts[lvl] <= cr->tries
+			&& cr->tries > 0);
+		pnot_lvl = (cr->tries - counts[lvl]) / (double)cr->tries;
+		pnot *= pnot_lvl;
 
 		/* Increase count to 5 */
 		tmpcount++;
@@ -1356,7 +1574,7 @@ static void prob_of_find(double stat[MAX_LVL])
 		/* Print output every 5 levels */
 		if (tmpcount == 5) {
 			/* print it */
-			file_putf(stats_log, "%s%f", prefix, 1.0 - find);
+			file_putf(cr->log, "%s%f", prefix, 1.0 - pnot);
 			prefix = " \t";
 
 			/* reset temp counter */
@@ -1365,66 +1583,63 @@ static void prob_of_find(double stat[MAX_LVL])
 	}
 
 	/* Put a new line in prep of next entry */
-	file_putf(stats_log,"\n"); 
+	file_putf(cr->log, "\n");
  }
 
-#if 0
 /**
- * Left this function unlinked for now
+ * Post process select items.
+ *
+ * This can only generate useful results in the clearing case.  For the
+ * diving case, we do not retain the per-level counts necessary.
+ *
+ * The mean and standard deviation for the level of the first find treat cases
+ * where an item of the class was never found as if it was found on the level,
+ * cr->max_lvl.  A better implementation would be to exclude those cases from
+ * the mean and standard deviation and report the number of exclusions if there
+ * were any.
  */
-static double total(double stat[MAX_LVL])
-{
-	int k;
-	double out = 0;
-
-	for (k = 0; k < MAX_LVL; k++)
-		out += stat[k];
-
-	return out;
-} 
-#endif
-
-/**
- * Post process select items
- */
-static void post_process_stats(void)
+static void post_process_stats(struct collect_results *cr)
 {
 	double arttot;
 	int i,k;
 
+	assert(cr->clearing);
+
 	/* Output a title */
-	file_putf(stats_log, "\n");
-	file_putf(stats_log, "***** POST PROCESSING *****\n");
-	file_putf(stats_log, "\n");
-	file_putf(stats_log, "Item \t5\t\t10\t\t15\t\t20\t\t25\t\t");
-	file_putf(stats_log, "30\t\t35\t\t40\t\t45\t\t50\t\t");
-	file_putf(stats_log, "55\t\t60\t\t65\t\t70\t\t75\t\t");
-	file_putf(stats_log, "80\t\t85\t\t90\t\t95\t\t100\n");
-	
-	for (i = 1; i < ST_FF_END; i++) {
-			file_putf(stats_log, "%s", stat_ff_message[i].name);
-			prob_of_find(stat_all[stat_ff_message[i].st][0]);
-			mean_and_stdv(stat_ff_all[i]);
+	file_putf(cr->log, "\n");
+	file_putf(cr->log, "***** POST PROCESSING *****\n");
+	file_putf(cr->log, "\n");
+	file_putf(cr->log, "Item ");
+	for (k = 5; k < cr->max_lvl; k += 5) {
+		file_putf(cr->log, "%s%d", (k == 5) ? "\t" : "\t\t", k);
+	}
+	file_putf(cr->log, "\n");
+	for (i = 0; i < ST_FF_END; i++) {
+		file_putf(cr->log, "%s", stat_ff_message[i].name);
+		prob_of_find(i, STGRP_GENERAL, cr);
+		mean_and_stdv(cr->stat_ff_all.level + i * (size_t)cr->tries_lim,
+			cr->tries_lim, cr->log);
+	}
+	for (i = 0; i < cr->books.book_count; ++i) {
+		if (i == 0 || cr->books.rev[i]->tval
+				!= cr->books.rev[i - 1]->tval) {
+			file_putf(cr->log, "%s\n",
+				tval_find_name(cr->books.rev[i]->tval));
+		}
+		file_putf(cr->log, "%6.6s \t", cr->books.rev[i]->name);
+		prob_of_find(i, STGRP_BOOK, cr);
+		mean_and_stdv(cr->stat_ff_book.level + i
+			* (size_t)cr->tries_lim, cr->tries_lim, cr->log);
 	}
 
 	/* Print artifact total */
-	arttot = 0;
-
-	for (k = 0; k < MAX_LVL; k++)
-		arttot += art_total[k];
-
-	file_putf(stats_log, "\n");
-	file_putf(stats_log, "Total number of artifacts found %f\n", arttot);
-	mean_and_stdv(art_it);
-
-	/* Temporary stuff goes here */
-	/* Dungeon book totals for Eddie
-	file_putf(stats_log,"mb5: %f\n",total(b5_total));
-	file_putf(stats_log,"mb6: %f\n",total(b6_total));
-	file_putf(stats_log,"mb7: %f\n",total(b7_total));
-	file_putf(stats_log,"mb8: %f\n",total(b8_total));
-	file_putf(stats_log,"mb9: %f\n",total(b9_total));
-	*/
+	arttot = 0.0;
+	for (k = 0; k < cr->max_lvl; k++) {
+		arttot += cr->art_total[k];
+	}
+	file_putf(cr->log, "\n");
+	file_putf(cr->log, "Total number of artifacts found %f\n", arttot);
+	mean_and_stdv(cr->art_it, cr->tries_lim, cr->log);
 }
 
 
@@ -1432,8 +1647,8 @@ static void post_process_stats(void)
 /**
  * Scans the dungeon for objects
  */
-static void scan_for_objects(void)
-{ 
+static void scan_for_objects(struct collect_results *cr)
+{
 	int y, x;
 
 	for (y = 1; y < cave->height - 1; y++) {
@@ -1443,7 +1658,7 @@ static void scan_for_objects(void)
 
 			while ((obj = square_object(cave, grid))) {
 				/* Get data on the object */
-				get_obj_data(obj, y, x, false, false);
+				get_obj_data(obj, y, x, false, false, cr);
 
 				/* Delete the object */
 				square_delete_object(cave, grid, obj, false, false);
@@ -1456,8 +1671,8 @@ static void scan_for_objects(void)
  * This will scan the dungeon for monsters and then kill each
  * and every last one.
  */
-static void scan_for_monsters(void)
-{ 
+static void scan_for_monsters(struct collect_results *cr)
+{
 	int i;
 
 	/* Go through the monster list */
@@ -1467,24 +1682,23 @@ static void scan_for_monsters(void)
 		/* Skip dead monsters */
 		if (!mon->race) continue;
 
-		stats_monster(mon, i);
+		stats_monster(mon, i, cr);
 	}
 }
 
 /**
  * This is the entry point for generation statistics.
  */
-static void stats_collect_level(void)
+static void stats_collect_level(struct collect_results *cr)
 {
 	/* Make a dungeon */
 	prepare_next_level(player);
 
 	/* Scan for objects, these are floor objects */
-	scan_for_objects();
+	scan_for_objects(cr);
 
 	/* Get stats (and kill) all non-unique monsters */
-	scan_for_monsters();
-
+	scan_for_monsters(cr);
 }
 
 /**
@@ -1519,10 +1733,66 @@ static void revive_uniques(void)
 }
 
 /**
+ * Set each element of an array of ints with n elements to v.
+ */
+static void stats_iinit(int *a, size_t n, int v)
+{
+	size_t i;
+
+	for (i = 0; i < n; ++i) {
+		a[i] = v;
+	}
+}
+
+/**
+ * Set each element of an array of doubles with n elements to zero.
+ */
+static void stats_dzero(double *a, size_t n)
+{
+	size_t i;
+
+	for (i = 0; i < n; ++i) {
+		a[i] = 0.0;
+	}
+}
+
+/**
+ * Set per-level counters for stats_collect() to zero.
+ */
+static void stats_reset_level_counters(struct collect_results *cr)
+{
+	int level_alloc = (cr->clearing) ? cr->max_lvl : 1;
+
+	stats_dzero(cr->gold_total, level_alloc);
+	stats_dzero(cr->gold_floor, level_alloc);
+	stats_dzero(cr->gold_mon, level_alloc);
+	stats_dzero(cr->stat_all, 3 * (size_t)ST_END * (size_t)level_alloc);
+	stats_dzero(cr->stat_book, 3 * (size_t)cr->books.book_count
+		* (size_t)level_alloc);
+	stats_dzero(cr->art_total, level_alloc);
+	stats_dzero(cr->art_spec, level_alloc);
+	stats_dzero(cr->art_norm, level_alloc);
+	stats_dzero(cr->art_shal, level_alloc);
+	stats_dzero(cr->art_ave, level_alloc);
+	stats_dzero(cr->art_ood, level_alloc);
+	stats_dzero(cr->art_mon, level_alloc);
+	stats_dzero(cr->art_uniq, level_alloc);
+	stats_dzero(cr->art_floor, level_alloc);
+	stats_dzero(cr->art_vault, level_alloc);
+	stats_dzero(cr->art_mon_vault, level_alloc);
+	stats_dzero(cr->mon_total, level_alloc);
+	stats_dzero(cr->mon_ood, level_alloc);
+	stats_dzero(cr->mon_deadly, level_alloc);
+	stats_dzero(cr->uniq_total, level_alloc);
+	stats_dzero(cr->uniq_ood, level_alloc);
+	stats_dzero(cr->uniq_deadly, level_alloc);
+}
+
+/**
  * This function loops through the level and does N iterations of
  * the stat calling function, assuming diving style.
- */ 
-static void diving_stats(void)
+ */
+static void diving_stats(struct collect_results *cr)
 {
 	int depth;
 	bool running;
@@ -1530,21 +1800,23 @@ static void diving_stats(void)
 	/* Iterate through levels */
 	event_signal(EVENT_MESSAGE_FLUSH);
 	running = !check_break(true, 1);
-	for (depth = 0; depth < MAX_LVL && running; depth += 5) {
+	for (depth = 0; depth < cr->max_lvl && running; depth += 5) {
 		player->depth = (depth == 0) ? 1 : depth;
 
 		/* Do many iterations of each level */
-		for (iter = 0; iter < tries; iter++) {
+		for (cr->iter = 0; cr->iter < cr->tries; cr->iter++) {
 			if (check_break(true, 0)) {
 				running = false;
 				break;
 			}
-			stats_collect_level();
+			stats_collect_level(cr);
 		}
 
-		/* Print the output to the file */
 		if (running) {
-			print_stats(player->depth);
+			/* Print the output to the file */
+			print_stats(player->depth, cr);
+
+			stats_reset_level_counters(cr);
 		}
 
 		/* Show the level to check on status */
@@ -1557,8 +1829,8 @@ static void diving_stats(void)
 /**
  * This function loops through the level and does N iterations of
  * the stat calling function, assuming clearing style.
- */ 
-static void clearing_stats(void)
+ */
+static void clearing_stats(struct collect_results *cr)
 {
 	int depth;
 	bool running;
@@ -1566,7 +1838,7 @@ static void clearing_stats(void)
 	/* Do many iterations of the game */
 	event_signal(EVENT_MESSAGE_FLUSH);
 	running = !check_break(true, 1);
-	for (iter = 0; iter < tries && running; iter++) {
+	for (cr->iter = 0; cr->iter < cr->tries && running; cr->iter++) {
 		/* Move all artifacts to uncreated */
 		uncreate_all_artifacts();
 
@@ -1574,7 +1846,7 @@ static void clearing_stats(void)
 		revive_uniques();
 
 		/* Do randart regen */
-		if (regen) {
+		if (cr->regen) {
 			/* Get seed */
 			int seed_randart = randint0(0x10000000);
 
@@ -1590,7 +1862,7 @@ static void clearing_stats(void)
 		}
 
 		/* Do game iterations */
-		for (depth = 1 ; depth < MAX_LVL; depth++) {
+		for (depth = 1; depth < cr->max_lvl; depth++) {
 			if (check_break(true, 0)) {
 				running = false;
 				break;
@@ -1599,24 +1871,36 @@ static void clearing_stats(void)
 			/* Move player to that depth */
 			player->depth = depth;
 
+			/*
+			 * Forget whether the items being tracked for first find
+			 * have been found yet on this level and iteration.
+			 */
+			(void)memset(cr->stat_ff_all.yet, 0, ST_FF_END
+				* sizeof(*cr->stat_ff_all.yet));
+			if (cr->books.book_count > 0) {
+				(void)memset(cr->stat_ff_book.yet, 0,
+					cr->books.book_count
+					* sizeof(*cr->stat_ff_book.yet));
+			}
+
 			/* Get stats */
-			stats_collect_level();
+			stats_collect_level(cr);
 		}
 
 		if (running) {
-			if (iter == 0) {
+			if (cr->iter == 0) {
 				(void)check_break(true, 2);
 			}
-			msg("Iteration %d complete", iter);
+			msg("Iteration %d complete", cr->iter);
 		}
 	}
 
-	if (!running && iter == 0) {
+	if (!running && cr->iter == 0) {
 		(void)check_break(true, 2);
 	}
 
 	/* Restore original artifacts */
-	if (regen) {
+	if (cr->regen) {
 		cleanup_parser(&randart_parser);
 		if (OPT(player, birth_randarts)) {
 			activate_randart_file();
@@ -1632,14 +1916,364 @@ static void clearing_stats(void)
 	}
 
 	/* Print to file */
-	for (depth = 0 ;depth < MAX_LVL; depth++)
-		print_stats(depth);
+	for (depth = 0; depth < cr->max_lvl; depth++) {
+		print_stats(depth, cr);
+	}
 
 	/* Post processing */
-	post_process_stats();
+	post_process_stats(cr);
 
 	/* Display the current level */
-	do_cmd_redraw(); 
+	do_cmd_redraw();
+}
+
+/**
+ * Clean up what was allocated in initialize_books().
+ */
+static void cleanup_books(struct book_lookup *b)
+{
+	int i;
+
+	for (i = 0; i < b->tval_count; ++i) {
+		mem_free(b->tvals[i].ids);
+	}
+	if (b->tvals) {
+		mem_free(b->tvals);
+	}
+	if (b->rev) {
+		mem_free(b->rev);
+	}
+}
+
+
+/**
+ * Determine the books that need to be tracked and set up the bookkeeping for
+ * how to store them in the statistics results.
+ *
+ * \return false if the initialization was okay.  Otherwise, return true:
+ * there were too many books to represent in memory.
+ */
+static bool initialize_books(struct book_lookup *b)
+{
+	size_t tval_alloc = 0;
+	size_t *kind_allocs = NULL;
+	uint32_t kidx;
+
+	b->tval_count = 0;
+	b->book_count = 0;
+	b->tvals = NULL;
+	b->rev = NULL;
+
+	for (kidx = 0; kidx < z_info->k_max; ++kidx) {
+		int i;
+
+		if (!tval_is_book_k(&k_info[kidx])) {
+			continue;
+		}
+		if (b->book_count == INT_MAX) {
+			cleanup_books(b);
+			if (kind_allocs) {
+				mem_free(kind_allocs);
+			}
+			return true;
+		}
+		++b->book_count;
+		/* Has this tval been seen before? */
+		i = b->tval_count - 1;
+		while (1) {
+			if (i < 0 || k_info[kidx].tval > b->tvals[i].tval
+					|| (i == 0 && k_info[kidx].tval
+					< b->tvals[i].tval)) {
+				/*
+				 * It has not been seen.  Its position in the
+				 * list of tvals is jstart.  Shift the lists as
+				 * necessary and set up a record for it.
+				 */
+				int j, jstart = (i == 0 && k_info[kidx].tval
+					< b->tvals[i].tval) ? 0 : i + 1;
+
+				if (b->tval_count == INT_MAX) {
+					cleanup_books(b);
+					if (kind_allocs) {
+						mem_free(kind_allocs);
+					}
+					return true;
+				}
+				if ((size_t)b->tval_count == tval_alloc) {
+					if (tval_alloc > SIZE_MAX
+							/ sizeof(*b->tvals) - 4) {
+						cleanup_books(b);
+						if (kind_allocs) {
+							mem_free(kind_allocs);
+						}
+						return true;
+					}
+					tval_alloc += 4;
+					kind_allocs = mem_realloc(kind_allocs,
+						tval_alloc
+						* sizeof(*kind_allocs));
+					b->tvals = mem_realloc(b->tvals,
+						tval_alloc * sizeof(*b->tvals));
+				}
+				for (j = b->tval_count; j > jstart; --j) {
+					kind_allocs[j] = kind_allocs[j - 1];
+					b->tvals[j] = b->tvals[j - 1];
+				}
+				kind_allocs[jstart] = 4;
+				b->tvals[jstart].ids = mem_alloc(
+					kind_allocs[jstart]
+					* sizeof(*b->tvals[jstart].ids));
+				b->tvals[jstart].ids[0] = kidx;
+				b->tvals[jstart].tval = k_info[kidx].tval;
+				b->tvals[jstart].kind_count = 1;
+				++b->tval_count;
+				break;
+			}
+			if (k_info[kidx].tval == b->tvals[i].tval) {
+				/*
+				 * It has been seen.  Add to the list of kinds.
+				 */
+				if ((size_t)b->tvals[i].kind_count
+						== kind_allocs[i]) {
+					if (kind_allocs[i] > SIZE_MAX
+							/ sizeof(*b->tvals[i].ids) - 4) {
+						cleanup_books(b);
+						if (kind_allocs) {
+							mem_free(kind_allocs);
+						}
+						return true;
+					}
+					kind_allocs[i] += 4;
+					b->tvals[i].ids = mem_realloc(
+						b->tvals[i].ids, kind_allocs[i]
+						* sizeof(*b->tvals[i].ids));
+				}
+				b->tvals[i].ids[b->tvals[i].kind_count] = kidx;
+				++b->tvals[i].kind_count;
+				break;
+			}
+			--i;
+		}
+	}
+
+	if (kind_allocs) {
+		mem_free(kind_allocs);
+	}
+
+	/*
+	 * Set up the statistics index for the first kind in each tval and the
+	 * reverse lookup array to get from a statistics index to a kind of
+	 * book.
+	 */
+	if ((size_t)b->book_count > SIZE_MAX / sizeof(*b->rev)) {
+		cleanup_books(b);
+		return true;
+	}
+	if (b->book_count) {
+		int i, j, k;
+
+		b->tvals[0].ind = 0;
+		for (i = 1; i < b->tval_count; ++i) {
+			b->tvals[i].ind = b->tvals[i - 1].ind
+				+ b->tvals[i - 1].kind_count;
+		}
+		b->rev = mem_alloc(b->book_count * sizeof(*b->rev));
+		for (i = 0, j = 0, k = 0; i < b->book_count; ++i) {
+			b->rev[i] = &k_info[b->tvals[k].ids[j]];
+			++j;
+			if (j == b->tvals[k].kind_count) {
+				j = 0;
+				++k;
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Determine the maximum depth of interest for stats_collect().
+ */
+static int stats_get_maximum_level(void)
+{
+	/* Find the deepest quest monster. */
+	int deepest_quest = -1, i;
+
+	for (i = 0; i < z_info->quest_max; ++i) {
+		if (deepest_quest < quests[i].level) {
+			deepest_quest = quests[i].level;
+		}
+	}
+
+	return (deepest_quest >= 0 && deepest_quest < (int)z_info->max_depth)
+		? deepest_quest + 1 : (int)z_info->max_depth;
+}
+
+static bool check_first_find_sizes(int nclass, int tries_lim, size_t nlevel)
+{
+	size_t m = MAX(sizeof(int), sizeof(bool));
+
+	if (nclass <= 0) {
+		return false;
+	}
+	/* Check size of the count and yet arrays. */
+	if ((size_t)nclass > SIZE_MAX / m || nlevel > SIZE_MAX
+			/ (nclass * sizeof(int))) {
+		return true;
+	}
+	/* Check size of the level array. */
+	if ((size_t)tries_lim > SIZE_MAX / ((size_t)nclass * sizeof(int))) {
+		return true;
+	}
+	return false;
+}
+
+static void allocate_first_find(struct first_find_arrays *a, int nclass,
+		int tries_lim, size_t nlevel)
+{
+	if (nclass <= 0) {
+		a->level = NULL;
+		a->count = NULL;
+		a->yet = NULL;
+		return;
+	}
+	a->level = mem_alloc(nclass * (size_t)tries_lim * sizeof(*a->level));
+	a->count = mem_zalloc(nclass * nlevel * sizeof(*a->count));
+	a->yet = mem_alloc(nclass * sizeof(*a->yet));
+}
+
+static void deallocate_first_find(struct first_find_arrays *a)
+{
+	if (a->yet) {
+		mem_free(a->yet);
+	}
+	if (a->count) {
+		mem_free(a->count);
+	}
+	if (a->level) {
+		mem_free(a->level);
+	}
+}
+
+/**
+ * Allocate storage for stats_collect().
+ *
+ * \return false if successful.  Otherwise, return true when it is not possible
+ * to meet the storage needed for stats_collect().
+ */
+static bool stats_allocate(struct collect_results *cr)
+{
+	/*
+	 * If diving, only need to track the most recent level for many things
+	 * so can use less storage.
+	 */
+	size_t level_alloc = (cr->clearing) ? cr->max_lvl : 1;
+	int m;
+
+	/* Can the space needed for a single per-level array be represented? */
+	if (level_alloc > SIZE_MAX / sizeof(double)) {
+		return true;
+	}
+
+	/* Can the space needed for cr->art_it be represented? */
+	if ((size_t)cr->tries_lim > SIZE_MAX / sizeof(*cr->art_it)) {
+		return true;
+	}
+
+	/*
+	 * Can the indexing and space needed for cr->stat_all and cr->stat_book
+	 * be represented?
+	 */
+	m = MAX(ST_END, cr->books.book_count);
+	if (m > 0 && ((size_t)m > SIZE_MAX / 3 || level_alloc > SIZE_MAX
+			/ (3 * (size_t)m) || sizeof(*cr->stat_all) > SIZE_MAX
+			/ (3 * (size_t)m * level_alloc))) {
+		return true;
+	}
+
+	/*
+	 * Can the indexing and space needed for cr->stat_ff_all and
+	 * cr->stat_ff_book be represented?
+	 */
+	if (cr->clearing && check_first_find_sizes(MAX(ST_FF_END,
+			cr->books.book_count), cr->tries_lim, level_alloc)) {
+		return true;
+	}
+
+	cr->art_it = mem_zalloc(cr->tries_lim * sizeof(*cr->art_it));
+	cr->gold_total = mem_alloc(level_alloc * sizeof(*cr->gold_total));
+	cr->gold_floor = mem_alloc(level_alloc * sizeof(*cr->gold_floor));
+	cr->gold_mon = mem_alloc(level_alloc * sizeof(*cr->gold_mon));
+	cr->stat_all = mem_alloc(ST_END * (size_t)3 * level_alloc
+		* sizeof(*cr->stat_all));
+	allocate_first_find(&cr->stat_ff_all, (cr->clearing) ? ST_FF_END : 0,
+		cr->tries_lim, level_alloc);
+	if (cr->books.book_count > 0) {
+		cr->stat_book = mem_alloc(cr->books.book_count * (size_t)3
+			* level_alloc * sizeof(*cr->stat_book));
+	} else {
+		cr->stat_book = NULL;
+	}
+	allocate_first_find(&cr->stat_ff_book, (cr->clearing)
+		? cr->books.book_count : 0, cr->tries_lim, level_alloc);
+	cr->art_total = mem_alloc(level_alloc * sizeof(*cr->art_total));
+	cr->art_spec = mem_alloc(level_alloc * sizeof(*cr->art_spec));
+	cr->art_norm = mem_alloc(level_alloc * sizeof(*cr->art_norm));
+	cr->art_shal = mem_alloc(level_alloc * sizeof(*cr->art_shal));
+	cr->art_ave = mem_alloc(level_alloc * sizeof(*cr->art_ave));
+	cr->art_ood = mem_alloc(level_alloc * sizeof(*cr->art_ood));
+	cr->art_mon = mem_alloc(level_alloc * sizeof(*cr->art_mon));
+	cr->art_uniq = mem_alloc(level_alloc * sizeof(*cr->art_uniq));
+	cr->art_floor = mem_alloc(level_alloc * sizeof(*cr->art_floor));
+	cr->art_vault = mem_alloc(level_alloc * sizeof(*cr->art_vault));
+	cr->art_mon_vault = mem_alloc(level_alloc * sizeof(*cr->art_mon_vault));
+	cr->mon_total = mem_alloc(level_alloc * sizeof(*cr->mon_total));
+	cr->mon_ood = mem_alloc(level_alloc * sizeof(*cr->mon_ood));
+	cr->mon_deadly = mem_alloc(level_alloc * sizeof(*cr->mon_deadly));
+	cr->uniq_total = mem_alloc(level_alloc * sizeof(*cr->uniq_total));
+	cr->uniq_ood = mem_alloc(level_alloc * sizeof(*cr->uniq_ood));
+	cr->uniq_deadly = mem_alloc(level_alloc * sizeof(*cr->uniq_deadly));
+
+	if (cr->clearing) {
+		stats_iinit(cr->stat_ff_all.level, ST_FF_END
+			* (size_t)cr->tries_lim, cr->max_lvl);
+		stats_iinit(cr->stat_ff_book.level, cr->books.book_count
+			* (size_t)cr->tries_lim, cr->max_lvl);
+	}
+	stats_reset_level_counters(cr);
+
+	return false;
+}
+
+static void stats_deallocate(struct collect_results *cr)
+{
+	mem_free(cr->uniq_deadly);
+	mem_free(cr->uniq_ood);
+	mem_free(cr->uniq_total);
+	mem_free(cr->mon_deadly);
+	mem_free(cr->mon_ood);
+	mem_free(cr->mon_total);
+	mem_free(cr->art_mon_vault);
+	mem_free(cr->art_vault);
+	mem_free(cr->art_floor);
+	mem_free(cr->art_uniq);
+	mem_free(cr->art_mon);
+	mem_free(cr->art_ood);
+	mem_free(cr->art_ave);
+	mem_free(cr->art_shal);
+	mem_free(cr->art_norm);
+	mem_free(cr->art_spec);
+	mem_free(cr->art_total);
+	deallocate_first_find(&cr->stat_ff_book);
+	if (cr->stat_book) {
+		mem_free(cr->stat_book);
+	}
+	deallocate_first_find(&cr->stat_ff_all);
+	mem_free(cr->stat_all);
+	mem_free(cr->gold_mon);
+	mem_free(cr->gold_floor);
+	mem_free(cr->gold_total);
+	mem_free(cr->art_it);
 }
 
 /**
@@ -1667,50 +2301,71 @@ void stats_collect(int nsim, int simtype)
 {
 	bool auto_flag;
 	char buf[1024];
+	struct collect_results cr;
 	int i;
 
 	/* Make sure the inputs are good! */
 	if (nsim < 1 || simtype < 1 || simtype > 3) return;
 
-	tries = nsim;
-	addval = 1.0 / tries;
+	cr.tries = nsim;
+	cr.addval = 1.0 / nsim;
+
+	/* Determine the maximum depth of interest. */
+	cr.max_lvl = stats_get_maximum_level();
 
 	/* Remember which slay is slay evil. */
-	slay_evil_ind = -1;
+	cr.slay_evil_ind = -1;
 	for (i = 1; i < z_info->slay_max; ++i) {
 		if (slays[i].name && slays[i].race_flag == RF_EVIL) {
-			slay_evil_ind = i;
+			cr.slay_evil_ind = i;
 			break;
 		}
 	}
 
 	/* Are we in diving or clearing mode */
 	if (simtype == 1) {
-		clearing = false;
+		cr.clearing = false;
+		cr.regen = false;
 	} else {
-		clearing = true;
-		regen = (simtype == 3);
+		cr.clearing = true;
+		cr.regen = (simtype == 3);
+	}
+
+	/* Set up to track books. */
+	if (initialize_books(&cr.books)) {
+		msg("Error - too many book kinds to track.");
+		return;
+	}
+
+	/* Allocate storage. */
+	cr.tries_lim = (cr.tries < TRIES_LIMIT) ? cr.tries : TRIES_LIMIT;
+	if (stats_allocate(&cr)) {
+		msg("Error - machine's limits do not allow the calculation.");
+		cleanup_books(&cr.books);
+		return;
 	}
 
 	/* Open log file */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "stats.log");
-	stats_log = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+	cr.log = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 
 	/* Logging didn't work */
-	if (!stats_log) {
+	if (!cr.log) {
 		msg("Error - can't open stats.log for writing.");
-		exit(1);
+		stats_deallocate(&cr);
+		cleanup_books(&cr.books);
+		return;
 	}
 
 	/* Turn on auto-more.  This will clear prompts for items
-	 * that drop under the player, or that can't fit on the 
+	 * that drop under the player, or that can't fit on the
 	 * floor due to too many items.  This is a very small amount
 	 * of items, even on deeper levels, so it's not worth worrying
 	 * too much about.
 	 */
-	 auto_flag = false;
-	 
-	 if (!OPT(player, auto_more)) {
+	auto_flag = false;
+
+	if (!OPT(player, auto_more)) {
 		/* Remember that we turned off auto_more */
 		auto_flag = true;
 
@@ -1719,25 +2374,24 @@ void stats_collect(int nsim, int simtype)
 	}
 
 	/* Print heading for the file */
-	print_heading();
-
-	/* Make sure all stats are 0 */
-	init_stat_vals();
+	print_heading(&cr);
 
 	/* Select diving option */
-	if (!clearing) diving_stats();
+	if (!cr.clearing) diving_stats(&cr);
 
 	/* Select clearing option */
-	if (clearing) clearing_stats();
+	if (cr.clearing) clearing_stats(&cr);
 
 	/* Turn auto-more back off */
 	if (auto_flag) option_set(option_name(OPT_auto_more), false);
 
 	/* Close log file */
-	if (!file_close(stats_log)) {
+	if (!file_close(cr.log)) {
 		msg("Error - can't close stats.log file.");
-		exit(1);
 	}
+
+	stats_deallocate(&cr);
+	cleanup_books(&cr.books);
 }
 
 #define DIST_MAX 10000
