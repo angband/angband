@@ -364,7 +364,7 @@ void signals_init(bool hup_disconnects, bool tstp_default)
 #endif
 
 #ifdef SIGQUIT
-	(void)install_handler(SIGQUIT, handle_signal_simple);
+	(void)install_handler(SIGQUIT, handle_signal_abort);
 #endif
 
 
@@ -396,7 +396,7 @@ void signals_init(bool hup_disconnects, bool tstp_default)
 #endif
 
 #ifdef SIGTERM
-	(void)install_handler(SIGTERM, handle_signal_abort);
+	(void)install_handler(SIGTERM, handle_signal_simple);
 #endif
 
 #ifdef SIGPIPE
