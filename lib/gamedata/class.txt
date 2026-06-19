@@ -942,7 +942,7 @@ dice:$Dd8
 expr:D:PLAYER_LEVEL:/ 2
 desc:Fires a beam of holy magic that does extra damage to evil creatures.
 
-spell:Light of Manwë:42:40:85:200
+spell:Light of Varda:42:40:85:200
 effect:BALL:LIGHT:4
 dice:$B
 expr:B:PLAYER_LEVEL:* 5
