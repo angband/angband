@@ -1279,7 +1279,7 @@ bool dir_create(const char *path)
 
 	#ifdef WINDOWS
 	/* If we're on windows, we need to skip past the "C:" part. */
-	if (isalpha(path[0]) && path[1] == ':') path += 2;
+	if (isalpha((unsigned char)path[0]) && path[1] == ':') path += 2;
 	#endif
 
 	/* Iterate through the path looking for path segments. At each step,

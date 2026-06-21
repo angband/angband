@@ -165,13 +165,13 @@ void borg_write_map(bool ask)
         char c = player->full_name[i];
 
         /* No control characters */
-        if (iscntrl(c)) {
+        if (iscntrl((unsigned char)c)) {
             /* Illegal characters */
             quit_fmt("Illegal control char (0x%02X) in player name", c);
         }
 
         /* Convert all non-alphanumeric symbols */
-        if (!isalpha(c) && !isdigit(c))
+        if (!isalpha((unsigned char)c) && !isdigit((unsigned char)c))
             c = '_';
 
         /* Build "file_name" */

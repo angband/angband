@@ -136,7 +136,7 @@ static bool borg_proc_setting(
                 line++;
                 continue;
             }
-            if (isdigit(ch)) {
+            if (isdigit((unsigned char)ch)) {
                 borg_cfg[setting] = atoi(line);
                 break;
             }

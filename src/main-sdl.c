@@ -4053,7 +4053,7 @@ static errr load_prefs(void)
 		
 		s = strchr(buf, '=');
 		s++;
-		while (!isalnum(*s)) s++;
+		while (!isalnum((unsigned char)*s)) s++;
 		
 		if (strstr(buf, "Resolution")) {
 			screen_w = atoi(s);

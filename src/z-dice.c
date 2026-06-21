@@ -106,10 +106,10 @@ static dice_input_t dice_input_for_char(char c)
 			break;
 	}
 
-	if (isdigit(c))
+	if (isdigit((unsigned char)c))
 		return DICE_INPUT_DIGIT;
 
-	if (isupper(c))
+	if (isupper((unsigned char)c))
 		return DICE_INPUT_UPPER;
 
 	return DICE_INPUT_MAX;

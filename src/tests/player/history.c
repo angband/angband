@@ -67,12 +67,12 @@ static int test_0(void *state) {
 		char *h = get_history(&ca);
 		assert(h);
 		eq(h[0], 'A');
-		require(isdigit(h[1]));
+		require(isdigit((unsigned char)h[1]));
 		require(h[2] == 'B' || h[2] == 'C');
-		require(isdigit(h[3]));
+		require(isdigit((unsigned char)h[3]));
 		if (h[2] == 'B' && h[4]) {
 			require(h[4] == 'C');
-			require(isdigit(h[5]));
+			require(isdigit((unsigned char)h[5]));
 		}
 		string_free(h);
 	}

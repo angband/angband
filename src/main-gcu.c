@@ -1247,7 +1247,7 @@ static int _parse_size_list(const char *arg, int sizes[], int max)
 
     for (;;)
     {
-        if (!*stop || !isdigit(*stop))
+        if (!*stop || !isdigit((unsigned char)*stop))
         {
             if (i >= max) break;
             if (*start == '*')
