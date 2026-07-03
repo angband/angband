@@ -3793,11 +3793,30 @@ static void handle_windowevent(struct my_app *a, const SDL_WindowEvent *event)
 		if (!window) {
 			continue;
 		}
-		if (window->move_state.active) {
-			signal_move_state(window);
-		} else if (window->size_state.active) {
-			signal_size_state(window);
+		/*
+		 * For events that change the window's geometry or display
+		 * or cause it to lose focus, clear resizing or moving of the
+		 * subwindows.
+		 */
+		switch (events[i].window.event) {
+			case SDL_WINDOWEVENT_SHOWN:
+			case SDL_WINDOWEVENT_EXPOSED:
+			case SDL_WINDOWEVENT_ENTER:
+			case SDL_WINDOWEVENT_FOCUS_GAINED:
+			case SDL_WINDOWEVENT_TAKE_FOCUS:
+			case SDL_WINDOWEVENT_HIT_TEST:
+			case SDL_WINDOWEVENT_ICCPROF_CHANGED:
+				break;
+
+			default:
+				if (window->move_state.active) {
+					signal_move_state(window);
+				} else if (window->size_state.active) {
+					signal_size_state(window);
+				}
+				break;
 		}
+
 		switch (events[i].window.event) {
 			case SDL_WINDOWEVENT_RESIZED:
 				/* just for efficiency */
