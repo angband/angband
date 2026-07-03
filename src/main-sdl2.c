@@ -736,7 +736,9 @@ static void log_window_details(int my_index, SDL_Window *w, SDL_Renderer *r)
 	SDL_Log("    Border sizes: %d %d %d %d", bt, bl, bb, br);
 	/* Skipping the more transient flags about focus and grabs. */
 	SDL_Log("    Flags:%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-		(flags & SDL_WINDOW_FULLSCREEN) ? " FULLSCREEN" : "",
+		((flags & SDL_WINDOW_FULLSCREEN)
+		&& (flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+		!= SDL_WINDOW_FULLSCREEN_DESKTOP) ? " FULLSCREEN" : "",
 		(flags & SDL_WINDOW_OPENGL) ? " OPENGL" : "",
 		(flags & SDL_WINDOW_SHOWN) ? " SHOWN" : "",
 		(flags & SDL_WINDOW_HIDDEN) ? " HIDDEN" : "",
@@ -744,8 +746,8 @@ static void log_window_details(int my_index, SDL_Window *w, SDL_Renderer *r)
 		(flags & SDL_WINDOW_RESIZABLE) ? " RESIZABLE" : "",
 		(flags & SDL_WINDOW_MINIMIZED) ? " MINIMIZED" : "",
 		(flags & SDL_WINDOW_MAXIMIZED) ? " MAXIMIZED" : "",
-		(flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
-		? " FULLSCREEN_DESKTOP" : "",
+		((flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+		== SDL_WINDOW_FULLSCREEN_DESKTOP) ? " FULLSCREEN_DESKTOP" : "",
 		(flags & SDL_WINDOW_FOREIGN) ? " FOREIGN" : "",
 		(flags & SDL_WINDOW_ALLOW_HIGHDPI) ? " ALLOW_HIGHDPI" : "",
 		(flags & SDL_WINDOW_ALWAYS_ON_TOP) ? " ALWAYS_ON_TOP" : "",
@@ -2367,7 +2369,9 @@ static void show_sdl_details(struct sdlpui_window *window, int x, int y)
 			SDLPUI_HOR_LEFT);
 		flags = SDL_GetWindowFlags(window->window);
 		label = format("    Flags:%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-			(flags & SDL_WINDOW_FULLSCREEN) ? " FULLSCREEN" : "",
+			((flags & SDL_WINDOW_FULLSCREEN)
+			&& (flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+			!= SDL_WINDOW_FULLSCREEN_DESKTOP) ? " FULLSCREEN" : "",
 			(flags & SDL_WINDOW_OPENGL) ? " OPENGL" : "",
 			(flags & SDL_WINDOW_SHOWN) ? " SHOWN" : "",
 			(flags & SDL_WINDOW_HIDDEN) ? " HIDDEN" : "",
@@ -2375,7 +2379,8 @@ static void show_sdl_details(struct sdlpui_window *window, int x, int y)
 			(flags & SDL_WINDOW_RESIZABLE) ? " RESIZABLE" : "",
 			(flags & SDL_WINDOW_MINIMIZED) ? " MINIMIZED" : "",
 			(flags & SDL_WINDOW_MAXIMIZED) ? " MAXIMIZED" : "",
-			(flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+			((flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+			== SDL_WINDOW_FULLSCREEN_DESKTOP)
 			? " FULLSCREEN_DESKTOP" : "",
 			(flags & SDL_WINDOW_FOREIGN) ? " FOREIGN" : "",
 			(flags & SDL_WINDOW_ALLOW_HIGHDPI)
