@@ -292,3 +292,44 @@ size_t history_get_list(struct player *p, struct history_info **list)
 	*list = h->entries;
 	return h->next;
 }
+
+/**
+ * Expand a user-supplied note in the history.
+ *
+ * \param note is the text of the note.
+ * \param p points to the player who made the note.
+ * \param buf is the buffer to hold the expanded note.  May be NULL, in which
+ * case a static buffer will be used.
+ * \param len is the length of buf.  It is ignored if buf is NULL.  For a note
+ * which is at most n (currently 80 for struct history_info's event field)
+ * character long, a buffer with at least PLAYER_NAME_LEN + 6 + n characters
+ * including the terminating NULL will hold the expanded note without
+ * truncation.
+ * \param use_prefix will, if true, prepend the expanded note with "-- ".
+ * \return to the pointer to the beginning of the expanded note.
+ *
+ * Notes that begin with "/say " will have that replaced by 'x says: "' where
+ * x is p->full_name and will have a double quote appended to the end of the
+ * note.  Notes that begin with "/me" will have that replaced by p->full_name.
+ * All others will have the text of the note prepended with "Note: ".
+ */
+const char *history_expand_user_input(const char *note, const struct player *p,
+		char *buf, size_t len, bool use_prefix)
+{
+	static char sbuf[PLAYER_NAME_LEN + 86];
+	const char *defp = (use_prefix) ? "-- " : "";
+
+	if (!buf) {
+		buf = sbuf;
+		len = N_ELEMENTS(sbuf);
+	}
+	if (prefix(note, "/say ")) {
+		(void)strnfmt(buf, len, "%s%s says: \"%s\"", defp, p->full_name,
+			note + 5);
+	} else if (prefix(note, "/me")) {
+		(void)strnfmt(buf, len, "%s%s%s", defp, p->full_name, note + 3);
+	} else {
+		(void)strnfmt(buf, len, "%sNote: %s", defp, note);
+	}
+	return buf;
+}

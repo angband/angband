@@ -81,38 +81,28 @@ void do_cmd_retire(struct command *cmd)
  * Record the player's thoughts as a note.
  *
  * This both displays the note back to the player and adds it to the game log.
- * Two fancy note types are supported: notes beginning with "/say" will be
- * written as 'Frodo says: "____"', and notes beginning with "/me" will
- * be written as 'Frodo ____'.
+ * If the note begins with "/" followed by specific strings, those will be
+ * expanded when the history is viewed.  See history_expand_user_input()'s
+ * documentation for details about that.
  */
 void do_cmd_note(void)
 {
-	/* Allocate/Initialize strings to get and format user input. */
-	char tmp[70];
-	char note[90];
-	my_strcpy(tmp, "", sizeof(tmp));
-	my_strcpy(note, "", sizeof(note));
+	char note[80] = "";
 
 	/* Read a line of input from the user */
-	if (!get_string("Note: ", tmp, sizeof(tmp))) return;
+	if (!get_string("Note: ", note, sizeof(note))) return;
 
 	/* Ignore empty notes */
-	if (!tmp[0] || (tmp[0] == ' ')) return;
+	if (!note[0] || (note[0] == ' ')) return;
 
-	/* Format the note correctly, supporting some cute /me commands */
-	if (strncmp(tmp, "/say ", 5) == 0)
-		strnfmt(note, sizeof(note), "-- %s says: \"%s\"", player->full_name,
-				&tmp[5]);
-	else if (strncmp(tmp, "/me", 3) == 0)
-		strnfmt(note, sizeof(note), "-- %s%s", player->full_name, &tmp[3]);
-	else
-		strnfmt(note, sizeof(note), "-- Note: %s", tmp);
-
-	/* Display the note (omitting the "-- " prefix) */
-	msg("%s", &note[3]);
-
-	/* Add a history entry */
+	/* Add a history entry, with the user's text as is */
 	history_add(player, note, HIST_USER_INPUT);
+
+	/*
+	 * Provide feedback with the note expanded, except for a "-- " prefix,
+	 * as it will be when the history is displayed.
+	 */
+	msg(history_expand_user_input(note, player, NULL, 0, false));
 }
 
 #ifdef ALLOW_BORG

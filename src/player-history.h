@@ -67,5 +67,7 @@ void history_find_artifact(struct player *p, const struct artifact *artifact);
 void history_lose_artifact(struct player *p, const struct artifact *artifact);
 void history_unmask_unknown(struct player *p);
 size_t history_get_list(struct player *p, struct history_info **list);
+const char *history_expand_user_input(const char *note, const struct player *p,
+		char *buf, size_t len, bool prefix);
 
 #endif /* !HISTORY_H */
