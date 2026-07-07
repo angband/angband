@@ -1,6 +1,5 @@
 macro(configure_stats_frontend _NAME_TARGET)
-    # Could use if() with VERSION_GREATER_EQUAL but that requires 3.7 or later.
-    if((${CMAKE_MAJOR_VERSION} GREATER 3) OR ((${CMAKE_MAJOR_VERSION} EQUAL 3) AND (${CMAKE_MINOR_VERSION} GREATER 13)))
+    if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.14)
         find_package(SQLite3)
     else()
         find_library(SQLite3_LIBRARY sqlite3)
