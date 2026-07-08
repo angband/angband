@@ -21,10 +21,6 @@ jobs:
   cmake-curses:
     runs-on: macos-latest
     steps:
-      - name: Install Build Dependencies
-        run: |
-          brew install ncurses
-
       - name: Clone Project
         uses: actions/checkout@v6
 
