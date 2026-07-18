@@ -1429,7 +1429,7 @@ static int roman_to_int(const char *roman)
 {
 	size_t i;
 	int n = 0;
-	char *p;
+	const char *p;
 
 	char roman_token_chr1[] = "MDCLXVI";
 	const char *roman_token_chr2[] = {0, 0, "DM", 0, "LC", 0, "VX"};
