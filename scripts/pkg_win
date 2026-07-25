@@ -57,7 +57,7 @@ mkdir lib/user/scores
 mkdir lib/user/archive
 mkdir lib/user/panic
 
-touch lib/user/delete.me lib/user/save/delete.me lib/user/scores/delete.me \
+touch lib/user/save/delete.me lib/user/scores/delete.me \
       lib/user/archive/delete.me lib/user/panic/delete.me
 
 cp ../*.exe .
@@ -66,6 +66,7 @@ cp ../*.dll .
 # Copy the readmes and suchlike, converting to DOS line endings on the way
 
 cp_unix2dos ../changes.txt changes.txt
+cp_unix2dos ../src/borg/borg.txt lib/user/borg.txt
 
 # Assumes that all the converted files in docs have names that don't contain
 # spaces or other characters that the shell uses as field separators.
