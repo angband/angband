@@ -127,7 +127,7 @@ dist:
 	@echo attempting to install sound and graphics
 	@cp ../lib/tiles/old/*.prf $(TMPDIR)/lib/tiles/old
 	@iconv -f UTF-8 -t CP437//TRANSLIT -o $(TMPDIR)/changes.txt ../changes.txt
-	@iconv -f UTF-8 -t CP437//TRANSLIT -o $(TMPDIR)/borg.txt lib/user/borg.txt
+	@iconv -f UTF-8 -t CP437//TRANSLIT -o $(TMPDIR)/borg.txt borg/borg.txt
 	@cp ../README.md $(TMPDIR)
 	@cp $(EXE) $(TMPDIR)
 	zip -r ../$(EXEBASE).zip $(TMPDIR)

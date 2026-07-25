@@ -160,7 +160,7 @@ dist:
 	@-cp ../lib/tiles/list.txt $(TMPDIR)/lib/tiles
 	@for i in $(TILESET_DIRS) ; do cp ../$$i/*.png ../$$i/*.prf $(TMPDIR)/$$i ; done
 	@cp ../changes.txt ../README.md $(TMPDIR)
-	@cp ../src/borg/borg.txt $(TMPDIR)
+	@cp borg/borg.txt $(TMPDIR)
 	@cp $(EXE) $(TMPDIR)
 	tar czf ../$(EXE)-$(VERSION).tar.gz $(TMPDIR)
 	rm -rf $(TMPDIR)
