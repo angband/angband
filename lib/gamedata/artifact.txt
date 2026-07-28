@@ -1007,7 +1007,7 @@ brand:POIS_3
 slay:EVIL_2
 slay:UNDEAD_5
 desc:A massive triple-pronged spear, so great it normally requires two hands
-desc: to wield, evoking the spirit of Osse who with it pierced legions of
+desc: to wield, evoking the spirit of Ossë who with it pierced legions of
 desc: evil and undead.
 
 name:of Ulmo

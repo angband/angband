@@ -757,6 +757,13 @@ bool project(struct source origin, int rad, struct loc finish,
 			n1y = path_grid[i].y - centre.y + 20;
 			n1x = path_grid[i].x - centre.x + 20;
 		}
+		/*
+		 * In all cases, the dimension of dam_at_dist limits the
+		 * maximum radius.
+		 */
+		if (rad > z_info->max_range) {
+			rad = z_info->max_range;
+		}
 
 		/* If the explosion centre hasn't been saved already, save it now. */
 		if (num_grids == 0) {

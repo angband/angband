@@ -1892,26 +1892,22 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 void shape_learn_on_assume(struct player *p, const char *name)
 {
 	bitflag f[OF_SIZE], obvious_mask[OF_SIZE];
-	int flag, element;
+	int flag;
 	struct player_shape *shape = lookup_player_shape(name);
 
-	/* Get the shape's obvious flags */
+	/* Get the flags that are not known yet. */
+	of_copy(f, p->obj_k->flags);
+	of_negate(f);
+
+	/* Intersect with the shape's obvious flags. */
+	of_inter(f, shape->flags);
 	create_obj_flag_mask(obvious_mask, true, OFID_WIELD, OFT_MAX);
-	of_copy(f, shape->flags);
 	of_inter(f, obvious_mask);
 
 	/* Learn flags */
 	for (flag = of_next(f, FLAG_START); flag != FLAG_END;
-		 flag = of_next(f, flag + 1)) {
-		equip_learn_flag(p, flag);
-	}
-
-	/* Learn elements */
-	for (element = 0; element < ELEM_MAX; element++) {
-		if (shape->el_info[element].res_level &&
-			!p->obj_k->el_info[element].res_level) {
-			equip_learn_element(p, element);
-		}
+			flag = of_next(f, flag + 1)) {
+		player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
 	}
 }
 
@@ -2080,7 +2076,7 @@ void equip_learn_on_melee_attack(struct player *p)
 
 
 /**
- * Learn a given object flag on wielded items.
+ * Learn a given object flag of wielded items or shape.
  *
  * \param p is the player
  * \param flag is the flag to notice
@@ -2119,10 +2115,16 @@ void equip_learn_flag(struct player *p, int flag)
 		/* Flag may be on a curse */
 		object_curses_find_flags(p, obj, f);
 	}
+
+	/* May learn from the shape. */
+	if (p->shape && of_has(p->shape->flags, flag)
+			&& !of_has(p->obj_k->flags, flag)) {
+		player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
+	}
 }
 
 /**
- * Learn the elemental resistance properties on wielded items.
+ * Learn the elemental resistance properties of wielded items or shape.
  *
  * \param p is the player
  * \param element is the element to notice
@@ -2160,6 +2162,13 @@ void equip_learn_element(struct player *p, int element)
 
 		/* Element may be on a curse */
 		object_curses_find_element(p, obj, element);
+	}
+
+	/* May learn from the shape. */
+	if (p->shape && p->shape->el_info[element].res_level
+			&& !p->obj_k->el_info[element].res_level) {
+		player_learn_rune(p, rune_index(RUNE_VAR_RESIST, element),
+			true);
 	}
 }
 
@@ -2211,6 +2220,16 @@ void equip_learn_after_time(struct player *p)
 			/* Objects not fully known yet get marked as having had a chance
 			 * to display all the timed flags */
 			of_union(obj->known->flags, timed_mask);
+		}
+	}
+
+	/* May learn from the shape */
+	if (p->shape) {
+		of_inter(timed_mask, p->shape->flags);
+		for (flag = of_next(timed_mask, FLAG_START); flag != FLAG_END;
+				flag = of_next(timed_mask, flag + 1)) {
+			player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag),
+				true);
 		}
 	}
 }

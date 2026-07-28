@@ -175,7 +175,7 @@ void keypress_from_text(struct keypress *buf, size_t len, const char *str)
 			str++;
 		} else if (*str == '[') {
 			/* parse non-ascii keycodes */
-			char *end;
+			const char *end;
 			keycode_t kc;
 
 			if (*str++ == 0) return;
