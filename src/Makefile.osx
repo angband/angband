@@ -218,6 +218,7 @@ dist: install
 	mkdir -p disttemp/Docs
 	(cd ../docs/_build/html && tar -cf - .) | (cd disttemp/Docs && tar -xf -)
 	cp -R -p "$(APPBNDL)" disttemp
+	cp borg/borg.txt disttemp
 	SetFile -a B disttemp/$(APPNAME)
 
 	@-rm ../"$(PACKAGE_NAME)-osx.dmg"

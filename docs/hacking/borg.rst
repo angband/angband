@@ -14,7 +14,7 @@ cyborg.
 
 The primary use of the Borg is entertainment. It is fun to watch the
 Borg play the game, and it can be amusing to see how it handles
-situations. It has been used to test the game and find bugs.
+situations. It has also been used to test the game and find bugs.
 
 Running The Borg
 ================
@@ -26,7 +26,7 @@ on its own save file, or on a copy of your save file.
 To run the Borg:
 
 1. Ensure Angband is compiled with borg support (this is controlled by
-   ``ALLOW_BORG``)
+   ``ALLOW_BORG``).  This is done by default in most distributions.
 2. Start or load a game
 3. Press ``^z`` (Ctrl-Z) to access the Borg command interface
 4. Press ``z`` to activate the Borg
@@ -133,14 +133,34 @@ Customizing The Borg
 
 The Borg's behavior is primarily configured through the ``borg.txt`` file.
 This allows for extensive customization of the Borg's decision-making without
-needing to recompile the game.
+needing to recompile the game. If you do not have a ``borg.txt`` file a 
+stripped down ``borg.txt`` will be generated when the borg is first started.
 
-A sample ``borg.txt`` file is provided in the ``src/borg`` directory of the
-source code. To use it, copy this file to the user preferences directory for
-your operating system, and then customize it.
+For source distributions a sample ``borg.txt`` file is provided in the 
+``src/borg`` directory of the source code. To use it, copy this file to the 
+user preferences directory for your operating system, and then customize it.
 
 - Windows: Copy ``src/borg/borg.txt`` to ``lib/user/borg.txt``
-- macOS/Linux: Copy ``src/borg/borg.txt`` to ``~/.angband/Angband/borg.txt``
+- Linux\Unix: Copy ``src/borg/borg.txt`` to ``~/.angband/Angband/borg.txt``
+- macOS with the Cocoa front end:: Copy ``src/borg/borg.txt`` to 
+``Documents/Angband`` within your home directory
+
+If you are using a binary distribution of Angband, the default borg.txt file 
+needs to copied from the spot where it was put in the distribution for that
+platform.
+
+- Windows: the ``borg.txt`` file is already in the user preferences directory.
+- macOS with the Cocoa front end: ``borg.txt`` is included in the top level 
+directory of the dmg file from which you installed the game.
+- Linux/Unix: the ``borg.txt`` may not have been included in the distribution
+or it might be in ``/usr/share/doc/angband/borg.txt``.  If it is not found it
+can be copied from the source distribution in ``src/borg/borg.txt`` or 
+downloaded from github.
+
+To download the ``borg.txt`` from github (https://github.com/angband/angband)
+select the ``<> Code`` tab.  Then select the ``src`` directory, the ``borg``
+subdirectory and download the ``borg.txt`` from there.  If you need an older 
+version use the ``History`` link for that file to find the correct version.
 
 Once copied, you can edit ``borg.txt`` to change the Borg's behavior. To apply
 changes while the game is running, use the ``$`` command from the Borg command
