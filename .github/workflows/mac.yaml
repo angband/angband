@@ -39,6 +39,7 @@ jobs:
       # by default).
       - name: Install Build Dependencies
         run: |
+          brew untap aws/tap
           brew install m4
           brew install autoconf
           brew install automake
