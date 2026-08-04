@@ -151,7 +151,7 @@ platform.
 
 - Windows: the ``borg.txt`` file is already in the user preferences directory.
 - macOS with the Cocoa front end: ``borg.txt`` is included in the top level 
-directory of the dmg file from which you installed the game.
+  directory of the dmg file from which you installed the game.
 - Linux/Unix: the ``borg.txt`` may not have been included in the distribution
   or it might be in ``/usr/share/doc/angband/borg.txt``.  If it is not found it
   can be copied from the source distribution in ``src/borg/borg.txt`` or
