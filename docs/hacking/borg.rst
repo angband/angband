@@ -143,7 +143,7 @@ user preferences directory for your operating system, and then customize it.
 - Windows: Copy ``src/borg/borg.txt`` to ``lib/user/borg.txt``
 - Linux\Unix: Copy ``src/borg/borg.txt`` to ``~/.angband/Angband/borg.txt``
 - macOS with the Cocoa front end:: Copy ``src/borg/borg.txt`` to 
-``Documents/Angband`` within your home directory
+  ``Documents/Angband`` within your home directory 
 
 If you are using a binary distribution of Angband, the default borg.txt file 
 needs to copied from the spot where it was put in the distribution for that
@@ -153,9 +153,9 @@ platform.
 - macOS with the Cocoa front end: ``borg.txt`` is included in the top level 
 directory of the dmg file from which you installed the game.
 - Linux/Unix: the ``borg.txt`` may not have been included in the distribution
-or it might be in ``/usr/share/doc/angband/borg.txt``.  If it is not found it
-can be copied from the source distribution in ``src/borg/borg.txt`` or 
-downloaded from github.
+  or it might be in ``/usr/share/doc/angband/borg.txt``.  If it is not found it
+  can be copied from the source distribution in ``src/borg/borg.txt`` or
+  downloaded from github.
 
 To download the ``borg.txt`` from github (https://github.com/angband/angband)
 select the ``<> Code`` tab.  Then select the ``src`` directory, the ``borg``
