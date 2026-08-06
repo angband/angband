@@ -509,42 +509,6 @@ void borg_init(void)
         option_set("cheat_live", true);
     }
 
-#ifndef ALLOW_BORG_GRAPHICS
-    if (!borg_graphics) {
-        int i, j;
-        /* Reset the # and % -- Scan the features */
-        for (i = 1; i < FEAT_MAX; i++) {
-            struct feature *f_ptr = &f_info[i];
-#if false
-            /* Skip non-features */
-            if (!f_ptr->name) continue;
-
-            /* Switch off "graphics" */
-            f_ptr->x_attr[3] = f_ptr->d_attr;
-            f_ptr->x_char[3] = f_ptr->d_char;
-#endif
-
-            /* Assume we will use the underlying values */
-            for (j = 0; j < LIGHTING_MAX; j++) {
-                feat_x_attr[j][i] = f_ptr->d_attr;
-                feat_x_char[j][i] = f_ptr->d_char;
-            }
-        }
-    }
-#endif
-
-#ifdef USE_GRAPHICS
-    /* The Borg can't work with graphics on, so switch it off */
-    if (use_graphics) {
-        /* Reset to ASCII mode */
-        use_graphics = false;
-        arg_graphics = false;
-
-        /* Reset visuals */
-        reset_visuals(true);
-    }
-#endif /* USE_GRAPHICS */
-
     /*** Redraw ***/
     /* Redraw map */
     player->upkeep->redraw |= (PR_MAP);
