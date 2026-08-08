@@ -744,6 +744,18 @@ static bool start_game(bool new_game)
 		 * player knows.
 		 */
 		update_player_object_knowledge(player);
+
+		/*
+		 * Reset the dungeon noise to what it was when the game was
+		 * saved.  Can skip that if the noise had not been calculated
+		 * yet:  the noise levels were all zero when the save happened
+		 * and that is what they are after the load calls cave_new().
+		 */
+		if ((player->noise_grid.x || player->noise_grid.y)
+				&& square_in_bounds(cave, player->noise_grid)) {
+			make_noise(player, &player->noise_grid,
+				&player->noise_falloff);
+		}
 	}
 
 	/* Tell the UI we've started. */

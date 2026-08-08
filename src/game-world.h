@@ -47,5 +47,10 @@ void process_world(struct chunk *c);
 void on_new_level(void);
 void process_player(void);
 void run_game_loop(void);
+void make_noise(struct player *p, const struct loc *origin,
+		const uint16_t *falloff);
+void forget_noise(void);
+void age_scent(void);
+
 
 #endif /* !GAME_WORLD_H */
