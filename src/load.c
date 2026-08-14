@@ -1061,6 +1061,7 @@ int rd_artifacts(void)
 		rd_byte(&tmp8u);
 		aup_info[i].everseen = tmp8u ? true : false;
 		rd_byte(&tmp8u);
+		aup_info[i].ap_found = tmp8u ? true : false;	/* Archipelago find flag */
 	}
 
 	return 0;

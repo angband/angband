@@ -687,7 +687,7 @@ void wr_artifacts(void)
 		wr_byte(au->created ? 1 : 0);
 		wr_byte(au->seen ? 1 : 0);
 		wr_byte(au->everseen ? 1 : 0);
-		wr_byte(0);
+		wr_byte(au->ap_found ? 1 : 0);	/* Archipelago Accumulated-mode find flag */
 	}
 }
 

@@ -41,6 +41,16 @@ Sends enqueue + `AP_WakeService()` to unblock the service thread promptly.
 - **Black Market gap-filler** — in artifacts-as-checks mode, press `$` in the Black
   Market to buy the shallowest still-unchecked artifact location (3× its cost) to
   fill RNG-heavy gaps.
+- **Resistances trait modes** (`resistances` slot_data: 0 Standard, 1 Equipment
+  Traits, 2 Full Traits) — in trait modes the player wields an unremovable
+  **Archipelago Blade** (new kind in object.txt) and may equip only a launcher
+  and light; the artifact *items* are replaced by trait items (resists,
+  progressive elemental resist/attunement/immunity, slays, speed, weapon stats,
+  AC…) that mutate the blade directly (mutations persist per-object in the
+  savefile). Full Traits also swaps in the worst-in-everything **Archipelago
+  race** (p_race.txt) whose stat/skill boosts are replay-derived
+  (ap_race_boost_* hooks in player-calcs.c). Depth gating uses trait items
+  instead of artifacts. Requires artifacts-as-checks ≠ Off (generation error).
 - **DeathLink**, **goal on Morgoth**, and an **`AP`** indicator on the status line
   while connected.
 - **Respawn / reincarnation** — a new character (retire→new, or the Borg's

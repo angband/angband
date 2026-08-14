@@ -492,12 +492,14 @@ static bool store_get_check(const char *prompt)
 /**
  * Black Market only: buy the location check of a "missed" Archipelago artifact.
  *
- * This fills gaps left by RNG-heavy artifact checks.  It offers the shallowest
- * (ties: cheapest) still-unchecked artifact whose spawn depth the player has
- * reached, for 3x its value, without naming it.  Buying sends the location
- * check; whatever item sits there is released by the server normally.  The
- * attributeless dungeon copy can still spawn (we only send a check, we do not
- * mark the artifact created).
+ * This fills gaps left by RNG-heavy artifact checks.  The price is the slot's
+ * Black Market multiplier (slot_data, 1-5, default 3) times an artifact's value.
+ * In One to One mode it offers the shallowest (ties: cheapest) still-unchecked
+ * artifact the player is deep enough for; in Accumulated mode it advances the
+ * next "Find #X Artifacts" milestone.  Buying sends the location check; whatever
+ * item sits there is released by the server normally.  The attributeless dungeon
+ * copy can still spawn (we only send a check, we do not mark the artifact
+ * created).
  */
 static void store_buy_missed_ap_location(struct store_context *ctx)
 {

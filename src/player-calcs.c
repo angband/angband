@@ -19,6 +19,7 @@
  */
 
 #include "angband.h"
+#include "ap-game.h"
 #include "cave.h"
 #include "game-event.h"
 #include "game-input.h"
@@ -1567,8 +1568,9 @@ static void calc_hitpoints(struct player *p)
 	/* Get "1/100th hitpoint bonus per level" value */
 	bonus = adj_con_mhp[p->state.stat_ind[STAT_CON]];
 
-	/* Calculate hitpoints */
-	mhp = p->player_hp[p->lev-1] + (bonus * p->lev / 100);
+	/* Calculate hitpoints (+ Archipelago "Hit Die Boost": +1 HP/level each) */
+	mhp = p->player_hp[p->lev-1] + (bonus * p->lev / 100)
+		+ ap_race_boost_hitdie() * p->lev;
 
 	/* Always have at least one hitpoint per level */
 	if (mhp < p->lev + 1) mhp = p->lev + 1;
@@ -1898,10 +1900,11 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	state->speed = 110;
 	state->num_blows = 100;
 
-	/* Extract race/class info */
-	state->see_infra = p->race->infra;
+	/* Extract race/class info (plus any Archipelago Full-Traits race boosts) */
+	state->see_infra = p->race->infra + ap_race_boost_infra();
 	for (i = 0; i < SKILL_MAX; i++) {
-		state->skills[i] = p->race->r_skills[i]	+ p->class->c_skills[i];
+		state->skills[i] = p->race->r_skills[i]	+ p->class->c_skills[i]
+			+ ap_race_boost_skill(i);
 	}
 	for (i = 0; i < ELEM_MAX; i++) {
 		vuln[i] = false;
@@ -2056,6 +2059,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 		add = state->stat_add[i];
 		add += (p->race->r_adj[i] + p->class->c_adj[i]);
+		add += ap_race_boost_stat(i);	/* Archipelago Full-Traits boosts */
 		state->stat_top[i] =  modify_stat_value(p->stat_max[i], add);
 		use = modify_stat_value(p->stat_cur[i], add);
 

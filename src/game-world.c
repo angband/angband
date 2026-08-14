@@ -39,6 +39,7 @@
 #include "source.h"
 #include "target.h"
 #include "trap.h"
+#include "ui-input.h"
 #include "z-queue.h"
 
 uint16_t daycount = 0;
@@ -941,8 +942,16 @@ void process_player(void)
 		ap_handlers_ready = true;
 	}
 
-	/* Service the Archipelago connection (connects lazily on first call). */
+	/*
+	 * Service the Archipelago connection (connects lazily on first call).
+	 * Suppress "-more-" pauses across the drain: the connect replay can emit a
+	 * long burst of messages, and pausing for each would both force the player
+	 * to mash through them and pump the input/event loop re-entrantly in the
+	 * middle of AP handlers that are mutating game state.
+	 */
+	set_suppress_more_prompt(true);
 	ap_service(player->server, player->slotname);
+	set_suppress_more_prompt(false);
 
 	/* Check for interrupts */
 	player_resting_complete_special(player);

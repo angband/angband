@@ -18,6 +18,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "apinterface.h"
 #include "cmds.h"
 #include "game-input.h"
 #include "init.h"
@@ -1080,6 +1081,36 @@ static void do_cmd_delay(const char *name, int unused)
 }
 
 /**
+ * Archipelago: change the server/port for this character and force a reconnect.
+ *
+ * The AP server address is saved per-character (player->server) at birth.  If the
+ * multiworld's host or port changes between sessions there is otherwise no way to
+ * point an existing save at the new address.  This obscure entry re-prompts for
+ * it (defaulting to the current value) and drops any live connection so the next
+ * game turn reconnects to the new address.  Character progress -- the item
+ * high-water mark -- is preserved, so the item replay simply restocks as normal.
+ */
+static void do_cmd_ap_server(const char *name, int unused)
+{
+	char server[PLAYER_NAME_LEN];
+
+	screen_save();
+
+	if (get_server(server, sizeof(server)) && !streq(server, player->server)) {
+		my_strcpy(player->server, server, sizeof(player->server));
+		/*
+		 * Drop the connection; process_player's next ap_service() call sees it
+		 * is down and reconnects with the new server (same pattern as
+		 * ap_game_reset_for_new_life, but without resetting progress).
+		 */
+		ap_shutdown();
+		msg("Archipelago server set to '%s'; reconnecting.", player->server);
+	}
+
+	screen_load();
+}
+
+/**
  * Set sidebar mode
  */
 static void do_cmd_sidebar_mode(const char *name, int unused)
@@ -2047,6 +2078,7 @@ static menu_action option_actions[] =
 	{ 0, 'h', "Set hitpoint warning", do_cmd_hp_warn },
 	{ 0, 'm', "Set movement delay", do_cmd_lazymove_delay },
 	{ 0, 'o', "Set sidebar mode", do_cmd_sidebar_mode },
+	{ 0, 'A', "Reset Archipelago server/port", do_cmd_ap_server },
 	{ 0, 0, NULL, NULL },
 	{ 0, 's', "Save subwindow setup to pref file", do_dump_options },
 	{ 0, 't', "Save autoinscriptions to pref file", do_dump_autoinsc },

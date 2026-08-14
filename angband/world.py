@@ -2,6 +2,7 @@ from collections.abc import Mapping
 from typing import Any
 
 # Base Archipelago imports are absolute; our own files are relative.
+from Options import OptionError
 from worlds.AutoWorld import World
 
 from . import data, items, locations, options, regions, rules, web_world
@@ -30,6 +31,20 @@ class AngbandWorld(World):
     # The descent starts in Town rather than the default "Menu".
     origin_region_name = "Town"
 
+    def generate_early(self) -> None:
+        # The Resistances trait modes replace the artifact items with trait
+        # items, so they need the artifact/milestone locations to hold them:
+        # with Artifacts As Checks off there are only the 96 unique-kill
+        # locations and the pool cannot fit.
+        if (int(self.options.resistances.value) != 0
+                and int(self.options.artifacts_as_checks.value) == 0):
+            raise OptionError(
+                f"Angband ({self.player_name}): Resistances "
+                f"'{self.options.resistances.current_key}' requires "
+                f"Artifacts As Checks to be 'one_to_one' or 'accumulated', "
+                f"not 'off'."
+            )
+
     def create_regions(self) -> None:
         regions.create_and_connect_regions(self)
         locations.create_all_locations(self)
@@ -49,5 +64,10 @@ class AngbandWorld(World):
     def fill_slot_data(self) -> Mapping[str, Any]:
         # Sent to the native game on every connection.  The APCc client reads
         # "artifacts_as_checks" (to switch artifacts between checks and normal
-        # drops) and "death_link".
-        return self.options.as_dict("artifacts_as_checks", "death_link")
+        # drops), "resistances" (Standard / Equipment Traits / Full Traits),
+        # "black_market_price_multiplier" (the artifact-location gold sink's
+        # price multiplier), and "death_link".
+        return self.options.as_dict(
+            "artifacts_as_checks", "resistances",
+            "black_market_price_multiplier", "death_link"
+        )

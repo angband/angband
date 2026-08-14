@@ -32,13 +32,18 @@ def create_all_locations(world: AngbandWorld) -> None:
 
 
 def create_regular_locations(world: AngbandWorld) -> None:
-    artifacts_as_checks = bool(world.options.artifacts_as_checks)
+    # artifacts_as_checks is a 3-way choice: 0 = Off, 1 = One to One (per-artifact
+    # location checks), 2 = Accumulated ("Find #X Artifacts" milestone checks).
+    mode = int(world.options.artifacts_as_checks.value)
 
-    # Bucket the location names by their region, skipping artifact-pickup
-    # locations entirely when artifacts aren't checks.
+    # Bucket the location names by their region.  Unique-kill locations always
+    # exist; the two artifact location kinds are mutually exclusive and only one
+    # (or neither, in Off mode) is created.
     by_region: dict[str, list[str]] = {}
     for name, meta in data.LOCATION_TABLE.items():
-        if meta["is_artifact"] and not artifacts_as_checks:
+        if meta["is_artifact"] and mode != 1:
+            continue
+        if meta["is_accumulated"] and mode != 2:
             continue
         by_region.setdefault(meta["region"], []).append(name)
 

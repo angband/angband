@@ -310,6 +310,9 @@ struct artifact_upkeep {
 	bool created;	/**< Whether this artifact has been created */
 	bool seen;	/**< Whether this artifact has been seen this game */
 	bool everseen;	/**< Whether this artifact has ever been seen  */
+	bool ap_found;	/**< Archipelago: counted toward the "Find #X Artifacts"
+	                     Accumulated-mode milestones; persists across deaths
+	                     (unlike created, birth does not clear it) */
 };
 
 /**

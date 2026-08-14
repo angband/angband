@@ -6,6 +6,7 @@
 # Archipelago runtime / build artifacts.
 APCc_datapkg.cache
 /angband.apworld
+/ap-debug.log
 # Release artifacts assembled by scripts/make-release.ps1.
 /dist/
 *.exe

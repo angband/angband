@@ -117,6 +117,22 @@ struct keypress *inkey_next = NULL;
  */
 static bool keymap_auto_more;
 
+/**
+ * When set, "-more-" prompts don't pause for a keypress.  The Archipelago
+ * connect replay drains many queued messages at once (items, checks, trait
+ * grants); pausing for each would force the player to clear a long stream of
+ * prompts, and -- worse -- each anykey() pumps the input/event loop re-entrantly
+ * in the middle of AP handlers that are mutating game state.  Suppressing the
+ * pause around the AP service (see process_player) avoids both.  Messages still
+ * go to the recall buffer.
+ */
+static bool suppress_more_prompt;
+
+void set_suppress_more_prompt(bool suppress)
+{
+	suppress_more_prompt = suppress;
+}
+
 #ifdef ALLOW_BORG
 
 /*
@@ -389,7 +405,7 @@ static void msg_flush(int x)
 	/* Pause for response */
 	Term_putstr(x, 0, -1, a, "-more-");
 
-	if ((!OPT(player, auto_more)) && !keymap_auto_more)
+	if ((!OPT(player, auto_more)) && !keymap_auto_more && !suppress_more_prompt)
 		anykey();
 
 	/* Clear the line */

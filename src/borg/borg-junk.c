@@ -1322,6 +1322,10 @@ bool borg_remove_stuff(void)
         if (item->one_ring)
             continue;
 
+        /* skip items that cannot be removed (sticky, e.g. the AP weapon) */
+        if (item->sticky)
+            continue;
+
         /* Take off the item */
         memcpy(&borg_items[hole], item, sizeof(borg_item));
 

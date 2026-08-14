@@ -54,8 +54,25 @@ static void (*ap_item_handler)(const char *item_name, uint64_t index) = NULL;
 static void (*ap_connect_handler)(void) = NULL;
 static void (*ap_deathlink_handler)(void) = NULL;
 
-/* slot_data: artifacts-as-checks mode (written on service thread, read on game). */
-static volatile bool ap_opt_artifacts_as_checks = false;
+/*
+ * slot_data: artifacts-as-checks mode (written on service thread, read on game).
+ * 0 = Off, 1 = One to One (per-artifact checks), 2 = Accumulated ("Find #X
+ * Artifacts" milestone checks).  See angband/options.py.
+ */
+static volatile int ap_opt_artifacts_mode = 0;
+
+/*
+ * slot_data: Black Market artifact-location price multiplier (1-5, default 3).
+ * Written on the service thread, read on the game thread.  See angband/options.py.
+ */
+static volatile int ap_opt_bm_multiplier = 3;
+
+/*
+ * slot_data: Resistances mode.  0 = Standard, 1 = Equipment Traits (unremovable
+ * Archipelago Weapon improved by trait items; equipment restricted), 2 = Full
+ * Traits (also the Archipelago race).  See angband/options.py.
+ */
+static volatile int ap_opt_resistances = 0;
 
 /* --- Threading ------------------------------------------------------------- */
 
@@ -141,7 +158,20 @@ static void ap_cb_location_checked(uint64_t loc_id)
 /* slot_data int callback.  APCc passes a pointer to the value (see APCc.c). */
 static void ap_cb_slotdata_artifacts(uint64_t *val)
 {
-	ap_opt_artifacts_as_checks = (val && *val != 0);
+	ap_opt_artifacts_mode = val ? (int)*val : 0;
+}
+
+static void ap_cb_slotdata_bm_multiplier(uint64_t *val)
+{
+	int m = val ? (int)*val : 3;
+	if (m < 1) m = 1;
+	if (m > 5) m = 5;
+	ap_opt_bm_multiplier = m;
+}
+
+static void ap_cb_slotdata_resistances(uint64_t *val)
+{
+	ap_opt_resistances = val ? (int)*val : 0;
 }
 
 /* --- Service thread: consume outgoing events + run the event loop ---------- */
@@ -262,6 +292,10 @@ static void ap_begin(const char *server, const char *slotname)
 	 * by-value declaration is inaccurate), so register with a matching cast. */
 	AP_RegisterSlotDataIntCallback("artifacts_as_checks",
 		(void (*)(uint64_t))ap_cb_slotdata_artifacts);
+	AP_RegisterSlotDataIntCallback("black_market_price_multiplier",
+		(void (*)(uint64_t))ap_cb_slotdata_bm_multiplier);
+	AP_RegisterSlotDataIntCallback("resistances",
+		(void (*)(uint64_t))ap_cb_slotdata_resistances);
 
 	AP_Start();
 
@@ -400,9 +434,34 @@ void ap_send_victory(void)
 	AP_WakeService();
 }
 
+int ap_artifacts_mode(void)
+{
+	return ap_opt_artifacts_mode;
+}
+
 bool ap_artifacts_as_checks(void)
 {
-	return ap_opt_artifacts_as_checks;
+	return ap_opt_artifacts_mode != 0;
+}
+
+bool ap_artifacts_accumulated(void)
+{
+	return ap_opt_artifacts_mode == 2;
+}
+
+int ap_black_market_multiplier(void)
+{
+	return ap_opt_bm_multiplier;
+}
+
+int ap_resistances_mode(void)
+{
+	return ap_opt_resistances;
+}
+
+bool ap_trait_mode(void)
+{
+	return ap_opt_resistances != 0;
 }
 
 void ap_set_check_handler(void (*fn)(const char *name))

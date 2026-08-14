@@ -62,4 +62,15 @@ void ap_game_player_won(void);
  */
 void ap_game_reset_for_new_life(void);
 
+/**
+ * Full-Traits (Resistances mode 2) race boosts, rebuilt from the item replay on
+ * every connect.  player-calcs.c adds these on top of the race/class values:
+ * per-stat adjustment, per-skill adjustment, infravision, and bonus hitpoints
+ * per level (the "Hit Die Boost" items).  All return 0 outside Full Traits.
+ */
+int ap_race_boost_stat(int stat);
+int ap_race_boost_skill(int skill);
+int ap_race_boost_infra(void);
+int ap_race_boost_hitdie(void);
+
 #endif /* AP_GAME_H */

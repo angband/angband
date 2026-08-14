@@ -514,6 +514,10 @@ void borg_item_analyze(
             item->brands[i] = o->brands[i];
     }
 
+    /* Sticky items cannot be removed (the Archipelago trait-mode weapon). */
+    if (of_has(o->flags, OF_STICKY))
+        item->sticky = true;
+
     /* check if we know this is the one ring */
     /* HACK we assume The One Ring is the only artifact that does BIZARRE */
     if (o->activation) {

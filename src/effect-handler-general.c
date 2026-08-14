@@ -2043,6 +2043,16 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 	/* Describe the object */
 	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE, player);
 
+	/* The Archipelago Blade's granted enchantments are permanent: it is
+	 * immune to disenchantment (there is no per-item immunity flag in vanilla,
+	 * so this is handled here at the single disenchant choke point). */
+	if (obj->origin == ORIGIN_ARCHIPELAGO && of_has(obj->flags, OF_STICKY)) {
+		msg("Your %s (%c) resist%s disenchantment!", o_name,
+			gear_to_label(player, obj),
+			((obj->number != 1) ? "" : "s"));
+		return true;
+	}
+
 	/* Artifacts have a 60% chance to resist */
 	if (obj->artifact && (randint0(100) < 60)) {
 		/* Message */
@@ -3169,6 +3179,17 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL, player);
+
+	/* The Archipelago Blade cannot be cursed: a black aura would zero the
+	 * to-hit/to-dam its trait items granted, and unlike ordinary damage that
+	 * loss is unrecoverable (the grants only replay on a fresh connection).
+	 * Handled here rather than with a per-item flag, as with disenchantment. */
+	if (obj->origin == ORIGIN_ARCHIPELAGO && of_has(obj->flags, OF_STICKY)) {
+		msg("A %s tries to %s, but your %s resists the effects!",
+				   "terrible black aura", "surround your weapon", o_name);
+		context->ident = true;
+		return (true);
+	}
 
 	/* Attempt a saving throw */
 	if (obj->artifact && (randint0(100) < 50)) {

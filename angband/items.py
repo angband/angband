@@ -29,7 +29,8 @@ class AngbandItem(Item):
 
 
 def _classification(name: str) -> ItemClassification:
-    return _CLASSIFICATION[data.ITEM_TABLE[name]["classification"]]
+    meta = data.ITEM_TABLE.get(name) or data.TRAIT_ITEM_TABLE[name]
+    return _CLASSIFICATION[meta["classification"]]
 
 
 def get_random_filler_item_name(world: AngbandWorld) -> str:
@@ -47,21 +48,36 @@ def create_item_with_correct_classification(world: AngbandWorld, name: str) -> A
 
 def create_all_items(world: AngbandWorld) -> None:
     # AP requires exactly as many items as there are unfilled (non-event)
-    # locations.  Both of Angband's modes are balanced so this works out:
-    #   * artifacts_as_checks ON : 232 locations, 231 real items + 1 filler.
-    #   * artifacts_as_checks OFF: 96 unique-kill locations, 96 boon items.
-    artifacts_as_checks = bool(world.options.artifacts_as_checks)
+    # locations.  All the mode combinations are balanced so this works out:
+    #   * One to One / Accumulated: 232 locations, 231 real items + 1 filler.
+    #     (Both keep the artifact items and gating; only the artifact *checks*
+    #     differ - per-artifact vs "Find #X Artifacts" milestones.)
+    #   * AAC Off: 96 unique-kill locations, 96 boon items.
+    #   * Resistances trait modes: the artifact items are replaced by the trait
+    #     items (fewer copies than the artifacts they displace; filler tops up).
+    #     Trait modes with AAC Off are rejected in world.generate_early.
+    artifacts_as_items = int(world.options.artifacts_as_checks.value) != 0
+    resistances = int(world.options.resistances.value)
 
     itempool: list[Item] = []
     for name, meta in data.ITEM_TABLE.items():
         count = meta["count"]
         if count <= 0:
             continue  # e.g. the on-demand-only filler item
-        # In OFF mode the artifact items (progressive + named) don't exist, since
-        # the artifacts spawn normally instead of being multiworld items.
-        if meta["is_artifact"] and not artifacts_as_checks:
+        # Artifact items (progressive + named) don't exist when the artifacts
+        # spawn normally (AAC Off), nor in the trait modes (the player cannot
+        # use artifacts there; trait items take their place).
+        if meta["is_artifact"] and (not artifacts_as_items or resistances != 0):
             continue
         itempool += [world.create_item(name) for _ in range(count)]
+
+    # Trait items: the "equipment" set in both trait modes, plus the "full"
+    # (Archipelago race) set in Full Traits.
+    if resistances != 0:
+        for name, meta in data.TRAIT_ITEM_TABLE.items():
+            if meta["mode"] == "full" and resistances != 2:
+                continue
+            itempool += [world.create_item(name) for _ in range(meta["count"])]
 
     # Top up to match the unfilled location count using repeatable filler.
     # get_unfilled_locations correctly ignores our Victory *event* location.

@@ -98,6 +98,7 @@ struct borg_item {
     uint8_t ego_idx; /* Ego-item index (if any) */
     int     activ_idx; /* Activation index (if any) */
     bool    one_ring; /* is this the one ring */
+    bool    sticky;   /* cannot be removed (OF_STICKY, e.g. the AP weapon) */
 
     int16_t timeout; /* Timeout counter */
 

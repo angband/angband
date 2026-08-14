@@ -831,6 +831,10 @@ bool borg_wear_stuff(void)
         if (slot < 0)
             continue;
 
+        /* Never try to swap out an item that can't be removed (sticky/AP weapon) */
+        if (borg_items[slot].sticky)
+            continue;
+
         /* Do not wear certain items if I am over weight limit.  It induces
          * loops */
         if (borg.trait[BI_ISENCUMB]) {
@@ -1170,6 +1174,10 @@ static bool borg_one_step_wearing_best(int skip)
     } else {
         /* if wearing an item in that slot, take it off */
         if (borg_items[slot].iqty) {
+            /* never try to take off an unremovable item (sticky/AP weapon) */
+            if (borg_items[slot].sticky)
+                return borg_one_step_wearing_best(skip + 1);
+
             /* take off an item because there is no room, try next */
             if (borg_inventory_full())
                 return borg_one_step_wearing_best(skip + 1);
@@ -1337,7 +1345,7 @@ static void borg_best_stuff_aux(
         }
 
         /* Make sure that slot does not have an item that can't be removed */
-        if (borg_items[slot].one_ring)
+        if (borg_items[slot].one_ring || borg_items[slot].sticky)
             continue;
 
         /* Wear the new item */

@@ -64,12 +64,45 @@ void ap_set_check_handler(void (*fn)(const char *name));
 void ap_set_item_handler(void (*fn)(const char *item_name, uint64_t index));
 
 /**
- * \return true if the server's slot_data enabled the "artifacts as checks" mode
- * (slot_data key "artifacts_as_checks"): artifacts become AP location checks and
- * the real artifacts are granted as items, instead of spawning normally.
- * Defaults to false until/unless the server sends the option.
+ * \return the artifacts-as-checks mode from slot_data (key "artifacts_as_checks"):
+ * 0 = Off, 1 = One to One (each artifact is its own check), 2 = Accumulated
+ * ("Find #X Artifacts" milestone checks).  Defaults to 0 until the server sends it.
+ */
+int ap_artifacts_mode(void);
+
+/**
+ * \return true if artifacts are checks at all (mode One to One or Accumulated):
+ * artifacts spawn attributeless as location markers and the real artifacts are
+ * granted as items, instead of spawning normally.  false in Off mode.
  */
 bool ap_artifacts_as_checks(void);
+
+/**
+ * \return true in Accumulated mode only (mode 2): the artifact checks are
+ * "Find #X Artifacts" milestones fired on the X'th distinct artifact pickup,
+ * rather than one check per specific artifact.
+ */
+bool ap_artifacts_accumulated(void);
+
+/**
+ * \return the Black Market artifact-location price multiplier from slot_data
+ * (key "black_market_price_multiplier"), clamped to 1-5.  Defaults to 3 until
+ * the server sends it.
+ */
+int ap_black_market_multiplier(void);
+
+/**
+ * \return the Resistances mode from slot_data (key "resistances"): 0 = Standard,
+ * 1 = Equipment Traits, 2 = Full Traits.  Defaults to 0 until the server sends it.
+ */
+int ap_resistances_mode(void);
+
+/**
+ * \return true in either trait mode (Resistances != Standard): the player wields
+ * the unremovable Archipelago Weapon, may equip only a launcher and a light, and
+ * receives trait items instead of artifacts.
+ */
+bool ap_trait_mode(void);
 
 /**
  * Send a DeathLink to other linked players (call when the local player dies of
