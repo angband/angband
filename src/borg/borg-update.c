@@ -532,7 +532,7 @@ static void borg_update_map(void)
             if (ag->feat == FEAT_FLOOR && square_iswebbed(cave, l)) {
                 ag->web = true;
             } else
-                ag->web = false;          
+                ag->web = false;
 
             /* Now do non-feature stuff */
             if ((g.first_kind || g.m_idx) && !borg.trait[BI_ISIMAGE]) {
@@ -725,7 +725,7 @@ static void borg_fear_regional(
     /* Nearby regions */
     y1 = (y0 > 0) ? (y0 - 1) : 0;
     x1 = (x0 > 0) ? (x0 - 1) : 0;
-    y2 = (x0 < 5) ? (x0 + 1) : 5;
+    y2 = (y0 < 5) ? (y0 + 1) : 5;
     x2 = (x0 < 17) ? (x0 + 1) : 17;
 
     /* Collect "fear", spread around */

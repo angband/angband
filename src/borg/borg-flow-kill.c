@@ -510,7 +510,7 @@ static bool borg_follow_kill_aux(int i, int y, int x)
         /* Use "infravision" */
         if (d <= borg.trait[BI_INFRA]) {
             /* Infravision works on "warm" creatures */
-            if (!(rf_has(r_info->flags, RF_COLD_BLOOD)))
+            if (!(rf_has(r_ptr->flags, RF_COLD_BLOOD)))
                 return true;
         }
     }
@@ -518,9 +518,9 @@ static bool borg_follow_kill_aux(int i, int y, int x)
     /* Telepathy requires "telepathy" */
     if (borg.trait[BI_ESP]) {
         /* Telepathy fails on "strange" monsters */
-        if (rf_has(r_info->flags, RF_EMPTY_MIND))
+        if (rf_has(r_ptr->flags, RF_EMPTY_MIND))
             return false;
-        if (rf_has(r_info->flags, RF_WEIRD_MIND))
+        if (rf_has(r_ptr->flags, RF_WEIRD_MIND))
             return false;
 
         /* Success */
@@ -821,7 +821,7 @@ static int borg_new_kill(unsigned int r_idx, int y, int x)
         /* Nearby regions */
         y1 = (y0 > 0) ? (y0 - 1) : 0;
         x1 = (x0 > 0) ? (x0 - 1) : 0;
-        y2 = (x0 < 5) ? (x0 + 1) : 5;
+        y2 = (y0 < 5) ? (y0 + 1) : 5;
         x2 = (x0 < 17) ? (x0 + 1) : 17;
 
         /* Remove "fear", spread around */
@@ -1736,8 +1736,8 @@ bool borg_flow_kill(bool viewable, int nearness)
         /* How far is the nearest up stairs */
         j = distance(borg.c, loc(x, y));
 
-        /* skip the closer ones */
-        if (b_j >= j)
+        /* skip the further ones */
+        if (b_j < j && b_j != -1)
             continue;
 
         /* track it */
@@ -1810,7 +1810,8 @@ bool borg_flow_kill(bool viewable, int nearness)
         p = borg_danger(y, x, 1, true, false);
 
         /* Skip "deadly" monsters unless uniques*/
-        if (borg.trait[BI_CLEVEL] > 25 && (!rf_has(r_info->flags, RF_UNIQUE))
+        if (borg.trait[BI_CLEVEL] > 25
+            && (!rf_has(r_info[kill->r_idx].flags, RF_UNIQUE))
             && p > avoidance / 2)
             continue;
         if (borg.trait[BI_CLEVEL] <= 15 && p > avoidance / 3)
@@ -2699,6 +2700,25 @@ void borg_near_monster_type(int dist)
 	borg_fighting_evil_unique = false;
 	borg_kills_summoner = -1;
 
+    /* count breeders if low enough level */
+    if (borg.trait[BI_CLEVEL] <= 20) {
+        for (i = 1; i < borg_kills_nxt; i++) {
+            kill = &borg_kills[i];
+
+            /* Skip dead monsters */
+            if (!kill->r_idx)
+                continue;
+
+            /* "player ghosts" */
+            if (kill->r_idx >= z_info->r_max - 1)
+                continue;
+
+            /* Count breeders */
+            if (rf_has(r_info[kill->r_idx].flags, RF_MULTIPLY))
+                breeder_count++;
+        }
+    }
+
 	/* Scan the monsters */
 	for (i = 1; i < borg_kills_nxt; i++) {
 		kill = &borg_kills[i];
@@ -2711,10 +2731,6 @@ void borg_near_monster_type(int dist)
 		/* "player ghosts" */
 		if (kill->r_idx >= z_info->r_max - 1)
 			continue;
-
-		/* Count breeders */
-		if (rf_has(r_ptr->flags, RF_MULTIPLY))
-			breeder_count++;
 
 		/*** Scan for Scary Guys ***/
 
