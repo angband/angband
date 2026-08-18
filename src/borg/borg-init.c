@@ -57,7 +57,7 @@ bool borg_init_failure = false;
 struct borg_setting borg_settings[] = {
     { "borg_verbose", 'b', false },
     { "borg_munchkin_start", 'b', false },
-    { "borg_munchkin_level", 'i', 12 }, 
+    { "borg_munchkin_level", 'i', 12 },
     { "borg_munchkin_depth", 'i', 16 },
     { "borg_worships_damage", 'b', false },
     { "borg_worships_speed", 'b', false },
@@ -66,25 +66,25 @@ struct borg_setting borg_settings[] = {
     { "borg_worships_ac", 'b', false },
     { "borg_worships_gold", 'b', false },
     { "borg_plays_risky", 'b', false },
-    { "borg_kills_uniques", 'b', false }, 
+    { "borg_kills_uniques", 'b', false },
     { "borg_uses_swaps", 'b', true },
     { "borg_uses_dynamic_calcs", 'b', false },
-    { "borg_stop_dlevel", 'i', 128 }, 
+    { "borg_stop_dlevel", 'i', 128 },
     { "borg_stop_clevel", 'i', 51 },
-    { "borg_no_deeper", 'i', 127 }, 
+    { "borg_no_deeper", 'i', 127 },
     { "borg_stop_king", 'b', true },
     { "borg_cheat_death", 'b', false },
     { "borg_respawn_winners", 'b', false },
-    { "borg_respawn_class", 'i', -1 }, 
+    { "borg_respawn_class", 'i', -1 },
     { "borg_respawn_race", 'i', -1 },
     { "borg_chest_fail_tolerance", 'i', 7 },
-    { "borg_delay_factor", 'i', 0 }, 
+    { "borg_delay_factor", 'i', 0 },
     { "borg_money_scum_amount", 'i', 0 },
-    { "borg_self_scum", 'b', true }, 
+    { "borg_self_scum", 'b', true },
     { "borg_lunal_mode", 'b', false },
-    { "borg_self_lunal", 'b', false }, 
+    { "borg_self_lunal", 'b', false },
     { "borg_enchant_limit", 'i', 12 },
-    { "borg_dump_level", 'i', 1 }, 
+    { "borg_dump_level", 'i', 1 },
     { "borg_save_death", 'i', 1 },
     { "borg_stop_on_bell", 'b', false },
     { "borg_allow_strange_opts", 'b', false},
@@ -372,7 +372,7 @@ static void borg_init_ignore(void)
 
     /* allocate the memory */
     borg_init_save.kinfo_ignore = mem_alloc(sizeof(uint8_t) * z_info->k_max);
- 
+
     borg_init_save.ego_ignore_types = mem_zalloc(z_info->e_max * sizeof(bool*));
     for (i = 0; i < z_info->e_max; i++)
         borg_init_save.ego_ignore_types[i] = mem_zalloc(ITYPE_MAX * sizeof(bool));
@@ -590,32 +590,36 @@ void borg_init(void)
     /* Don't allow the user to do stupid things unless they ask to */
     if (!borg_cfg[BORG_ALLOW_STRANGE_OPTS]) {
         if (tile_width > 1 || tile_height > 1) {
-            borg_note("**STARTUP FAILURE** You are using scaled tiles, which "
-                "may cause problems");
+            borg_note("**STARTUP FAILURE** Scaled tiles not allowed");
+            borg_note("** can be bypassed with borg_allow_strange_opts **");
             borg_init_failure = true;
         }
 
         if (OPT(player, birth_force_descend)) {
             borg_note("**STARTUP FAILURE** must allow up stairs");
             borg_note("** birth option failure **");
+            borg_note("** can be bypassed with borg_allow_strange_opts **");
             borg_init_failure = true;
         }
 
         if (!OPT(player, birth_connect_stairs)) {
             borg_note("**STARTUP FAILURE** must connect stairs");
             borg_note("** birth option failure **");
+            borg_note("** can be bypassed with borg_allow_strange_opts **");
             borg_init_failure = true;
         }
 
         if (OPT(player, birth_no_recall)) {
             borg_note("**STARTUP FAILURE** must allow recall");
             borg_note("** birth option failure **");
+            borg_note("** can be bypassed with borg_allow_strange_opts **");
             borg_init_failure = true;
         }
 
         if (OPT(player, birth_percent_damage)) {
             borg_note("**STARTUP FAILURE** strange damage calculation");
             borg_note("** birth option failure **");
+            borg_note("** can be bypassed with borg_allow_strange_opts **");
             borg_init_failure = true;
         }
     }
