@@ -268,8 +268,8 @@ static void borg_update_map(void)
             bool new_wall;
 
             /* Obtain the map location */
-            x = w_x + dx * tile_width;
-            y = w_y + dy * tile_height;
+            x = w_x + dx;
+            y = w_y + dy;
 
             /* Cheat the exact information from the screen */
             struct loc l = loc(x, y);
