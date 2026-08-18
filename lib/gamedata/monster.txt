@@ -10757,7 +10757,7 @@ base:mold
 color:D
 speed:140
 hit-points:1050
-hearing:200
+hearing:2
 armor-class:72
 sleepiness:0
 depth:47

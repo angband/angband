@@ -209,6 +209,9 @@ struct angband_constants
 	struct o_critical_level *o_r_crit_level_head;
 	/* See comment for o_m_max_added above. */
 	struct my_rational o_r_max_added;
+
+	/* Remember the largest hearing value from monster.txt. */
+	int max_hearing;
 };
 
 struct init_module {

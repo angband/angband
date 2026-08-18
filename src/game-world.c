@@ -1170,7 +1170,6 @@ void make_noise(struct player *p, const struct loc *origin,
 {
 	struct loc next = (origin) ? *origin: p->grid;
 	int d;
-	uint16_t noise = 0;
 	uint16_t noise_increment = (falloff)
 		? *falloff : (p->timed[TMD_COVERTRACKS] ? 4 : 1);
 	struct queue *queue = q_new(cave->height * cave->width);
@@ -1186,19 +1185,23 @@ void make_noise(struct player *p, const struct loc *origin,
 	forget_noise();
 
 	/* Player makes noise */
-	cave->noise.grids[next.y][next.x] = noise;
+	cave->noise.grids[next.y][next.x] = 0;
 	q_push_int(queue, grid_to_i(next, cave->width));
-	noise += noise_increment;
 
 	/* Propagate noise */
 	while (q_len(queue) > 0) {
+		uint16_t noise;
+
 		/* Get the next grid */
 		i_to_grid(q_pop_int(queue), cave->width, &next);
 
-		/* If we've reached the current noise level, put it back and step */
-		if (cave->noise.grids[next.y][next.x] == noise) {
-			q_push_int(queue, grid_to_i(next, cave->width));
-			noise += noise_increment;
+		noise = cave->noise.grids[next.y][next.x] + noise_increment;
+
+		/*
+		 * Do not bother propagating the noise farther than any monster
+		 * can hear.
+		 */
+		if (noise >= z_info->max_hearing) {
 			continue;
 		}
 

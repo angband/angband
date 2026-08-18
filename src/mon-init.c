@@ -1209,6 +1209,10 @@ static enum parser_error parse_monster_hearing(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	/* Assumes max_sight is 20, so we adjust in case it isn't */
 	r->hearing = parser_getint(p, "hearing") * z_info->max_sight / 20;
+	/* Remember the largest hearing value. */
+	if (z_info->max_hearing < r->hearing) {
+		z_info->max_hearing = r->hearing;
+	}
 	return PARSE_ERROR_NONE;
 }
 
