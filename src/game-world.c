@@ -369,81 +369,6 @@ static void decrease_timeouts(void)
 
 
 /**
- * Every turn, the character makes enough noise that nearby monsters can use
- * it to home in.
- *
- * This function actually just computes distance from the player; this is
- * used in combination with the player's stealth value to determine what
- * monsters can hear.  We mark the player's grid with 0, then fill in the noise
- * field of every grid that the player can reach with that "noise"
- * (actally distance) plus the number of steps needed to reach that grid
- * - so higher values mean further from the player.
- *
- * Monsters use this information by moving to adjacent grids with lower noise
- * values, thereby homing in on the player even though twisty tunnels and
- * mazes.  Monsters have a hearing value, which is the largest sound value
- * they can detect.
- */
-static void make_noise(struct player *p)
-{
-	struct loc next = p->grid;
-	int y, x, d;
-	int noise = 0;
-	int noise_increment = p->timed[TMD_COVERTRACKS] ? 4 : 1;
-    struct queue *queue = q_new(cave->height * cave->width);
-
-	/* Set all the grids to silence */
-	for (y = 1; y < cave->height - 1; y++) {
-		for (x = 1; x < cave->width - 1; x++) {
-			cave->noise.grids[y][x] = 0;
-		}
-	}
-
-	/* Player makes noise */
-	cave->noise.grids[next.y][next.x] = noise;
-	q_push_int(queue, grid_to_i(next, cave->width));
-	noise += noise_increment;
-
-	/* Propagate noise */
-	while (q_len(queue) > 0) {
-		/* Get the next grid */
-		i_to_grid(q_pop_int(queue), cave->width, &next);
-
-		/* If we've reached the current noise level, put it back and step */
-		if (cave->noise.grids[next.y][next.x] == noise) {
-			q_push_int(queue, grid_to_i(next, cave->width));
-			noise += noise_increment;
-			continue;
-		}
-
-		/* Assign noise to the children and enqueue them */
-		for (d = 0; d < 8; d++)	{
-			/* Child location */
-			struct loc grid = loc_sum(next, ddgrid_ddd[d]);
-
-			if (!square_in_bounds(cave, grid)) continue;
-
-			/* Ignore features that don't transmit sound */
-			if (square_isnoflow(cave, grid)) continue;
-
-			/* Skip grids that already have noise */
-			if (cave->noise.grids[grid.y][grid.x] != 0) continue;
-
-			/* Skip the player grid */
-			if (loc_eq(p->grid, grid)) continue;
-
-			/* Save the noise */
-			cave->noise.grids[grid.y][grid.x] = noise;
-
-			/* Enqueue that entry */
-			q_push_int(queue, grid_to_i(grid, cave->width));
-		}
-	}
-
-	q_free(queue);
-}
-
-/**
  * Characters leave scent trails for perceptive monsters to track.
  *
  * Scent is rather more limited than sound.  Many creatures cannot use
@@ -730,7 +655,7 @@ void process_world(struct chunk *c)
 
 	/* Update noise and scent (not if resting) */
 	if (!player_is_resting(player)) {
-		make_noise(player);
+		make_noise(player, NULL, NULL);
 		update_scent();
 	}
 
@@ -1208,6 +1133,147 @@ void run_game_loop(void)
 					break;
 				else
 					return;
+			}
+		}
+	}
+}
+
+
+/**
+ * Recompute the noise, from the player, that monsters can use to track the
+ * player.
+ *
+ * \param p is the player making the noise.
+ * \param origin will, if not NULL, cause the position in *origin to be
+ * used as the source of the noise rather than p->grid.
+ * \param falloff will, if not NULL, cause the falloff with an additional
+ * grid of distance to be *falloff rather than a value dependent on the current
+ * state in p.
+ *
+ * Every turn, the character makes enough noise that nearby monsters can use
+ * it to home in.
+ *
+ * This function actually just computes distance from the player; this is
+ * used in combination with the player's stealth value to determine what
+ * monsters can hear.  We mark the player's grid with 0, then fill in the noise
+ * field of every grid that the player can reach with that "noise"
+ * (actally distance) plus the number of steps needed to reach that grid
+ * - so higher values mean further from the player.
+ *
+ * Monsters use this information by moving to adjacent grids with lower noise
+ * values, thereby homing in on the player even though twisty tunnels and
+ * mazes.  Monsters have a hearing value, which is the largest sound value
+ * they can detect.
+ */
+void make_noise(struct player *p, const struct loc *origin,
+		const uint16_t *falloff)
+{
+	struct loc next = (origin) ? *origin: p->grid;
+	int d;
+	uint16_t noise = 0;
+	uint16_t noise_increment = (falloff)
+		? *falloff : (p->timed[TMD_COVERTRACKS] ? 4 : 1);
+	struct queue *queue = q_new(cave->height * cave->width);
+
+	/*
+	 * Remember the source of the noise and falloff so it can be
+	 * recomputed if the game is saved and reloaded.
+	 */
+	p->noise_grid = next;
+	p->noise_falloff = noise_increment;
+
+	/* Set all the grids to silence */
+	forget_noise();
+
+	/* Player makes noise */
+	cave->noise.grids[next.y][next.x] = noise;
+	q_push_int(queue, grid_to_i(next, cave->width));
+	noise += noise_increment;
+
+	/* Propagate noise */
+	while (q_len(queue) > 0) {
+		/* Get the next grid */
+		i_to_grid(q_pop_int(queue), cave->width, &next);
+
+		/* If we've reached the current noise level, put it back and step */
+		if (cave->noise.grids[next.y][next.x] == noise) {
+			q_push_int(queue, grid_to_i(next, cave->width));
+			noise += noise_increment;
+			continue;
+		}
+
+		/* Assign noise to the children and enqueue them */
+		for (d = 0; d < 8; d++)	{
+			/* Child location */
+			struct loc grid = loc_sum(next, ddgrid_ddd[d]);
+
+			if (!square_in_bounds(cave, grid)) continue;
+
+			/* Ignore features that don't transmit sound */
+			if (square_isnoflow(cave, grid)) continue;
+
+			/* Skip grids that already have noise */
+			if (cave->noise.grids[grid.y][grid.x] != 0) continue;
+
+			/* Skip the player grid */
+			if (loc_eq(p->grid, grid)) continue;
+
+			/* Save the noise */
+			cave->noise.grids[grid.y][grid.x] = noise;
+
+			/* Enqueue that entry */
+			q_push_int(queue, grid_to_i(grid, cave->width));
+		}
+	}
+
+	q_free(queue);
+}
+
+
+/**
+ * Remove all noise caused by the player.
+ */
+void forget_noise(void)
+{
+	int y, x;
+
+	for (y = 1; y < cave->height - 1; y++) {
+		for (x = 1; x < cave->width - 1; x++) {
+			cave->noise.grids[y][x] = 0;
+		}
+	}
+}
+
+
+/**
+ * Fast-forward player caused scent for a cave restored from the chunk list.
+ */
+void age_scent(void)
+{
+	/*
+	 * Match how run_game_loop() (by calling process_world() and then
+	 * update_scent()) increments the scent by one whenever the turn
+	 * counter is a multiple of 10.
+	 */
+	int inc = (turn / 10) - (cave->turn / 10);
+	int y, x;
+
+	/* Not prepared to handle if the turn counter wrapped. */
+	assert(inc >= 0);
+
+	for (y = 1; y < cave->height - 1; y++) {
+		for (x = 1; x < cave->width - 1; x++) {
+			if (cave->scent.grids[y][x] > 0) {
+				if (inc <= 65535 && cave->scent.grids[y][x] <=
+						(uint16_t)(65535 - inc)) {
+					cave->scent.grids[y][x] += inc;
+				} else {
+					/*
+					 * The scent has faded to the point
+					 * that it is as if it was never there.
+					 */
+					cave->scent.grids[y][x] = 0;
+				}
 			}
 		}
 	}

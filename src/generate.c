@@ -1436,6 +1436,18 @@ void prepare_next_level(struct player *p)
 			/* Allow monsters to recover */
 			restore_monsters();
 
+			/*
+			 * Age player-caused scent trails for the time elapsed
+			 * since last on the level.  Forget the noise caused
+			 * by the player.  With enough speed or movement speed
+			 * bonuses, it can be possible to return to a level
+			 * before a noise calculation was triggered on a
+			 * different level, but it is not worth bothering over
+			 * those situations.
+			 */
+			age_scent();
+			forget_noise();
+
 			/* Leaving arenas requires special treatment */
 			if (arena) {
 				int y, x;
@@ -1550,6 +1562,13 @@ void prepare_next_level(struct player *p)
 		}
 
 	}
+
+	/*
+	 * The player has not been on the level long enough to generate noise
+	 * yet.
+	 */
+	p->noise_grid.x = 0;
+	p->noise_grid.y = 0;
 
 	/* The dungeon is ready */
 	character_dungeon = true;

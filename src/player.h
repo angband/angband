@@ -565,6 +565,19 @@ struct player {
 							the bloodlust check
 							but then was canceled
 							by the user) */
+	struct loc noise_grid;			/* Position of the player the
+							last time the noise
+							was calculated or (0, 0)
+							if the player has not
+							been on the level long
+							enough for the noise
+							to be calculated */
+	uint16_t noise_falloff;			/* The rate, used the last time
+							the noise was
+							calculated, at which
+							the noise drops off
+							with one grid of extra
+							distance */
 	uint8_t *spell_flags;			/* Spell flags */
 	uint8_t *spell_order;			/* Spell order */
 
