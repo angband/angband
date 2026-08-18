@@ -411,6 +411,9 @@ struct borg_struct {
     /* Current location */
     struct loc c;
 
+    /* number of panels */
+    struct loc panels;
+
     /* hit points last game turn to track change in hp */
     int16_t oldchp;
 

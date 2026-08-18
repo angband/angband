@@ -33,11 +33,11 @@ extern bool borg_failure;
 /*
  * The detection arrays
  */
-extern bool borg_detect_wall[6][18];
-extern bool borg_detect_trap[6][18];
-extern bool borg_detect_door[6][18];
-extern bool borg_detect_evil[6][18];
-extern bool borg_detect_obj[6][18];
+extern bool **borg_detect_wall;
+extern bool **borg_detect_trap;
+extern bool **borg_detect_door;
+extern bool **borg_detect_evil;
+extern bool **borg_detect_obj;
 
 /*
  * Strategy flags -- recalculate things
@@ -49,6 +49,9 @@ extern bool borg_do_update_lite; /* Recalculate lite */
  * Update state based on current "map"
  */
 extern void borg_update(void);
+
+extern void borg_alloc_detection(void);
+extern void borg_free_detection(void);
 
 extern void borg_init_update(void);
 extern void borg_free_update(void);

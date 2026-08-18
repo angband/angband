@@ -35,7 +35,6 @@ extern int16_t shop_num;
  */
 extern bool borg_do_inven; /* Acquire "inven" info */
 extern bool borg_do_equip; /* Acquire "equip" info */
-extern bool borg_do_panel; /* Acquire "panel" info */
 extern bool borg_do_frame; /* Acquire "frame" info */
 extern bool borg_do_spell; /* Acquire "spell" info */
 

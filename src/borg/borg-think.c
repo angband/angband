@@ -23,11 +23,11 @@
 
 #include "../player-util.h"
 #include "../ui-game.h"
-#include "../ui-menu.h"
+#include "../ui-term.h"
 
+#include "borg-cave-util.h"
 #include "borg-inventory.h"
 #include "borg-io.h"
-#include "borg-item-wear.h"
 #include "borg-log.h"
 #include "borg-magic.h"
 #include "borg-power.h"
@@ -56,7 +56,6 @@ int16_t shop_num = -1;
  */
 bool    borg_do_inven     = true; /* Acquire "inven" info */
 bool    borg_do_equip     = true; /* Acquire "equip" info */
-bool    borg_do_panel     = true; /* Acquire "panel" info */
 bool    borg_do_frame     = true; /* Acquire "frame" info */
 bool    borg_do_spell     = true; /* Acquire "spell" info */
 
@@ -369,36 +368,16 @@ bool borg_think(void)
         return (borg_think_store());
     }
 
-    /*** Determine panel ***/
-
-    /* Cheat */
+    /*** Cheat the panel information ***/
     w_y = Term->offset_y;
     w_x = Term->offset_x;
-
-    /* Done */
-    borg_do_panel = false;
 
     /* Check for "sector" mode */
     if ((0 == borg_what_text(0, 0, 16, &t_a, buf))
         && (prefix(buf, "Map sector "))) {
-        /* Get the panel info */
-        w_y = (buf[12] - '0') * (SCREEN_HGT / 2);
-        w_x = (buf[14] - '0') * (SCREEN_WID / 2);
 
         /* Leave panel mode */
         borg_keypress(ESCAPE);
-
-        /* Done */
-        return true;
-    }
-
-    /* Check panel */
-    if (borg_do_panel) {
-        /* Only do it once */
-        borg_do_panel = false;
-
-        /* Enter "panel" mode */
-        borg_keypress('L');
 
         /* Done */
         return true;
@@ -422,9 +401,6 @@ bool borg_think(void)
 
     /* Check inven again later */
     borg_do_inven = true;
-
-    /* Check panel again later */
-    borg_do_panel = true;
 
     /* Check frame again later */
     borg_do_frame = true;

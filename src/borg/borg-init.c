@@ -589,6 +589,12 @@ void borg_init(void)
 
     /* Don't allow the user to do stupid things unless they ask to */
     if (!borg_cfg[BORG_ALLOW_STRANGE_OPTS]) {
+        if (tile_width > 1 || tile_height > 1) {
+            borg_note("**STARTUP FAILURE** You are using scaled tiles, which "
+                "may cause problems");
+            borg_init_failure = true;
+        }
+
         if (OPT(player, birth_force_descend)) {
             borg_note("**STARTUP FAILURE** must allow up stairs");
             borg_note("** birth option failure **");

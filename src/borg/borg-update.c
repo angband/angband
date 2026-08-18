@@ -79,11 +79,14 @@ bool borg_failure; /* Notice failure */
 /*
  * The detection arrays
  */
-bool borg_detect_wall[6][18];
-bool borg_detect_trap[6][18];
-bool borg_detect_door[6][18];
-bool borg_detect_evil[6][18];
-bool borg_detect_obj[6][18];
+bool **borg_detect_wall = NULL;
+bool **borg_detect_trap = NULL;
+bool **borg_detect_door = NULL;
+bool **borg_detect_evil = NULL;
+bool **borg_detect_obj = NULL;
+
+/* old panels */
+static struct loc old_panels = { -1, -1 };
 
 #if 0
 /*
@@ -265,8 +268,8 @@ static void borg_update_map(void)
             bool new_wall;
 
             /* Obtain the map location */
-            x = w_x + dx;
-            y = w_y + dy;
+            x = w_x + dx * tile_width;
+            y = w_y + dy * tile_height;
 
             /* Cheat the exact information from the screen */
             struct loc l = loc(x, y);
@@ -532,7 +535,7 @@ static void borg_update_map(void)
             if (ag->feat == FEAT_FLOOR && square_iswebbed(cave, l)) {
                 ag->web = true;
             } else
-                ag->web = false;          
+                ag->web = false;
 
             /* Now do non-feature stuff */
             if ((g.first_kind || g.m_idx) && !borg.trait[BI_ISIMAGE]) {
@@ -1516,7 +1519,7 @@ static int intcomp(const void *a, const void *b)
  */
 void borg_update(void)
 {
-    int          i, ii, k, x, y, dx, dy;
+    int          i, ii, k, x, y, max_x, max_y, dx, dy;
     unsigned int u_i;
 
     int hit_dist;
@@ -2067,7 +2070,6 @@ void borg_update(void)
         borg_do_inven = true;
         borg_do_equip = true;
         borg_do_spell = true;
-        borg_do_panel = true;
         borg_do_frame = true;
 
         /* Enable some functions */
@@ -2095,8 +2097,8 @@ void borg_update(void)
         borg.when_detect_obj = 0;
 
         /* Clear "panel" flags */
-        for (y = 0; y < 6; y++) {
-            for (x = 0; x < 18; x++) {
+        for (y = 0; y < borg.panels.y; y++) {
+            for (x = 0; x < borg.panels.x; x++) {
                 borg_detect_wall[y][x] = false;
                 borg_detect_trap[y][x] = false;
                 borg_detect_door[y][x] = false;
@@ -2105,8 +2107,10 @@ void borg_update(void)
         }
 
         /* Clear "fear" */
-        for (y = 0; y < 6; y++) {
-            for (x = 0; x < 18; x++) {
+		max_x = (AUTO_MAX_X / 11) + 1;
+		max_y = (AUTO_MAX_Y / 11) + 1;
+        for (y = 0; y < max_y; y++) {
+            for (x = 0; x < max_x; x++) {
                 borg_fear_region[y][x] = 0;
             }
         }
@@ -3048,6 +3052,102 @@ void borg_update(void)
 
     /* Default "goal" location */
     borg.goal.g = borg.c;
+}
+
+
+void borg_free_detection(void)
+{
+    int i;
+
+    if (borg_detect_wall == NULL
+        && borg_detect_trap == NULL
+        && borg_detect_door == NULL
+        && borg_detect_evil == NULL
+        && borg_detect_obj == NULL) 
+        return;
+
+    if (borg_detect_wall) {
+        for (i = 0; i < old_panels.y; i++) {
+            mem_free(borg_detect_wall[i]);
+        }
+        mem_free(borg_detect_wall);
+        borg_detect_wall = NULL;
+    }
+
+    if (borg_detect_trap) {
+        for (i = 0; i < old_panels.y; i++) {
+            mem_free(borg_detect_trap[i]);
+        }
+        mem_free(borg_detect_trap);
+        borg_detect_trap = NULL;
+    }
+
+    if (borg_detect_door) {
+        for (i = 0; i < old_panels.y; i++) {
+            mem_free(borg_detect_door[i]);
+        }
+        mem_free(borg_detect_door);
+        borg_detect_door = NULL;
+    }
+
+    if (borg_detect_evil) {
+        for (i = 0; i < old_panels.y; i++) {
+            mem_free(borg_detect_evil[i]);
+        }
+        mem_free(borg_detect_evil);
+        borg_detect_evil = NULL;
+    }
+
+    if (borg_detect_obj) {
+        for (i = 0; i < old_panels.y; i++) {
+            mem_free(borg_detect_obj[i]);
+        }
+        mem_free(borg_detect_obj);
+        borg_detect_obj = NULL;
+    }
+
+    old_panels.x = -1;
+    old_panels.y = -1;
+}
+
+void borg_alloc_detection(void)
+{
+    int i;
+
+    /* only reallocate the detection arrays if the number of panels */
+    /* has changed */
+    if (old_panels.x == borg.panels.x && old_panels.y == borg.panels.y) {
+        return;
+    }
+
+    borg_free_detection();
+
+    borg_detect_wall = mem_zalloc(borg.panels.y * sizeof(bool *));
+    for (i = 0; i < borg.panels.y; i++) {
+        borg_detect_wall[i] = mem_zalloc(borg.panels.x * sizeof(bool));
+    }
+
+    borg_detect_trap = mem_zalloc(borg.panels.y * sizeof(bool *));
+    for (i = 0; i < borg.panels.y; i++) {
+        borg_detect_trap[i] = mem_zalloc(borg.panels.x * sizeof(bool));
+    }
+
+    borg_detect_door = mem_zalloc(borg.panels.y * sizeof(bool *));
+    for (i = 0; i < borg.panels.y; i++) {
+        borg_detect_door[i] = mem_zalloc(borg.panels.x * sizeof(bool));
+    }
+
+    borg_detect_evil = mem_zalloc(borg.panels.y * sizeof(bool *));
+    for (i = 0; i < borg.panels.y; i++) {
+        borg_detect_evil[i] = mem_zalloc(borg.panels.x * sizeof(bool));
+    }
+
+    borg_detect_obj = mem_zalloc(borg.panels.y * sizeof(bool *));
+    for (i = 0; i < borg.panels.y; i++) {
+        borg_detect_obj[i] = mem_zalloc(borg.panels.x * sizeof(bool));
+    }
+
+    old_panels = borg.panels;
 }
 
 void borg_init_update(void)

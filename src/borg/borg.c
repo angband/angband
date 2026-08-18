@@ -25,6 +25,7 @@
 #include "../ui-input.h"
 #include "../ui-keymap.h"
 
+#include "borg-cave-util.h"
 #include "borg-init.h"
 #include "borg-io.h"
 #include "borg-log.h"
@@ -32,6 +33,7 @@
 #include "borg-messages.h"
 #include "borg-think.h"
 #include "borg-trait.h"
+#include "borg-update.h"
 #include "borg-util.h"
 
 bool borg_cheat_death;
@@ -258,12 +260,19 @@ static struct keypress internal_borg_inkey(int flush_first)
 
         borg_reset_ignore();
 
+        borg_free_detection();
+
         /* Done */
         /* Need to flush the key buffer to change modes */
         key.type = EVT_KBRD;
         key.code = ESCAPE;
         return key;
     }
+
+    borg.panels.x = (((cave->width - borg_panel_wid()) * 2)/ borg_panel_wid()) + 1;
+    borg.panels.y = (((cave->height - borg_panel_hgt()) * 2)/ borg_panel_hgt()) + 1;
+
+    borg_alloc_detection();
 
     /* Mega-Hack -- flush keys */
     if (flush_first) {
