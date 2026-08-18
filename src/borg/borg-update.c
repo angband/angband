@@ -3058,16 +3058,18 @@ void borg_update(void)
 void borg_free_detection(void)
 {
     int i;
+    /* arrays are one larger than the number of panels */
+    int array_size_y = old_panels.y + 1;
 
     if (borg_detect_wall == NULL
         && borg_detect_trap == NULL
         && borg_detect_door == NULL
         && borg_detect_evil == NULL
-        && borg_detect_obj == NULL) 
+        && borg_detect_obj == NULL)
         return;
 
     if (borg_detect_wall) {
-        for (i = 0; i < old_panels.y; i++) {
+        for (i = 0; i < array_size_y; i++) {
             mem_free(borg_detect_wall[i]);
         }
         mem_free(borg_detect_wall);
@@ -3075,7 +3077,7 @@ void borg_free_detection(void)
     }
 
     if (borg_detect_trap) {
-        for (i = 0; i < old_panels.y; i++) {
+        for (i = 0; i < array_size_y; i++) {
             mem_free(borg_detect_trap[i]);
         }
         mem_free(borg_detect_trap);
@@ -3083,7 +3085,7 @@ void borg_free_detection(void)
     }
 
     if (borg_detect_door) {
-        for (i = 0; i < old_panels.y; i++) {
+        for (i = 0; i < array_size_y; i++) {
             mem_free(borg_detect_door[i]);
         }
         mem_free(borg_detect_door);
@@ -3091,7 +3093,7 @@ void borg_free_detection(void)
     }
 
     if (borg_detect_evil) {
-        for (i = 0; i < old_panels.y; i++) {
+        for (i = 0; i < array_size_y; i++) {
             mem_free(borg_detect_evil[i]);
         }
         mem_free(borg_detect_evil);
@@ -3099,7 +3101,7 @@ void borg_free_detection(void)
     }
 
     if (borg_detect_obj) {
-        for (i = 0; i < old_panels.y; i++) {
+        for (i = 0; i < array_size_y; i++) {
             mem_free(borg_detect_obj[i]);
         }
         mem_free(borg_detect_obj);
@@ -3113,6 +3115,11 @@ void borg_free_detection(void)
 void borg_alloc_detection(void)
 {
     int i;
+    /* arrays are one larger than the number of panels */
+    /* this is because the code is sloppy about current panel plus one */
+    int array_size_y = borg.panels.y + 1;
+    int array_size_x = borg.panels.x + 1;
+
 
     /* only reallocate the detection arrays if the number of panels */
     /* has changed */
@@ -3122,29 +3129,29 @@ void borg_alloc_detection(void)
 
     borg_free_detection();
 
-    borg_detect_wall = mem_zalloc(borg.panels.y * sizeof(bool *));
-    for (i = 0; i < borg.panels.y; i++) {
-        borg_detect_wall[i] = mem_zalloc(borg.panels.x * sizeof(bool));
+    borg_detect_wall = mem_zalloc(array_size_y * sizeof(bool *));
+    for (i = 0; i < array_size_y; i++) {
+        borg_detect_wall[i] = mem_zalloc(array_size_x * sizeof(bool));
     }
 
-    borg_detect_trap = mem_zalloc(borg.panels.y * sizeof(bool *));
-    for (i = 0; i < borg.panels.y; i++) {
-        borg_detect_trap[i] = mem_zalloc(borg.panels.x * sizeof(bool));
+    borg_detect_trap = mem_zalloc(array_size_y * sizeof(bool *));
+    for (i = 0; i < array_size_y; i++) {
+        borg_detect_trap[i] = mem_zalloc(array_size_x * sizeof(bool));
     }
 
-    borg_detect_door = mem_zalloc(borg.panels.y * sizeof(bool *));
-    for (i = 0; i < borg.panels.y; i++) {
-        borg_detect_door[i] = mem_zalloc(borg.panels.x * sizeof(bool));
+    borg_detect_door = mem_zalloc(array_size_y * sizeof(bool *));
+    for (i = 0; i < array_size_y; i++) {
+        borg_detect_door[i] = mem_zalloc(array_size_x * sizeof(bool));
     }
 
-    borg_detect_evil = mem_zalloc(borg.panels.y * sizeof(bool *));
-    for (i = 0; i < borg.panels.y; i++) {
-        borg_detect_evil[i] = mem_zalloc(borg.panels.x * sizeof(bool));
+    borg_detect_evil = mem_zalloc(array_size_y * sizeof(bool *));
+    for (i = 0; i < array_size_y; i++) {
+        borg_detect_evil[i] = mem_zalloc(array_size_x * sizeof(bool));
     }
 
-    borg_detect_obj = mem_zalloc(borg.panels.y * sizeof(bool *));
-    for (i = 0; i < borg.panels.y; i++) {
-        borg_detect_obj[i] = mem_zalloc(borg.panels.x * sizeof(bool));
+    borg_detect_obj = mem_zalloc(array_size_y * sizeof(bool *));
+    for (i = 0; i < array_size_y; i++) {
+        borg_detect_obj[i] = mem_zalloc(array_size_x * sizeof(bool));
     }
 
     old_panels = borg.panels;
