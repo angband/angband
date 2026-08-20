@@ -2028,7 +2028,7 @@ bool textui_process_key(struct keypress kp, unsigned char *c, int count)
 	keycode_t key = kp.code;
 
 	/* Null command */
-	if (key == '\0' || key == ESCAPE || key == ' ' || key == '\a')
+	if (key == '\0' || key == ESCAPE || key == ' ')
 		return true;
 
 	/* Invalid keypress */
