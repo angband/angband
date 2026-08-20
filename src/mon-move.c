@@ -1885,6 +1885,7 @@ static void regen_monster(struct monster *mon, int num)
  */
 void process_monsters(int minimum_energy)
 {
+	int act_count = 0;
 	int i;
 	int mspeed;
 
@@ -1957,7 +1958,11 @@ void process_monsters(int minimum_energy)
 			 * player's turn to act), but keep the user interface
 			 * responsive.
 			 */
-			(void)check_break(false, 0);
+			++act_count;
+			if (act_count == 100) {
+				act_count = 0;
+				(void)check_break(false, 0);
+			}
 
 			/* Set this monster to be the current actor */
 			cave->mon_current = i;
