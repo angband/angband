@@ -94,15 +94,8 @@ static void player_pickup_gold(struct player *p)
 
 		/* Build a message */
 		(void)strnfmt(buf, sizeof(buf),
-			"You have found %ld gold pieces worth of ", (long)total_gold);
-
-		/* One treasure type.. */
-		if (at_most_one)
-			my_strcat(buf, name, sizeof(buf));
-		/* ... or more */
-		else
-			my_strcat(buf, "treasures", sizeof(buf));
-		my_strcat(buf, ".", sizeof(buf));
+			"You have found %ld gold pieces worth of %s.",
+			(long)total_gold, (at_most_one) ? name : "treasures");
 
 		/* Determine which sound to play */
 		if      (total_gold < 200) sound_msg = MSG_MONEY1;
