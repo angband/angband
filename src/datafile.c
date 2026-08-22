@@ -480,38 +480,53 @@ errr remove_flag(bitflag *flags, const size_t size, const char **flag_table,
  * Write the flag lines for a set of flags.
  */
 void write_flags(ang_file *fff, const char *intro_text, const bitflag *flags,
-					   int flag_size, const char *names[])
+		int flag_size, const char *names[])
 {
 	int flag;
-	char buf[1024] = "";
+	char buf[240];
 	int pointer = 0;
 
-	/* Write flag name list */
+	/* Write the flags, keeping track of where we are */
 	for (flag = flag_next(flags, flag_size, FLAG_START); flag != FLAG_END;
-		 flag = flag_next(flags, flag_size, flag + 1)) {
-
-		/* Write the flags, keeping track of where we are */
-		if (strlen(buf)) {
-			my_strcat(buf, " | ", sizeof(buf));
-			pointer += 3;
-		}
+			flag = flag_next(flags, flag_size, flag + 1)) {
+		size_t lflag;
 
 		/* If no name, we're past the real flags */
 		if (!names[flag]) break;
-		my_strcat(buf, names[flag], sizeof(buf));
-		pointer += strlen(names[flag]);
+
+		lflag = strlen(names[flag]);
+		if (pointer) {
+			if (3 + lflag < sizeof(buf) - pointer) {
+				(void)memcpy(buf + pointer, " | ", 3);
+				pointer += 3;
+				(void)memcpy(buf + pointer, names[flag], lflag);
+				pointer += (int)lflag;
+			} else {
+				buf[pointer] = '\0';
+				file_putf(fff, "%s%s | %s\n", intro_text, buf,
+					names[flag]);
+				pointer = 0;
+			}
+		} else if (lflag < sizeof(buf)) {
+			(void)memcpy(buf, names[flag], lflag);
+			pointer = (int)lflag;
+		} else {
+			file_putf(fff, "%s%s\n", intro_text, names[flag]);
+		}
 
 		/* Move to a new line if this one is long enough */
 		if (pointer >= 60) {
+			buf[pointer] = '\0';
 			file_putf(fff, "%s%s\n", intro_text, buf);
-			my_strcpy(buf, "", sizeof(buf));
 			pointer = 0;
 		}
 	}
 
 	/* Print remaining flags if any */
-	if (pointer)
+	if (pointer) {
+		buf[pointer] = '\0';
 		file_putf(fff, "%s%s\n", intro_text, buf);
+	}
 }
 
 /**
@@ -519,8 +534,9 @@ void write_flags(ang_file *fff, const char *intro_text, const bitflag *flags,
  */
 void write_mods(ang_file *fff, const int values[])
 {
+	const char *intro_text = "values:";
 	size_t i;
-	char buf[1024] = "";
+	char buf[240];
 	int pointer = 0;
 
 	static const char *obj_mods[] = {
@@ -535,41 +551,62 @@ void write_mods(ang_file *fff, const int values[])
 
 	/* Write value list */
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		char val[16];
+		size_t lname, lval;
+
 		/* If no value, don't write */
 		if (values[i] == 0) continue;
 
-		/* If this line contains something, write a divider */
-		if (strlen(buf)) {
-			my_strcat(buf, " | ", sizeof(buf));
-			pointer += 3;
-		}
-
 		/* Write the name and value */
-		my_strcat(buf, obj_mods[i], sizeof(buf));
-		pointer += strlen(obj_mods[i]);
-		my_strcat(buf, format("[%d]", values[i]), sizeof(buf));
-		pointer += 5;
+		lname = strlen(obj_mods[i]);
+		lval = strnfmt(val, sizeof(val), "[%d]", values[i]);
+		if (pointer) {
+			if (3 + lname + lval < sizeof(buf) - pointer) {
+				(void)memcpy(buf + pointer, " | ", 3);
+				pointer += 3;
+				(void)memcpy(buf + pointer, obj_mods[i], lname);
+				pointer += lname;
+				(void)memcpy(buf + pointer, val, lval);
+				pointer += lval;
+			} else {
+				buf[pointer] = '\0';
+				file_putf(fff, "%s%s | %s%s\n", intro_text, buf,
+					obj_mods[i], val);
+				pointer = 0;
+			}
+		} else if (lname + lval < sizeof(buf)) {
+			(void)memcpy(buf, obj_mods[i], lname);
+			pointer = lname;
+			(void)memcpy(buf + pointer, val, lval);
+			pointer += lval;
+		} else {
+			file_putf(fff, "%s%s%s\n", intro_text, obj_mods[i],
+				val);
+		}
 
 		/* Move to a new line if this one is long enough */
 		if (pointer >= 60) {
-			file_putf(fff, "%s%s\n", "values:", buf);
-			my_strcpy(buf, "", sizeof(buf));
+			buf[pointer] = '\0';
+			file_putf(fff, "%s%s\n", intro_text, buf);
 			pointer = 0;
 		}
 	}
 
 	/* Print remaining values if any */
-	if (pointer)
-		file_putf(fff, "%s%s\n", "values:", buf);
+	if (pointer) {
+		buf[pointer] = '\0';
+		file_putf(fff, "%s%s\n", intro_text, buf);
+	}
 }
 
 /**
- * Write value lines for a set of modifiers.
+ * Write value lines for a set of resistances.
  */
 void write_elements(ang_file *fff, const struct element_info *el_info)
 {
+	const char *intro_text = "values:";
 	size_t i;
-	char buf[1024] = "";
+	char buf[240];
 	int pointer = 0;
 
 	static const char *element_names[] = {
@@ -581,32 +618,55 @@ void write_elements(ang_file *fff, const struct element_info *el_info)
 
 	/* Write value list */
 	for (i = 0; i < ELEM_MAX; i++) {
+		char val[16];
+		size_t lname, lval;
+
 		/* If no value, don't write */
 		if (el_info[i].res_level == 0) continue;
 
-		/* If this line contains something, write a divider */
-		if (strlen(buf)) {
-			my_strcat(buf, " | ", sizeof(buf));
-			pointer += 3;
-		}
-
 		/* Write the name and value */
-		my_strcat(buf, format("RES_%s", element_names[i]), sizeof(buf));
-		pointer += strlen(element_names[i]) + 4;
-		my_strcat(buf, format("[%d]", el_info[i].res_level), sizeof(buf));
-		pointer += 5;
+		lname = strlen(element_names[i]);
+		lval = strnfmt(val, sizeof(val), "[%d]", el_info[i].res_level);
+		if (pointer) {
+			if (7 + lname + lval < sizeof(buf) - pointer) {
+				(void)memcpy(buf + pointer, " | RES_", 7);
+				pointer += 7;
+				(void)memcpy(buf + pointer, element_names[i],
+					lname);
+				pointer += lname;
+				(void)memcpy(buf + pointer, val, lval);
+				pointer += lval;
+			} else {
+				buf[pointer] = '\0';
+				file_putf(fff, "%s%s | RES_%s%s\n", intro_text,
+					buf, element_names[i], val);
+				pointer = 0;
+			}
+		} else if (4 + lname + lval < sizeof(buf)) {
+			(void)memcpy(buf, "RES_", 4);
+			pointer = 4;
+			(void)memcpy(buf + pointer, element_names[i], lname);
+			pointer += lname;
+			(void)memcpy(buf + pointer, val, lval);
+			pointer += lval;
+		} else {
+			file_putf(fff, "%sRES_%s%s\n", intro_text,
+				element_names[i], val);
+		}
 
 		/* Move to a new line if this one is long enough */
 		if (pointer >= 60) {
-			file_putf(fff, "%s%s\n", "values:", buf);
-			my_strcpy(buf, "", sizeof(buf));
+			buf[pointer] = '\0';
+			file_putf(fff, "%s%s\n", intro_text, buf);
 			pointer = 0;
 		}
 	}
 
 	/* Print remaining values if any */
-	if (pointer)
-		file_putf(fff, "%s%s\n", "values:", buf);
+	if (pointer) {
+		buf[pointer] = '\0';
+		file_putf(fff, "%s%s\n", intro_text, buf);
+	}
 }
 
 /**
