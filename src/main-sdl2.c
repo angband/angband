@@ -470,6 +470,13 @@ struct my_app {
 	/** Width and height on screen for the default font */
 	int def_font_w, def_font_h;
 	/**
+	 * When an input flush is requested, ignore repeats of a key pressed
+	 * before the flush.
+	 */
+	bool ignore_repeated_key;
+	/** Was the last SDL_KEYDOWN event triggered by a repeating key */
+	bool keydown_repeated;
+	/**
 	 * true if KC_MOD_KEYPAD will be sent for numeric keypad keys at the
 	 * expense of not handling some keyboard layouts properly
 	 */
@@ -4573,9 +4580,16 @@ static bool handle_key(struct my_app *a, const SDL_KeyboardEvent *key)
 	 * Term_keypress gets called exactly once for a given key press from the
 	 * user.
 	 */
+	a->keydown_repeated = (key->repeat != 0);
 	keyboard_event_to_angband_key(key, a->kp_as_mod, &ch, &mods);
 	if (ch) {
 		if (!trigger_menu_shortcut(a, ch, mods)) {
+			if (a->ignore_repeated_key) {
+				if (key->repeat) {
+					return true;
+				}
+				a->ignore_repeated_key = false;
+			}
 			Term_keypress(ch, mods);
 		}
 		return true;
@@ -4639,6 +4653,12 @@ static bool handle_text_input(struct my_app *a, const SDL_TextInputEvent *input)
 		return false;
 	}
 	if (!trigger_menu_shortcut(a, ch, mods)) {
+		if (a->ignore_repeated_key) {
+			if (a->keydown_repeated) {
+				return true;
+			}
+			a->ignore_repeated_key = false;
+		}
 		Term_keypress(ch, mods);
 	}
 	return true;
@@ -4826,6 +4846,7 @@ static errr term_xtra_flush(void)
 				break;
 		}
 	}
+	g_app.ignore_repeated_key = true;
 
 	return 0;
 }
@@ -7451,6 +7472,8 @@ static void init_globals(struct my_app *a)
 
 	a->w_mouse = NULL;
 	a->w_key = NULL;
+	a->ignore_repeated_key = false;
+	a->keydown_repeated = false;
 	a->kp_as_mod = true;
 	a->controller = NULL;
 	num_joysticks = SDL_NumJoysticks();

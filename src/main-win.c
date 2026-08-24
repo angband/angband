@@ -345,6 +345,12 @@ static HICON hIcon;
  */
 static HPALETTE hPal;
 
+/**
+ * When an input flush is requested, ignore repeats of a key pressed before the
+ * flush.
+ */
+static bool ignore_repeated_key = false;
+
 
 #ifdef USE_SAVER
 
@@ -1937,7 +1943,11 @@ static errr Term_xtra_win(int n, int v)
 		/* Flush all events */
 		case TERM_XTRA_FLUSH:
 		{
-			return (Term_xtra_win_flush());
+			errr result;
+
+			result = Term_xtra_win_flush();
+			ignore_repeated_key = true;
+			return result;
 		}
 
 		/* Clear the screen */
@@ -4349,7 +4359,16 @@ static bool handle_keydown(WPARAM wParam, LPARAM lParam)
 	/* see http://source.winehq.org/source/include/dinput.h#L468 */
 
 	if (ch) {
-		int mods = extract_modifiers(ch, kp);
+		int mods;
+
+		if (ignore_repeated_key) {
+			if (HIWORD(lParam) & KF_REPEAT) {
+				return false;
+			}
+			ignore_repeated_key = false;
+		}
+
+		mods = extract_modifiers(ch, kp);
 		/* printf("ch=%d mods=%d\n", ch, mods); */
 		/* fflush(stdout); */
 		Term_keypress(ch, mods);
@@ -4456,6 +4475,25 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 					default: return true;
 				}
 				return false;
+			}
+
+			if (ignore_repeated_key) {
+				/*
+				 * According to https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-char ,
+				 * lParam will correspond to latest WM_KEYDOWN
+				 * message before the WM_CHAR message was
+				 * issued but there may not be a one-to-one
+				 * correspondence between WM_KEYDOWN and
+				 * WM_CHAR messages.  The following logic
+				 * does assume a correspondence.  A way to
+				 * avoid that would be to do all handling of
+				 * keys forwarded to the game's core while
+				 * handling WM_KEYDOWN.
+				 */
+				if (HIWORD(lParam) & KF_REPEAT) {
+					return false;
+				}
+				ignore_repeated_key = false;
 			}
 
 			// We don't want to translate some keys to their ascii values
@@ -4863,6 +4901,16 @@ static LRESULT FAR PASCAL AngbandListProc(HWND hWnd, UINT uMsg,
 
 		case WM_CHAR:
 		{
+			if (ignore_repeated_key) {
+				/*
+				 * The comment in AngbandWndProc's WM_CHAR case
+				 * applies here as well.
+				 */
+				if (HIWORD(lParam) & KF_REPEAT) {
+					return 0;
+				}
+				ignore_repeated_key = false;
+			}
 			Term_keypress(wParam, 0);
 			return 0;
 		}

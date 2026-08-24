@@ -145,6 +145,12 @@ static bool fullscreen = false;
  */
 static bool withdrawn_fullscreen = false;
 
+/*
+ * When an input flush is requested, ignore repeats of a key pressed before the
+ * flush.
+ */
+static bool ignore_repeated_key = false;
+
 static int overdraw = 0;
 static int overdraw_max = 0;
 
@@ -4747,7 +4753,17 @@ static errr sdl_HandleEvent(SDL_Event *event)
 		/* Keypresses */
 		case SDL_KEYDOWN:
 		{
-			/* Handle keypress */
+			/*
+			 * Reinstate key repetition if it was turned off
+			 * because input events were flushed.
+			 */
+			if (ignore_repeated_key) {
+				ignore_repeated_key = false;
+				(void)SDL_EnableKeyRepeat(
+					SDL_DEFAULT_REPEAT_DELAY,
+					SDL_DEFAULT_REPEAT_INTERVAL);
+			}
+			/* Forward to the game's core. */
 			sdl_keypress(event->key.keysym);
 			
 			break;
@@ -5114,7 +5130,16 @@ static errr Term_xtra_sdl(int n, int v)
 		/* Flush all events */
 		case TERM_XTRA_FLUSH:
 		{
-			return (Term_xtra_sdl_flush());
+			errr result;
+
+			/*
+			 * Disable key repetiion until the first key press
+			 * after the flush.
+			 */
+			(void)SDL_EnableKeyRepeat(0, 0);
+			result = Term_xtra_sdl_flush();
+			ignore_repeated_key = true;
+			return result;
 		}
 		/* Clear the screen */
 		case TERM_XTRA_CLEAR:
