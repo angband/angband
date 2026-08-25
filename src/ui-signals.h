@@ -19,7 +19,9 @@
 #ifndef INCLUDED_UI_SIGNALS_H
 #define INCLUDED_UI_SIGNALS_H
 
-extern int16_t signal_count;
+#include "h-basic.h"
+
+extern volatile sig_atomic_t signal_count;
 
 void signals_init(bool hup_disconnects, bool tstp_default);
 void signals_protect(bool on);
