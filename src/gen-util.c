@@ -633,6 +633,10 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
 	struct loc *av;
 	int *state;
 
+	if (OPT(player, birth_force_descend) && feat == FEAT_LESS) {
+		return;
+	}
+
 	nav = 0;
 	if (minsep > 0) {
 		/*
