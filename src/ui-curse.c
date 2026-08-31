@@ -62,7 +62,7 @@ static bool get_curse_action(struct menu *menu, const ui_event *event, int oid)
 }
 
 /**
- * Show spell long description when browsing
+ * Show the curse's long description when browsing
  */
 static void curse_menu_browser(int oid, void *data, const region *loc)
 {

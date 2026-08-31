@@ -4200,7 +4200,7 @@ void do_cmd_locate(void)
 	y1 = Term->offset_y;
 	x1 = Term->offset_x;
 
-	/* With mouse input, shift the panel if the click is near to an edge */
+	/* With mouse input, shift the panel if the click is near an edge */
 	if (Term == term_screen) {
 		top = ROW_MAP + MAX(1, panel_hgt / 20);
 		bottom = ROW_BOTTOM_MAP - MAX(1, panel_hgt / 20);

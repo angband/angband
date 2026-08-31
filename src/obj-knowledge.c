@@ -1199,7 +1199,7 @@ void player_know_object(struct player *p, struct object *obj)
 
 	/* Fully known objects have their known element and flag info set to 
 	 * match the actual info, rather than showing what elements and flags
-	 * the would be displaying if they had them */
+	 * they would be displaying if they had them */
 	if (object_fully_known(obj)) {
 		for (i = 0; i < ELEM_MAX; i++) {
 			obj->known->el_info[i].res_level = obj->el_info[i].res_level;
