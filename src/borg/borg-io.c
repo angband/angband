@@ -186,7 +186,7 @@ static void borg_note_internal(bool warning, const char *what)
         Term_locate(&x, &y);
 
         /* Erase current line */
-        Term_erase(0, y, 255);
+        Term_erase(0, y, w);
 
         /* Total length */
         n = strlen(what);
@@ -227,7 +227,7 @@ static void borg_note_internal(bool warning, const char *what)
                     y = 0;
 
                 /* Erase next line */
-                Term_erase(0, y, 255);
+                Term_erase(0, y, w);
 
                 /* Advance */
                 what += k;
@@ -244,7 +244,7 @@ static void borg_note_internal(bool warning, const char *what)
                 y = 0;
 
             /* Erase next line */
-            Term_erase(0, y, 255);
+            Term_erase(0, y, w);
         }
 
         /* Normal */
@@ -257,7 +257,7 @@ static void borg_note_internal(bool warning, const char *what)
                 y = 0;
 
             /* Erase next line */
-            Term_erase(0, y, 255);
+            Term_erase(0, y, w);
         }
 
         /* Flush output */

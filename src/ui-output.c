@@ -286,7 +286,7 @@ void text_out_to_screen(uint8_t a, const char *str)
 			y++;
 
 			/* Clear line, move cursor */
-			Term_erase(x, y, 255);
+			Term_erase(x, y, wid - x);
 
 			x += text_out_pad;
 			Term_gotoxy(x, y);
@@ -323,14 +323,14 @@ void text_out_to_screen(uint8_t a, const char *str)
 			if (n == 0) n = wrap;
 
 			/* Clear line */
-			Term_erase(n, y, 255);
+			Term_erase(n, y, wid - n);
 
 			/* Wrap */
 			x = text_out_indent;
 			y++;
 
 			/* Clear line, move cursor */
-			Term_erase(x, y, 255);
+			Term_erase(x, y, wid - x);
 
 			x += text_out_pad;
 			Term_gotoxy(x, y);
@@ -384,7 +384,7 @@ void put_str(const char *str, int row, int col) {
  */
 void c_prt(uint8_t attr, const char *str, int row, int col) {
 	/* Clear line, position cursor */
-	Term_erase(col, row, 255);
+	Term_erase(col, row, Term->wid - col);
 
 	/* Dump the attr/text */
 	Term_addstr(-1, attr, str);

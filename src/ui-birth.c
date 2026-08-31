@@ -616,7 +616,7 @@ static void clear_question(void)
 
 	for (i = QUESTION_ROW; i < TABLE_ROW; i++)
 		/* Clear line, position cursor */
-		Term_erase(0, i, 255);
+		Term_erase(0, i, Term->wid);
 }
 
 
