@@ -391,7 +391,6 @@ void square_set_trap(struct chunk *c, struct loc grid, struct trap *trap);
 void square_add_trap(struct chunk *c, struct loc grid);
 void square_add_glyph(struct chunk *c, struct loc grid, int type);
 void square_add_web(struct chunk *c, struct loc grid);
-void square_add_stairs(struct chunk *c, struct loc grid, int depth);
 void square_add_door(struct chunk *c, struct loc grid, bool closed);
 
 /* Feature modifiers */
@@ -450,6 +449,8 @@ int count_feats(struct loc *grid,
 int count_neighbors(struct loc *match, struct chunk *c, struct loc grid,
 	bool (*test)(struct chunk *c, struct loc grid), bool under);
 struct loc cave_find_decoy(struct chunk *c);
+int random_staircase_terrain(int depth, bool persist, bool quest,
+	bool forced_descent, struct loc grid);
 
 void cave_known(struct player *p);
 

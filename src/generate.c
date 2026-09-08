@@ -1152,6 +1152,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 			dun->persist = false;
 		}
 
+		dun->forced_descent = OPT(p, birth_force_descend);
 
 		/* Choose a profile and build the level */
 		dun->profile = choose_profile(p);

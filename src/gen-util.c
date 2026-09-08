@@ -425,12 +425,17 @@ bool new_player_spot(struct chunk *c, struct player *p)
 	}
 
 	/* Create stairs the player came down if allowed and necessary */
-	if (!OPT(p, birth_connect_stairs))
+	if (!OPT(p, birth_connect_stairs)) {
 		;
-	else if (p->upkeep->create_down_stair)
+	} else if (p->upkeep->create_down_stair) {
+		assert(c->depth < z_info->max_depth - 1);
 		square_set_feat(c, grid, FEAT_MORE);
-	else if (p->upkeep->create_up_stair)
-		square_set_feat(c, grid, FEAT_LESS);
+	} else if (p->upkeep->create_up_stair) {
+		assert(c->depth > 0);
+		if (!OPT(p, birth_force_descend)) {
+			square_set_feat(c, grid, FEAT_LESS);
+		}
+	}
 
 	player_place(c, p, grid);
 	return true;
@@ -449,39 +454,24 @@ static void place_rubble(struct chunk *c, struct loc grid)
 
 
 /**
- * Place stairs (of the requested type 'feat' if allowed) at a given location.
- *
- * \param c current chunk
- * \param grid location
- * \param quest is whether or not this is a quest level.
- * \param feat stair terrain type
- *
- * All stairs from town go down. All stairs on an unfinished quest level go up.
- */
-static void place_stairs(struct chunk *c, struct loc grid, bool quest, int feat)
-{
-	if (!c->depth) {
-		square_set_feat(c, grid, FEAT_MORE);
-	} else if (quest || c->depth >= z_info->max_depth - 1) {
-		square_set_feat(c, grid, FEAT_LESS);
-	} else {
-		square_set_feat(c, grid, feat);
-	}
-}
-
-
-/**
  * Place random stairs at a given location.
  *
  * \param c current chunk
  * \param grid location
  * \param quest is whether or not this is a quest level.
+ * \param forced_descent is whether or not going up is forbidden.
+ *
+ * Assumes the chunk will not be used for a persistent level.
  */
-void place_random_stairs(struct chunk *c, struct loc grid, bool quest)
+void place_random_stairs(struct chunk *c, struct loc grid, bool quest,
+		bool forced_descent)
 {
-	int feat = randint0(100) < 50 ? FEAT_LESS : FEAT_MORE;
-	if (square_canputitem(c, grid))
-		place_stairs(c, grid, quest, feat);
+	int feat = random_staircase_terrain(c->depth, false, quest,
+		forced_descent, grid);
+
+	if (feat != FEAT_NONE && square_canputitem(c, grid)) {
+		square_set_feat(c, grid, feat);
+	}
 }
 
 
@@ -625,13 +615,25 @@ void place_random_door(struct chunk *c, struct loc grid)
  * \param avoid_list If not NULL and minsep is greater than zero, also avoid
  * the locations in avoid_list which have staircases of the opposite type.
  * \param quest is whether or not this is a quest level.
+ * \param forced_descent is whether or not going up is forbidden.
  */
 void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
-		const struct connector *avoid_list, bool quest)
+		const struct connector *avoid_list, bool quest,
+		bool forced_descent)
 {
 	int i, navalloc, nav, walls;
 	struct loc *av;
 	int *state;
+
+	if (feat == FEAT_LESS) {
+		if (forced_descent || c->depth <= 0) {
+			return;
+		}
+	} else if (feat == FEAT_MORE) {
+		if (quest || c->depth >= z_info->max_depth - 1) {
+			return;
+		}
+	}
 
 	nav = 0;
 	if (minsep > 0) {
@@ -714,9 +716,7 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
 				}
 				av[nav++] = grid;
 			}
-
-			place_stairs(c, grid, quest, feat);
-			assert(square_isstairs(c, grid));
+			square_set_feat(c, grid, feat);
 			++i;
 		}
 

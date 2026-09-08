@@ -186,6 +186,9 @@ struct dun_data {
 
     /*!< Whether or not persistent levels are being used */
     bool persist;
+
+    /*!< Whether or not forced descent is being used */
+    bool forced_descent;
 };
 
 
@@ -431,9 +434,10 @@ void place_gold(struct chunk *c, struct loc grid, int level, uint8_t origin);
 void place_secret_door(struct chunk *c, struct loc grid);
 void place_closed_door(struct chunk *c, struct loc grid);
 void place_random_door(struct chunk *c, struct loc grid);
-void place_random_stairs(struct chunk *c, struct loc grid, bool quest);
+void place_random_stairs(struct chunk *c, struct loc grid, bool quest,
+	bool forced_descent);
 void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
-	const struct connector *avoid_list, bool quest);
+	const struct connector *avoid_list, bool quest, bool forced_descent);
 void vault_objects(struct chunk *c, struct loc grid, int depth, int num);
 void vault_traps(struct chunk *c, struct loc grid, int yd, int xd, int num);
 void vault_monsters(struct chunk *c, struct loc grid, int depth, int num);

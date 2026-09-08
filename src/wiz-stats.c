@@ -3752,8 +3752,10 @@ void disconnect_stats(int nsim, bool stop_on_disconnect)
 			}
 		}
 
-		if ((use_stairs && !square_isupstairs(cave, player->grid))
-				|| (!use_stairs
+		if ((use_stairs && !square_isupstairs(cave, player->grid)
+				&& !OPT(player, birth_force_descend))
+				|| ((!use_stairs
+				|| OPT(player, birth_force_descend))
 				&& !square_ispassable(cave, player->grid))) {
 			has_bad_start = true;
 			bad_starts++;

@@ -22,6 +22,7 @@
 #include "cmd-core.h"
 #include "game-event.h"
 #include "game-world.h"
+#include "generate.h"
 #include "init.h"
 #include "mon-group.h"
 #include "monster.h"
@@ -719,4 +720,126 @@ int count_neighbors(struct loc *match, struct chunk *c, struct loc grid,
 struct loc cave_find_decoy(struct chunk *c)
 {
 	return c->decoy;
+}
+
+/**
+ * Randomly select a staircase terrain appropriate for the given conditions.
+ *
+ * \param depth is the depth index of the level where the staircase would be
+ * placed.
+ * \param persist indicates whether persistent levels are used.
+ * \param quest indicates whetether the level in question has a quest.
+ * \param forced_descent indicates whether going up is forbidden.
+ * \param grid holds the coordinates of the location where the staircase would
+ * be placed.
+ * \return the feature index selected or FEAT_NONE if it is not possible
+ * to select a staircase for depth, p, and grid.
+ *
+ * The random selection uses a uniform distribution over the types of
+ * staircases that satisfy the constraints.
+ */
+int random_staircase_terrain(int depth, bool persist, bool quest,
+		bool forced_descent, struct loc grid)
+{
+	struct { int feat, allowed; } feats[2] = {
+		{ FEAT_LESS, 1 },
+		{ FEAT_MORE, 1 }
+	};
+	int i, count, selected;
+
+	if (depth <= 0 || forced_descent) {
+		feats[0].allowed = 0;
+	}
+
+	if (depth >= z_info->max_depth - 1 || quest) {
+		feats[1].allowed = 0;
+	}
+
+	/*
+	 * With persistent levels, adjacent levels, if they have been created,
+	 * constrain what can be added.
+	 */
+	if (persist) {
+		const struct level *lev;
+		const struct chunk *c;
+		const struct connector *join;
+
+		if (feats[0].allowed) {
+			lev = level_by_depth(depth - 1);
+			if (lev) {
+				/*
+				 * If depth - 1 has been created, do not add
+				 * a stair:  do not bother to determine if it
+				 * would be possible to modify both levels and
+				 * their connector information.
+				 */
+				feats[0].allowed = 0;
+			} else {
+				/*
+				 * If depth - 2 has been created, cannot add an
+				 * up stair at depth if it matches the position
+				 * of a down stair at depth - 2.
+				 */
+				lev = level_by_depth(depth - 2);
+				if (lev && (c = chunk_find_name(lev->name))) {
+					for (join = c->join; join;
+							join = join->next) {
+						if (join->feat == FEAT_MORE
+								&& loc_eq(
+								join->grid,
+								grid)) {
+							feats[0].allowed = 0;
+							break;
+						}
+					}
+				}
+			}
+		}
+		if (feats[1].allowed) {
+			/*
+			 * Same logic as above but for the downward direction.
+			 */
+			lev = level_by_depth(depth + 1);
+			if (lev) {
+				feats[1].allowed = 0;
+			} else {
+				lev = level_by_depth(depth + 2);
+				if (lev && (c = chunk_find_name(lev->name))) {
+					for (join = c->join; join;
+							join = join->next) {
+						if (join->feat == FEAT_LESS
+								&& loc_eq(
+								join->grid,
+								grid)) {
+							feats[1].allowed = 0;
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	for (i = 0, count = 0; i < (int)N_ELEMENTS(feats); ++i) {
+		if (feats[i].allowed) {
+			++count;
+		}
+	}
+	if (!count) {
+		return FEAT_NONE;
+	}
+	i = 0;
+	selected = randint0(count);
+	while (1) {
+		assert(i < (int)N_ELEMENTS(feats) && selected >= 0);
+		if (!feats[i].allowed) {
+			++i;
+			continue;
+		}
+		if (!selected) {
+			return feats[i].feat;
+		}
+		++i;
+		--selected;
+	}
 }

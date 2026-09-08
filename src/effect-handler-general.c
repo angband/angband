@@ -1974,6 +1974,8 @@ bool effect_handler_IDENTIFY(effect_handler_context_t *context)
  */
 bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 {
+	int feat;
+
 	context->ident = true;
 
 	/* Only allow stairs to be created on empty floor */
@@ -1982,17 +1984,29 @@ bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 		return false;
 	}
 
-	/* Fails for persistent levels (for now) and arenas */
-	if (OPT(player, birth_levels_persist) || player->upkeep->arena_level) {
+	/*
+	 * Reject adding a staircase when it is impossible or on persistent
+	 * levels.  The persistent levels restriction could be dropped if
+	 * all of the side effects of adding a staircase in a persistent
+	 * level were handled (at a minimum, have to update what is in
+	 * cave->join).
+	 */
+	if (player->upkeep->arena_level
+			|| OPT(player, birth_levels_persist)
+			|| (feat = random_staircase_terrain(player->depth,
+			false, is_quest(player, player->depth),
+			OPT(player, birth_force_descend),
+			player->grid)) == FEAT_NONE) {
 		msg("Nothing happens!");
 		return false;
 	}
 
-	/* Push objects off the grid */
-	if (square_object(cave, player->grid))
+	/* As the stairs cannot hold objects, push any objects off the grid. */
+	if (square_object(cave, player->grid)) {
 		push_object(player->grid);
+	}
 
-	square_add_stairs(cave, player->grid, player->depth);
+	square_set_feat(cave, player->grid, feat);
 
 	return true;
 }

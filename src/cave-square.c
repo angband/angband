@@ -25,7 +25,6 @@
 #include "obj-pile.h"
 #include "obj-util.h"
 #include "object.h"
-#include "player-quest.h"
 #include "player-timed.h"
 #include "trap.h"
 
@@ -1332,16 +1331,6 @@ void square_add_web(struct chunk *c, struct loc grid)
 {
 	struct trap_kind *web = lookup_trap("web");
 	place_trap(c, grid, web->tidx, 0);
-}
-
-void square_add_stairs(struct chunk *c, struct loc grid, int depth) {
-	int down = randint0(100) < 50;
-	if (depth == 0)
-		down = 1;
-	else if (is_quest(player, depth) || depth >= z_info->max_depth - 1)
-		down = 0;
-
-	square_set_feat(c, grid, down ? FEAT_MORE : FEAT_LESS);
 }
 
 void square_add_door(struct chunk *c, struct loc grid, bool closed) {
