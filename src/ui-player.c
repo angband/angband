@@ -869,8 +869,9 @@ void display_player_xtra_info(void)
 	text_out_indent = 1;
 
 	/* History */
-	Term_gotoxy(text_out_indent, 19);
-	text_out_to_screen(COLOUR_WHITE, player->history);
+	if (!Term_gotoxy(text_out_indent, 19)) {
+		text_out_to_screen(COLOUR_WHITE, player->history);
+	}
 
 	/* Reset text_out() vars */
 	text_out_wrap = 0;
