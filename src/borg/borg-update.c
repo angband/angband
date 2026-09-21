@@ -2431,8 +2431,11 @@ void borg_update(void)
 
         /* Reduce fear over time every 10 steps */
         if (!(borg.time.now % 10)) {
-            for (y = 0; y < 6; y++) {
-                for (x = 0; x < 18; x++) {
+            max_x = (AUTO_MAX_X / 11) + 1;
+            max_y = (AUTO_MAX_Y / 11) + 1;
+
+            for (y = 0; y < max_y; y++) {
+                for (x = 0; x < max_x; x++) {
                     if (borg_fear_region[y][x])
                         borg_fear_region[y][x]--;
                 }

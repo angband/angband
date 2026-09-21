@@ -583,7 +583,7 @@ bool borg_dimension_door(int allow_fail)
 
     /* if we are attacking, calculate gains, but if this is just a teleport */
     /* the current danger is the starting point */
-    best_d = borg_fear_region[borg.c.y][borg.c.x];
+    best_d = borg_fear_region[borg.c.y / 11][borg.c.x / 11];
 
     /* Pick a location */
     for (x_off = range * -1; x_off < range; x_off++) {
@@ -608,7 +608,7 @@ bool borg_dimension_door(int allow_fail)
         }
     }
 
-    if (best_d < borg_fear_region[borg.c.y][borg.c.x]) {
+    if (best_d < borg_fear_region[borg.c.y / 11][borg.c.x / 11  ]) {
         borg_target(best, false);
 
         borg_spell(DIMENSION_DOOR);
