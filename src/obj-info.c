@@ -465,8 +465,9 @@ static struct my_rational sum_o_criticals(const struct o_critical_level *head)
  * of previous damage, since we are used to transform the mean
  * of a roll.
  */
-static void calculate_melee_crits(struct player_state *state, int weight,
-		int plus, int *mult, int *add, int *div, int *mult_round,
+static void calculate_melee_crits(struct player *p,
+		const struct player_state *state, int weight, int plus,
+		int *mult, int *add, int *div, int *mult_round,
 		int *add_round, int *scl_round)
 {
 	/*
@@ -474,9 +475,14 @@ static void calculate_melee_crits(struct player_state *state, int weight,
 	 * this must agree with the calculations in player-attack.c's
 	 * critical_melee().
 	 */
-	int crit_chance = z_info->m_crit_chance_weight_scl * weight
+	int crit_chance;
+
+	if (!state) {
+		state = &p->state;
+	}
+	crit_chance = z_info->m_crit_chance_weight_scl * weight
 		+ z_info->m_crit_chance_toh_scl * (state->to_h + plus)
-		+ z_info->m_crit_chance_level_scl * player->lev
+		+ z_info->m_crit_chance_level_scl * p->lev
 		+ z_info->m_crit_chance_toh_skill_scl
 			* state->skills[SKILL_TO_HIT_MELEE]
 		+ z_info->m_crit_chance_offset;
@@ -551,16 +557,17 @@ static void calculate_melee_crits(struct player_state *state, int weight,
  * Account for criticals in the calculation of melee prowess for O-combat;
  * crit chance * average number of dice added
  *
- * \param state points to the state for the player of interest.
+ * \param p is the player of interest.
+ * \param state will, if not NULL, be used rather than p->state.
  * \param obj is the melee weapon of interest.
  * \param dice is dereferenced and set to 100 * crit chance * average number
  * of dice added.
  * \param frac_dice is dereferenced and set to the fractional part truncated
  * from *dice when converted to an integer.
  */
-static void o_calculate_melee_crits(struct player_state *state,
-		const struct object *obj, unsigned int *dice,
-		struct my_rational *frac_dice)
+static void o_calculate_melee_crits(struct player *p,
+		const struct player_state *state, const struct object *obj,
+		unsigned int *dice, struct my_rational *frac_dice)
 {
 	if (z_info->o_m_crit_level_head) {
 		/*
@@ -568,7 +575,7 @@ static void o_calculate_melee_crits(struct player_state *state,
 		 * Otherwise, these calculations must agree with those in
 		 * player-attack.c's o_critical_melee().
 		 */
-		struct player_state old_state = player->state;
+		struct player_state old_state = p->state;
 		int power, chance_num, chance_den;
 
 		if (z_info->o_m_max_added.n == 0) {
@@ -576,9 +583,13 @@ static void o_calculate_melee_crits(struct player_state *state,
 				sum_o_criticals(z_info->o_m_crit_level_head);
 		}
 
-		player->state = *state;
-		power = chance_of_melee_hit_base(player, obj);
-		player->state = old_state;
+		if (state) {
+			p->state = *state;
+		}
+		power = chance_of_melee_hit_base(p, obj);
+		if (state) {
+			p->state = old_state;
+		}
 		power = (power * z_info->o_m_crit_power_toh_scl_num)
 			/ z_info->o_m_crit_power_toh_scl_den;
 		chance_num = power * z_info->o_m_crit_chance_power_scl_num;
@@ -621,8 +632,9 @@ static void o_calculate_melee_crits(struct player_state *state,
 /**
  * Missile crits follow the same approach as melee crits.
  */
-static void calculate_missile_crits(struct player_state *state, int weight,
-		int plus, bool launched, int *mult, int *add, int *div,
+static void calculate_missile_crits(struct player *p,
+		const struct player_state *state, int weight, int plus,
+		bool launched, int *mult, int *add, int *div,
 		int *mult_round, int *add_round, int *scl_round)
 {
 	/*
@@ -630,17 +642,22 @@ static void calculate_missile_crits(struct player_state *state, int weight,
 	 * this must agree with the calculations in player-attack.c's
 	 * critical_shot().
 	 */
-	int crit_chance = z_info->r_crit_chance_weight_scl * weight
+	int crit_chance;
+
+	if (!state) {
+		state = &p->state;
+	}
+	crit_chance = z_info->r_crit_chance_weight_scl * weight
 		+ z_info->r_crit_chance_toh_scl * (state->to_h + plus)
-		+ z_info->r_crit_chance_level_scl * player->lev
+		+ z_info->r_crit_chance_level_scl * p->lev
 		+ z_info->r_crit_chance_offset;
 
 	if (launched) {
 		crit_chance += z_info->r_crit_chance_launched_toh_skill_scl
-			* player->state.skills[SKILL_TO_HIT_BOW];
+			* state->skills[SKILL_TO_HIT_BOW];
 	} else {
 		crit_chance += z_info->r_crit_chance_thrown_toh_skill_scl
-			* player->state.skills[SKILL_TO_HIT_THROW];
+			* state->skills[SKILL_TO_HIT_THROW];
 	}
 	crit_chance = MIN(z_info->r_crit_chance_range, MAX(0, crit_chance));
 
@@ -712,7 +729,8 @@ static void calculate_missile_crits(struct player_state *state, int weight,
 /**
  * Missile crits follow the same approach as melee crits.
  *
- * \param state points to the state for the player of interest.
+ * \param p is the player of interest.
+ * \param state will, if not NULL, be used rather than p->state.
  * \param obj is the missile of interest.
  * \param launcher is the launcher of interest or NULL for a thrown missile.
  * \param dice is dereferenced and set to 100 * crit chance * average number
@@ -720,9 +738,10 @@ static void calculate_missile_crits(struct player_state *state, int weight,
  * \param frac_dice is dereferenced and set to the fractional part truncated
  * from *dice when converted to an integer.
  */
-static void o_calculate_missile_crits(struct player_state *state,
-		const struct object *obj, const struct object *launcher,
-		unsigned int *dice, struct my_rational *frac_dice)
+static void o_calculate_missile_crits(struct player *p,
+		struct player_state *state, const struct object *obj,
+		const struct object *launcher, unsigned int *dice,
+		struct my_rational *frac_dice)
 {
 	if (z_info->o_r_crit_level_head) {
 		/*
@@ -730,7 +749,7 @@ static void o_calculate_missile_crits(struct player_state *state,
 		 * Otherwise, these calculations must agree with those in
 		 * player-attack.c's o_critical_shot().
 		 */
-		struct player_state old_state = player->state;
+		struct player_state old_state = p->state;
 		int power, chance_num, chance_den;
 
 		if (z_info->o_r_max_added.n == 0) {
@@ -738,9 +757,13 @@ static void o_calculate_missile_crits(struct player_state *state,
 				sum_o_criticals(z_info->o_r_crit_level_head);
 		}
 
-		player->state = *state;
-		power = chance_of_missile_hit_base(player, obj, launcher);
-		player->state = old_state;
+		if (state) {
+			p->state = *state;
+		}
+		power = chance_of_missile_hit_base(p, obj, launcher);
+		if (state) {
+			p->state = old_state;
+		}
 		if (launcher) {
 			power = (power
 				* z_info->o_r_crit_power_launched_toh_scl_num)
@@ -1071,20 +1094,20 @@ bool obj_known_damage(const struct object *obj, int *normal_damage,
 		xtra_postcrit = state.to_d * 10;
 		xtra_precrit += object_to_dam(obj->known) * 10;
 
-		calculate_melee_crits(&state, object_weight_one(obj), plus,
-			&crit_mult, &crit_add, &crit_div,
+		calculate_melee_crits(player, &state, object_weight_one(obj),
+			plus, &crit_mult, &crit_add, &crit_div,
 			&crit_round_mult, &crit_round_add, &crit_scl_round);
 
 		old_blows = state.num_blows;
 	} else if (ammo) {
-		calculate_missile_crits(&player->state, object_weight_one(obj),
+		calculate_missile_crits(player, NULL, object_weight_one(obj),
 			plus, true, &crit_mult, &crit_add, &crit_div,
 			&crit_round_mult, &crit_round_add, &crit_scl_round);
 
 		dam += (object_to_dam(obj->known) * 10);
 		dam += (object_to_dam(bow->known) * 10);
 	} else {
-		calculate_missile_crits(&player->state, object_weight_one(obj),
+		calculate_missile_crits(player, NULL, object_weight_one(obj),
 			plus, false, &crit_mult, &crit_add, &crit_div,
 			&crit_round_mult, &crit_round_add, &crit_scl_round);
 
@@ -1305,18 +1328,19 @@ bool o_obj_known_damage(const struct object *obj, int *normal_damage,
 
 	/* Get the number of additional dice from criticals (x100) */
 	if (weapon)	{
-		o_calculate_melee_crits(&state, obj, &added_dice, &frac_dice);
+		o_calculate_melee_crits(player, &state, obj, &added_dice,
+			&frac_dice);
 		dice += added_dice;
 		old_blows = state.num_blows;
 	} else if (ammo) {
-		o_calculate_missile_crits(&player->state, obj, bow,
-			&added_dice, &frac_dice);
+		o_calculate_missile_crits(player, NULL, obj, bow, &added_dice,
+			&frac_dice);
 		dice += added_dice;
 	} else {
 		unsigned int thrown_scl = 2 + object_weight_one(obj) / 12;
 
-		o_calculate_missile_crits(&player->state, obj, NULL,
-			&added_dice, &frac_dice);
+		o_calculate_missile_crits(player, NULL, obj, NULL, &added_dice,
+			&frac_dice);
 		dice += added_dice;
 		dice *= thrown_scl;
 		dice += my_rational_to_uint(&frac_dice, thrown_scl, &remainder);
