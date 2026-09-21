@@ -157,7 +157,8 @@ static void borg_free_txt_file(void)
     borg_trait_free();
     borg_free_formulas();
 
-    mem_free(borg_cfg);
+    if (borg_cfg)
+        mem_free(borg_cfg);
     borg_cfg = NULL;
 }
 
@@ -173,10 +174,7 @@ bool borg_init_txt_file(void)
     int i;
     bool warning = false;
 
-
-    if (borg.status.active)
-        borg_free_txt_file();
-
+    borg_free_txt_file();
     borg_trait_init();
 
     /* a couple of spot checks on settings definitions */
@@ -341,18 +339,23 @@ void borg_reset_ignore(void)
     int i, j;
 
     if (borg_cfg[BORG_RESTORE_IGNORE_SETTINGS]) {
-        /* Reset ignore bits */
-        for (i = 0; i < z_info->k_max; i++)
-            k_info[i].ignore = borg.init_save.kinfo_ignore[i];
+        if (borg.init_save.kinfo_ignore) {
+            /* Reset ignore bits */
+            for (i = 0; i < z_info->k_max; i++)
+                k_info[i].ignore = borg.init_save.kinfo_ignore[i];
+        }
 
         /* Clear the ignore bytes */
         for (i = ITYPE_NONE; i < ITYPE_MAX; i++)
             ignore_level[i] = borg.init_save.ignore_level[i];
 
         /* Clear ego ignore */
-        for (i = 0; i < z_info->e_max; i++)
-            for (j = ITYPE_NONE; j < ITYPE_MAX; j++)
-                ego_ignore_types[i][j] = borg.init_save.ego_ignore_types[i][j];
+        if (borg.init_save.ego_ignore_types) {
+            for (i = 0; i < z_info->e_max; i++)
+                for (j = ITYPE_NONE; j < ITYPE_MAX; j++)
+                    ego_ignore_types[i][j]
+                        = borg.init_save.ego_ignore_types[i][j];
+        }
     }
 
     for (i = 0; i < z_info->e_max; i++)
@@ -442,8 +445,6 @@ void borg_reinit_options(void)
 
 void borg_reset_settings(void)
 {
-    int i, j;
-
     /* Restore user key mode */
     if (borg.init_save.key_mode == KEYMAP_MODE_ROGUE) {
         option_set("rogue_like_commands", true);
@@ -452,31 +453,7 @@ void borg_reset_settings(void)
         option_set("rogue_like_commands", false);
     }
 
-    /* reset the "ignore" flags */
-    if (borg_cfg[BORG_RESTORE_IGNORE_SETTINGS]) {
-        /* Reset ignore bits */
-        for (i = 0; i < z_info->k_max; i++)
-            k_info[i].ignore = borg.init_save.kinfo_ignore[i];
-
-        /* Clear the ignore bytes */
-        for (i = ITYPE_NONE; i < ITYPE_MAX; i++)
-            ignore_level[i] = borg.init_save.ignore_level[i];
-
-        /* Clear ego ignore */
-        for (i = 0; i < z_info->e_max; i++)
-            for (j = ITYPE_NONE; j < ITYPE_MAX; j++)
-                ego_ignore_types[i][j] = borg.init_save.ego_ignore_types[i][j];
-    }
-
-    for (i = 0; i < z_info->e_max; i++)
-        mem_free(borg.init_save.ego_ignore_types[i]);
-    mem_free(borg.init_save.ego_ignore_types);
-
-    borg.init_save.ego_ignore_types = NULL;
-
-    mem_free(borg.init_save.kinfo_ignore);
-    borg.init_save.kinfo_ignore = NULL;
-
+    borg_reset_ignore();
     borg_free_detection();
 }
 

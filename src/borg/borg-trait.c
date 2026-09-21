@@ -3133,6 +3133,8 @@ void borg_notice_player(void)
 
 void borg_trait_init(void)
 {
+    borg_trait_free();
+
     borg.has        = mem_zalloc(z_info->k_max * sizeof(int));
     borg.trait      = mem_zalloc(BI_MAX * sizeof(int));
     borg.activation = mem_zalloc(z_info->act_max * sizeof(int));
@@ -3140,11 +3142,14 @@ void borg_trait_init(void)
 
 void borg_trait_free(void)
 {
-    mem_free(borg.has);
+    if (borg.has)
+        mem_free(borg.has);
     borg.has = NULL;
-    mem_free(borg.trait);
+    if (borg.trait)
+        mem_free(borg.trait);
     borg.trait = NULL;
-    mem_free(borg.activation);
+    if (borg.activation)
+        mem_free(borg.activation);
     borg.activation = NULL;
 }
 

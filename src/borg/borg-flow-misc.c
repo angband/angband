@@ -1400,10 +1400,14 @@ void borg_free_flow_misc(void)
 {
     borg_free_track(&track_vein);
 
-    mem_free(track_shop_y);
-    track_shop_y = NULL;
-    mem_free(track_shop_x);
-    track_shop_x = NULL;
+    if (track_shop_y) {
+        mem_free(track_shop_y);
+        track_shop_y = NULL;
+    }
+    if (track_shop_x) {
+        mem_free(track_shop_x);
+        track_shop_x = NULL;
+    }
 }
 
 #endif

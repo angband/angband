@@ -549,7 +549,8 @@ static void calc_free(struct borg_calculation *calc)
             token_free(calc->token_array->items[i]);
             calc->token_array->items[i] = NULL;
         }
-        mem_free(calc->token_array);
+        if (calc->token_array)
+            mem_free(calc->token_array);
         calc->token_array = NULL;
     }
     mem_free(calc);

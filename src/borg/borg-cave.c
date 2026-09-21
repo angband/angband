@@ -30,6 +30,8 @@ borg_grid *borg_grids[AUTO_MAX_Y]; /* The grids */
 
 void borg_init_cave(void)
 {
+    borg_free_cave();
+
     /* sanity check  */
     if (DUNGEON_WID != z_info->dungeon_wid
         || DUNGEON_HGT != z_info->dungeon_hgt) {
@@ -47,7 +49,9 @@ void borg_init_cave(void)
 void borg_free_cave(void)
 {
     for (int y = 0; y < AUTO_MAX_Y; ++y) {
-        mem_free(borg_grids[y]);
+        if (borg_grids[y]) {
+            mem_free(borg_grids[y]);
+        }
         borg_grids[y] = NULL;
     }
 }

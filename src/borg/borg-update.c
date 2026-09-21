@@ -3177,6 +3177,8 @@ void borg_alloc_detection(void)
 
 void borg_init_update(void)
 {
+    borg_free_update();
+
     /* Array of "wanks" */
     borg_wanks = mem_zalloc(AUTO_VIEW_MAX * sizeof(borg_wank));
 
@@ -3188,8 +3190,10 @@ void borg_init_update(void)
 
 void borg_free_update(void)
 {
-    mem_free(borg_wanks);
-    borg_wanks = NULL;
+    if (borg_wanks) {
+        mem_free(borg_wanks);
+        borg_wanks = NULL;
+    }
 }
 
 #endif

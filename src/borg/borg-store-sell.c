@@ -1267,16 +1267,22 @@ int borg_count_sell(void)
 
 void borg_init_store_sell(void)
 {
+    borg_free_store_sell();
+
     test_item = mem_zalloc(z_info->store_inven_max * sizeof(uint8_t));
     best_item = mem_zalloc(z_info->store_inven_max * sizeof(uint8_t));
 }
 
 void borg_free_store_sell(void)
 {
-    mem_free(best_item);
-    best_item = NULL;
-    mem_free(test_item);
-    test_item = NULL;
+    if (test_item) {
+        mem_free(test_item);
+        test_item = NULL;
+    }
+    if (best_item) {
+        mem_free(best_item);
+        best_item = NULL;
+    }
 }
 
 #endif

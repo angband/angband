@@ -573,7 +573,8 @@ static void depth_free(struct borg_depth_line *depth)
             depth->reason = NULL;
         }
 
-        mem_free(depth);
+        if (depth)
+            mem_free(depth);
         depth = NULL;
     }
 }
@@ -1168,7 +1169,8 @@ static void power_free(struct borg_power_line *power)
             mem_free(power->value);
             power->value = NULL;
         }
-        mem_free(power);
+        if (power)
+            mem_free(power);
         power = NULL;
     }
 }

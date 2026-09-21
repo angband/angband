@@ -1558,6 +1558,8 @@ bool borg_is_ammo(int tval)
 
 void borg_init_item_wear(void)
 {
+    borg_free_item_wear();
+
     /* Track the worn items to avoid loops */
     track_worn_num   = 0;
     track_worn_size  = 10;
@@ -1567,8 +1569,10 @@ void borg_init_item_wear(void)
 
 void borg_free_item_wear(void)
 {
-    mem_free(track_worn_name1);
-    track_worn_name1 = NULL;
+    if (track_worn_name1) {
+        mem_free(track_worn_name1);
+        track_worn_name1 = NULL;
+    }
 }
 
 #endif

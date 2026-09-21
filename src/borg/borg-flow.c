@@ -1220,15 +1220,21 @@ void borg_free_track(struct borg_track *track)
 {
     track->num  = 0;
     track->size = 0;
-    mem_free(track->x);
-    track->x = NULL;
-    mem_free(track->y);
-    track->y = NULL;
+    if (track->x) {
+        mem_free(track->x);
+        track->x = NULL;
+    }
+    if (track->y) {
+        mem_free(track->y);
+        track->y = NULL;
+    }
 }
 
 void borg_init_flow(void)
 {
     int x, y;
+
+    borg_free_flow();
 
     /*** Grid data ***/
 
@@ -1279,16 +1285,30 @@ void borg_free_flow(void)
     borg_free_track(&track_door);
     borg_free_track(&track_step);
 
-    mem_free(borg_data_icky);
-    borg_data_icky = NULL;
-    mem_free(borg_data_know);
-    borg_data_know = NULL;
-    mem_free(borg_data_hard);
-    borg_data_hard = NULL;
-    mem_free(borg_data_cost);
-    borg_data_cost = NULL;
-    mem_free(borg_data_flow);
-    borg_data_flow = NULL;
+    if (borg_data_flow) {
+        mem_free(borg_data_flow);
+        borg_data_flow = NULL;
+    }
+    if (borg_data_icky) {
+        mem_free(borg_data_icky);
+        borg_data_icky = NULL;
+    }
+    if (borg_data_know) {
+        mem_free(borg_data_know);
+        borg_data_know = NULL;
+    }
+    if (borg_data_hard) {
+        mem_free(borg_data_hard);
+        borg_data_hard = NULL;
+    }
+    if (borg_data_cost) {
+        mem_free(borg_data_cost);
+        borg_data_cost = NULL;
+    }
+    if (borg_data_flow) {
+        mem_free(borg_data_flow);
+        borg_data_flow = NULL;
+    }
 }
 
 #endif

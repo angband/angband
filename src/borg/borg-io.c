@@ -507,6 +507,8 @@ static void borg_bell(game_event_type unused, game_event_data *data, void *user)
 
 void borg_init_io(void)
 {
+    borg_free_io();
+
     /* Allocate the "keypress queue" */
     borg_key_queue = mem_zalloc(KEY_SIZE * sizeof(keycode_t));
 
@@ -521,10 +523,12 @@ void borg_free_io(void)
 {
     event_remove_handler(EVENT_BELL, borg_bell, NULL);
  
-    mem_free(borg_key_history);
+    if (borg_key_history)
+        mem_free(borg_key_history);
     borg_key_history = NULL;
 
-    mem_free(borg_key_queue);
+    if (borg_key_queue)
+        mem_free(borg_key_queue);
     borg_key_queue = NULL;
 }
 #endif

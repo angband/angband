@@ -3199,8 +3199,10 @@ static void borg_free_monster_names(void)
 {
     int i;
 
-    mem_free(borg_normal_what);
-    borg_normal_what = NULL;
+    if (borg_normal_what) {
+        mem_free(borg_normal_what);
+        borg_normal_what = NULL;
+    }
     if (borg_normal_text) {
         for (i = 0; i < borg_normal_size; ++i) {
             string_free((char *)borg_normal_text[i]);
@@ -3209,8 +3211,10 @@ static void borg_free_monster_names(void)
         borg_normal_text = NULL;
     }
     borg_normal_size = 0;
-    mem_free(borg_unique_what);
-    borg_unique_what = NULL;
+    if (borg_unique_what) {
+        mem_free(borg_unique_what);
+        borg_unique_what = NULL;
+    }
     if (borg_unique_text) {
         for (i = 0; i < borg_unique_size; ++i) {
             string_free((char *)borg_unique_text[i]);
@@ -3223,6 +3227,8 @@ static void borg_free_monster_names(void)
 
 void borg_init_flow_kill(void)
 {
+    borg_free_flow_kill();
+
     /*** Monster tracking ***/
 
     /* No monsters yet */
@@ -3264,14 +3270,20 @@ void borg_free_flow_kill(void)
 {
     borg_free_monster_names();
 
-    mem_free(borg_race_death);
-    borg_race_death = NULL;
+    if (borg_race_death) {
+        mem_free(borg_race_death);
+        borg_race_death = NULL;
+    }
 
-    mem_free(borg_race_count);
-    borg_race_count = NULL;
+    if (borg_race_count) {
+        mem_free(borg_race_count);
+        borg_race_count = NULL;
+    }
 
-    mem_free(borg_kills);
-    borg_kills = NULL;
+    if (borg_kills) {
+        mem_free(borg_kills);
+        borg_kills = NULL;
+    }
 }
 
 #endif

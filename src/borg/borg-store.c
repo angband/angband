@@ -191,6 +191,8 @@ void borg_notice_store(void)
 
 void borg_init_store(void)
 {
+    borg_free_store();
+
     if (f_info[FEAT_HOME].shopnum - 1 != BORG_HOME) {
         msg(format("borg thinks home is %d, game thinks home is %d.  aborting. ",
             f_info[FEAT_HOME].shopnum - 1, BORG_HOME));
@@ -216,16 +218,24 @@ void borg_free_store(void)
     borg_free_store_sell();
 
     for (int i = 0; i < z_info->store_max; i++) {
-        mem_free(borg_shops[i].ware);
-        borg_shops[i].ware = NULL;
-        mem_free(borg_safe_shops[i].ware);
-        borg_safe_shops[i].ware = NULL;
+        if (borg_shops && borg_shops[i].ware) {
+            mem_free(borg_shops[i].ware);
+            borg_shops[i].ware = NULL;
+        }
+        if (borg_safe_shops && borg_safe_shops[i].ware) {
+            mem_free(borg_safe_shops[i].ware);
+            borg_safe_shops[i].ware = NULL;
+        }
     }
 
-    mem_free(borg_safe_shops);
-    borg_safe_shops = NULL;
-    mem_free(borg_shops);
-    borg_shops = NULL;
+    if (borg_safe_shops) {
+        mem_free(borg_safe_shops);
+        borg_safe_shops = NULL;
+    }
+    if (borg_shops) {
+        mem_free(borg_shops);
+        borg_shops = NULL;
+    }
 }
 
 #endif

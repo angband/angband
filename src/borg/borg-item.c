@@ -151,10 +151,14 @@ void borg_free_item(void)
 {
     /*** Item/Ware arrays ***/
 
-    mem_free(safe_items);
-    safe_items = NULL;
-    mem_free(borg_items);
-    borg_items = NULL;
+    if (safe_items) {
+        mem_free(safe_items);
+        safe_items = NULL;
+    }
+    if (borg_items) {
+        mem_free(borg_items);
+        borg_items = NULL;
+    }
 }
 
 #endif

@@ -886,6 +886,8 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
 
 void borg_init_flow_take(void)
 {
+    borg_free_flow_take();
+
     /*** Object tracking ***/
 
     /* No objects yet */
@@ -898,8 +900,10 @@ void borg_init_flow_take(void)
 
 void borg_free_flow_take(void)
 {
-    mem_free(borg_takes);
-    borg_takes = NULL;
+    if (borg_takes) {
+        mem_free(borg_takes);
+        borg_takes = NULL;
+    }
 }
 
 #endif
