@@ -255,8 +255,9 @@ struct keypress textui_textblock_show(textblock *tb, region orig_area, const cha
  * Once this function has been called, the cursor should not be moved
  * until all the related "text_out()" calls to the window are complete.
  *
- * This function will correctly handle any width up to the maximum legal
- * value of 256, though it works best for a standard 80 character width.
+ * This function will correctly handle strings that convert to wide character
+ * strings which are 1024 characters long or less.  Strings converting to more
+ * than 1024 wide characters will be truncated to 1024 wide characters.
  */
 void text_out_to_screen(uint8_t a, const char *str)
 {
@@ -268,6 +269,7 @@ void text_out_to_screen(uint8_t a, const char *str)
 
 	const wchar_t *s;
 	wchar_t buf[1024];
+	size_t nc;
 
 	/* Obtain the size */
 	(void)Term_get_size(&wid, &h);
@@ -275,9 +277,12 @@ void text_out_to_screen(uint8_t a, const char *str)
 	/* Obtain the cursor */
 	(void)Term_locate(&x, &y);
 
-	/* Copy to a rewriteable string */
-	text_mbstowcs(buf, str, 1024);
-	
+	/* Convert to wide characters */
+	nc = text_mbstowcs(buf, str, 1024);
+	if (nc == (size_t)-1 || nc == 0) {
+		return;
+	}
+
 	/* Use special wrapping boundary? */
 	if ((text_out_wrap > 0) && (text_out_wrap < wid))
 		wrap = text_out_wrap;
@@ -285,7 +290,7 @@ void text_out_to_screen(uint8_t a, const char *str)
 		wrap = wid;
 
 	/* Process the string */
-	for (s = buf; *s; s++) {
+	for (s = buf; s < buf + nc; s++) {
 		wchar_t ch;
 
 		/* Force wrap */

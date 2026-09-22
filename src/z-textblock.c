@@ -99,7 +99,7 @@ static void textblock_vappend_c(textblock *tb, uint8_t attr, const char *fmt,
 {
 	size_t temp_len = TEXTBLOCK_LEN_INITIAL;
 	char *temp_space = mem_zalloc(temp_len);
-	int new_length;
+	size_t new_length;
 
 	/* We have to format the incoming string in native (external) format
 	 * re-allocating the temporary space as necessary. Once it's been
@@ -123,11 +123,20 @@ static void textblock_vappend_c(textblock *tb, uint8_t attr, const char *fmt,
 
 	/* Get extent of addition in wide chars */
 	new_length = text_mbstowcs(NULL, temp_space, 0);
-	assert(new_length >= 0); /* If this fails, the string was badly formed */
+	if (new_length == (size_t)-1 || new_length == 0) {
+		mem_free(temp_space);
+		return;
+	}
 	textblock_resize_if_needed(tb, new_length + 1);
 
 	/* Convert to wide chars, into the text block buffer */
-	text_mbstowcs(tb->text + tb->strlen, temp_space, tb->size - tb->strlen);
+	new_length = text_mbstowcs(tb->text + tb->strlen, temp_space,
+		tb->size - tb->strlen);
+	if (new_length == (size_t)-1 || new_length == 0) {
+		mem_free(temp_space);
+		return;
+	}
+
 	memset(tb->attrs + tb->strlen, attr, new_length);
 	tb->strlen += new_length;
 	mem_free(temp_space);

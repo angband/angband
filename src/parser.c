@@ -331,7 +331,12 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 				return PARSE_ERROR_NOT_NUMBER;
 			}
 		} else if (t == PARSE_T_CHAR) {
-			text_mbstowcs(&v->u.cval, tok, 1);
+			size_t nc = text_mbstowcs(&v->u.cval, tok, 1);
+
+			if (nc == (size_t)-1 || nc == 0) {
+				p->error = PARSE_ERROR_NOT_UTF8;
+				return PARSE_ERROR_NOT_UTF8;
+			}
 		} else if (t == PARSE_T_SYM || t == PARSE_T_STR) {
 			v->u.sval = string_make(tok);
 		} else if (t == PARSE_T_RAND) {
