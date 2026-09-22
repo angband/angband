@@ -29,7 +29,7 @@
 /*
  * Calculate the elapsed time since a given borg_time
  */
-extern borg_time borg_timer(const borg_time time);
+#define borg_timer(time_in) (borg.time.now - time_in)
 
 /*
  * money Scumming is a type of town scumming for money

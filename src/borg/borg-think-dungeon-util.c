@@ -58,13 +58,6 @@ static int borg_stuff_feeling[]
     = { 50000, /* 0 is no feeling yet given, stick around to get one */
           8000, 8000, 8000, 8000, 5000, 5000, 100, 100, 100, 100, 0 };
 
-/*
- * Calculate the elapsed time since a given borg_time
- */
-borg_time borg_timer(const borg_time time)
-{
-    return borg.time.now - time;
-}
 
 /*
  * money Scumming is a type of town scumming for money

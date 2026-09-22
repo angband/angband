@@ -216,7 +216,7 @@ bool borg_get_messages(struct keypress* key, struct loc cursor)
 
     /* handle the messages the borg has to react to immediately */
     if (borg_prompt && !inkey_flag && strlen(buf)) {
-        if (borg_react_prompted(buf, key))
+        if (borg_react_prompted(buf, key, cursor))
             return true;
     }
 
