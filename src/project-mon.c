@@ -90,11 +90,15 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 	int i, d, first_d;
 	int angle;
 
-	/* Determine where target is in relation to caster, extend. */
+	/*
+	 * Find the angle (/2) of the line from the centre to target.
+	 * When the centre and target coincide, choose a random angle.
+	 */
 	grid = loc_sum(loc_diff(target, centre), loc(20, 20));
-
-	/* Find the angle (/2) of the line from caster to target. */
 	angle = get_angle_to_grid[grid.y][grid.x];
+	if (angle == 255) {
+		angle = (randint0(8) * 45) / 2;
+	}
 
 	/* Start at the target grid. */
 	grid = target;
@@ -238,6 +242,7 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 
 typedef struct project_monster_handler_context_s {
 	const struct source origin;
+	const struct loc centre;
 	const int r;
 	const struct loc grid;
 	int dam;
@@ -687,8 +692,6 @@ static void project_monster_handler_INERTIA(project_monster_handler_context_t *c
 /* Force */
 static void project_monster_handler_FORCE(project_monster_handler_context_t *context)
 {
-	struct loc centre = origin_get_loc(context->origin);
-
 	if (one_in_(3)) {
 		context->mon_timed[MON_TMD_STUN] = adjust_radius(context,
 														 5 + randint1(10));
@@ -701,7 +704,7 @@ static void project_monster_handler_FORCE(project_monster_handler_context_t *con
 		return;
 
 	/* Thrust monster away */
-	thrust_away(centre, context->grid, 3 + context->dam / 20);
+	thrust_away(context->centre, context->grid, 3 + context->dam / 20);
 }
 
 /* Time -- breathers resist */
@@ -1267,7 +1270,9 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
  * Called for projections with the PROJECT_KILL flag set, which includes
  * bolt, beam, ball and breath effects.
  *
- * \param origin is the monster list index of the caster
+ * \param origin describes what generated the projection
+ * \param centre is the location of the centre of the projection; it may be
+ * different than origin_get_loc(origin)
  * \param r is the distance from the centre of the effect
  * \param grid is the coordinates of the grid being handled
  * \param dam is the "damage" from the effect at distance r from the centre
@@ -1325,8 +1330,8 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
  *
  * Effects on grids which are memorized but not in view are also seen.
  */
-void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
-			   int flg, bool *did_hit, bool *was_obvious)
+void project_m(struct source origin, struct loc centre, int r, struct loc grid,
+		int dam, int typ, int flg, bool *did_hit, bool *was_obvious)
 {
 	struct monster *mon;
 	struct monster_lore *lore;
@@ -1350,6 +1355,7 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	project_monster_handler_f monster_handler = monster_handlers[typ];
 	project_monster_handler_context_t context = {
 		origin,
+		centre,
 		r,
 		grid,
 		dam,

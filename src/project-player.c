@@ -132,6 +132,7 @@ static void project_player_drain_stats(int num)
 typedef struct project_player_handler_context_s {
 	/* Input values */
 	const struct source origin;
+	const struct loc centre;
 	const int r;
 	const struct loc grid;
 	int dam; /* May need adjustment */
@@ -522,20 +523,12 @@ static int project_player_handler_INERTIA(project_player_handler_context_t *cont
 
 static int project_player_handler_FORCE(project_player_handler_context_t *context)
 {
-	struct loc centre = origin_get_loc(context->origin);
-
-	/* Player gets pushed in a random direction if on the trap */
-	if (context->origin.what == SRC_TRAP &&	loc_eq(player->grid, centre)) {
-		int d = randint0(8);
-		centre = loc_sum(centre, ddgrid_ddd[d]);
-	}
-
 	/* Stun */
 	(void)player_inc_timed(player, TMD_STUN, randint1(20), true, true,
 		true);
 
 	/* Thrust player away. */
-	thrust_away(centre, context->grid, 3 + context->dam / 20);
+	thrust_away(context->centre, context->grid, 3 + context->dam / 20);
 	return 0;
 }
 
@@ -780,6 +773,8 @@ static const project_player_handler_f player_handlers[] = {
  * bolt, beam, ball and breath effects.
  *
  * \param origin describes what generated the projection
+ * \param centre is the location of the centre of projection; it may be
+ * different than origin_get_loc(origin).
  * \param r is the distance from the centre of the effect
  * \param grid is the coordinates of the grid being handled
  * \param dam is the "damage" from the effect at distance r from the centre
@@ -797,8 +792,8 @@ static const project_player_handler_f player_handlers[] = {
  *
  * We assume the player is aware of some effect, and always return "true".
  */
-bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
-			   int power, bool self)
+bool project_p(struct source origin, struct loc centre, int r, struct loc grid,
+		int dam, int typ, int power, bool self)
 {
 	bool blind = (player->timed[TMD_BLIND] ? true : false);
 	bool seen = !blind;
@@ -810,6 +805,7 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 	project_player_handler_f player_handler = player_handlers[typ];
 	project_player_handler_context_t context = {
 		origin,
+		centre,
 		r,
 		grid,
 		dam,

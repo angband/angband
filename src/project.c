@@ -728,8 +728,10 @@ bool project(struct source origin, int rad, struct loc finish,
 		}
 
 		/* Save the "blast epicenter" */
-		centre.y = y;
-		centre.x = x;
+		if (rad > 0 && !(flg & (PROJECT_BEAM))) {
+			centre.y = y;
+			centre.x = x;
+		}
 	}
 
 	/* Now check for explosions.  Beams have already stored all the grids they
@@ -925,8 +927,10 @@ bool project(struct source origin, int rad, struct loc finish,
 	/* Affect objects on every relevant grid */
 	if (flg & (PROJECT_ITEM)) {
 		for (i = 0; i < num_grids; i++) {
-			if (project_o(origin, distance_to_grid[i], blast_grid[i],
-						  dam_at_dist[distance_to_grid[i]], typ, obj)) {
+			if (project_o(origin, centre, distance_to_grid[i],
+					blast_grid[i],
+					dam_at_dist[distance_to_grid[i]], typ,
+					obj)) {
 				notice = true;
 			}
 		}
@@ -953,9 +957,9 @@ bool project(struct source origin, int rad, struct loc finish,
 				continue;
 
 			/* Affect the monster in the grid */
-			project_m(origin, distance_to_grid[i], blast_grid[i],
-			          dam_at_dist[distance_to_grid[i]], typ, flg,
-			          &did_hit, &was_obvious);
+			project_m(origin, centre, distance_to_grid[i],
+				blast_grid[i], dam_at_dist[distance_to_grid[i]],
+				typ, flg, &did_hit, &was_obvious);
 			if (was_obvious) {
 				notice = true;
 			}
@@ -1001,9 +1005,10 @@ bool project(struct source origin, int rad, struct loc finish,
 				power = MAX(power, 80);
 		}
 		for (i = 0; i < num_grids; i++) {
-			if (project_p(origin, distance_to_grid[i], blast_grid[i],
-						  dam_at_dist[distance_to_grid[i]], typ, power,
-						  flg & PROJECT_SELF)) {
+			if (project_p(origin, centre, distance_to_grid[i],
+					blast_grid[i],
+					dam_at_dist[distance_to_grid[i]], typ,
+					power, flg & PROJECT_SELF)) {
 				notice = true;
 				if (player->is_dead) {
 					mem_free(dam_at_dist);
@@ -1017,8 +1022,10 @@ bool project(struct source origin, int rad, struct loc finish,
 	/* Affect features in every relevant grid */
 	if (flg & (PROJECT_GRID)) {
 		for (i = 0; i < num_grids; i++) {
-			if (project_f(origin, distance_to_grid[i], blast_grid[i],
-						  dam_at_dist[distance_to_grid[i]], typ)) {
+			if (project_f(origin, centre, distance_to_grid[i],
+					blast_grid[i],
+					dam_at_dist[distance_to_grid[i]],
+					typ)) {
 				notice = true;
 			}
 		}

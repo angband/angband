@@ -173,6 +173,7 @@ int inven_damage(struct player *p, int type, int cperc)
 
 typedef struct project_object_handler_context_s {
 	const struct source origin;
+	const struct loc centre;
 	const int r;
 	const struct loc grid;
 	const int dam;
@@ -489,7 +490,9 @@ static const project_object_handler_f object_handlers[] = {
  * Called for projections with the PROJECT_ITEM flag set, which includes
  * beam, ball and breath effects.
  *
- * \param origin is the origin of the effect
+ * \param origin describes what generated the projection
+ * \param centre is the location of the centre of the projection; it may be
+ * different than origin_get_loc(origin)
  * \param r is the distance from the centre of the effect
  * \param grid is the coordinates of the grid being handled
  * \param dam is the "damage" from the effect at distance r from the centre
@@ -503,8 +506,8 @@ static const project_object_handler_f object_handlers[] = {
  *
  * Effects on objects which are memorized but not in view are also seen.
  */
-bool project_o(struct source origin, int r, struct loc grid, int dam, int typ,
-			   const struct object *protected_obj)
+bool project_o(struct source origin, struct loc centre, int r, struct loc grid,
+		int dam, int typ, const struct object *protected_obj)
 {
 	struct object *obj = square_object(cave, grid);
 	bool obvious = false;
@@ -519,6 +522,7 @@ bool project_o(struct source origin, int r, struct loc grid, int dam, int typ,
 		project_object_handler_f object_handler = object_handlers[typ];
 		project_object_handler_context_t context = {
 			origin,
+			centre,
 			r,
 			grid,
 			dam,

@@ -108,13 +108,14 @@ int inven_damage(struct player *p, int type, int cperc);
 int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect,
 			   int resist, bool actual);
 
-bool project_f(struct source, int r, struct loc grid, int dam, int typ);
-bool project_o(struct source, int r, struct loc grid, int dam, int typ,
-			   const struct object *protected_obj);
-void project_m(struct source, int r, struct loc grid, int dam, int typ, int flg,
-               bool *did_hit, bool *was_obvious);
-bool project_p(struct source, int r, struct loc grid, int dam, int typ,
-			   int power, bool self);
+bool project_f(struct source, struct loc centre, int r, struct loc grid,
+		int dam, int typ);
+bool project_o(struct source, struct loc centre, int r, struct loc grid,
+		int dam, int typ, const struct object *protected_obj);
+void project_m(struct source, struct loc centre, int r, struct loc grid,
+		int dam, int typ, int flg, bool *did_hit, bool *was_obvious);
+bool project_p(struct source, struct loc centre, int r, struct loc grid,
+		int dam, int typ, int power, bool self);
 
 int project_path(struct chunk *c, struct loc *gp, int range, struct loc grid1,
 	struct loc grid2, int flg);

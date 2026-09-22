@@ -37,6 +37,7 @@
 
 typedef struct project_feature_handler_context_s {
 	const struct source origin;
+	const struct loc centre;
 	const int r;
 	const struct loc grid;
 	const int dam;
@@ -690,7 +691,9 @@ static const project_feature_handler_f feature_handlers[] = {
  * Called for projections with the PROJECT_GRID flag set, which includes
  * beam, ball and breath effects.
  *
- * \param origin is the origin of the effect
+ * \param origin describes what generated the projection
+ * \param centre is location of the centre of the projection.  It may be
+ * different than origin_get_loc(origin).
  * \param r is the distance from the centre of the effect
  * \param grid is the coordinates of the grid being handled
  * \param dam is the "damage" from the effect at distance r from the centre
@@ -702,12 +705,14 @@ static const project_feature_handler_f feature_handlers[] = {
  *
  * Effects on grids which are memorized but not in view are also seen.
  */
-bool project_f(struct source origin, int r, struct loc grid, int dam, int typ)
+bool project_f(struct source origin, struct loc centre, int r, struct loc grid,
+		int dam, int typ)
 {
 	bool obvious = false;
 
 	project_feature_handler_context_t context = {
 		origin,
+		centre,
 		r,
 		grid,
 		dam,
