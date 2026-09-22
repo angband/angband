@@ -916,6 +916,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     player/timed.c
     player/util.c
     trivial/trivial.c
+    z-bitflag/bitflag.c
     z-dice/dice.c
     z-expression/expression.c
     z-file/filename-index.c

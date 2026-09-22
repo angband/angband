@@ -18,6 +18,7 @@ SUITES = \
 	parse/suite.mk \
 	player/suite.mk \
 	trivial/suite.mk \
+	z-bitflag/suite.mk \
 	z-dice/suite.mk \
 	z-expression/suite.mk \
 	z-file/suite.mk \
