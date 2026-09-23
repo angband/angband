@@ -513,7 +513,7 @@ void borg_notice_weapon_swap(void)
                 && ((!borg.trait[BI_ICOLD] && weapon_swap_immune_cold)
                     || (!borg.trait[BI_IFIRE] && weapon_swap_immune_fire))) {
                 /* If Tarraseque is alive */
-                if (borg_race_death[borg.mon.tarrasque] == 0) {
+                if (borg_race_death[borg.id.tarrasque] == 0) {
                     if (!borg.trait[BI_ICOLD] && weapon_swap_immune_cold)
                         v += 90000L;
                     if (!borg.trait[BI_IFIRE] && weapon_swap_immune_fire)
@@ -1081,7 +1081,7 @@ void borg_notice_armour_swap(void)
                 && ((!borg.trait[BI_ICOLD] && armour_swap_immune_cold)
                     || (!borg.trait[BI_IFIRE] && armour_swap_immune_fire))) {
                 /* If Tarrasque is alive */
-                if (borg_race_death[borg.mon.tarrasque] == 0) {
+                if (borg_race_death[borg.id.tarrasque] == 0) {
                     if (!borg.trait[BI_ICOLD] && armour_swap_immune_cold)
                         v += 90000L;
                     if (!borg.trait[BI_IFIRE] && armour_swap_immune_fire)

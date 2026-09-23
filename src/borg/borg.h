@@ -277,12 +277,51 @@ struct borg_struct {
         uint16_t breeders; /* number of breeders on this level */
         bool     scary; /* scary guy on this level */
 
-        unsigned int morgoth;
         struct loc   morgoth_panel;
         unsigned int unique;
+    } mon;
+
+    struct {
+        unsigned int morgoth;
         unsigned int sauron;
         unsigned int tarrasque;
-    } mon;
+        unsigned int maggot;
+        unsigned int bullroarer;
+        unsigned int beorn;
+        unsigned int grip;
+        unsigned int fang;
+        unsigned int osse;
+
+        unsigned int squint_eyed_rogue;
+        unsigned int small_kobold;
+        unsigned int soldier;
+        unsigned int cutpurse;
+        unsigned int acolyte;
+        unsigned int apprentice;
+        unsigned int kobold;
+        unsigned int shrieker_mushroom_patch;
+        unsigned int filthy_street_urchin;
+        unsigned int battle_scarred_veteran;
+        unsigned int mean_looking_mercenary;
+        unsigned int giant_white_mouse;
+        unsigned int white_worm_mass;
+        unsigned int green_worm_mass;
+        unsigned int cave_spider;
+        unsigned int red_naga;
+        unsigned int giant_red_frog;
+        unsigned int radiation_eye;
+        unsigned int yellow_worm_mass;
+        unsigned int gravity_hound;
+        unsigned int inertia_hound;
+        unsigned int dread;
+        unsigned int dracolich;
+        unsigned int dracolisk;
+        unsigned int light_hound;
+        unsigned int dark_hound;
+        unsigned int pukelman;
+        unsigned int night_mare;
+        unsigned int drolem;
+    } id;
 
     struct {
         bool morgoth;

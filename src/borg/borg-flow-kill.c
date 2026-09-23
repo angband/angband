@@ -200,7 +200,7 @@ static void borg_update_kill_new(int i)
     kill->ranged_attack = num;
 
     /* We want to remember Morgy's panel */
-    if (kill->r_idx == borg.mon.morgoth) {
+    if (kill->r_idx == borg.id.morgoth) {
         j = ((kill->pos.y - borg_panel_hgt() / 2) / borg_panel_hgt())
             * borg_panel_hgt();
         if (j < 0)
@@ -348,7 +348,7 @@ static void borg_update_kill_old(int i)
         borg_race_death[i] = 1;
 
     /* We want to remember Morgy's panel */
-    if (kill->r_idx == borg.mon.morgoth) {
+    if (kill->r_idx == borg.id.morgoth) {
         j = ((kill->pos.y - borg_panel_hgt() / 2) / borg_panel_hgt())
             * borg_panel_hgt();
         if (j < 0)
@@ -770,7 +770,7 @@ static int borg_new_kill(unsigned int r_idx, int y, int x)
     kill->when = borg.time.now;
 
     /* Mark the Morgoth time stamp if needed */
-    if (kill->r_idx == borg.mon.morgoth)
+    if (kill->r_idx == borg.id.morgoth)
         borg.time.morgoth = borg.time.now;
 
     /* Update the monster */
@@ -937,7 +937,7 @@ bool observe_kill_diff(int y, int x, uint8_t a, wchar_t c)
     kill->when = borg.time.now;
 
     /* Mark the Morgoth time stamp if needed */
-    if (kill->r_idx == borg.mon.morgoth)
+    if (kill->r_idx == borg.id.morgoth)
         borg.time.morgoth = borg.time.now;
 
     /* Done */
@@ -1080,7 +1080,7 @@ bool observe_kill_move(int y, int x, int d, uint8_t a, wchar_t c, bool flag)
         kill->when = borg.time.now;
 
         /* Mark the Morgoth time stamp if needed */
-        if (kill->r_idx == borg.mon.morgoth)
+        if (kill->r_idx == borg.id.morgoth)
             borg.time.morgoth = borg.time.now;
 
         /* Monster flickered */
@@ -1413,7 +1413,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
         kill->when = borg.time.now;
 
         /* Mark the Morgoth time stamp if needed */
-        if (kill->r_idx == borg.mon.morgoth)
+        if (kill->r_idx == borg.id.morgoth)
             borg.time.morgoth = borg.time.now;
 
         /* Known identity */
@@ -2704,88 +2704,90 @@ void borg_near_monster_type(int dist)
 		 /* run from certain scaries */
 		 /* !FIX this should be rewritten to not use specific names but */
 		 /* instead track certain attacks that are particularly scary */
-		if (borg.trait[BI_CLEVEL] <= 5 && (prefix_i(r_ptr->name, "squint")))
+            if (borg.trait[BI_CLEVEL] <= 5
+                && r_ptr->ridx == borg.id.squint_eyed_rogue)
 			borg.mon.scary = true;
 
 		/* Mage and priest are extra fearful */
 		if (borg.trait[BI_CLEVEL] <= 6
 			&& (borg.trait[BI_CLASS] == CLASS_MAGE
 				|| borg.trait[BI_CLASS] == CLASS_PRIEST)
-			&& (prefix_i(r_ptr->name, "squint")))
+			&& r_ptr->ridx == borg.id.squint_eyed_rogue)
 			borg.mon.scary = true;
 
 		/* run from certain dungeon scaries */
-		if (borg.trait[BI_CLEVEL] <= 5
-			&& (prefix_i(r_ptr->name, "Grip") || prefix_i(r_ptr->name, "Fang")
-				|| prefix_i(r_ptr->name, "small kobold")))
+        if (borg.trait[BI_CLEVEL] <= 5
+            && (r_ptr->ridx == borg.id.grip
+                || r_ptr->ridx == borg.id.fang
+                || r_ptr->ridx == borg.id.small_kobold))
 			borg.mon.scary = true;
 
-		/* run from certain scaries */
-		if (borg.trait[BI_CLEVEL] <= 8
-			&& (prefix_i(r_ptr->name, "soldier")
-				|| prefix_i(r_ptr->name, "cutpurse")
-				|| prefix_i(r_ptr->name, "acolyte")
-				|| prefix_i(r_ptr->name, "apprentice")
-				|| prefix_i(r_ptr->name, "kobold")
-				|| prefix_i(r_ptr->name, "jackal")
-				|| prefix_i(r_ptr->name, "shrieker")
-				|| prefix_i(r_ptr->name, "Farmer Maggot")
-				|| prefix_i(r_ptr->name, "filthy street urchin")
-				|| prefix_i(r_ptr->name, "battle-scarred veteran")
-				|| prefix_i(r_ptr->name, "mean-looking mercenary")))
-			borg.mon.scary = true;
+        /* run from certain scaries */
+        if (borg.trait[BI_CLEVEL] <= 8
+            && (r_ptr->ridx == borg.id.soldier
+                || r_ptr->ridx == borg.id.cutpurse
+                || r_ptr->ridx == borg.id.acolyte
+                || r_ptr->ridx == borg.id.apprentice
+                || r_ptr->ridx == borg.id.kobold
+                || r_ptr->ridx == borg.id.shrieker_mushroom_patch
+                || r_ptr->ridx == borg.id.maggot
+                || r_ptr->ridx == borg.id.filthy_street_urchin
+                || r_ptr->ridx == borg.id.battle_scarred_veteran
+                || r_ptr->ridx == borg.id.mean_looking_mercenary))
+            borg.mon.scary = true;
 
 		if (borg.trait[BI_CLEVEL] <= 15
-			&& (prefix_i(r_ptr->name, "Bullroarer")
-				|| ((prefix_i(r_ptr->name, "giant white mouse")
-					|| prefix_i(r_ptr->name, "white worm mass")
-					|| prefix_i(r_ptr->name, "green worm mass"))
-					&& breeder_count >= borg.trait[BI_CLEVEL])))
+            && (r_ptr->ridx == borg.id.bullroarer
+				|| ((r_ptr->ridx == borg.id.giant_white_mouse)
+					|| r_ptr->ridx == borg.id.white_worm_mass
+					|| r_ptr->ridx == borg.id.green_worm_mass)
+					&& breeder_count >= borg.trait[BI_CLEVEL]))
 			borg.mon.scary = true;
 
 		if (borg.trait[BI_CLEVEL] <= 20
-			&& (prefix_i(r_ptr->name, "cave spider")
-				|| prefix_i(r_ptr->name, "red naga")
-				|| prefix_i(r_ptr->name, "giant red frog")
-				|| prefix_i(r_ptr->name, "radiation eye")
-				|| (prefix_i(r_ptr->name, "yellow worm mass")
+			&& (r_ptr->ridx == borg.id.cave_spider
+				|| r_ptr->ridx == borg.id.red_naga
+				|| r_ptr->ridx == borg.id.giant_red_frog
+				|| r_ptr->ridx == borg.id.radiation_eye
+				|| (r_ptr->ridx == borg.id.yellow_worm_mass
 					&& breeder_count >= borg.trait[BI_CLEVEL])))
 			borg.mon.scary = true;
 
 		if (borg.trait[BI_CLEVEL] < 45
-			&& (prefix_i(r_ptr->name, "gravity")
-				|| prefix_i(r_ptr->name, "inertia")
-				|| prefix_i(r_ptr->base->name, "ancient dragon")
-				|| prefix_i(r_ptr->name, "Beorn")
-				|| prefix_i(r_ptr->name, "dread") /* Appear in Groups */))
+			&& (r_ptr->ridx == borg.id.gravity_hound
+				|| r_ptr->ridx == borg.id.inertia_hound
+                || prefix_i(r_ptr->base->name, "ancient dragon")
+                || r_ptr->ridx == borg.id.beorn
+				|| r_ptr->ridx == borg.id.dread))
 			borg.mon.scary = true;
 
 		/* Nether breath is bad */
 		if (!borg.trait[BI_SRNTHR]
-			&& (prefix_i(r_ptr->name, "Oss") /* Ossë, Herald of Ulmo */
-				|| prefix_i(r_ptr->name, "dracolich")
-				|| prefix_i(r_ptr->name, "dracolisk")))
+			&& (r_ptr->ridx == borg.id.osse /* Ossë, Herald of Ulmo */
+             || r_ptr->ridx == borg.id.dracolich
+			 || r_ptr->ridx == borg.id.dracolisk))
 			borg.mon.scary = true;
 
 		/* Blindness is really bad */
 		if ((!borg.trait[BI_SRBLIND])
-			&& ((prefix_i(r_ptr->name, "light hound") && !borg.trait[BI_SRLITE])
-				|| (prefix_i(r_ptr->name, "dark hound")
+			&& ((r_ptr->ridx == borg.id.light_hound && !borg.trait[BI_SRLITE])
+				|| (r_ptr->ridx == borg.id.dark_hound
 					&& !borg.trait[BI_SRDARK])))
 			borg.mon.scary = true;
 
 		/* Chaos and Confusion are really bad */
 		if ((!borg.trait[BI_SRKAOS] && !borg.trait[BI_SRCONF])
-			&& (my_stristr(r_ptr->name, "chaos")))
+            && (rsf_has(r_ptr->spell_flags, RSF_BR_CHAO)))
 			borg.mon.scary = true;
+
 		if (!borg.trait[BI_SRCONF]
-			&& (prefix_i(r_ptr->name, "pukelman")
-				|| prefix_i(r_ptr->name, "night mare")))
+			&& (r_ptr->ridx == borg.id.pukelman
+				|| r_ptr->ridx == borg.id.night_mare))
 			borg.mon.scary = true;
 
 		/* Poison is really Bad */
 		if (!borg.trait[BI_RPOIS] && /* Note the RPois not SRPois */
-			(prefix_i(r_ptr->name, "drolem")))
+			(r_ptr->ridx == borg.id.drolem))
 			borg.mon.scary = true;
 
 		/* Now do distance considerations */
@@ -3111,20 +3113,90 @@ static void borg_init_monster_names(void)
         if (!r_ptr->name)
             continue;
 
+        /* mark off any monster ids that are used in the code */
+        if (streq(r_ptr->name, "Morgoth, Lord of Darkness"))
+            borg.id.morgoth = r_ptr->ridx;
+        if (streq(r_ptr->name, "Sauron, the Sorcerer"))
+            borg.id.sauron = r_ptr->ridx;
+        if (streq(r_ptr->name, "The Tarrasque"))
+            borg.id.tarrasque = r_ptr->ridx;
+        if (streq(r_ptr->name, "squint-eyed rogue"))
+            borg.id.squint_eyed_rogue = r_ptr->ridx;
+        if (prefix(r_ptr->name, "Grip"))
+            borg.id.grip = r_ptr->ridx;
+        if (prefix(r_ptr->name, "Fang"))
+            borg.id.fang = r_ptr->ridx;
+        if (streq(r_ptr->name, "small kobold"))
+            borg.id.small_kobold = r_ptr->ridx;
+        if (streq(r_ptr->name, "soldier"))
+            borg.id.soldier = r_ptr->ridx;
+        if (streq(r_ptr->name, "cutpurse"))
+            borg.id.cutpurse = r_ptr->ridx;
+        if (streq(r_ptr->name, "acolyte"))
+            borg.id.acolyte = r_ptr->ridx;
+        if (streq(r_ptr->name, "apprentice"))
+            borg.id.apprentice = r_ptr->ridx;
+        if (streq(r_ptr->name, "kobold"))
+            borg.id.kobold = r_ptr->ridx;
+        if (streq(r_ptr->name, "shrieker mushroom patch"))
+            borg.id.shrieker_mushroom_patch = r_ptr->ridx;
+        if (streq(r_ptr->name, "Farmer Maggot"))
+            borg.id.maggot = r_ptr->ridx;
+        if (streq(r_ptr->name, "filthy street urchin"))
+            borg.id.filthy_street_urchin = r_ptr->ridx;
+        if (streq(r_ptr->name, "battle-scarred veteran"))
+            borg.id.battle_scarred_veteran = r_ptr->ridx;
+        if (streq(r_ptr->name, "mean-looking mercenary"))
+            borg.id.mean_looking_mercenary = r_ptr->ridx;
+        if (streq(r_ptr->name, "Bullroarer the Hobbit"))
+            borg.id.bullroarer = r_ptr->ridx;
+        if (streq(r_ptr->name, "giant white mouse"))
+            borg.id.giant_white_mouse = r_ptr->ridx;
+        if (streq(r_ptr->name, "white worm mass"))
+            borg.id.white_worm_mass = r_ptr->ridx;
+        if (streq(r_ptr->name, "green worm mass"))
+            borg.id.green_worm_mass = r_ptr->ridx;
+        if (streq(r_ptr->name, "cave spider"))
+            borg.id.cave_spider = r_ptr->ridx;
+        if (streq(r_ptr->name, "red naga"))
+            borg.id.red_naga = r_ptr->ridx;
+        if (streq(r_ptr->name, "giant red frog"))
+            borg.id.giant_red_frog = r_ptr->ridx;
+        if (streq(r_ptr->name, "radiation eye"))
+            borg.id.radiation_eye = r_ptr->ridx;
+        if (streq(r_ptr->name, "yellow worm mass"))
+            borg.id.yellow_worm_mass = r_ptr->ridx;
+        if (streq(r_ptr->name, "gravity hound"))
+            borg.id.gravity_hound = r_ptr->ridx;
+        if (streq(r_ptr->name, "inertia hound"))
+            borg.id.inertia_hound = r_ptr->ridx;
+        if (streq(r_ptr->name, "dread"))
+            borg.id.dread = r_ptr->ridx;
+        if (streq(r_ptr->name, "Beorn, the Shape-Changer"))
+            borg.id.beorn = r_ptr->ridx;
+        if (my_stristr(r_ptr->name, "Herald of Ulmo"))
+            borg.id.osse = r_ptr->ridx;
+        if (streq(r_ptr->name, "dracolich"))
+            borg.id.dracolich = r_ptr->ridx;
+        if (streq(r_ptr->name, "dracolisk"))
+            borg.id.dracolisk = r_ptr->ridx;
+        if (streq(r_ptr->name, "light hound"))
+            borg.id.light_hound = r_ptr->ridx;
+        if (streq(r_ptr->name, "dark hound"))
+            borg.id.dark_hound = r_ptr->ridx;
+        if (streq(r_ptr->name, "night mare"))
+            borg.id.night_mare = r_ptr->ridx;
+        if (streq(r_ptr->name, "pukelman"))
+            borg.id.pukelman = r_ptr->ridx;
+        if (streq(r_ptr->name, "drolem"))
+            borg.id.drolem = r_ptr->ridx;
+
         /* Skip non-unique monsters */
         if (!(rf_has(r_ptr->flags, RF_UNIQUE)))
             continue;
 
         text[size] = borg_massage_special_chars(r_ptr->name);
         what[size] = i;
-
-        /* a few special uniques to look out for */
-        if (streq(r_ptr->name, "Morgoth, Lord of Darkness"))
-            borg.mon.morgoth = r_ptr->ridx;
-        if (streq(r_ptr->name, "Sauron, the Sorcerer"))
-            borg.mon.sauron = r_ptr->ridx;
-        if (streq(r_ptr->name, "The Tarrasque"))
-            borg.mon.tarrasque = r_ptr->ridx;
 
         size++;
     }

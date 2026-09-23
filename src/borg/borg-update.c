@@ -2230,7 +2230,7 @@ void borg_update(void)
          */
         borg.near.morgoth = false;
         if ((borg.trait[BI_CDEPTH] >= 100 && !borg.trait[BI_KING])
-            || (borg.mon.unique == borg.mon.morgoth)) {
+            || (borg.mon.unique == borg.id.morgoth)) {
             /* We assume Morgoth is on this level */
             borg.near.morgoth = true;
 
@@ -2380,7 +2380,7 @@ void borg_update(void)
          */
         borg.near.morgoth = false;
         if ((borg.trait[BI_CDEPTH] >= 100 && !borg.trait[BI_KING])
-            || (borg.mon.unique == borg.mon.morgoth)) {
+            || (borg.mon.unique == borg.id.morgoth)) {
             /* We assume Morgoth is on this level */
             borg.near.morgoth = true;
         }
@@ -2394,11 +2394,11 @@ void borg_update(void)
          */
         if (borg.near.morgoth && borg_timer(borg.time.level) >= 500) {
             /* Morgoth is a no show */
-            if (borg.mon.unique != borg.mon.morgoth)
+            if (borg.mon.unique != borg.id.morgoth)
                 borg.near.morgoth = false;
 
             /* Morgoth has not been seen in a long time */
-            if (borg.mon.unique == borg.mon.morgoth
+            if (borg.mon.unique == borg.id.morgoth
                 && (borg_timer(borg.time.morgoth) > 500)) {
                 borg_note(format("# Morgoth has not been seen in %ld turns.  "
                                  "Going to hunt him.",

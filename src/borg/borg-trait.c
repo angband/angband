@@ -1,8 +1,8 @@
 /**
- * \file borg-trait.c 
+ * \file borg-trait.c
  * \brief The calculations to determine what items and abilities it has
  *        This code generally loads the arrays (borg.trait/has/activation)
- * 
+ *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
  *
@@ -1416,10 +1416,10 @@ static void borg_notice_equipment(void)
         /* track first uncursable item */
         if (item->uncursable) {
             borg.trait[BI_WHERE_CURSED] |= BORG_EQUIP;
-            if (!borg.trait[BI_FIRST_CURSED]) 
+            if (!borg.trait[BI_FIRST_CURSED])
                 borg.trait[BI_FIRST_CURSED] = i + 1;
         }
-        
+
         /* skip cursed non-artifacts */
         if (cursed_nonartifact(item))
             continue;
@@ -1431,7 +1431,7 @@ static void borg_notice_equipment(void)
             borg.trait[BI_ALL_NEED_ID] += 1;
             borg.trait[BI_WORN_NEED_ID] += 1;
         }
- 
+
         /* Affect stats */
         borg.trait[BI_ASTR] += item->modifiers[OBJ_MOD_STR]
                                * player->obj_k->modifiers[OBJ_MOD_STR];
@@ -1840,9 +1840,9 @@ static void borg_notice_equipment(void)
                    * (borg.trait[BI_CLEVEL] - player->class->magic.spell_first
                        + 1))
                 / 2);
-        borg.trait[BI_FAIL1] = 
+        borg.trait[BI_FAIL1] =
             borg_adj_mag_stat[borg.trait[BI_STR_INDEX + spell_stat]];
-        borg.trait[BI_FAIL2] = 
+        borg.trait[BI_FAIL2] =
             borg_adj_mag_fail[borg.trait[BI_STR_INDEX + spell_stat]];
     }
 
@@ -2053,7 +2053,7 @@ static void borg_notice_equipment(void)
 
     /* priest weapon penalty for non-blessed edged weapons */
     if (player_has(player, PF_BLESS_WEAPON)
-        && (item->tval == TV_HAFTED || 
+        && (item->tval == TV_HAFTED ||
             of_has(item->flags, OF_BLESSED))) {
         /* Reduce the real bonuses */
         borg.trait[BI_TOHIT] += 2;
@@ -3128,7 +3128,7 @@ void borg_notice_player(void)
     }
 
     /* Track if Sauron is dead Cheat */
-    borg.trait[BI_SAURON_DEAD] = borg_race_death[borg.mon.sauron];
+    borg.trait[BI_SAURON_DEAD] = borg_race_death[borg.id.sauron];
 }
 
 void borg_trait_init(void)

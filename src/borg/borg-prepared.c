@@ -659,7 +659,7 @@ const char *borg_prepared(int depth)
 
         /* is only Morgoth alive? */
         if (borg_numb_live_unique < 1
-            || borg_first_living_unique == borg.mon.morgoth)
+            || borg_first_living_unique == borg.id.morgoth)
         {
             if (depth >= 99)
                 borg.ready_morgoth = 1;
