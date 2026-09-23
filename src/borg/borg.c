@@ -337,9 +337,15 @@ static struct keypress generate_keypress(int flush_first)
     }
 
     /* Allow respawning borgs to update their variables */
-    if (borg.status.respawning && !player->is_dead) {
-        borg_reincarnate_end();
-        borg.status.respawning = false;
+    if (borg.status.respawning) {
+        if (!player->is_dead) {
+            borg_reincarnate_end();
+            borg.status.respawning = false;
+        } else {
+            /* We shouldnt' get here, hit escape till the game is ready */
+            key.code = ESCAPE;
+            return key;
+        }
     }
 
     /* no longer need to confirm the target */

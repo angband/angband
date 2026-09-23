@@ -278,6 +278,10 @@ void borg_reincarnate_end(void)
 
     borg_notice_player();
 
+    /* clear out the old reactions again in case more messages came after */
+    /* the borg died */
+    borg_clear_reactions();
+
     /* set the old depth so we know we are on a new level */
     borg.status.old_depth = 128;
 
