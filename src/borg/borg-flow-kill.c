@@ -2738,10 +2738,10 @@ void borg_near_monster_type(int dist)
 
 		if (borg.trait[BI_CLEVEL] <= 15
             && (r_ptr->ridx == borg.id.bullroarer
-				|| ((r_ptr->ridx == borg.id.giant_white_mouse)
+				|| (((r_ptr->ridx == borg.id.giant_white_mouse)
 					|| r_ptr->ridx == borg.id.white_worm_mass
 					|| r_ptr->ridx == borg.id.green_worm_mass)
-					&& breeder_count >= borg.trait[BI_CLEVEL]))
+					&& (breeder_count >= borg.trait[BI_CLEVEL]))))
 			borg.mon.scary = true;
 
 		if (borg.trait[BI_CLEVEL] <= 20
@@ -2750,7 +2750,7 @@ void borg_near_monster_type(int dist)
 				|| r_ptr->ridx == borg.id.giant_red_frog
 				|| r_ptr->ridx == borg.id.radiation_eye
 				|| (r_ptr->ridx == borg.id.yellow_worm_mass
-					&& breeder_count >= borg.trait[BI_CLEVEL])))
+					&& (breeder_count >= borg.trait[BI_CLEVEL]))))
 			borg.mon.scary = true;
 
 		if (borg.trait[BI_CLEVEL] < 45
