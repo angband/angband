@@ -793,18 +793,20 @@ static void lore_append_clause(textblock *tb, bitflag *f, uint8_t attr,
 	bool comma = count > 2;
 
 	if (count) {
-		int flag;
+		int start_flag = rf_next(f, FLAG_START), flag, next_flag;
+
 		textblock_append(tb, "%s", start);
-		for (flag = rf_next(f, FLAG_START); flag; flag = rf_next(f, flag + 1)) {
+		for (flag = start_flag; flag; flag = next_flag) {
+			next_flag = rf_next(f, flag + 1);
 			/* First entry starts immediately */
-			if (flag != rf_next(f, FLAG_START)) {
+			if (flag != start_flag) {
 				if (comma) {
 					textblock_append(tb, ",");
 				}
 				/* Last entry */
-				if (rf_next(f, flag + 1) == FLAG_END) {
-					textblock_append(tb, " ");
-					textblock_append(tb, "%s", conjunction);
+				if (next_flag == FLAG_END) {
+					textblock_append(tb, " %s",
+						conjunction);
 				}
 				textblock_append(tb, " ");
 			}
@@ -836,21 +838,22 @@ static void lore_append_spell_clause(textblock *tb, bitflag *f, bool know_hp,
 	bool comma = count > 2;
 
 	if (count) {
-		int spell;
-		for (spell = rsf_next(f, FLAG_START); spell;
-			 spell = rsf_next(f, spell + 1)) {
+		int start_spell = rsf_next(f, FLAG_START), spell, next_spell;
+
+		for (spell = start_spell; spell; spell = next_spell) {
 			int color = spell_color(player, race, spell);
 			int damage = mon_spell_lore_damage(spell, race, know_hp);
 
+			next_spell = rsf_next(f, spell + 1);
 			/* First entry starts immediately */
-			if (spell != rsf_next(f, FLAG_START)) {
+			if (spell != start_spell) {
 				if (comma) {
 					textblock_append(tb, ",");
 				}
 				/* Last entry */
-				if (rsf_next(f, spell + 1) == FLAG_END) {
-					textblock_append(tb, " ");
-					textblock_append(tb, "%s", conjunction);
+				if (next_spell == FLAG_END) {
+					textblock_append(tb, " %s",
+						conjunction);
 				}
 				textblock_append(tb, " ");
 			}
@@ -879,7 +882,7 @@ void lore_append_kills(textblock *tb, const struct monster_race *race,
 					   const struct monster_lore *lore,
 					   const bitflag known_flags[RF_SIZE])
 {
-	monster_sex_t msex = MON_SEX_NEUTER;
+	monster_sex_t msex;
 	bool out = true;
 
 	assert(tb && race && lore);
@@ -1082,16 +1085,15 @@ void lore_append_toughness(textblock *tb, const struct monster_race *race,
 						   const struct monster_lore *lore,
 						   bitflag known_flags[RF_SIZE])
 {
-	monster_sex_t msex = MON_SEX_NEUTER;
-	struct object *weapon = equipped_item_by_slot_name(player, "weapon");
-
 	assert(tb && race && lore);
-
-	/* Extract a gender (if applicable) */
-	msex = lore_monster_sex(race);
 
 	/* Describe monster "toughness" */
 	if (lore->armour_known) {
+		struct object *weapon =
+			equipped_item_by_slot_name(player, "weapon");
+		/* Extract a gender (if applicable) */
+		monster_sex_t msex = lore_monster_sex(race);
+
 		/* Hitpoints */
 		textblock_append(tb, "%s has a", lore_pronoun_nominative(msex, true));
 
@@ -1104,14 +1106,13 @@ void lore_append_toughness(textblock *tb, const struct monster_race *race,
 		/* Armor */
 		textblock_append(tb, ", and an armor rating of ");
 		textblock_append_c(tb, COLOUR_L_BLUE, "%d", race->ac);
-		textblock_append(tb, ".  ");
 
 		/* Player's base chance to hit */
 		random_chance c;
 		hit_chance(&c, chance_of_melee_hit_base(player, weapon), race->ac);
 		int percent = random_chance_scaled(c, 100);
 
-		textblock_append(tb, "You have a");
+		textblock_append(tb, ".  You have a");
 		if (percent == 8 || percent / 10 == 8)
 			textblock_append(tb, "n");
 		textblock_append_c(tb, COLOUR_L_BLUE, " %d", percent);
@@ -1160,9 +1161,12 @@ void lore_append_exp(textblock *tb, const struct monster_race *race,
 					 (long)1000 / player->lev + 5) / 10);
 
 	/* Calculate textual representation */
-	strnfmt(buf, sizeof(buf), "%ld", exp_integer);
-	if (exp_fraction)
-		my_strcat(buf, format(".%02ld", exp_fraction), sizeof(buf));
+	if (exp_fraction) {
+		strnfmt(buf, sizeof(buf), "%ld.%02ld", exp_integer,
+			exp_fraction);
+	} else {
+		strnfmt(buf, sizeof(buf), "%ld", exp_integer);
+	}
 
 	/* Mention the experience */
 	textblock_append(tb, " is worth ");
@@ -1202,8 +1206,8 @@ void lore_append_drop(textblock *tb, const struct monster_race *race,
 					  const struct monster_lore *lore,
 					  bitflag known_flags[RF_SIZE])
 {
-	int n = 0, nspec = 0;
-	monster_sex_t msex = MON_SEX_NEUTER;
+	int n, nspec = 0;
+	monster_sex_t msex;
 
 	assert(tb && race && lore);
 	if (!lore->drop_known) return;
@@ -1310,7 +1314,7 @@ void lore_append_abilities(textblock *tb, const struct monster_race *race,
 	const char *initial_pronoun;
 	bool prev = false;
 	bitflag current_flags[RF_SIZE], test_flags[RF_SIZE];
-	monster_sex_t msex = MON_SEX_NEUTER;
+	monster_sex_t msex;
 
 	assert(tb && race && lore);
 
@@ -1468,17 +1472,14 @@ void lore_append_awareness(textblock *tb, const struct monster_race *race,
 						   const struct monster_lore *lore,
 						   bitflag known_flags[RF_SIZE])
 {
-	monster_sex_t msex = MON_SEX_NEUTER;
-
 	assert(tb && race && lore);
 
-	/* Extract a gender (if applicable) */
-	msex = lore_monster_sex(race);
-
 	/* Do we know how aware it is? */
-	if (lore->sleep_known)
-	{
+	if (lore->sleep_known) {
 		const char *aware = lore_describe_awareness(race->sleep);
+		/* Extract a gender (if applicable) */
+		monster_sex_t msex = lore_monster_sex(race);
+
 		textblock_append(tb, "%s %s intruders, which %s may notice from ",
 						 lore_pronoun_nominative(msex, true), aware,
 						 lore_pronoun_nominative(msex, false));
@@ -1501,15 +1502,13 @@ void lore_append_friends(textblock *tb, const struct monster_race *race,
 						 const struct monster_lore *lore,
 						 bitflag known_flags[RF_SIZE])
 {
-	monster_sex_t msex = MON_SEX_NEUTER;
-
 	assert(tb && race && lore);
-
-	/* Extract a gender (if applicable) */
-	msex = lore_monster_sex(race);
 
 	/* Describe friends */
 	if (race->friends || race->friends_base) {
+		/* Extract a gender (if applicable) */
+		monster_sex_t msex = lore_monster_sex(race);
+
 		textblock_append(tb, "%s may appear with other monsters",
 						 lore_pronoun_nominative(msex, true));
 		if (rf_has(known_flags, RF_GROUP_AI))
@@ -1536,7 +1535,7 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 {
 	static bitflag innate_mask[RSF_SIZE], breath_mask[RSF_SIZE];
 	static bool initialize_masks = true;
-	monster_sex_t msex = MON_SEX_NEUTER;
+	monster_sex_t msex;
 	bool innate = false;
 	bool breath = false;
 	const char *initial_pronoun;
@@ -1677,7 +1676,7 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 						bitflag known_flags[RF_SIZE])
 {
 	int i, known_attacks, total_attacks, described_count, total_centidamage;
-	monster_sex_t msex = MON_SEX_NEUTER;
+	monster_sex_t msex;
 
 	assert(tb && race && lore);
 
