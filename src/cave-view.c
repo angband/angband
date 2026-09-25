@@ -904,7 +904,7 @@ void update_view(struct chunk *c, struct player *p)
 	 * allow a player to move through impassable terrain.  Cannot use
 	 * no_light() here:  still evaluating if the player's grid is seen.
 	 */
-	if ((p->timed[TMD_BLIND] || (p->state.cur_light == 0
+	if ((p->timed[TMD_BLIND] || (p->state.cur_light <= 0
 			&& !player_has(p, PF_UNLIGHT)))
 			&& square_isknown(c, p->grid)
 			&& !square_ispassable(p->cave, p->grid)) {
