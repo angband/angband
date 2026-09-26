@@ -66,7 +66,7 @@ phrase:You are the black sheep of the family.
 chart:3:50:80
 phrase:You are a credit to the family.  
 chart:3:50:100
-phrase:You are a well liked child.  
+phrase:You are a well-liked child.  
 
 chart:4:1:15
 phrase:Your mother was of the Avari. 
@@ -183,7 +183,7 @@ phrase:You are the black sheep of the family.
 chart:18:57:85
 phrase:You are a credit to the family.  
 chart:18:57:100
-phrase:You are a well liked child.  
+phrase:You are a well-liked child.  
 
 chart:19:20:25
 phrase:Your mother was an Orc, 

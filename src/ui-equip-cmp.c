@@ -1234,7 +1234,7 @@ static int prompt_for_easy_filter(struct equippable_summary *s, bool apply_not)
 	int itry;
 	bool threec;
 
-	if (! get_string("Enter 2 or 3 (for stat) character code and return or return to clear ", c,
+	if (! get_string("Enter 2-character code (3 for a stat) and Return, or just Return to clear ", c,
 		N_ELEMENTS(c))) {
 		return EQUIP_CMP_MENU_NEW_PAGE;
 	}

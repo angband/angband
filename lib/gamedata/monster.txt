@@ -446,8 +446,8 @@ flags:MALE
 flags:DROP_40 | ONLY_GOLD
 flags:RAND_50 | OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 friends:30:2d2:Filthy street urchin
-desc:The typical ponce around town, with purse jingling, and looking for more
-desc: amulets of adornment to buy.
+desc:The typical dandy around town, with purse jingling, and looking for
+desc: more amulets of adornment to buy.
 
 name:mean-looking mercenary
 plural:mean-looking mercenaries

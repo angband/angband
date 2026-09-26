@@ -2247,7 +2247,7 @@ cost:500
 alloc:50:10 to 40
 attack:0d0:0:0
 armor:0:5+d5M10
-desc:It increases your armor class.
+desc:It increases your armour class.
 
 
 ### Mixed blessings ###

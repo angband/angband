@@ -99,7 +99,7 @@ type:hard armor
 type:dragon armor
 type:shield
 flags:AGGRAVATE
-desc:attracts opponents and weakens the defences
+desc:attracts opponents and weakens your defences
 
 name:teleportation
 type:helm

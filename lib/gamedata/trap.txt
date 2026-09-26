@@ -277,7 +277,7 @@ flags:TRAP | FLOOR | SAVE_ARMOR
 effect:DAMAGE
 dice:1d4
 effect:DRAIN_STAT:STR
-desc:A trap which shoots damaging darts.
+desc:A trap which shoots strength-draining darts.
 msg-good:A small dart barely misses you.
 msg-bad:A small dart hits you!
 
@@ -291,7 +291,7 @@ flags:TRAP | FLOOR | SAVE_ARMOR
 effect:DAMAGE
 dice:1d4
 effect:DRAIN_STAT:DEX
-desc:A trap which shoots damaging darts.
+desc:A trap which shoots dexterity-draining darts.
 msg-good:A small dart barely misses you.
 msg-bad:A small dart hits you!
 
@@ -305,7 +305,7 @@ flags:TRAP | FLOOR | SAVE_ARMOR
 effect:DAMAGE
 dice:1d4
 effect:DRAIN_STAT:CON
-desc:A trap which shoots damaging darts.
+desc:A trap which shoots constitution-draining darts.
 msg-good:A small dart barely misses you.
 msg-bad:A small dart hits you!
 
@@ -331,7 +331,7 @@ flags:TRAP | FLOOR
 effect:TIMED_INC:CONFUSED
 dice:10+1d20
 desc:A trap that releases gas to confuse you.
-msg:You are surrounded by a gas of scintillating colors!
+msg:You are surrounded by a gas of scintillating colours!
 
 # gas -- poison
 

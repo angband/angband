@@ -844,7 +844,7 @@ name:RAGE_BLESS_RESIST
 aim:0
 level:50
 power:21
-msg:{name} glow{s} many colors...
+msg:{name} glow{s} many colours...
 effect:HEAL_HP
 dice:30
 effect:CURE:AFRAID
@@ -1260,7 +1260,7 @@ level:77
 power:20
 effect:RESTORE_STAT:INT
 effect:RESTORE_MANA
-desc:restores both intelligence and manapoints to maximum
+desc:restores both intelligence and mana points to maximum
 
 name:STAFF_HOLY
 aim:0
@@ -1320,7 +1320,8 @@ effect:TIMED_INC:OPP_COLD
 effect:CLEAR_VALUE
 effect:HEAL_HP
 dice:200
-desc:grants temporary resistance to fire and cold, cures 200HP, but also makes you hallucinate wildly
+desc:grants temporary resistance to fire and cold, heals 200HP, but also
+desc: makes you hallucinate wildly
 
 name:SHROOM_TERROR
 aim:0
