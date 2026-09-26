@@ -69,11 +69,11 @@ chart:3:50:100
 phrase:You are a well-liked child.  
 
 chart:4:1:15
-phrase:Your mother was of the Avari. 
+phrase:Your mother was of the Avari.  
 chart:4:1:30
-phrase:Your father was of the Avari. 
+phrase:Your father was of the Avari.  
 chart:4:1:50
-phrase:Your mother was of the Nandor. 
+phrase:Your mother was of the Nandor.  
 chart:4:1:70
 phrase:Your father was of the Nandor.  
 chart:4:1:85
@@ -191,9 +191,9 @@ chart:19:20:100
 phrase:Your father was an Orc, 
 
 chart:20:2:20
-phrase:and it is acknowledged. You are the adopted child 
+phrase:and it is acknowledged.  You are the adopted child 
 chart:20:2:100
-phrase:but it is unacknowledged. You are the adopted child 
+phrase:but it is unacknowledged.  You are the adopted child 
 
 chart:21:22:30
 phrase:Your mother was a Stone-Troll 
@@ -225,17 +225,17 @@ chart:23:24:100
 phrase:You are the largest of 
 
 chart:24:25:15
-phrase:a litter of 3 pups. 
+phrase:a litter of 3 pups.  
 chart:24:25:40
-phrase:a litter of 4 pups. 
+phrase:a litter of 4 pups.  
 chart:24:25:70
-phrase:a litter of 5 pups. 
+phrase:a litter of 5 pups.  
 chart:24:25:85
-phrase:a litter of 6 pups. 
+phrase:a litter of 6 pups.  
 chart:24:25:95
-phrase:a litter of 7 pups. 
+phrase:a litter of 7 pups.  
 chart:24:25:100
-phrase:a litter of 8 pups. 
+phrase:a litter of 8 pups.  
 
 chart:25:26:25
 phrase:Your father was a fungus farmer, 
@@ -249,11 +249,11 @@ chart:25:26:100
 phrase:Your father was the tribal chief, 
 
 chart:26:67:20
-phrase:and your mother was a prisoner of war. 
+phrase:and your mother was a prisoner of war.  
 chart:26:67:95
-phrase:and your mother was a cook. 
+phrase:and your mother was a cook.  
 chart:26:67:100
-phrase:and your mother was one of the Chief's harem. 
+phrase:and your mother was one of the Chief's harem.  
 
 chart:50:51:20
 phrase:You have dark brown eyes, 
@@ -266,7 +266,7 @@ phrase:You have green eyes,
 chart:50:51:90
 phrase:You have blue eyes, 
 chart:50:51:100
-phrase:You have blue-gray eyes, 
+phrase:You have blue-grey eyes, 
 
 chart:51:52:70
 phrase:straight 

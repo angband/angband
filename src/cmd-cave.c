@@ -114,7 +114,7 @@ void do_cmd_go_down(struct command *cmd)
 
 	/* Paranoia, no descent from z_info->max_depth - 1 */
 	if (player->depth == z_info->max_depth - 1) {
-		msg("The dungeon does not appear to extend deeper");
+		msg("The dungeon does not appear to extend deeper.");
 		return;
 	}
 

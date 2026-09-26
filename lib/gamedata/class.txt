@@ -1051,7 +1051,7 @@ effect:PROJECT_LOS:SLEEP_EVIL
 dice:$B
 expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each evil monster within line of sight.
-desc:  Monsters that resist confusion are not affected.
+desc:  Monsters that resist sleep are not affected.
 
 spell:Shadow Shift:15:10:50:10
 effect:TELEPORT
@@ -1189,7 +1189,7 @@ effect:JUMP_AND_BITE
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Allows you to assume the form of a vampire at the cost of half your
-desc: current hitpoints, than teleports you to the nearest living monster
+desc: current hitpoints, then teleports you to the nearest living monster
 desc: and drains a level-dependent number of hitpoints, healing and nourishing
 desc: you.  When first transformed you will temporarily be able
 desc: to take hitpoints from living monsters with your bite attack.
@@ -1664,7 +1664,7 @@ spell:Leap into Battle:10:5:30:10
 effect:MOVE_ATTACK
 dice:$B
 expr:B:PLAYER_LEVEL:+ 5 / 15
-desc:You run up to 4 spaces towards targeted enemy, then perform a
+desc:You run up to 4 spaces towards the targeted enemy, then perform a
 desc: melee blow.  You gain an additional blow at levels 25 and 40.  If you
 desc: moved, the number of blows is reduced by 25% for each space, then rounded.
 

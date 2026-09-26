@@ -383,7 +383,7 @@ type:amulet
 type:ring
 combat:0:0:20
 values:RES_ELEC[-1] | RES_SHARD[1]
-desc:makes your skin harder to damage, but conduct electricity
+desc:makes your skin harder to damage, but it conducts electricity
 
 name:air swing
 combat:-20:0:0

@@ -994,7 +994,7 @@ void do_cmd_use(struct command *cmd)
 			msg("Equip the item to use it.");
 		}
 	} else {
-		msg("The item cannot be used at the moment");
+		msg("The item cannot be used at the moment.");
 	}
 }
 

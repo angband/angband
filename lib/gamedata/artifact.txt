@@ -801,8 +801,8 @@ brand:FIRE_3
 slay:ANIMAL_2
 slay:TROLL_3
 slay:ORC_3
-desc:The long-lost weapon of Kzurin, Dwarven champion of ancient Belegost
-desc: Runes of strength adorn its handle, and flames and sparks roar and
+desc:The long-lost weapon of Kzurin, Dwarven champion of ancient Belegost.
+desc:  Runes of strength adorn its handle, and flames and sparks roar and
 desc: crackle around its massive head.
 
 name:'Taratol'
@@ -974,7 +974,7 @@ brand:COLD_3
 slay:UNDEAD_3
 desc:A thin spike of thrice-forged steel caps a straight silvan shaft cut from
 desc: a legendary tree, and spells to break the wills of the undead and strike
-desc: cold into the breasts of your enemies lay upon this perfectly balanced
+desc: cold into the breasts of your enemies lie upon this perfectly balanced
 desc: spear.
 
 name:of Melkor
@@ -2435,6 +2435,6 @@ values:STR[50] | INT[50] | WIS[50] | DEX[50] | CON[50] | INFRA[50]
 values:LIGHT[1]
 values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
 values:RES_LIGHT[1] | RES_DARK[1] | RES_NEXUS[1] | RES_NETHER[1]
-desc:Containing much of the power of he who once was mightiest among the Ainur,
+desc:Containing much of the power of him who once was mightiest among the Ainur,
 desc: this plain iron crown has mounted upon it the two remaining Silmarils,
 desc: greatest treasures of Middle-Earth.

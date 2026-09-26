@@ -901,7 +901,7 @@ static void display_equip_cmp_sel_help(void)
 	++irow;
 	prt("k, up     move selection one line up", irow, 0);
 	++irow;
-	prt("n, PgDn   move selection one page up", irow, 0);
+	prt("n, PgDn   move selection one page down", irow, 0);
 	++irow;
 	prt("p, PgUp   move selection one page up", irow, 0);
 	++irow;

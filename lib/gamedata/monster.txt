@@ -1161,7 +1161,7 @@ rarity:2
 experience:8
 blow:BITE:HURT:1d3
 blow:BITE:HURT:1d3
-desc:It is a hooded crow, gray except for the black wings and head.
+desc:It is a hooded crow, grey except for the black wings and head.
 
 ### Dungeon level 3 ###
 
@@ -3631,7 +3631,7 @@ blow:TOUCH:ACID:2d6
 flags:COLD_BLOOD
 flags:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 flags:IM_ACID | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
-desc:A fast moving highly acidic jelly thing, that is eating away the floor it
+desc:A fast-moving highly acidic jelly thing, that is eating away the floor it
 desc: rests on.
 
 name:Boldor, King of the Yeeks
@@ -3917,7 +3917,7 @@ spells:BLINK | WOUND
 spells:BA_POIS
 spells:BO_COLD
 desc:A large rat with glowing red eyes.  The wererat is a disgusting creature,
-desc: relishing in filth and disease.
+desc: relishing filth and disease.
 
 name:black ogre
 base:ogre
@@ -4050,7 +4050,7 @@ spells:ARROW
 friends:50:2d4:Warg
 friends:50:1d2:orc tracker
 friends:100:4d4:Same
-desc:He is a hideous deformed cross-breed with man and orc, combining man's
+desc:He is a hideous deformed cross-breed of man and orc, combining man's
 desc: strength and cunning with orcish evil.  The traitorous wizard Saruman is
 desc: generally believed to be responsible for this abomination.
 
@@ -4886,7 +4886,7 @@ spell-freq:10
 spells:TELE_TO | HOLD
 desc:The ancient grey willow tree, ruler of the Old Forest.  He despises
 desc: trespassers in his territory.  "...a huge willow-tree, old and hoary.
-desc:  Enormous it looked, its sprawling branches going up like racing arms
+desc:  Enormous it looked, its sprawling branches going up like reaching arms
 desc: with many long-fingered hands, its knotted and twisted trunk gaping in
 desc: wide fissures that creaked faintly as the boughs moved."
 
@@ -4911,7 +4911,7 @@ blow:CLAW:HURT:2d10
 blow:CLAW:HURT:2d10
 blow:BITE:HURT:3d8
 flags:NO_FEAR
-desc:A blinding whirlwind of fear and feathers.  Its razor sharp beak and
+desc:A blinding whirlwind of fear and feathers.  Its razor-sharp beak and
 desc: talons fill its foes with terror as it seeks to rend flesh from bone
 desc: with unbridled ferocity.
 
@@ -6413,7 +6413,7 @@ flags:FORCE_SLEEP
 innate-freq:5
 spells:BR_NEXU
 friends:100:2d7:Same
-desc:A locus of conflicting points coalesce to form the vague shape of a huge
+desc:A locus of conflicting points coalesces to form the vague shape of a huge
 desc: hound.  Or is it just your imagination?
 
 name:vampire
@@ -6578,7 +6578,7 @@ flags:BASH_DOOR | MOVE_BODY
 flags:IM_POIS | IM_FIRE | IM_ACID
 spell-freq:5
 spells:SCARE
-desc:A 4-headed hydra with an extra head, steaming with acidic vapor.
+desc:A 4-headed hydra with an extra head, steaming with acidic vapour.
 
 name:black knight
 base:person
@@ -7666,7 +7666,7 @@ blow:BITE:FIRE:5d4
 flags:WEIRD_MIND
 flags:BASH_DOOR
 flags:IM_FIRE
-desc:It is a fast moving creature of chaos, a gigantic black bat surrounded by
+desc:It is a fast-moving creature of chaos, a gigantic black bat surrounded by
 desc: flickering bright red flames.
 
 ### Dungeon level 33 ###
@@ -9336,7 +9336,7 @@ innate-freq:2
 spells:ARROW
 friends:80:1d4:southron assassin
 desc:A man of Harad clad in black and red and carrying a longbow.  His quiver is
-desc: full of red feathered arrows, and carries an insignia of a black serpent.
+desc: full of red-feathered arrows, and carries an insignia of a black serpent.
 
 name:mature white dragon
 base:dragon
@@ -10304,7 +10304,7 @@ flags:IM_FIRE
 spell-freq:9
 spells:BO_FIRE
 spells:S_DEMON
-desc:It is demon with arms and pincers, its form a true mockery of life.
+desc:It is a demon with arms and pincers, its form a true mockery of life.
 
 name:Quaker, Master of Earth
 base:elemental
@@ -11622,7 +11622,7 @@ spells:BR_POIS
 message-invis:BLIND:Something rumbles.
 message-invis:SLOW:Something rumbles.
 desc:A constructed dragon, the drolem has massive strength.  Powerful spells
-desc: weaved during its creation make it a fearsome adversary.  Its eyes show
+desc: woven during its creation make it a fearsome adversary.  Its eyes show
 desc: little intelligence, but it has been instructed to destroy all it meets.
 
 name:demilich
@@ -12049,8 +12049,8 @@ spells:SCARE
 spells:S_ANIMAL | S_MONSTERS
 desc:He is one of the greatest dwarven priests to walk the earth.  Fundin has
 desc: earned a high position in the church, and his skill with both weapon and
-desc: spell only justify his position further.  His combination of both dwarven
-desc: strength and priestly wisdom are a true match for any adventurer.
+desc: spell only justifies his position further.  His combination of both
+desc: dwarven strength and priestly wisdom are a true match for any adventurer.
 
 
 
@@ -13098,7 +13098,7 @@ spells:S_AINU
 spells:SHAPECHANGE
 shape:elemental
 shape:vortex
-desc:A servant of Varda, Lady of the Stars, who the elves call Elbereth and
+desc:A servant of Varda, Lady of the Stars, whom the elves call Elbereth and
 desc: love above all the Valar.
 
 name:greater demonic quylthulg
@@ -13213,7 +13213,7 @@ spells:BR_DISE
 spells:S_AINU
 desc:Encrusted with barnacles, slimy and dripping, the Maia of the untamed
 desc: sea has dragged himself down into Angband to send you to a watery grave.
-desc: Ossë is the most powerful and heartless of Ulmo's servants and embodies
+desc:  Ossë is the most powerful and heartless of Ulmo's servants and embodies
 desc: the untamed power of the ocean.  Terror grows in your heart with each
 desc: squelching step of his approach.
 
@@ -13733,7 +13733,7 @@ spell-freq:3
 spells:BLIND | WOUND | FORGET | HOLD | SCARE
 spells:BO_COLD | BO_NETH
 spells:S_MONSTER | S_WRAITH
-desc:A tall black cloaked Ringwraith, he is a master of horsemanship.  He longs
+desc:A tall black-cloaked Ringwraith, he is a master of horsemanship.  He longs
 desc: to taste your blood.
 
 ### Dungeon level 78 ###
@@ -14211,7 +14211,7 @@ spells:S_HOUND | S_MONSTERS
 friends:100:3d5:Werewolf:servant
 friends:100:2d4:Wolf Chieftain:servant
 desc:Draugluin provides Sauron with a fearsome personal guard.  He is an
-desc: enormous wolf inhabited with a human spirit.  He is chief of all his kind.
+desc: enormous wolf inhabited by a human spirit.  He is chief of all his kind.
 
 ### Dungeon level 84 ###
 
