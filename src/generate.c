@@ -39,6 +39,7 @@
 #include "mon-move.h"
 #include "mon-spell.h"
 #include "monster.h"
+#include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
@@ -1441,16 +1442,44 @@ void prepare_next_level(struct player *p)
 			if (old_arena) {
 				/*
 				 * Since the arena was not saved or cleared
-				 * earlier, do it now.
+				 * earlier, do it now.  As the arena monster
+				 * is a copy, without full accounting, of a
+				 * monster in the saved dungeon, clear its race
+				 * to avoid double counting in wipe_mon_list()
+				 * and clean up any objects it holds (it started
+				 * with none so those objects are ones it picked
+				 * up in the arena) to avoid memory leaks.  The
+				 * object cleanup mimics what wipe_mon_list()
+				 * does.
 				 */
+				struct monster *saved_mon =
+					&new_level->monsters[1];
+				struct monster *arena_mon =
+					&cave->monsters[1];
+				struct object *obj = arena_mon->held_obj;
+
+				arena_mon->race = NULL;
+				while (obj) {
+					if (obj->artifact && !obj_is_known_artifact(obj)) {
+						mark_artifact_created(
+							obj->artifact, false);
+					}
+					if (obj->oidx) {
+						cave->objects[obj->oidx] = NULL;
+					}
+					obj = obj->next;
+				}
+				object_pile_free(cave, player->cave,
+					arena_mon->held_obj);
+
 				forget_cave(p);
 
 				/*
 				 * Point p->upkeep->health_who at the monster
 				 * that went to the arena.
 				 */
-				assert(new_level->monsters[1].race);
-				p->upkeep->health_who = &new_level->monsters[1];
+				assert(saved_mon->race);
+				p->upkeep->health_who = saved_mon;
 			}
 
 			/* Assign the new ones */
