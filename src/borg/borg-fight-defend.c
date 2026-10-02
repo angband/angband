@@ -2753,7 +2753,7 @@ static int borg_defend_aux_lbeam(int p1)
 
     /* Light Beam section to spot non seen guys */
     /* not recent, don't bother */
-    if (borg_timer(borg.need_see_invis) > 48)
+    if (borg_timer(borg.need_see_invis) < 48)
         return 0;
 
     /* Check to see if I am in a hallway */

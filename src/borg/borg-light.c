@@ -686,7 +686,6 @@ bool borg_light_beam(bool simulation)
     bool spell_ok = false;
     int  i;
     bool blocked  = false;
-    bool bold     = false;
 
     borg_grid *ag = &borg_grids[borg.c.y][borg.c.x];
 
@@ -707,16 +706,14 @@ bool borg_light_beam(bool simulation)
     if (borg.c.y - borg.trait[BI_LIGHT] - 1 > 0) {
         /* Look just beyond my light */
         ag = &borg_grids[borg.c.y - borg.trait[BI_LIGHT] - 1][borg.c.x];
-        bold = borg_cave_floor_bold(
-            borg.c.y - borg.trait[BI_LIGHT] - 1, borg.c.x);
 
         /* Must be on the panel */
         if (panel_contains(borg.c.y - borg.trait[BI_LIGHT] - 1, borg.c.x)) {
             /* Check each grid in our light radius along the course */
             for (i = 0; i <= borg.trait[BI_LIGHT]; i++) {
-                if (borg_cave_floor_bold(borg.c.y - i, borg.c.x) && !bold
-                    && ag->feat < FEAT_SECRET && ag->feat != FEAT_CLOSED
-                    && blocked == false) {
+                if ((borg_cave_floor_bold(borg.c.y - i, borg.c.x) ||
+                    borg_grids[borg.c.y - i][borg.c.x].feat == FEAT_NONE)
+                    && ag->feat == FEAT_NONE && blocked == false) {
                     /* note the direction */
                     dir = 8;
                 } else {
@@ -735,17 +732,15 @@ bool borg_light_beam(bool simulation)
         blocked = false;
         /* Look just beyond my light */
         ag = &borg_grids[borg.c.y + borg.trait[BI_LIGHT] + 1][borg.c.x];
-        bold = borg_cave_floor_bold(
-            borg.c.y + borg.trait[BI_LIGHT] + 1, borg.c.x);
 
         /* Must be on the panel */
         if (panel_contains(borg.c.y + borg.trait[BI_LIGHT] + 1, borg.c.x)) {
             /* Check each grid in our light radius along the course */
             for (i = 0; i <= borg.trait[BI_LIGHT]; i++) {
                 /* all floors */
-                if (borg_cave_floor_bold(borg.c.y + i, borg.c.x) && !bold
-                    && ag->feat < FEAT_SECRET && ag->feat != FEAT_CLOSED
-                    && blocked == false) {
+                if ((borg_cave_floor_bold(borg.c.y + i, borg.c.x)
+                        || borg_grids[borg.c.y + i][borg.c.x].feat == FEAT_NONE)
+                    && ag->feat == FEAT_NONE && blocked == false) {
                     /* note the direction */
                     dir = 2;
                 } else {
@@ -764,17 +759,16 @@ bool borg_light_beam(bool simulation)
         blocked = false;
         /* Look just beyond my light */
         ag = &borg_grids[borg.c.y][borg.c.x + borg.trait[BI_LIGHT] + 1];
-        bold = borg_cave_floor_bold(
-            borg.c.y, borg.c.x + borg.trait[BI_LIGHT] + 1);
 
         /* Must be on the panel */
         if (panel_contains(borg.c.y, borg.c.x + borg.trait[BI_LIGHT] + 1)) {
             /* Check each grid in our light radius along the course */
             for (i = 0; i <= borg.trait[BI_LIGHT]; i++) {
                 /* all floors */
-                if (borg_cave_floor_bold(borg.c.y, borg.c.x + i) && !bold
-                    && ag->feat < FEAT_SECRET && ag->feat != FEAT_CLOSED
-                    && blocked == false) {
+                if ((borg_cave_floor_bold(borg.c.y, borg.c.x + i)
+                        || borg_grids[borg.c.y][borg.c.x + i].feat
+                               == FEAT_NONE)
+                    && ag->feat == FEAT_NONE && blocked == false) {
                     /* note the direction */
                     dir = 6;
                 } else {
@@ -793,8 +787,6 @@ bool borg_light_beam(bool simulation)
         blocked = false;
         /* Look just beyond my light */
         ag   = &borg_grids[borg.c.y][borg.c.x - borg.trait[BI_LIGHT] - 1];
-        bold = borg_cave_floor_bold(
-            borg.c.y, borg.c.x - borg.trait[BI_LIGHT] - 1);
 
         /* Must be on the panel */
         if (panel_contains(borg.c.y, borg.c.x - borg.trait[BI_LIGHT] - 1)) {
@@ -803,9 +795,9 @@ bool borg_light_beam(bool simulation)
                 /* Verify that there are no blockers in my light radius and
                  * the 1st grid beyond my light is not a floor nor a blocker
                  */
-                if (borg_cave_floor_bold(borg.c.y, borg.c.x - i) && !bold
-                    && ag->feat < FEAT_SECRET && ag->feat != FEAT_CLOSED
-                    && blocked == false) {
+                if ((borg_cave_floor_bold(borg.c.y, borg.c.x - i)
+                      || borg_grids[borg.c.y][borg.c.x - i].feat == FEAT_NONE)
+                    && ag->feat == FEAT_NONE && blocked == false) {
                     /* note the direction */
                     dir = 4;
                 } else {
@@ -819,25 +811,10 @@ bool borg_light_beam(bool simulation)
 
     /* Don't do it if on the edge of shifting the panel. */
     if (dir == 5 || spell_ok == false || blocked == true
-// !FIX !TODO make sure these panel edge checks are right.
         || (dir == 2
-            && (borg.c.y == 18
-                || borg.c.y == 19
-                || borg.c.y == 29
-                || borg.c.y == 30
-                || borg.c.y == 40
-                || borg.c.y == 41
-                || borg.c.y == 51
-                || borg.c.y == 52))
+            && (borg.c.y > borg_panel_hgt() - 2))
         || (dir == 8
-            && (borg.c.y == 13
-                || borg.c.y == 14
-                || borg.c.y == 24
-                || borg.c.y == 25
-                || borg.c.y == 35
-                || borg.c.y == 36
-                || borg.c.y == 46
-                || borg.c.y == 47)))
+            && (borg.c.y > borg_panel_hgt() - 2)))
         return false;
 
     /* simulation */
