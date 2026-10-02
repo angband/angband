@@ -1563,8 +1563,16 @@ void borg_update(void)
     w_x = Term->offset_x;
 
     /* get the current panel count */
-    panels.x = (((cave->width - borg_panel_wid()) * 2) / borg_panel_wid()) + 1;
-    panels.y = (((cave->height - borg_panel_hgt()) * 2) / borg_panel_hgt()) + 1;
+    panels.x = 1;
+    if (cave->width > borg_panel_wid())
+        panels.x
+            = ((((cave->width - borg_panel_wid()) * 2) / borg_panel_wid())) + 1;
+
+    panels.y = 1;
+    if (cave->height > borg_panel_hgt())
+        panels.y
+            = ((((cave->height - borg_panel_hgt()) * 2) / borg_panel_hgt()))
+              + 1;
 
     /* if the old panel info is larger than the cave, reset it */
     /* this can happen if the player changes levels while there are messages */
@@ -3148,7 +3156,6 @@ void borg_alloc_detection(void)
     /* this is because the code is sloppy about current panel plus one */
     int array_size_y = panels.y + 1;
     int array_size_x = panels.x + 1;
-
 
     /* only reallocate the detection arrays if the number of panels */
     /* has changed */
