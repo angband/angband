@@ -62,18 +62,19 @@
 #define PR_STUDY		0x00000800L	/* Display Extra (Study) */
 #define PR_DEPTH		0x00001000L	/* Display Depth */
 #define PR_STATUS		0x00002000L
-#define PR_DTRAP		0x00004000L /* Trap detection indicator */
+#define PR_DTRAP		0x00004000L	/* Trap detection indicator */
 #define PR_STATE		0x00008000L	/* Display Extra (State) */
-#define PR_MAP			0x00010000L	/* Redraw whole map */
-#define PR_INVEN		0x00020000L /* Display inven/equip */
-#define PR_EQUIP		0x00040000L /* Display equip/inven */
-#define PR_MESSAGE		0x00080000L /* Display messages */
-#define PR_MONSTER		0x00100000L /* Display monster recall */
-#define PR_OBJECT		0x00200000L /* Display object recall */
-#define PR_MONLIST		0x00400000L /* Display monster list */
-#define PR_ITEMLIST		0x00800000L /* Display item list */
-#define PR_FEELING		0x01000000L /* Display level feeling */
-#define PR_LIGHT		0x02000000L /* Display light level */
+#define PR_MAP			0x00010000L	/* Update whole map */
+#define PR_REFRESH_MAP		0x00020000L	/* Refresh map terminals */
+#define PR_INVEN		0x00040000L	/* Display inven/equip */
+#define PR_EQUIP		0x00080000L	/* Display equip/inven */
+#define PR_MESSAGE		0x00100000L	/* Display messages */
+#define PR_MONSTER		0x00200000L	/* Display monster recall */
+#define PR_OBJECT		0x00400000L	/* Display object recall */
+#define PR_MONLIST		0x00800000L	/* Display monster list */
+#define PR_ITEMLIST		0x01000000L	/* Display item list */
+#define PR_FEELING		0x02000000L	/* Display level feeling */
+#define PR_LIGHT		0x04000000L	/* Display light level */
 
 /**
  * Display Basic Info
