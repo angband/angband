@@ -801,9 +801,9 @@ brand:FIRE_3
 slay:ANIMAL_2
 slay:TROLL_3
 slay:ORC_3
-desc:The long-lost weapon of Kzurin, Dwarven champion of ancient Belegost
-desc: Runes of strength adorn its handle, and flames and sparks roar and
-desc: crackle around its massive head.
+desc:The long-lost weapon of Kzurin, Dwarven champion of ancient
+desc: Belegost.  Runes of strength adorn its handle, and flames and sparks
+desc: roar and crackle around its massive head.
 
 name:'Taratol'
 base-object:hafted:Mace
@@ -972,10 +972,10 @@ flags:BLESSED | SEE_INVIS
 values:STEALTH[3] | SPEED[3] | RES_COLD[1]
 brand:COLD_3
 slay:UNDEAD_3
-desc:A thin spike of thrice-forged steel caps a straight silvan shaft cut from
-desc: a legendary tree, and spells to break the wills of the undead and strike
-desc: cold into the breasts of your enemies lay upon this perfectly balanced
-desc: spear.
+desc:A thin spike of thrice-forged steel caps a straight silvan shaft cut
+desc: from a legendary tree, and spells to break the wills of the undead and
+desc: strike cold into the breasts of your enemies lie upon this perfectly
+desc: balanced spear.
 
 name:of Melkor
 base-object:polearm:Spear
@@ -1006,9 +1006,8 @@ values:STR[2] | DEX[2] | RES_LIGHT[1] | RES_DARK[1]
 brand:POIS_3
 slay:EVIL_2
 slay:UNDEAD_5
-desc:A massive triple-pronged spear, so great it normally requires two hands
-desc: to wield, evoking the spirit of Ossë who with it pierced legions of
-desc: evil and undead.
+desc:A massive triple-pronged spear, evoking the spirit of Ossë who with it
+desc: pierced legions of evil and undead.
 
 name:of Ulmo
 base-object:polearm:Trident
@@ -1163,9 +1162,8 @@ values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
 slay:EVIL_2
 slay:ANIMAL_2
 slay:DEMON_3
-desc:A massive axe with twin razor-sharp heads, so large that it usually
-desc: requires two hands to wield, with spells to ward off the elements
-desc: intricately engraved upon its surface in filleted gold.
+desc:A massive axe with twin razor-sharp heads, its surface intricately
+desc: engraved in filleted gold with spells to ward off the elements.
 
 name:of Durin
 base-object:polearm:Great Axe
@@ -2435,6 +2433,6 @@ values:STR[50] | INT[50] | WIS[50] | DEX[50] | CON[50] | INFRA[50]
 values:LIGHT[1]
 values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
 values:RES_LIGHT[1] | RES_DARK[1] | RES_NEXUS[1] | RES_NETHER[1]
-desc:Containing much of the power of he who once was mightiest among the Ainur,
-desc: this plain iron crown has mounted upon it the two remaining Silmarils,
-desc: greatest treasures of Middle-Earth.
+desc:Containing much of the power of him who once was mightiest among the
+desc: Ainur, this plain iron crown has mounted upon it the two remaining
+desc: Silmarils, greatest treasures of Middle-Earth.

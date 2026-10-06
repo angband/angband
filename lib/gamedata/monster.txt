@@ -1161,7 +1161,7 @@ rarity:2
 experience:8
 blow:BITE:HURT:1d3
 blow:BITE:HURT:1d3
-desc:It is a hooded crow, gray except for the black wings and head.
+desc:It is a hooded crow, grey except for the black wings and head.
 
 ### Dungeon level 3 ###
 
@@ -3631,8 +3631,8 @@ blow:TOUCH:ACID:2d6
 flags:COLD_BLOOD
 flags:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 flags:IM_ACID | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
-desc:A fast moving highly acidic jelly thing, that is eating away the floor it
-desc: rests on.
+desc:A fast-moving, highly acidic jelly thing that is eating away the floor
+desc: it rests on.
 
 name:Boldor, King of the Yeeks
 base:yeek
@@ -3916,8 +3916,8 @@ spell-freq:9
 spells:BLINK | WOUND
 spells:BA_POIS
 spells:BO_COLD
-desc:A large rat with glowing red eyes.  The wererat is a disgusting creature,
-desc: relishing in filth and disease.
+desc:A large rat with glowing red eyes.  The wererat is a disgusting
+desc: creature, revelling in filth and disease.
 
 name:black ogre
 base:ogre
@@ -4050,9 +4050,9 @@ spells:ARROW
 friends:50:2d4:Warg
 friends:50:1d2:orc tracker
 friends:100:4d4:Same
-desc:He is a hideous deformed cross-breed with man and orc, combining man's
-desc: strength and cunning with orcish evil.  The traitorous wizard Saruman is
-desc: generally believed to be responsible for this abomination.
+desc:He is a hideous deformed cross-breed of man and orc, combining man's
+desc: strength and cunning with orcish evil.  The traitorous wizard Saruman
+desc: is generally believed to be responsible for this abomination.
 
 name:giant tarantula
 base:spider
@@ -4885,10 +4885,11 @@ flags:DROP_1 | DROP_GOOD | ONLY_ITEM
 spell-freq:10
 spells:TELE_TO | HOLD
 desc:The ancient grey willow tree, ruler of the Old Forest.  He despises
-desc: trespassers in his territory.  "...a huge willow-tree, old and hoary.
-desc:  Enormous it looked, its sprawling branches going up like racing arms
-desc: with many long-fingered hands, its knotted and twisted trunk gaping in
-desc: wide fissures that creaked faintly as the boughs moved."
+desc: trespassers in his territory.  "...a huge willow-tree, old and
+desc: hoary.  Enormous it looked, its sprawling branches going up like
+desc: reaching arms with many long-fingered hands, its knotted and twisted
+desc: trunk gaping in wide fissures that creaked faintly as the boughs
+desc: moved."
 
 ########## DUNGEON LEVELS 20-29 ##########
 
@@ -4911,7 +4912,7 @@ blow:CLAW:HURT:2d10
 blow:CLAW:HURT:2d10
 blow:BITE:HURT:3d8
 flags:NO_FEAR
-desc:A blinding whirlwind of fear and feathers.  Its razor sharp beak and
+desc:A blinding whirlwind of fear and feathers.  Its razor-sharp beak and
 desc: talons fill its foes with terror as it seeks to rend flesh from bone
 desc: with unbridled ferocity.
 
@@ -6413,8 +6414,8 @@ flags:FORCE_SLEEP
 innate-freq:5
 spells:BR_NEXU
 friends:100:2d7:Same
-desc:A locus of conflicting points coalesce to form the vague shape of a huge
-desc: hound.  Or is it just your imagination?
+desc:A locus of conflicting points coalesces to form the vague shape of a
+desc: huge hound.  Or is it just your imagination?
 
 name:vampire
 base:vampire
@@ -6578,7 +6579,7 @@ flags:BASH_DOOR | MOVE_BODY
 flags:IM_POIS | IM_FIRE | IM_ACID
 spell-freq:5
 spells:SCARE
-desc:A 4-headed hydra with an extra head, steaming with acidic vapor.
+desc:A 4-headed hydra with an extra head, steaming with acidic vapour.
 
 name:black knight
 base:person
@@ -7666,8 +7667,8 @@ blow:BITE:FIRE:5d4
 flags:WEIRD_MIND
 flags:BASH_DOOR
 flags:IM_FIRE
-desc:It is a fast moving creature of chaos, a gigantic black bat surrounded by
-desc: flickering bright red flames.
+desc:It is a fast-moving creature of chaos, a gigantic black bat surrounded
+desc: by flickering bright red flames.
 
 ### Dungeon level 33 ###
 
@@ -9335,8 +9336,9 @@ flags:NO_CONF | NO_SLEEP
 innate-freq:2
 spells:ARROW
 friends:80:1d4:southron assassin
-desc:A man of Harad clad in black and red and carrying a longbow.  His quiver is
-desc: full of red feathered arrows, and carries an insignia of a black serpent.
+desc:A man of Harad clad in black and red and carrying a longbow.  His
+desc: quiver is full of red-feathered arrows, and carries an insignia of a
+desc: black serpent.
 
 name:mature white dragon
 base:dragon
@@ -9461,7 +9463,7 @@ flags:UNDEAD | EVIL | COLD_BLOOD
 flags:DROP_2 | ONLY_GOLD
 flags:OPEN_DOOR
 flags:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
-desc:A fearsome skeletal horse with glowing eyes, that watch you with little
+desc:A fearsome skeletal horse with glowing eyes that watch you with little
 desc: more than a hatred of all that lives.
 
 
@@ -10304,7 +10306,7 @@ flags:IM_FIRE
 spell-freq:9
 spells:BO_FIRE
 spells:S_DEMON
-desc:It is demon with arms and pincers, its form a true mockery of life.
+desc:It is a demon with arms and pincers, its form a true mockery of life.
 
 name:Quaker, Master of Earth
 base:elemental
@@ -11622,8 +11624,9 @@ spells:BR_POIS
 message-invis:BLIND:Something rumbles.
 message-invis:SLOW:Something rumbles.
 desc:A constructed dragon, the drolem has massive strength.  Powerful spells
-desc: weaved during its creation make it a fearsome adversary.  Its eyes show
-desc: little intelligence, but it has been instructed to destroy all it meets.
+desc: woven during its creation make it a fearsome adversary.  Its eyes show
+desc: little intelligence, but it has been instructed to destroy all it
+desc: meets.
 
 name:demilich
 plural:demiliches
@@ -12047,10 +12050,11 @@ spell-freq:4
 spells:BLIND | BRAIN_SMASH | WOUND | CONF | HEAL
 spells:SCARE
 spells:S_ANIMAL | S_MONSTERS
-desc:He is one of the greatest dwarven priests to walk the earth.  Fundin has
-desc: earned a high position in the church, and his skill with both weapon and
-desc: spell only justify his position further.  His combination of both dwarven
-desc: strength and priestly wisdom are a true match for any adventurer.
+desc:He is one of the greatest dwarven priests to walk the earth.  Fundin
+desc: has earned a high position in the church, and his skill with both
+desc: weapon and spell only justifies his position further.  His combination
+desc: of both dwarven strength and priestly wisdom is a true match for any
+desc: adventurer.
 
 
 
@@ -13098,7 +13102,7 @@ spells:S_AINU
 spells:SHAPECHANGE
 shape:elemental
 shape:vortex
-desc:A servant of Varda, Lady of the Stars, who the elves call Elbereth and
+desc:A servant of Varda, Lady of the Stars, whom the elves call Elbereth and
 desc: love above all the Valar.
 
 name:greater demonic quylthulg
@@ -13212,10 +13216,10 @@ spells:BO_MANA | BO_WATE
 spells:BR_DISE
 spells:S_AINU
 desc:Encrusted with barnacles, slimy and dripping, the Maia of the untamed
-desc: sea has dragged himself down into Angband to send you to a watery grave.
-desc: Ossë is the most powerful and heartless of Ulmo's servants and embodies
-desc: the untamed power of the ocean.  Terror grows in your heart with each
-desc: squelching step of his approach.
+desc: sea has dragged himself down into Angband to send you to a watery
+desc: grave.  Ossë is the most powerful and heartless of Ulmo's servants and
+desc: embodies the untamed power of the ocean.  Terror grows in your heart
+desc: with each squelching step of his approach.
 
 
 ### Dungeon level 73 ###
@@ -13533,11 +13537,11 @@ spells:BLIND | CONF | HEAL | SCARE | WEAVE
 spells:BA_DARK
 spells:BR_DARK | BR_POIS
 spells:S_KIN
-desc:This enormous, hideous spirit of void is in the form of a spider of immense
-desc: proportions.  She is surrounded by a cloud of Unlight as she sucks in all
-desc: living light into her bloated body, and breathes out the blackest of
-desc: darkness.  She is always ravenously hungry and would even eat herself to
-desc: avoid starvation.
+desc:This enormous, hideous spirit of void is in the form of a spider of
+desc: immense proportions.  She is surrounded by a cloud of Unlight as she
+desc: sucks all living light into her bloated body, and breathes out the
+desc: blackest of darkness.  She is always ravenously hungry and would even
+desc: eat herself to avoid starvation.
 
 name:bronze golem
 base:golem
@@ -13733,8 +13737,8 @@ spell-freq:3
 spells:BLIND | WOUND | FORGET | HOLD | SCARE
 spells:BO_COLD | BO_NETH
 spells:S_MONSTER | S_WRAITH
-desc:A tall black cloaked Ringwraith, he is a master of horsemanship.  He longs
-desc: to taste your blood.
+desc:A tall black-cloaked Ringwraith, he is a master of horsemanship.  He
+desc: longs to taste your blood.
 
 ### Dungeon level 78 ###
 
@@ -14211,7 +14215,8 @@ spells:S_HOUND | S_MONSTERS
 friends:100:3d5:Werewolf:servant
 friends:100:2d4:Wolf Chieftain:servant
 desc:Draugluin provides Sauron with a fearsome personal guard.  He is an
-desc: enormous wolf inhabited with a human spirit.  He is chief of all his kind.
+desc: enormous wolf inhabited by a human spirit.  He is chief of all his
+desc: kind.
 
 ### Dungeon level 84 ###
 
@@ -14787,12 +14792,12 @@ spells:BO_MANA
 spells:S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_MONSTERS | S_UNIQUE
 desc:He is the Master of the Pits of Angband.  His figure is like a black
 desc: mountain crowned with lightning.  He rages with everlasting anger, his
-desc: body scarred by Fingolfin's eight mighty wounds.  He can never rest from
-desc: his pain, but seeks forever to dominate all that is light and good in the
-desc: world.  He is the origin of man's fear of darkness and created many foul
-desc: creatures with his evil powers.  Orcs, Dragons, and Trolls are his most
-desc: foul corruptions, causing much pain and suffering in the world to please
-desc: him.  His disgusting visage, twisted with evil, is crowned with iron, the
-desc: two remaining Silmarils forever burning him.  Grond, the mighty Hammer of
-desc: the Underworld, cries defiance as he strides towards you to crush you to
-desc: a pulp!
+desc: body scarred by Fingolfin's seven mighty wounds.  He can never rest
+desc: from his pain, but seeks forever to dominate all that is light and
+desc: good in the world.  He is the origin of man's fear of darkness and
+desc: created many foul creatures with his evil powers.  Orcs, Dragons, and
+desc: Trolls are his most foul corruptions, causing much pain and suffering
+desc: in the world to please him.  His disgusting visage, twisted with evil,
+desc: is crowned with iron, the two remaining Silmarils forever burning
+desc: him.  Grond, the mighty Hammer of the Underworld, cries defiance as he
+desc: strides towards you to crush you to a pulp!

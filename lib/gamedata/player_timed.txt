@@ -516,12 +516,12 @@ on-end:Your life-draining power passes.
 name:HEAL
 desc:turn-by-turn healing through increased metabolism
 grade:G:10000:Heal:Your metabolism speeds up!
-on-end:Your metabolism return to normal.
+on-end:Your metabolism returns to normal.
 
 name:COMMAND
 desc:commanding a monster
 grade:P:10000:Cmd:You focus on your target.
-on-end:Your resume control of your own body.
+on-end:You resume control of your own body.
 
 name:ATT_RUN
 desc:escape on attack

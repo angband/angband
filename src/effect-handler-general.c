@@ -3418,7 +3418,7 @@ bool effect_handler_TAP_DEVICE(effect_handler_context_t *context)
 	/* Turn energy into mana. */
 	if (energy < 36) {
 		/* Require a resonable amount of energy */
-		msg("That %s had no useable energy", item);
+		msg("That %s had no useable energy.", item);
 	} else {
 		/* If mana below maximum, increase mana and drain object. */
 		if (player->csp < player->msp) {

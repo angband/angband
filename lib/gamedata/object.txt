@@ -339,7 +339,7 @@ msg:That tastes good.
 effect:NOURISH:INC_BY
 dice:30
 desc:This nutritious but fairly bland food, called cram by the Lake-men who
-desc: make it is familiar to anyone contemplating long journeys.  It is
+desc: make it, is familiar to anyone contemplating long journeys.  It is
 desc: sustaining, but very uninteresting except as a chewing exercise.
 
 name:& Scrap~ of Flesh
@@ -919,8 +919,8 @@ cost:590
 alloc:20:45 to 100
 attack:3d6:0:0
 armor:0:0
-desc:Two great bars of wood connected by a massive chain, needing two hands
-desc: to properly wield.
+desc:Two great bars of wood connected by a massive chain, built to deliver
+desc: crushing blows.
 
 
 ### Clubs ###
@@ -1081,8 +1081,7 @@ cost:358
 alloc:20:15 to 100
 attack:2d5:0:0
 armor:0:0
-desc:A fifteen foot spear, requiring two hands to wield, principally used in
-desc: infantry formations.
+desc:A fifteen foot spear, principally used in infantry formations.
 
 
 ### Axes ###
@@ -1120,7 +1119,8 @@ cost:304
 alloc:20:15 to 100
 attack:2d6:0:0
 armor:0:0
-desc:A simple, single-bladed war axe capable of chopping though limbs or armour.
+desc:A simple, single-bladed war axe capable of chopping through limbs or
+desc: armour.
 
 name:& Battle Axe~
 type:polearm
@@ -1602,7 +1602,7 @@ alloc:10:50 to 100
 attack:1d1:0:0
 armor:0:0
 flags:IGNORE_ACID
-desc:An elaboratedly decorated crown of massive gold, studded with a rainbow
+desc:An elaborately decorated crown of massive gold, studded with a rainbow
 desc: of gems and jewels; worthy of a High King.
 
 

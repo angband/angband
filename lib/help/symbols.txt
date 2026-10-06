@@ -3,12 +3,12 @@ Symbols On Your Map
 
 Symbols on your map can be broken down into three categories: Features of
 the dungeon such as walls, floor, doors, and traps; Objects which can be
-picked up such as treasure, weapons, magical devices, etc; and creatures
+picked up such as treasure, weapons, magical devices, etc.; and Creatures
 which may or may not move about the dungeon, but are mostly harmful to your
-character's well being.
+character's well-being.
 
 Some symbols are used to represent more than one type of entity, and some
-symbols are used to represent entities in more than one category. The "@"
+symbols are used to represent entities in more than one category.  The "@"
 symbol (by default) is used to represent the character.
 
 It will not be necessary to remember all of the symbols and their meanings.
@@ -25,7 +25,7 @@ Features that do not block line of sight
 
 .  A floor space                 1  Entrance to General Store
 .  A trap (hidden)               2  Entrance to Armoury
-^  A trap (known)                3  Entrance to Weapon Smith
+^  A trap (known)                3  Entrance to Weapon Smiths
 ;  A glyph of warding            4  Entrance to Bookseller
 '  An open door                  5  Entrance to Alchemy Shop
 '  A broken door                 6  Entrance to Magic Shop
@@ -54,7 +54,7 @@ _  A staff                       {  A shot, arrow, or bolt
 =  A ring                        (  Soft armour
 "  An amulet                     [  Hard armour
 $  Gold or gems                  ]  Misc. armour
-~  Lights, Tools, Chests, etc    )  A shield
+~  Lights, Tools, Chests, etc.   )  A shield
 &  Multiple items
 
 

@@ -1506,7 +1506,7 @@ bool pick_and_place_distant_monster(struct chunk *c, struct loc to_avoid,
 
 	if (!attempts_left) {
 		if (OPT(player, cheat_xtra) || OPT(player, cheat_hear))
-			msg("Warning! Could not allocate a new monster.");
+			msg("Warning!  Could not allocate a new monster.");
 
 		return false;
 	}

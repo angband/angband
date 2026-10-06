@@ -196,7 +196,7 @@ type:object
 code:SLOW_DIGEST
 bindui:slow_digestion_ui_compact_0:0:1
 name:Slow Digestion
-desc:You have slow metabolism.
+desc:You have a slow metabolism.
 
 type:object
 code:FEATHER

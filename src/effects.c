@@ -396,7 +396,7 @@ bool effect_do(struct effect *effect,
 		int choice_count = 0, leftover = 1;
 
 		if (!effect_valid(effect)) {
-			msg("Bad effect passed to effect_do(). Please report this bug.");
+			msg("Bad effect passed to effect_do().  Please report this bug.");
 			return false;
 		}
 

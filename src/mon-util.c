@@ -1480,7 +1480,7 @@ void steal_monster_item(struct monster *mon, int midx)
 			obj->held_m_idx = 0;
 			pile_excise(&mon->held_obj, obj);
 			if (tval_is_money(obj)) {
-				msg("You steal %d gold pieces worth of treasure.", obj->pval);
+				msg("You steal %d gold pieces' worth of treasure.", obj->pval);
 				player->au += obj->pval;
 				player->upkeep->redraw |= (PR_GOLD);
 				delist_object(cave, obj);

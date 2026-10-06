@@ -1319,7 +1319,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 	if ((player->depth) && ((!player->upkeep->arena_level)
 							|| (context->origin.what == SRC_MONSTER))) {
-		msg("The ground shakes! The ceiling caves in!");
+		msg("The ground shakes!  The ceiling caves in!");
 	} else {
 		/* No effect in town or arena */
 		msg("The ground shakes for a moment.");

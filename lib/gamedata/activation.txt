@@ -119,7 +119,8 @@ effect:CURE:POISONED
 effect:CURE:STUN
 effect:CURE:AMNESIA
 effect:CURE:CONFUSED
-desc:heals 35% of max HP (minimum 300HP), cut damage, and cures stunning, poisoning, blindness, and confusion
+desc:heals 35% of lost HP (minimum 300HP), cut damage, and cures stunning,
+desc: poisoning, blindness, and confusion
 
 name:CURE_FULL2
 aim:0
@@ -683,7 +684,7 @@ aim:0
 level:25
 power:19
 effect:DEEP_DESCENT
-desc:teleports you five levels down
+desc:teleports you up to five levels below your maximum depth
 
 
 name:EARTHQUAKES
@@ -698,7 +699,8 @@ aim:0
 level:57
 power:12
 effect:DESTRUCTION:LIGHT:15
-desc:destroys an area around you in the shape of a circle radius 15, and blinds you for 1d10+10 turns
+desc:destroys an area around you in the shape of a circle of radius 15, and
+desc: blinds you for 1d10+10 turns
 
 
 name:LOSSLOW
@@ -1329,7 +1331,7 @@ level:10
 power:5
 effect:TIMED_SET:TERROR
 dice:79+1d41
-desc:speeds up you temporarily but also makes you mortally afraid
+desc:speeds you up temporarily but also makes you mortally afraid
 
 name:SHROOM_STONE
 aim:0

@@ -77,5 +77,5 @@ level:25
 effect:DAMAGE
 dice:5d8
 destroy:1
-msg:There is a sudden explosion! Everything inside the chest is destroyed!
+msg:There is a sudden explosion!  Everything inside the chest is destroyed!
 msg-death:an exploding chest
