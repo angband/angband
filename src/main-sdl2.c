@@ -22,6 +22,7 @@
 
 #include "sdl2/pui-ctrl.h"
 #include "sdl2/pui-dlg.h"
+#include "sdl2/pui-foc.h"
 #include "sdl2/pui-misc.h"
 #include "sdl2/pui-win.h"
 #include "SDL_image.h"
@@ -55,8 +56,9 @@
 /* that should be plenty... */
 #define MAX_WINDOWS 4
 
+/* Need the timer subsystem for momentary feedback about initiating an action */
 #define INIT_SDL_FLAGS \
-	(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER)
+	(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_TIMER)
 #define INIT_IMG_FLAGS \
 	(IMG_INIT_PNG)
 
@@ -352,7 +354,7 @@ struct sdlpui_window {
 	struct window_config *config;
 
 	/** window has changed and must be redrawn */
-	bool dirty;
+	SDL_atomic_t dirty;
 	/**
 	 * when true, window is temporarily not in fullscreen mode because the
 	 * application was stopped
@@ -413,13 +415,6 @@ struct sdlpui_window {
 	 * window.  Both will be NULL if no menus/dialogs are active.
 	 */
 	struct sdlpui_dialog *d_head, *d_tail;
-
-	/**
-	 * These point to the dialog/menu that should receive mouse events or
-	 * keyboard events, respectively.  If NULL, events will be directed
-	 * to the game's core.
-	 */
-	struct sdlpui_dialog *d_mouse, *d_key;
 };
 
 struct font_info {
@@ -606,6 +601,21 @@ const SDL_Color *sdlpui_get_color(struct sdlpui_window *w, int role)
 		idx = COLOUR_SHADE;
 		break;
 
+	case SDLPUI_COLOR_MENU_ACTION_FEEDBACK:
+	case SDLPUI_COLOR_ACTION_FEEDBACK:
+		idx = COLOUR_BLUE;
+		break;
+
+	case SDLPUI_COLOR_MENU_ACTION_UNAVAIL:
+	case SDLPUI_COLOR_ACTION_UNAVAIL:
+		idx = COLOUR_RED;
+		break;
+
+	case SDLPUI_COLOR_MENU_ACTION_DRAG:
+	case SDLPUI_COLOR_ACTION_DRAG:
+		idx = COLOUR_YELLOW;
+		break;
+
 	default:
 		/*
 		 * Should not happen; assign a safe index in case assertions
@@ -622,7 +632,7 @@ const SDL_Color *sdlpui_get_color(struct sdlpui_window *w, int role)
 
 void sdlpui_signal_redraw(struct sdlpui_window *w)
 {
-	w->dirty = true;
+	(void)SDL_AtomicSet(&w->dirty, SDL_TRUE);
 }
 
 void sdlpui_dialog_push_to_top(struct sdlpui_window *w, struct sdlpui_dialog *d)
@@ -660,12 +670,6 @@ void sdlpui_dialog_push_to_top(struct sdlpui_window *w, struct sdlpui_dialog *d)
 
 void sdlpui_dialog_pop(struct sdlpui_window *w, struct sdlpui_dialog *d)
 {
-	if (w->d_mouse && w->d_mouse->id == d->id) {
-		w->d_mouse = NULL;
-	}
-	if (w->d_key && w->d_key->id == d->id) {
-		w->d_key = NULL;
-	}
 	if (d->next) {
 		d->next->prev = d->prev;
 	} else {
@@ -678,45 +682,7 @@ void sdlpui_dialog_pop(struct sdlpui_window *w, struct sdlpui_dialog *d)
 		SDL_assert(w->d_head && w->d_head->id == d->id);
 		w->d_head = d->next;
 	}
-	w->dirty = true;
-}
-
-void sdlpui_dialog_gain_key_focus(struct sdlpui_window *w,
-		struct sdlpui_dialog *d)
-{
-	w->d_key = d;
-}
-
-void sdlpui_dialog_yield_key_focus(struct sdlpui_window *w,
-		struct sdlpui_dialog *d)
-{
-	if (w->d_key && w->d_key->id == d->id) {
-		w->d_key = NULL;
-	}
-}
-
-void sdlpui_dialog_gain_mouse_focus(struct sdlpui_window *w,
-		struct sdlpui_dialog *d)
-{
-	w->d_mouse = d;
-}
-
-void sdlpui_dialog_yield_mouse_focus(struct sdlpui_window *w,
-		struct sdlpui_dialog *d)
-{
-	if (w->d_mouse && w->d_mouse->id == d->id) {
-		w->d_mouse = NULL;
-	}
-}
-
-struct sdlpui_dialog *sdlpui_dialog_with_key_focus(struct sdlpui_window *w)
-{
-	return w->d_key;
-}
-
-struct sdlpui_dialog *sdlpui_dialog_with_mouse_focus(struct sdlpui_window *w)
-{
-	return w->d_mouse;
+	sdlpui_signal_redraw(w);
 }
 
 void sdlpui_force_quit(void)
@@ -899,6 +865,8 @@ static void render_all(struct sdlpui_window *window)
 			SDL_RenderCopy(window->renderer, d->texture, NULL,
 				&d->rect);
 		} else if (d->ftb->render) {
+			/* Turn off the redraw flag in case it was set. */
+			(void)sdlpui_dialog_should_redraw(d);
 			(*d->ftb->render)(d, window);
 		}
 	}
@@ -919,7 +887,7 @@ static void render_status_bar(struct sdlpui_window *window)
 	struct sdlpui_dialog *d;
 
 	for (d = window->d_tail; d; d = d->prev) {
-		if (d->dirty) {
+		if (sdlpui_dialog_should_redraw(d)) {
 			if (d->ftb->render) {
 				(*d->ftb->render)(d, window);
 			}
@@ -986,10 +954,10 @@ static void render_window_while_menu_active(struct sdlpui_window *window)
 	 * over subwindows.
 	 */
 	for (d = window->d_tail; d; d = d->prev) {
-		if (d->ftb->render && (d->dirty || !d->texture)) {
+		if ((sdlpui_dialog_should_redraw(d) || !d->texture)
+				&& d->ftb->render) {
 			(*d->ftb->render)(d, window);
 		}
-		d->dirty = SDL_FALSE;
 		if (d->texture) {
 			SDL_SetRenderTarget(window->renderer, NULL);
 			SDL_RenderCopy(window->renderer, d->texture, NULL,
@@ -1027,11 +995,18 @@ static void redraw_window_while_menu_active(struct sdlpui_window *window)
 /** this function is mostly used while normally playing the game */
 static void redraw_window(struct sdlpui_window *window)
 {
-	if (window->move_state.moving || window->size_state.sizing
-			|| window->d_mouse || window->d_key) {
+	if (window->move_state.moving || window->size_state.sizing) {
 		redraw_window_while_menu_active(window);
 		return;
 	}
+
+	sdlpui_begin_focus_transaction();
+	if (sdlpui_any_dialog_with_focus()) {
+		sdlpui_end_focus_transaction();
+		redraw_window_while_menu_active(window);
+		return;
+	}
+	sdlpui_end_focus_transaction();
 
 	render_all(window);
 	SDL_RenderPresent(window->renderer);
@@ -1049,10 +1024,10 @@ static void redraw_all_windows(struct my_app *a, bool dirty)
 {
 	for (unsigned i = 0; i < MAX_WINDOWS; i++) {
 		struct sdlpui_window *window = get_window_direct(a, i);
-		if (window != NULL && (dirty ? window->dirty : true)) {
+		if (window != NULL && (SDL_AtomicCAS(&window->dirty,
+				SDL_TRUE, SDL_FALSE) || !dirty)) {
 			render_status_bar(window);
 			redraw_window(window);
-			window->dirty = false;
 		}
 	}
 }
@@ -1484,6 +1459,9 @@ static SDL_bool handle_shortcut_editor_key(struct sdlpui_dialog *d,
 	if (pse->changing_shortcut == -1) {
 		return sdlpui_dialog_handle_key(d, w, e);
 	}
+	if (e->state != SDL_PRESSED) {
+		return SDL_FALSE;
+	}
 	keyboard_event_to_angband_key(e, w->app->kp_as_mod, &ch, &mods);
 	if (ch) {
 		char keypress_desc[40];
@@ -1594,22 +1572,25 @@ static void render_shortcut_editor(struct sdlpui_dialog *d,
 	if (pse->reset_button.ftb->render) {
 		(*pse->reset_button.ftb->render)(&pse->reset_button, d, w, r);
 	}
-	d->dirty = SDL_FALSE;
 }
 
-static void goto_shortcut_editor_first_control(struct sdlpui_dialog *d,
-		struct sdlpui_window *w)
+static struct sdlpui_control* goto_shortcut_editor_first_control(
+		struct sdlpui_dialog *d, struct sdlpui_window *w)
 {
 	struct shortcut_editor_data *pse;
+	struct sdlpui_control *result;
 
 	SDL_assert(d->type_code == SHORTCUT_EDITOR_CODE && d->priv);
 	pse = d->priv;
-	SDL_assert(pse->change_buttons[0].ftb->gain_key);
-	SDL_assert(!d->c_key || d->c_key->id == pse->change_buttons[0].id);
-	(*pse->change_buttons[0].ftb->gain_key)(
-		&pse->change_buttons[0], d, w, 0);
-	d->c_key = &pse->change_buttons[0];
-	sdlpui_dialog_gain_key_focus(w, d);
+	result = &pse->change_buttons[0];
+	sdlpui_begin_focus_transaction();
+	if (!sdlpui_change_focus(result, 0, d, w, SDLPUI_ACTION_HINT_KEY,
+			SDL_FALSE, SDL_TRUE)) {
+		result = NULL;
+	}
+	sdlpui_end_focus_transaction();
+
+	return result;
 }
 
 static void step_shortcut_editor_control(struct sdlpui_dialog *d,
@@ -1654,13 +1635,10 @@ static void step_shortcut_editor_control(struct sdlpui_dialog *d,
 		}
 		++i;
 	}
-	if (d->c_key && (!new_c || d->c_key->id != new_c->id) &&
-			d->c_key->ftb->lose_key) {
-		(*d->c_key->ftb->lose_key)(d->c_key, d, w, new_c, d);
-	}
-	SDL_assert(new_c->ftb->gain_key);
-	(*new_c->ftb->gain_key)(new_c, d, w, 0);
-	d->c_key = new_c;
+	sdlpui_begin_focus_transaction();
+	(void)sdlpui_change_focus(new_c, 0, d, w, SDLPUI_ACTION_HINT_KEY,
+		SDL_FALSE, SDL_TRUE);
+	sdlpui_end_focus_transaction();
 }
 
 static struct sdlpui_control *find_shortcut_editor_control_containing(
@@ -1952,11 +1930,13 @@ static void cleanup_shortcut_editor(struct sdlpui_dialog *d)
 }
 
 static void handle_shortcut_change(struct sdlpui_control *c,
-		struct sdlpui_dialog *d, struct sdlpui_window *w)
+		struct sdlpui_dialog *d, struct sdlpui_window *w,
+		enum sdlpui_action_hint hint)
 {
 	struct shortcut_editor_data *pse;
 	int tag = sdlpui_get_tag(c);
 
+	(void)hint;
 	SDL_assert(d->type_code == SHORTCUT_EDITOR_CODE && d->priv);
 	pse = d->priv;
 	SDL_assert(tag >= 0 && tag < MAX_WINDOWS);
@@ -1967,11 +1947,13 @@ static void handle_shortcut_change(struct sdlpui_control *c,
 }
 
 static void handle_shortcut_clear(struct sdlpui_control *c,
-		struct sdlpui_dialog *d, struct sdlpui_window *w)
+		struct sdlpui_dialog *d, struct sdlpui_window *w,
+		enum sdlpui_action_hint hint)
 {
 	struct shortcut_editor_data *pse;
 	int tag = sdlpui_get_tag(c);
 
+	(void)hint;
 	SDL_assert(d->type_code == SHORTCUT_EDITOR_CODE && d->priv);
 	pse = d->priv;
 	SDL_assert(tag >= 0 && tag < MAX_WINDOWS);
@@ -1990,17 +1972,21 @@ static void handle_shortcut_clear(struct sdlpui_control *c,
 }
 
 static void handle_shortcut_editor_close(struct sdlpui_control *c,
-		struct sdlpui_dialog *d, struct sdlpui_window *w)
+		struct sdlpui_dialog *d, struct sdlpui_window *w,
+		enum sdlpui_action_hint hint)
 {
-	sdlpui_popdown_dialog(d, w, SDL_FALSE);
+	(void)hint;
+	(void)sdlpui_popdown_dialog(d, w, SDL_TRUE, SDL_FALSE, SDL_FALSE);
 }
 
 static void handle_shortcut_editor_reset(struct sdlpui_control *c,
-		struct sdlpui_dialog *d, struct sdlpui_window *w)
+		struct sdlpui_dialog *d, struct sdlpui_window *w,
+		enum sdlpui_action_hint hint)
 {
 	struct shortcut_editor_data *pse;
 	int i;
 
+	(void)hint;
 	SDL_assert(d->type_code == SHORTCUT_EDITOR_CODE && d->priv);
 	pse = d->priv;
 	for (i = 0; i < MAX_WINDOWS; ++i) {
@@ -2046,6 +2032,8 @@ static void show_shortcut_editor(struct sdlpui_window *w, int x, int y)
 		goto_shortcut_editor_first_control,
 		step_shortcut_editor_control,
 		find_shortcut_editor_control_containing,
+		NULL,
+		NULL,
 		NULL,
 		NULL,
 		NULL,
@@ -2125,14 +2113,12 @@ static void show_shortcut_editor(struct sdlpui_window *w, int x, int y)
 	w->shorte->next_r = NULL;
 	w->shorte->prev_r = NULL;
 	w->shorte->texture = NULL;
-	w->shorte->c_mouse = NULL;
-	w->shorte->c_key = NULL;
 	w->shorte->priv = pse;
 	w->shorte->id = id;
 	w->shorte->type_code = SHORTCUT_EDITOR_CODE;
 	w->shorte->tag = 0;
 	w->shorte->pinned = SDL_FALSE;
-	w->shorte->dirty = SDL_TRUE;
+	w->shorte->dirty.value = SDL_TRUE;
 	sdlpui_register_dialog(w->shorte);
 
 	(*w->shorte->ftb->query_natural_size)(w->shorte, w, &dw, &dh);
@@ -2183,8 +2169,7 @@ static void recreate_about_dialog_textures(struct sdlpui_dialog *d,
 				DEFAULT_ABOUT_ICON);
 			pi->image = load_image(w, path);
 
-			d->dirty = SDL_TRUE;
-			sdlpui_signal_redraw(w);
+			sdlpui_dialog_mark_for_redraw(d, w);
 			break;
 		}
 	}
@@ -2496,7 +2481,7 @@ static void signal_move_state(struct sdlpui_window *window)
 		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
 		mb->v.toggled = (window->move_state.active)
 			? SDL_TRUE : SDL_FALSE;
-		window->status_bar->dirty = SDL_TRUE;
+		sdlpui_dialog_mark_for_redraw(window->status_bar, window);
 	}
 
 	SDL_SetWindowGrab(window->window, was_active ? SDL_FALSE : SDL_TRUE);
@@ -2529,15 +2514,17 @@ static void signal_size_state(struct sdlpui_window *window)
 		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
 		mb->v.toggled = (window->size_state.active)
 			? SDL_TRUE : SDL_FALSE;
-		window->status_bar->dirty = SDL_TRUE;
+		sdlpui_dialog_mark_for_redraw(window->status_bar, window);
 	}
 
 	SDL_SetWindowGrab(window->window, was_active ? SDL_FALSE : SDL_TRUE);
 }
 
 static void handle_button_movesize(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
+	(void)hint;
 	SDL_assert(ctrl->ftb->get_tag);
 	if ((*ctrl->ftb->get_tag)(ctrl) == 0) {
 		if (window->size_state.active) {
@@ -2555,24 +2542,30 @@ static void handle_button_movesize(struct sdlpui_control *ctrl,
 }
 
 static void handle_menu_shortcuts(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
 	int x = dlg->rect.x + ctrl->rect.x, y = dlg->rect.y + ctrl->rect.y;
 
-	sdlpui_popdown_dialog(dlg, window, SDL_TRUE);
+	(void)hint;
+	(void)sdlpui_popdown_dialog(dlg, window, SDL_TRUE, SDL_FALSE,
+		SDL_FALSE);
 	show_shortcut_editor(window, x, y);
 }
 
 static void handle_menu_window(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
 	int tag;
 	struct sdlpui_window *other;
 
+	(void)hint;
 	SDL_assert(ctrl->ftb->get_tag);
 	tag = (*ctrl->ftb->get_tag)(ctrl);
 	SDL_assert(tag >= 0);
-	sdlpui_popdown_dialog(dlg, window, SDL_TRUE);
+	(void)sdlpui_popdown_dialog(dlg, window, SDL_TRUE, SDL_FALSE,
+		SDL_FALSE);
 	other = get_window_direct(window->app, (unsigned int)tag);
 	if (other == NULL) {
 		other = get_new_window(window->app, (unsigned int)tag);
@@ -2671,9 +2664,12 @@ static bool toggle_fullscreen(struct sdlpui_window *window)
 }
 
 static void handle_menu_fullscreen(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
-	sdlpui_popdown_dialog(dlg, window, SDL_TRUE);
+	(void)hint;
+	(void)sdlpui_popdown_dialog(dlg, window, SDL_TRUE, SDL_FALSE,
+		SDL_FALSE);
 	if (!toggle_fullscreen(window)) {
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING,
 			"Fullscreen failure",
@@ -2683,39 +2679,52 @@ static void handle_menu_fullscreen(struct sdlpui_control *ctrl,
 }
 
 static void handle_menu_kp_mod(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
-	sdlpui_popdown_dialog(dlg, window, SDL_TRUE);
+	(void)hint;
+	(void)sdlpui_popdown_dialog(dlg, window, SDL_TRUE, SDL_FALSE,
+		SDL_FALSE);
 	window->app->kp_as_mod = !window->app->kp_as_mod;
 }
 
 static void handle_menu_about(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
 	int x = dlg->rect.x + ctrl->rect.x, y = dlg->rect.y + ctrl->rect.y;
 
-	sdlpui_popdown_dialog(dlg, window, SDL_TRUE);
+	(void)hint;
+	(void)sdlpui_popdown_dialog(dlg, window, SDL_TRUE, SDL_FALSE,
+		SDL_FALSE);
 	show_about(window, x, y);
 }
 
 static void handle_menu_sdl_details(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
 	int x = dlg->rect.x + ctrl->rect.x, y = dlg->rect.y + ctrl->rect.y;
 
-	sdlpui_popdown_dialog(dlg, window, SDL_TRUE);
+	(void)hint;
+	(void)sdlpui_popdown_dialog(dlg, window, SDL_TRUE, SDL_FALSE,
+		SDL_FALSE);
 	show_sdl_details(window, x, y);
 }
 
 static void handle_menu_quit(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
-	sdlpui_popdown_dialog(dlg, window, SDL_TRUE);
+	(void)hint;
+	(void)sdlpui_popdown_dialog(dlg, window, SDL_TRUE, SDL_FALSE,
+		SDL_FALSE);
 	terms_disconnecting = 1;
 }
 
 static void handle_menu_tile_set(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
 	int new_id;
 
@@ -2732,7 +2741,10 @@ static void handle_menu_tile_set(struct sdlpui_control *ctrl,
 		mb = (struct sdlpui_menu_button*)ctrl->priv;
 		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
 		mb->v.toggled = SDL_TRUE;
-		dlg->dirty = SDL_TRUE;
+		sdlpui_begin_focus_transaction();
+		sdlpui_trigger_momentary_feedback(hint, SDL_FALSE);
+		sdlpui_end_focus_transaction();
+		sdlpui_dialog_mark_for_redraw(dlg, window);
 	} else {
 		/* Change the graphics mode.  Toggle off the old mode. */
 		int old_id = current_graphics_mode->grafID;
@@ -2752,7 +2764,7 @@ static void handle_menu_tile_set(struct sdlpui_control *ctrl,
 			SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
 			if (mb->tag == old_id) {
 				mb->v.toggled = SDL_FALSE;
-				dlg->dirty = SDL_TRUE;
+				sdlpui_dialog_mark_for_redraw(dlg, window);
 				break;
 			}
 		}
@@ -2762,11 +2774,13 @@ static void handle_menu_tile_set(struct sdlpui_control *ctrl,
 }
 
 static void handle_menu_tile_size(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
 	struct sdlpui_menu_button *mb;
 	int tag;
 
+	(void)hint;
 	SDL_assert(ctrl->type_code == SDLPUI_CTRL_MENU_BUTTON);
 	mb = (struct sdlpui_menu_button*)ctrl->priv;
 	SDL_assert(mb->subtype_code == SDLPUI_MB_RANGED_INT);
@@ -2868,12 +2882,14 @@ static struct sdlpui_dialog *handle_menu_tiles(struct sdlpui_control *ctrl,
 }
 
 static void handle_menu_pw(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
 	int tag, subw_idx, flag_idx;
 	struct sdlpui_menu_button *mb;
 	uint32_t *new_flags;
 
+	(void)hint;
 	SDL_assert(ctrl->ftb->get_tag);
 	tag = (*ctrl->ftb->get_tag)(ctrl);
 	SDL_assert(tag >= 0);
@@ -2898,7 +2914,8 @@ static void handle_menu_pw(struct sdlpui_control *ctrl,
 }
 
 static void handle_menu_font_name(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
 	int tag = sdlpui_get_tag(ctrl), index, old_index;
 	struct subwindow *subwindow;
@@ -2922,7 +2939,10 @@ static void handle_menu_font_name(struct sdlpui_control *ctrl,
 		mb = (struct sdlpui_menu_button*)ctrl->priv;
 		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
 		mb->v.toggled = SDL_TRUE;
-		dlg->dirty = SDL_TRUE;
+		sdlpui_begin_focus_transaction();
+		sdlpui_trigger_momentary_feedback(hint, SDL_FALSE);
+		sdlpui_end_focus_transaction();
+		sdlpui_dialog_mark_for_redraw(dlg, window);
 		return;
 	}
 
@@ -2948,7 +2968,8 @@ static void handle_menu_font_name(struct sdlpui_control *ctrl,
 				mb = (struct sdlpui_menu_button*)sm->controls[i].priv;
 				if (mb->tag == target_tag) {
 					mb->v.toggled = SDL_FALSE;
-					dlg->dirty = SDL_TRUE;
+					sdlpui_dialog_mark_for_redraw(dlg,
+						window);
 					searching = false;
 					break;
 				}
@@ -2989,18 +3010,20 @@ static void handle_menu_font_name(struct sdlpui_control *ctrl,
 		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
 		mb->disabled = SDL_TRUE;
 		mb->v.toggled = SDL_FALSE;
-		dlg->dirty = SDL_TRUE;
+		sdlpui_dialog_mark_for_redraw(dlg, window);
 	}
 }
 
 static void handle_menu_font_size(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
 	int tag;
 	struct subwindow *subwindow;
 	struct sdlpui_menu_button *mb;
 	struct font_info *info;
 
+	(void)hint;
 	SDL_assert(ctrl->ftb->get_tag);
 	tag = (*ctrl->ftb->get_tag)(ctrl);
 	subwindow = get_subwindow_by_index(window, (unsigned int)tag, false);
@@ -3184,11 +3207,13 @@ static struct sdlpui_dialog *handle_menu_font(struct sdlpui_control *ctrl,
 }
 
 static void handle_menu_borders(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
 	int tag;
 	struct subwindow *subwindow;
 
+	(void)hint;
 	SDL_assert(ctrl->ftb->get_tag);
 	tag = (*ctrl->ftb->get_tag)(ctrl);
 	SDL_assert(tag >= 0);
@@ -3199,7 +3224,8 @@ static void handle_menu_borders(struct sdlpui_control *ctrl,
 }
 
 static void handle_menu_subwindow_alpha(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
 	int tag;
 	struct subwindow *subwindow;
@@ -3224,7 +3250,10 @@ static void handle_menu_subwindow_alpha(struct sdlpui_control *ctrl,
 		mb = (struct sdlpui_menu_button*)ctrl->priv;
 		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
 		mb->v.toggled = SDL_TRUE;
-		dlg->dirty = SDL_TRUE;
+		sdlpui_begin_focus_transaction();
+		sdlpui_trigger_momentary_feedback(hint, SDL_FALSE);
+		sdlpui_end_focus_transaction();
+		sdlpui_dialog_mark_for_redraw(dlg, window);
 		return;
 	}
 	/* Toggle off the previous setting. */
@@ -3241,7 +3270,7 @@ static void handle_menu_subwindow_alpha(struct sdlpui_control *ctrl,
 		if (is_close_to(alpha, subwindow->color.a,
 				DEFAULT_ALPHA_STEP / 2)) {
 			mb->v.toggled = SDL_FALSE;
-			dlg->dirty = SDL_TRUE;
+			sdlpui_dialog_mark_for_redraw(dlg, window);
 			break;
 		}
 	}
@@ -3290,11 +3319,13 @@ static struct sdlpui_dialog *handle_menu_alpha(struct sdlpui_control *ctrl,
 }
 
 static void handle_menu_top(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
 	int tag;
 	struct subwindow *subwindow;
 
+	(void)hint;
 	SDL_assert(ctrl->ftb->get_tag);
 	tag = (*ctrl->ftb->get_tag)(ctrl);
 	SDL_assert(tag >= 0);
@@ -3711,14 +3742,11 @@ static void handle_window_focus(struct my_app *a, const SDL_WindowEvent *event)
 			SDLPUI_EVENT_TRACER("window", new_w,
 				fill_window_name(new_w, name, sizeof(name)),
 				"mouse entered");
-			if (a->w_mouse && a->w_mouse->index != new_w->index
-					&& a->w_mouse->d_mouse) {
-				if (a->w_mouse->d_mouse->ftb->handle_window_loses_mouse) {
-					(*a->w_mouse->d_mouse->ftb->handle_window_loses_mouse)(
-						a->w_mouse->d_mouse,
-						a->w_mouse);
-				}
-				a->w_mouse->d_mouse = NULL;
+			if (a->w_mouse && a->w_mouse->index != new_w->index) {
+				sdlpui_begin_focus_transaction();
+				sdlpui_window_loses_focus(
+					SDLPUI_ACTION_HINT_MOUSE);
+				sdlpui_end_focus_transaction();
 			}
 			a->w_mouse = new_w;
 			break;
@@ -3726,28 +3754,24 @@ static void handle_window_focus(struct my_app *a, const SDL_WindowEvent *event)
 			SDLPUI_EVENT_TRACER("window", a->w_mouse,
 				fill_window_name(a->w_mouse, name,
 				sizeof(name)), "mouse left");
-			if (a->w_mouse && a->w_mouse->d_mouse) {
-				if (a->w_mouse->d_mouse->ftb->handle_window_loses_mouse) {
-					(*a->w_mouse->d_mouse->ftb->handle_window_loses_mouse)(
-						a->w_mouse->d_mouse,
-						a->w_mouse);
-				}
-				a->w_mouse->d_mouse = NULL;
+			if (a->w_mouse) {
+				sdlpui_begin_focus_transaction();
+				sdlpui_window_loses_focus(
+						SDLPUI_ACTION_HINT_MOUSE);
+				sdlpui_end_focus_transaction();
+				a->w_mouse = NULL;
 			}
-			a->w_mouse = NULL;
 			break;
 		case SDL_WINDOWEVENT_FOCUS_GAINED:
 			new_w = get_window_by_id(a, event->windowID);
 			SDLPUI_EVENT_TRACER("window", new_w,
 				fill_window_name(new_w, name, sizeof(name)),
 				"gained key focus");
-			if (a->w_key && a->w_key->index != new_w->index
-					&& a->w_key->d_key) {
-				if (a->w_key->d_key->ftb->handle_window_loses_key) {
-					(*a->w_key->d_key->ftb->handle_window_loses_key)(
-						a->w_key->d_key, a->w_key);
-				}
-				a->w_key->d_key = NULL;
+			if (a->w_key && a->w_key->index != new_w->index) {
+				sdlpui_begin_focus_transaction();
+				sdlpui_window_loses_focus(
+						SDLPUI_ACTION_HINT_KEY);
+				sdlpui_end_focus_transaction();
 			}
 			a->w_key = new_w;
 			break;
@@ -3755,14 +3779,13 @@ static void handle_window_focus(struct my_app *a, const SDL_WindowEvent *event)
 			SDLPUI_EVENT_TRACER("window", a->w_key,
 				fill_window_name(a->w_key, name, sizeof(name)),
 				"lost key focus");
-			if (a->w_key && a->w_key->d_key) {
-				if (a->w_key->d_key->ftb->handle_window_loses_key) {
-					(*a->w_key->d_key->ftb->handle_window_loses_key)(
-						a->w_key->d_key, a->w_key);
-				}
-				a->w_key->d_key = NULL;
+			if (a->w_key) {
+				sdlpui_begin_focus_transaction();
+				sdlpui_window_loses_focus(
+					SDLPUI_ACTION_HINT_KEY);
+				sdlpui_end_focus_transaction();
+				a->w_key = NULL;
 			}
-			a->w_key = NULL;
 			break;
 		default:
 			assert(0);
@@ -3853,6 +3876,15 @@ static void handle_windowevent(struct my_app *a, const SDL_WindowEvent *event)
 	redraw_all_windows(a, false);
 }
 
+static bool handle_user_event(struct my_app *a,
+		const struct SDL_UserEvent *event)
+{
+	if (sdlpui_is_user_redraw_event(event)) {
+		try_redraw_window((struct sdlpui_window*)event->data2);
+	}
+	return false;
+}
+
 static void resize_subwindow(struct subwindow *subwindow)
 {
 	SDL_DestroyTexture(subwindow->texture);
@@ -3902,7 +3934,7 @@ static void do_sizing(struct sdlpui_window *window, int x, int y)
 				size_state->subwindow->font_height)
 			&& !SDL_RectEquals(&rect, &size_state->subwindow->sizing_rect)) {
 		size_state->subwindow->sizing_rect = rect;
-		window->dirty = true;
+		sdlpui_signal_redraw(window);
 	}
 
 	size_state->originx = x;
@@ -3924,7 +3956,7 @@ static void do_moving(struct sdlpui_window *window, int x, int y)
 	try_snap(window, move_state->subwindow, rect);
 	fit_rect_in_rect_by_xy(rect, &window->inner_rect);
 	if (!SDL_RectEquals(&old_rect, rect)) {
-		window->dirty = true;
+		sdlpui_signal_redraw(window);
 	}
 
 	move_state->originx = x;
@@ -3934,7 +3966,7 @@ static void do_moving(struct sdlpui_window *window, int x, int y)
 static bool handle_mousemotion(struct my_app *a,
 		const SDL_MouseMotionEvent *mouse)
 {
-	struct sdlpui_dialog *d;
+	struct sdlpui_dialog *d_mouse, *d;
 	SDL_Event pendm[4];
 
 	if (!a->w_mouse) {
@@ -3971,19 +4003,24 @@ static bool handle_mousemotion(struct my_app *a,
 		do_sizing(a->w_mouse, mouse->x, mouse->y);
 		return true;
 	}
+
+	sdlpui_begin_focus_transaction();
+
 	/* Have a menu or dialog handle the event if appropriate. */
-	if (a->w_mouse->d_mouse
-			&& a->w_mouse->d_mouse->ftb->handle_mousemove
-			&& (*a->w_mouse->d_mouse->ftb->handle_mousemove)(
-				a->w_mouse->d_mouse, a->w_mouse, mouse)) {
+	d_mouse = sdlpui_get_dialog_with_focus(SDLPUI_ACTION_HINT_MOUSE);
+	if (d_mouse && d_mouse->ftb->handle_mousemove
+			&& (*d_mouse->ftb->handle_mousemove)(d_mouse,
+			a->w_mouse, mouse)) {
+		sdlpui_end_focus_transaction();
 		return true;
 	}
 
 	/*
-	 * Ignore motion events while a mouse button is pressed (at
-	 * least up to the point that the mouse leaves the window).
+	 * Ignore motion events if mouse or key focus (since key focus follows
+	 * the mouse) is locked.
 	 */
-	if (mouse->state != 0) {
+	if (sdlpui_is_focus_locked(SDLPUI_ACTION_HINT_KEY_OR_MOUSE)) {
+		sdlpui_end_focus_transaction();
 		return true;
 	}
 
@@ -3999,57 +4036,42 @@ static bool handle_mousemotion(struct my_app *a,
 			break;
 		}
 		d = tgt->next;
-		if (sdlpui_is_in_dialog(tgt, mouse->x, mouse->y)
-				&& tgt->ftb->find_control_containing) {
-			int comp_ind;
-			struct sdlpui_control *c =
-				(*tgt->ftb->find_control_containing)(
-				tgt, a->w_mouse, mouse->x, mouse->y,
-				&comp_ind);
+		if (sdlpui_is_in_dialog(tgt, mouse->x, mouse->y)) {
+			if (d_mouse && d_mouse->id != tgt->id) {
+				struct sdlpui_control *c;
+				int comp_ind;
 
-			if (!a->w_mouse->d_mouse
-					|| a->w_mouse->d_mouse->id != tgt->id) {
-				struct sdlpui_dialog *old_d =
-					a->w_mouse->d_mouse;
-
-				if (old_d && old_d->ftb->handle_loses_mouse) {
-					(*old_d->ftb->handle_loses_mouse)(
-						old_d, a->w_mouse, c, tgt);
+				if (tgt->ftb->find_control_containing) {
+					c = (*tgt->ftb->find_control_containing)(
+						tgt, a->w_mouse, mouse->x,
+						mouse->y, &comp_ind);
+				} else {
+					c = NULL;
+					comp_ind = 0;
 				}
-				a->w_mouse->d_mouse = tgt;
+				(*d_mouse->ftb->handle_loses_mouse)(
+					d_mouse, a->w_mouse, c, comp_ind, tgt);
 			}
-			/* Have key focus follow mouse. */
+			/*
+			 * Have key focus follow mouse.  Determine if this is
+			 * dead code.  If it is not, does it need to call
+			 * SDL_RaiseWindow() or SDL_SetWindowInputFocus()?
+			 */
 			if (!a->w_key || a->w_key->index != a->w_mouse->index) {
-				if (a->w_key && a->w_key->d_key
-						&& a->w_key->d_key->ftb->handle_loses_key) {
-					(*a->w_key->d_key->ftb->handle_loses_key)(
-						a->w_key->d_key, a->w_key, c,
-						tgt);
-				}
-				if (a->w_key) {
-					a->w_key->d_key = NULL;
-				}
-				SDL_assert(!a->w_key
-					|| !a->w_key->d_mouse);
 				a->w_key = a->w_mouse;
-			} else if (a->w_key->d_key
-					&& a->w_key->d_key->id != tgt->id) {
-				if (a->w_key->d_key->ftb->handle_loses_key) {
-					(*a->w_key->d_key->ftb->handle_loses_key)(
-						a->w_key->d_key, a->w_key,
-						c, tgt);
-				}
 			}
-			a->w_mouse->d_key = tgt;
-			if (a->w_mouse->d_mouse
-					&& a->w_mouse->d_mouse->ftb->handle_mousemove
-					&& (*a->w_mouse->d_mouse->ftb->handle_mousemove)(
-					a->w_mouse->d_mouse, a->w_mouse, mouse)) {
+
+			if (tgt->ftb->handle_mousemove
+					&& (*tgt->ftb->handle_mousemove)(
+					tgt, a->w_mouse, mouse)) {
+				sdlpui_end_focus_transaction();
 				return true;
 			}
 			break;
 		}
 	}
+
+	sdlpui_end_focus_transaction();
 
 	return false;
 }
@@ -4091,18 +4113,17 @@ static bool handle_mousebutton(struct my_app *a,
 		const SDL_MouseButtonEvent *mouse)
 {
 	struct subwindow *subwindow;
+	struct sdlpui_dialog *d_mouse;
 	int button, col, row;
 	uint8_t mods;
 	term *old;
-	bool touched;
 
 	if (!a->w_mouse) {
 		return false;
 	}
 
 	/* Terminate moving/sizing on a mouse release. */
-	if (mouse->state == SDL_RELEASED
-			&& (a->w_mouse->move_state.moving
+	if (mouse->state == SDL_RELEASED && (a->w_mouse->move_state.moving
 			|| a->w_mouse->size_state.sizing)) {
 		if (a->w_mouse->move_state.moving) {
 			SDL_assert(a->w_mouse->move_state.active);
@@ -4117,30 +4138,32 @@ static bool handle_mousebutton(struct my_app *a,
 		return true;
 	}
 
+	sdlpui_begin_focus_transaction();
+
 	/* Have a menu or dialog handle the event if appropriate. */
-	touched = false;
-	if (a->w_mouse->d_mouse) {
+	d_mouse = sdlpui_get_dialog_with_focus(SDLPUI_ACTION_HINT_MOUSE);
+	if (d_mouse) {
 		/*
-		 * Press events outside of the dialog will act as if the dialog 
-		 * lost mouse focus to another unknown dialog.  Do not do the
-		 * same for release events in case the press happens in a
-		 * dialog, followed by mouse motion, and then the release
-		 * happens outside the dialog.
+		 * Press events outside of the dialog will act as if the
+		 * dialog lost mouse focus to another unknown dialog.
 		 */
 		if (mouse->state == SDL_PRESSED && !sdlpui_is_in_dialog(
-				a->w_mouse->d_mouse, mouse->x, mouse->y)) {
-			if (a->w_mouse->d_mouse->ftb->handle_loses_mouse) {
-				(*a->w_mouse->d_mouse->ftb->handle_loses_mouse)(
-					a->w_mouse->d_mouse, a->w_mouse,
-					NULL, NULL);
+				d_mouse, mouse->x, mouse->y)) {
+			if (d_mouse->ftb->handle_loses_mouse) {
+				(*d_mouse->ftb->handle_loses_mouse)(
+					d_mouse, a->w_mouse, NULL, 0, NULL);
 			}
-			touched = true;
-		} else if (a->w_mouse->d_mouse->ftb->handle_mouseclick
-				&& (*a->w_mouse->d_mouse->ftb->handle_mouseclick)(
-				a->w_mouse->d_mouse, a->w_mouse, mouse)) {
+			sdlpui_end_focus_transaction();
+			return true;
+		} else if (d_mouse->ftb->handle_mouseclick
+				&& (*d_mouse->ftb->handle_mouseclick)(
+				d_mouse, a->w_mouse, mouse)) {
+			sdlpui_end_focus_transaction();
 			return true;
 		}
 	}
+
+	sdlpui_end_focus_transaction();
 
 	/* If requested, start moving/sizing on a press. */
 	if (mouse->state != SDL_RELEASED
@@ -4162,13 +4185,13 @@ static bool handle_mousebutton(struct my_app *a,
 
 	/* Otherwise only react to the button press and not the release. */
 	if (mouse->state == SDL_RELEASED) {
-		return touched;
+		return false;
 	}
 
 	subwindow = get_subwindow_by_xy(a->w_mouse, mouse->x, mouse->y);
 	if (subwindow == NULL) {
 		/* not an error, the user clicked in some random place */
-		return touched;
+		return false;
 	}
 	if (!subwindow->top) {
 		bring_to_top(a->w_mouse, subwindow);
@@ -4181,7 +4204,7 @@ static bool handle_mousebutton(struct my_app *a,
 	 * lives in the main window.
 	 */
 	if (a->w_mouse->index != MAIN_WINDOW) {
-		return touched;
+		return false;
 	}
 
 	/* all magic numbers are from ui-term.c and ui-context.c :) */
@@ -4194,11 +4217,11 @@ static bool handle_mousebutton(struct my_app *a,
 			break;
 		default:
 			/* XXX other buttons? */
-			return touched;
+			return false;
 	}
 
 	if (!get_colrow_from_xy(subwindow, mouse->x, mouse->y, &col, &row)) {
-		return touched;
+		return false;
 	}
 
 	mods = translate_key_mods(SDL_GetModState());
@@ -4219,11 +4242,21 @@ static bool handle_mousewheel(struct my_app *a,
 		const SDL_MouseWheelEvent *wheel)
 {
 	/* Have a menu or dialog handle the event if appropriate. */
-	if (a->w_mouse && a->w_mouse->d_mouse
-			&& a->w_mouse->d_mouse->ftb->handle_mousewheel
-			&& (*a->w_mouse->d_mouse->ftb->handle_mousewheel)(
-				a->w_mouse->d_mouse, a->w_mouse, wheel)) {
-		return true;
+	if (a->w_mouse) {
+		struct sdlpui_dialog *d_mouse;
+
+		sdlpui_begin_focus_transaction();
+
+		d_mouse =
+			sdlpui_get_dialog_with_focus(SDLPUI_ACTION_HINT_MOUSE);
+		if (d_mouse && d_mouse->ftb->handle_mousewheel
+				&& (*d_mouse->ftb->handle_mousewheel)(d_mouse,
+				a->w_mouse, wheel)) {
+			sdlpui_end_focus_transaction();
+			return true;
+		}
+
+		sdlpui_end_focus_transaction();
 	}
 
 	/* Otherwise, nothing is done. */
@@ -4339,42 +4372,80 @@ static bool trigger_menu_shortcut(struct my_app *a, keycode_t ch, uint8_t mods)
 				&& a->menu_shortcuts[i].type == EVT_KBRD
 				&& a->menu_shortcuts[i].code == ch
 				&& a->menu_shortcuts[i].mods == mods) {
-			if (!a->w_key || a->w_key->index !=
-					a->windows[i].index) {
-				struct sdlpui_window *old_w = a->w_key;
-				struct sdlpui_dialog *old_d = a->w_key->d_key;
+			struct sdlpui_dialog *d_key;
 
-				SDL_assert(!a->windows[i].d_key);
-				SDL_assert(a->windows[i].status_bar->ftb->goto_first_control);
-				(a->windows[i].status_bar->ftb->goto_first_control)(
-					a->windows[i].status_bar, a->windows + i
-				);
-				if (old_w && old_d
-						&& old_d->ftb->handle_loses_key) {
-					(*old_d->ftb->handle_loses_key)(
-						old_d, old_w,
-						a->windows[i].status_bar->c_key,
-						a->windows[i].status_bar);
-				}
-				if (old_w) {
-					old_w->d_key = NULL;
-				}
-			} else if (!a->w_key->d_key ||
-					a->w_key->d_key->id
+			sdlpui_begin_focus_transaction();
+
+			d_key = sdlpui_get_dialog_with_focus(SDLPUI_ACTION_HINT_KEY);
+			if (!a->w_key || a->w_key->index
+					!= a->windows[i].index || !d_key
+					|| d_key->id
 					!= a->windows[i].status_bar->id) {
-				struct sdlpui_dialog *old_d = a->w_key->d_key;
+				/*
+				 * Necessary so SDL recognizes that this
+				 * window is the one with focus.  Unfortunately,
+				 * it does not appear to be sufficient:  on
+				 * Debian 13 with xfce as the desktop, need to
+				 * press the shortcut twice to fully bring up
+				 * the menu in a window that does not currently
+				 * have focus (the first press of the shortcut
+				 * does bring up the menu, but it is
+				 * immediately dismissed because a
+				 * SDL_WINDOWEVENT_FOCUS_LOST event directed
+				 * at its window causes it to pop down).  Some
+				 * quick attempts at resolving that (processing
+				 * all pending events in the queue after raising
+				 * the window and warping the mouse pointer to
+				 * the window after raising it) did not appear
+				 * to help.  Process all pending events appears
+				 * to be necessary on at least some platforms
+				 * (OpenBSD 7.9 with FVWM as the window manager)
+				 * to avoid a crash.
+				 */
+				SDL_Event event;
+
+				SDL_RaiseWindow(a->windows[i].window);
+				while (SDL_PollEvent(&event)) {
+					switch (event.type) {
+					case SDL_MOUSEMOTION:
+						(void)handle_mousemotion(a,
+							&event.motion);
+						break;
+
+					case SDL_CONTROLLERDEVICEADDED:
+						handle_controller_added(a,
+							&event.cdevice);
+						break;
+
+					case SDL_CONTROLLERDEVICEREMOVED:
+						handle_controller_removed(a,
+							&event.cdevice);
+						break;
+
+					case SDL_WINDOWEVENT:
+						handle_windowevent(a,
+							&event.window);
+						break;
+
+					case SDL_RENDER_TARGETS_RESET:
+						recreate_textures(a, false);
+						break;
+
+					case SDL_RENDER_DEVICE_RESET:
+						recreate_textures(a, true);
+						break;
+
+					case SDL_QUIT:
+						return true;
+					}
+				}
 
 				SDL_assert(a->windows[i].status_bar->ftb->goto_first_control);
-				(a->windows[i].status_bar->ftb->goto_first_control)(
+				(void)(a->windows[i].status_bar->ftb->goto_first_control)(
 					a->windows[i].status_bar, a->windows + i
 				);
-				if (old_d && old_d->ftb->handle_loses_key) {
-					(*old_d->ftb->handle_loses_key)(
-						old_d, a->windows + i,
-						a->windows[i].status_bar->c_key,
-						a->windows[i].status_bar);
-				}
 			}
+			sdlpui_end_focus_transaction();
 			return true;
 		}
 		++i;
@@ -4560,10 +4631,20 @@ static bool handle_key(struct my_app *a, const SDL_KeyboardEvent *key)
 	keycode_t ch;
 
 	/* Have a menu or dialog handle the event if appropriate. */
-	if (a->w_key && a->w_key->d_key && a->w_key->d_key->ftb->handle_key
-			&& (*a->w_key->d_key->ftb->handle_key)(a->w_key->d_key,
+	if (a->w_key) {
+		struct sdlpui_dialog *d_key;
+
+		sdlpui_begin_focus_transaction();
+
+		d_key = sdlpui_get_dialog_with_focus(SDLPUI_ACTION_HINT_KEY);
+		if (d_key && d_key->ftb->handle_key
+				&& (*d_key->ftb->handle_key)(d_key,
 				a->w_key, key)) {
-		return true;
+			sdlpui_end_focus_transaction();
+			return true;
+		}
+
+		sdlpui_end_focus_transaction();
 	}
 
 	/*
@@ -4641,10 +4722,20 @@ static bool handle_text_input(struct my_app *a, const SDL_TextInputEvent *input)
 	uint8_t mods;
 
 	/* Have a menu or dialog handle the event if appropriate. */
-	if (a->w_key && a->w_key->d_key && a->w_key->d_key->ftb->handle_textin
-			&& (*a->w_key->d_key->ftb->handle_textin)(
-				a->w_key->d_key, a->w_key, input)) {
-		return true;
+	if (a->w_key) {
+		struct sdlpui_dialog *d_key;
+
+		sdlpui_begin_focus_transaction();
+
+		d_key = sdlpui_get_dialog_with_focus(SDLPUI_ACTION_HINT_KEY);
+		if (d_key && d_key->ftb->handle_textin
+				&& (*d_key->ftb->handle_textin)(d_key,
+				a->w_key, input)) {
+			sdlpui_end_focus_transaction();
+			return true;
+		}
+
+		sdlpui_end_focus_transaction();
 	}
 
 	textinput_event_to_angband_key(input, a->kp_as_mod, &ch, &mods);
@@ -4668,10 +4759,20 @@ static bool handle_text_editing(struct my_app *a,
 		const SDL_TextEditingEvent *edit)
 {
 	/* Have a menu or dialog handle the event if appropriate. */
-	if (a->w_key && a->w_key->d_key && a->w_key->d_key->ftb->handle_textedit
-			&& (*a->w_key->d_key->ftb->handle_textedit)(
-				a->w_key->d_key, a->w_key, edit)) {
-		return true;
+	if (a->w_key) {
+		struct sdlpui_dialog *d_key;
+
+		sdlpui_begin_focus_transaction();
+
+		d_key = sdlpui_get_dialog_with_focus(SDLPUI_ACTION_HINT_KEY);
+		if (d_key && d_key->ftb->handle_textedit
+				&& (*d_key->ftb->handle_textedit)(d_key,
+				a->w_key, edit)) {
+			sdlpui_end_focus_transaction();
+			return true;
+		}
+
+		sdlpui_end_focus_transaction();
 	}
 
 	/* Not passed on to the game's core. */
@@ -4711,6 +4812,12 @@ static void wait_anykey(struct my_app *a)
 			case SDL_WINDOWEVENT:
 				handle_windowevent(a, &event.window);
 				return;
+			default:
+				if (event.type >= SDL_USEREVENT
+						&& event.type < SDL_LASTEVENT) {
+					(void)handle_user_event(a, &event.user);
+				}
+				break;
 		}
 	}
 }
@@ -4761,6 +4868,10 @@ static bool get_event(struct my_app *a)
 			terms_disconnecting = 1;
 			return false;
 		default:
+			if (event.type >= SDL_USEREVENT
+					&& event.type < SDL_LASTEVENT) {
+				(void)handle_user_event(a, &event.user);
+			}
 			return false;
 	}
 }
@@ -4859,7 +4970,7 @@ static errr term_xtra_clear(void)
 	render_fill_rect(subwindow->window,
 			subwindow->texture, &subwindow->inner_rect, &subwindow->color);
 
-	subwindow->window->dirty = true;
+	sdlpui_signal_redraw(subwindow->window);
 
 	return 0;
 }
@@ -4869,8 +4980,13 @@ static errr term_xtra_fresh(void)
 	struct subwindow *subwindow = Term->data;
 	assert(subwindow != NULL);
 
-	if (!subwindow->window->d_mouse && !subwindow->window->d_key) {
+	sdlpui_signal_redraw(subwindow->window);
+	sdlpui_begin_focus_transaction();
+	if (!sdlpui_any_dialog_with_focus()) {
+		sdlpui_end_focus_transaction();
 		try_redraw_window(subwindow->window);
+	} else {
+		sdlpui_end_focus_transaction();
 	}
 
 	return 0;
@@ -4948,30 +5064,35 @@ static errr term_xtra_hook(int n, int v)
 
 static errr term_curs_hook(int col, int row)
 {
+	/*
+	 * Signalling that a redraw is necessary is done in term_xtra_fresh().
+	 */
 	struct subwindow *subwindow = Term->data;
 	assert(subwindow != NULL);
 
 	render_cursor(subwindow, col, row, false);
-
-	subwindow->window->dirty = true;
 
 	return 0;
 }
 
 static errr term_bigcurs_hook(int col, int row)
 {
+	/*
+	 * Signalling that a redraw is necessary is done in term_xtra_fresh().
+	 */
 	struct subwindow *subwindow = Term->data;
 	assert(subwindow != NULL);
 
 	render_cursor(subwindow, col, row, true);
-
-	subwindow->window->dirty = true;
 
 	return 0;
 }
 
 static errr term_wipe_hook(int col, int row, int n)
 {
+	/*
+	 * Signalling that a redraw is necessary is done in term_xtra_fresh().
+	 */
 	struct subwindow *subwindow = Term->data;
 	assert(subwindow != NULL);
 
@@ -4984,13 +5105,14 @@ static errr term_wipe_hook(int col, int row, int n)
 
 	render_fill_rect(subwindow->window, subwindow->texture, &rect, &subwindow->color);
 
-	subwindow->window->dirty = true;
-
 	return 0;
 }
 
 static errr term_text_hook(int col, int row, int n, int a, const wchar_t *s)
 {
+	/*
+	 * Signalling that a redraw is necessary is done in term_xtra_fresh().
+	 */
 	struct subwindow *subwindow = Term->data;
 	assert(subwindow != NULL);
 
@@ -5032,14 +5154,15 @@ static errr term_text_hook(int col, int row, int n, int a, const wchar_t *s)
 		rect.x += subwindow->font_width;
 	}
 
-	subwindow->window->dirty = true;
-
 	return 0;
 }
 
 static errr term_pict_hook(int col, int row, int n,
 		const int *ap, const wchar_t *cp, const int *tap, const wchar_t *tcp)
 {
+	/*
+	 * Signalling that a redraw is necessary is done in term_xtra_fresh().
+	 */
 	int dhrclip;
 	struct subwindow *subwindow = Term->data;
 	assert(subwindow != NULL);
@@ -5073,8 +5196,6 @@ static errr term_pict_hook(int col, int row, int n,
 
 		render_tile_font_scaled(subwindow, col + i, row, ap[i], cp[i], false, dhrclip);
 	}
-
-	subwindow->window->dirty = true;
 
 	return 0;
 }
@@ -6033,13 +6154,15 @@ static struct subwindow *get_subwindow_by_xy(
 }
 
 static void handle_button_open_subwindow(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
+		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
+		enum sdlpui_action_hint hint)
 {
 	int tag;
 	unsigned int index;
 	struct subwindow *subwindow;
 	int minw, minh;
 
+	(void)hint;
 	assert(ctrl->ftb->get_tag);
 	tag = (*ctrl->ftb->get_tag)(ctrl);
 	assert(tag >= 0);
@@ -6483,11 +6606,12 @@ static void wipe_window(struct sdlpui_window *window, int display)
 	window->graphics.texture = NULL;
 	window->graphics.id = GRAPHICS_NONE;
 
-	window->dirty = true;
 	window->withdrawn_fullscreen = false;
 
 	window->config = NULL;
 	window->inited = true;
+
+	sdlpui_signal_redraw(window);
 }
 
 static void dump_subwindow(const struct subwindow *subwindow, ang_file *config)
@@ -6610,8 +6734,7 @@ static void detach_subwindow_from_window(struct sdlpui_window *window,
 		mb = (struct sdlpui_menu_button*)sm->controls[cidx].priv;
 		assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
 		mb->v.toggled = SDL_FALSE;
-		window->status_bar->dirty = SDL_TRUE;
-		window->dirty = true;
+		sdlpui_dialog_mark_for_redraw(window->status_bar, window);
 	}
 }
 
@@ -7065,11 +7188,11 @@ static void free_window(struct sdlpui_window *window)
 	assert(window->loaded);
 
 	while (window->d_head) {
-		sdlpui_popdown_dialog(window->d_head, window, SDL_FALSE);
+		window->d_head->pinned = SDL_FALSE;
+		(void)sdlpui_popdown_dialog(window->d_head, window, SDL_FALSE,
+			SDL_FALSE, SDL_FALSE);
 	}
 	window->d_tail = NULL;
-	window->d_mouse = NULL;
-	window->d_key = NULL;
 	window->status_bar = NULL;
 	window->move_button = NULL;
 	window->size_button = NULL;
