@@ -833,7 +833,7 @@ void update_smart_learn(struct monster *mon, struct player *p, int flag,
 
 	/* Learn the element */
 	if (element_ok)
-		mon->known_pstate.el_info[element].res_level
+		mon->known_pstate.res_level[element]
 			= p->state.el_info[element].res_level;
 }
 

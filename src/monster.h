@@ -378,6 +378,15 @@ struct monster_race {
 	int num_shapes;
 };
 
+/**
+ * The portions of the player state a monster can learn
+ */
+struct monster_learned_player {
+	bitflag flags[OF_SIZE];		/**< object flags applied to the
+						player from the race or items */
+	bitflag pflags[PF_SIZE];	/**< intrinsic player flags */
+	int16_t res_level[ELEM_MAX];	/**< elemental resistances */
+};
 
 /**
  * Monster information, for a specific monster.
@@ -411,7 +420,8 @@ struct monster {
 
 	uint8_t attr;  				/* attr last used for drawing monster */
 
-	struct player_state known_pstate;	/* Known player state */
+	struct monster_learned_player known_pstate;
+						/* Known player state */
 
 	struct target target;			/* Monster target */
 

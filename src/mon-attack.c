@@ -201,7 +201,7 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 			of_wipe(mon->known_pstate.flags);
 			pf_wipe(mon->known_pstate.pflags);
 			for (i = 0; i < ELEM_MAX; i++)
-				mon->known_pstate.el_info[i].res_level = 0;
+				mon->known_pstate.res_level[i] = 0;
 		}
 
 		/* Use the memorized info */
@@ -214,7 +214,7 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 		}
 
 		for (i = 0; i < ELEM_MAX; i++) {
-			el[i].res_level = mon->known_pstate.el_info[i].res_level;
+			el[i].res_level = mon->known_pstate.res_level[i];
 			if (el[i].res_level != 0) {
 				know_something = true;
 			}
