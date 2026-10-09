@@ -19,6 +19,7 @@
 #include "pui-misc.h"
 #include "pui-ctrl.h"
 #include "pui-dlg.h"
+#include "pui-focp.h"
 
 
 struct sdlpui_code {
@@ -46,9 +47,10 @@ static struct sdlpui_id_registry my_ids = { NULL, NULL, 0 };
  * Initialize the resources needed by the sdlpui_*() calls.
  *
  * Can safely be called multiple times without an intervening sdlpui_quit().
- * For multithreaded applications, a race condition condition is possible
- * if sdlpui_init() can be called while a call to sdlpui_quit() is in progress.
- * Those applications should be structured to avoid that possibility.
+ * For multithreaded applications, race conditions are possible if
+ * sdlpui_init() can be called while a call to sdlpui_init() or sdlpui_quit()
+ * is in progress.  Those applications should be structured to avoid that
+ * possibility.
  */
 int sdlpui_init(void)
 {
@@ -102,24 +104,28 @@ int sdlpui_init(void)
 		}
 	}
 
-	return 0;
+	return sdlpui_foc_init();
 }
 
 
 /**
  * Release the resources allocated by sdlpui_init().
  *
- * Can safey be called multiple times without an intervening call to.
+ * Can safey be called multiple times without an intervening call to
  * sdlpui_init().  Once called, the only sdlpui_*() calls that can be safely
  * used are sdlpui_init() and sdlpui_quit().  For multithreaded applications,
- * race conditions are possible if sdlpui_init() or sdlpui_quit() can be
- * called while a call to sdlpui_quit() is in progress.  Those applications
- * should be structured to avoid that possibility.
+ * race conditions are possible if sdlpui_quit() can be called while a call
+ * to sdlpui_init(), sdlpui_register_code(), or the routines in sdlpui-foc.h
+ * is in progress.  Those applications should be structured to avoid that
+ * possibility.
  */
 void sdlpui_quit(void)
 {
-	SDL_mutex *lock = my_codes.lock;
+	SDL_mutex *lock;
 
+	sdlpui_foc_quit();
+
+	lock = my_codes.lock;
 	if (lock) {
 		if (!SDL_LockMutex(lock)) {
 			struct sdlpui_code *entries = my_codes.entries;
@@ -370,6 +376,24 @@ Uint32 sdlpui_reserve_id(void)
 	}
 
 	return result;
+}
+
+/**
+ * Test if the given event is an SDL_UserEvent used to signal a redraw after
+ * a timer internal to sdlpui elapsed.
+ *
+ * If the returned value is not SDL_FALSE, the data1 field of *event is the
+ * struct sdlpui_dialog pointer, cast to a void*, to the dialog to be redrawn,
+ * and the data2 fied of *event is the struct sdlpui_window pointer, cast to a
+ * void*, for the window containing the dialog.
+ */
+SDL_bool sdlpui_is_user_redraw_event(const struct SDL_UserEvent *event)
+{
+	if (event->type ==  sdlpui_redraw_event_type) {
+		SDL_assert(event->code == 0 && event->data1 && event->data2);
+		return SDL_TRUE;
+	}
+	return SDL_FALSE;
 }
 
 

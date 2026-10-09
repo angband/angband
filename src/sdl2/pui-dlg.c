@@ -18,18 +18,17 @@
  */
 
 #include "pui-dlg.h"
+#include "pui-foc.h"
 #include "pui-misc.h"
 #include "pui-win.h"
 #include <limits.h> /* INT_MAX */
 
 static SDL_bool handle_simple_menu_key(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const struct SDL_KeyboardEvent *e);
-static SDL_bool handle_simple_menu_textin(struct sdlpui_dialog *d,
-		struct sdlpui_window *w, const struct SDL_TextInputEvent *e);
 static void render_simple_menu(struct sdlpui_dialog *d,
 		struct sdlpui_window *w);
-static void goto_simple_menu_first_control(struct sdlpui_dialog *d,
-		struct sdlpui_window *w);
+static struct sdlpui_control* goto_simple_menu_first_control(
+		struct sdlpui_dialog *d, struct sdlpui_window *w);
 static void step_simple_menu_control(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, struct sdlpui_control *c,
 		SDL_bool forward);
@@ -37,11 +36,15 @@ static struct sdlpui_control *find_simple_menu_control_containing(
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		Sint32 x, Sint32 y, int *comp_ind);
 static struct sdlpui_dialog *get_simple_menu_parent(struct sdlpui_dialog *d);
-static struct sdlpui_dialog *get_simple_menu_child(struct sdlpui_dialog *d);
+static int get_simple_menu_child_dialog_count(const struct sdlpui_dialog *d);
+static struct sdlpui_dialog *get_simple_menu_child_dialog_by_index(
+		struct sdlpui_dialog *d, int ind);
+static int add_simple_menu_child_dialog(struct sdlpui_dialog *d,
+		struct sdlpui_dialog *child);
+static SDL_bool remove_simple_menu_child_dialog(struct sdlpui_dialog *d,
+		struct sdlpui_dialog *child);
 static struct sdlpui_control *get_simple_menu_parent_ctrl(
 		struct sdlpui_dialog *d);
-static void set_simple_menu_child(struct sdlpui_dialog *d,
-		struct sdlpui_dialog *child);
 static void resize_simple_menu(struct sdlpui_dialog *d, struct sdlpui_window *w,
 		int width, int height);
 static void query_simple_menu_natural_size(struct sdlpui_dialog *d,
@@ -53,8 +56,8 @@ static void cleanup_simple_menu(struct sdlpui_dialog *d);
 
 static void render_simple_info(struct sdlpui_dialog *d,
 		struct sdlpui_window *w);
-static void goto_simple_info_first_control(struct sdlpui_dialog *d,
-		struct sdlpui_window *w);
+static struct sdlpui_control* goto_simple_info_first_control(
+		struct sdlpui_dialog *d, struct sdlpui_window *w);
 static struct sdlpui_control *find_simple_info_control_containing(
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		Sint32 x, Sint32 y, int *comp_ind);
@@ -70,7 +73,7 @@ Uint32 SDLPUI_DIALOG_SIMPLE_INFO = 0;
 
 static const struct sdlpui_dialog_funcs simple_menu_funcs = {
 	handle_simple_menu_key,
-	handle_simple_menu_textin,
+	sdlpui_dialog_handle_textin,
 	sdlpui_dialog_handle_textedit,
 	sdlpui_dialog_handle_mouseclick,
 	sdlpui_dialog_handle_mousemove,
@@ -85,9 +88,11 @@ static const struct sdlpui_dialog_funcs simple_menu_funcs = {
 	step_simple_menu_control,
 	find_simple_menu_control_containing,
 	get_simple_menu_parent,
-	get_simple_menu_child,
+	get_simple_menu_child_dialog_count,
+	get_simple_menu_child_dialog_by_index,
+	add_simple_menu_child_dialog,
+	remove_simple_menu_child_dialog,
 	get_simple_menu_parent_ctrl,
-	set_simple_menu_child,
 	resize_simple_menu,
 	query_simple_menu_natural_size,
 	query_simple_menu_minimum_size,
@@ -115,6 +120,8 @@ static const struct sdlpui_dialog_funcs simple_info_funcs = {
 	NULL,
 	NULL,
 	NULL,
+	NULL,
+	NULL,
 	resize_simple_info,
 	query_simple_info_natural_size,
 	NULL,
@@ -133,42 +140,47 @@ static SDL_bool handle_simple_menu_key(struct sdlpui_dialog *d,
 {
 	/*
 	 * Swap which keys do what depending on the orientation of the menu.
-	 * fwd_alt1, fwd_alt2, fwd_alt3 are for the keys corresponding to
-	 * the in-game east (for vertical menus) or south (for horizontal
-	 * menus) motion commands from either keyset.
+	 * Allow motion commands from either keyset.
 	 */
 	struct k_dirsyms {
-		SDL_Keycode fwd, fwd_alt1, fwd_alt2, fwd_alt3, bck, nxt, prv;
+		SDL_Keycode fwd[4], bck[4], nxt[4], prv[4];
 	};
 	static const struct k_dirsyms vsyms = {
-		SDLK_RIGHT,
-		SDLK_6,
-		SDLK_KP_6,
-		SDLK_l,
-		SDLK_LEFT,
-		SDLK_DOWN,
-		SDLK_UP
+		/* East descends into the menu hierarchy. */
+		{ SDLK_RIGHT, SDLK_6, SDLK_KP_6, SDLK_l },
+		/* West backs out. */
+		{ SDLK_LEFT, SDLK_4, SDLK_KP_4, SDLK_h },
+		/* South goes to the next item in this menu. */
+		{ SDLK_DOWN, SDLK_2, SDLK_KP_2, SDLK_j },
+		/* North goes to the previous item in this menu. */
+		{ SDLK_UP, SDLK_8, SDLK_KP_8, SDLK_k },
 	};
 	static const struct k_dirsyms hsyms = {
-		SDLK_DOWN,
-		SDLK_2,
-		SDLK_KP_2,
-		SDLK_j,
-		SDLK_UP,
-		SDLK_RIGHT,
-		SDLK_LEFT
+		/* South descends. */
+		{ SDLK_DOWN, SDLK_2, SDLK_KP_2, SDLK_j },
+		/* North backs out. */
+		{ SDLK_UP, SDLK_8, SDLK_KP_8, SDLK_k },
+		/* East goes to the next item in this menu. */
+		{ SDLK_RIGHT, SDLK_6, SDLK_KP_6, SDLK_l },
+		/* West goes to the previous item in this menu. */
+		{ SDLK_LEFT, SDLK_4, SDLK_KP_4, SDLK_h },
 	};
 	const struct k_dirsyms *csyms;
+	struct sdlpui_control *c;
+	struct sdlpui_simple_menu *p;
+	SDL_Keymod mods;
+
+	sdlpui_begin_focus_transaction();
+
 	/*
 	 * Most of the additional event handling is as a proxy for the menu's
 	 * control with keyboard focus so remember what that is.
 	 */
-	struct sdlpui_control *c = d->c_key;
-	struct sdlpui_simple_menu *p;
-	SDL_Keymod mods;
+	c = sdlpui_get_control_with_focus(SDLPUI_ACTION_HINT_KEY);
 
 	/* Relay to the control with focus.  if it handles it we're done. */
 	if (c && c->ftb->handle_key && (*c->ftb->handle_key)(c, d, w, e)) {
+		sdlpui_end_focus_transaction();
 		return SDL_TRUE;
 	}
 
@@ -177,240 +189,106 @@ static SDL_bool handle_simple_menu_key(struct sdlpui_dialog *d,
 	csyms = (p->vertical) ? &vsyms : &hsyms;
 
 	mods = sdlpui_get_interesting_keymods();
-	if (e->keysym.sym == csyms->fwd) {
-		/*
-		 * Invoke the default action for a menu entry which will
-		 * descend deeper into the menu hierarchy if that entry leads
-		 * to a submenu.  If there's no entry with keyboard focus,
-		 * give focus to the first active entry.
-		 */
-		if (c) {
-			if (e->state == SDL_PRESSED) {
-				if (mods == KMOD_NONE) {
-					(*c->ftb->arm)(c, d, w,
-						SDLPUI_ACTION_HINT_KEY);
-				}
-			} else {
+	if (e->state == SDL_PRESSED) {
+		if (mods == KMOD_NONE) {
+			if (e->keysym.sym == csyms->fwd[0]
+					|| e->keysym.sym == csyms->fwd[1]
+					|| e->keysym.sym == csyms->fwd[2]
+					|| e->keysym.sym == csyms->fwd[3]) {
 				/*
-				 * Always disarm, regardless of the modifier
-				 * state, in case the modifier keys changed
-				 * between the press and release.
+				 * Invoke the default action for a menu entry.
+				 * That will descend deeper into the menu
+				 * hierarchy if that entry leads to a submenu.
+				 * If there is no entry with keyboard focus,
+				 * give focus to the first active entry.
 				 */
-				if (c->ftb->disarm) {
-					(*c->ftb->disarm)(c, d, w,
-						SDLPUI_ACTION_HINT_KEY);
+				if (c) {
+					if (c->ftb->respond_default) {
+						SDLPUI_EVENT_TRACER(
+							(*c->ftb->get_type_name)(c),
+							c,
+							(c->ftb->get_caption)
+							? (*c->ftb->get_caption)(c)
+							: "(none)",
+							"invoking default response");
+						(*c->ftb->respond_default)(c,
+							d, w,
+							SDLPUI_ACTION_HINT_KEY);
+					}
+				} else if (!sdlpui_is_focus_locked(SDLPUI_ACTION_HINT_KEY)
+						&& d->ftb->goto_first_control) {
+					(void)(*d->ftb->goto_first_control)(d, w);
 				}
-				if (mods == KMOD_NONE
-						&& c->ftb->respond_default) {
-					SDLPUI_EVENT_TRACER(
-						(*c->ftb->get_type_name)(c), c,
-						(c->ftb->get_caption)
-						? (*c->ftb->get_caption)(c)
-						: "(none)",
-						"invoking default response");
-					(*c->ftb->respond_default)(c, d, w,
-						SDLPUI_ACTION_HINT_KEY);
-				}
-			}
-		} else if (e->state == SDL_RELEASED
-				&& d->ftb->goto_first_control) {
-			(*d->ftb->goto_first_control)(d, w);
-		}
-		return SDL_TRUE;
-	}
-
-	if (e->keysym.sym == csyms->fwd_alt1 || e->keysym.sym == csyms->fwd_alt2
-			|| e->keysym.sym == csyms->fwd_alt3) {
-		/*
-		 * Like fwd, but as these symbols also trigger the text input
-		 * handler, just handle arming and disarming of the menu
-		 * button here.
-		 */
-		if (c) {
-			if (e->state == SDL_PRESSED) {
-				if (mods == KMOD_NONE && c->ftb->arm) {
-					(*c->ftb->arm)(c, d, w,
-						SDLPUI_ACTION_HINT_KEY);
-				}
-			} else {
+				sdlpui_end_focus_transaction();
+				return SDL_TRUE;
+			} else if (e->keysym.sym == csyms->bck[0]
+					|| e->keysym.sym == csyms->bck[1]
+					|| e->keysym.sym == csyms->bck[2]
+					|| e->keysym.sym == csyms->bck[3]) {
 				/*
-				 * Always disarm, regardless of the modifier
-				 * state, in case the modifier keys changed
-				 * between the press and release.
+				 * Back out to the previous level of the menu
+				 * hierarchy, if any.
 				 */
-				if (c->ftb->disarm) {
-					(*c->ftb->disarm)(c, d, w,
-						SDLPUI_ACTION_HINT_KEY);
+				sdlpui_dialog_give_key_focus_to_parent(d, w);
+				sdlpui_end_focus_transaction();
+				return SDL_TRUE;
+			} else if (e->keysym.sym == csyms->nxt[0]
+					|| e->keysym.sym == csyms->nxt[1]
+					|| e->keysym.sym == csyms->nxt[2]
+					|| e->keysym.sym == csyms->nxt[3]) {
+				/*
+				 * Go to the next active button in the menu or
+				 * wrap around to the first active button in
+				 * the menu if already at the end.  If the
+				 * menu does not already have key focus, give
+				 * it key focus and go to the first active
+				 * button.
+				 */
+				if (!sdlpui_is_focus_locked(SDLPUI_ACTION_HINT_KEY)) {
+					if (c) {
+						if (d->ftb->step_control) {
+							(*d->ftb->step_control)(
+								d, w, c,
+								SDL_TRUE);
+						}
+					} else if (d->ftb->goto_first_control) {
+						(void)(*d->ftb->goto_first_control)(d, w);
+					}
 				}
+				sdlpui_end_focus_transaction();
+				return SDL_TRUE;
+			} else if (e->keysym.sym == csyms->prv[0]
+					|| e->keysym.sym == csyms->prv[1]
+					|| e->keysym.sym == csyms->prv[2]
+					|| e->keysym.sym == csyms->prv[3]) {
+				/*
+				 * Go to the previous active button in the
+				 * menu or wrap around to the first active
+				 * button in the menu if already at the end.
+				 * If the menu does not already have key focus,
+				 * give it key focus and go to the first
+				 * active button.
+				 */
+				if (!sdlpui_is_focus_locked(SDLPUI_ACTION_HINT_KEY)) {
+					if (c) {
+						if (d->ftb->step_control) {
+							(*d->ftb->step_control)(
+								d, w, c,
+								SDL_FALSE);
+						}
+					} else if (d->ftb->goto_first_control) {
+						(void)(*d->ftb->goto_first_control)(d, w);
+					}
+				}
+				sdlpui_end_focus_transaction();
+				return SDL_TRUE;
 			}
 		}
-		return SDL_TRUE;
 	}
 
-	if (e->keysym.sym == csyms->bck) {
-		/*
-		 * Back out to the previous level of the menu hierarchy, if any.
-		 */
-		if (e->state == SDL_RELEASED && mods == KMOD_NONE) {
-			sdlpui_dialog_give_key_focus_to_parent(d, w);
-		}
-		return SDL_TRUE;
-	}
-
-	if (e->keysym.sym == csyms->nxt) {
-		/*
-		 * Go to the next active button in the menu or wrap around to
-		 * the first active button in the menu if already at the end.
-		 * If the menu does not already have key focus, give it key
-		 * focus and go to the first active button.
-		 */
-		if (e->state == SDL_RELEASED && mods == KMOD_NONE) {
-			if (c) {
-				if (d->ftb->step_control) {
-					(*d->ftb->step_control)(d, w, c,
-						SDL_TRUE);
-				}
-			} else if (d->ftb->goto_first_control) {
-				(*d->ftb->goto_first_control)(d, w);
-			}
-		}
-		return SDL_TRUE;
-	}
-
-	if (e->keysym.sym == csyms->prv) {
-		/*
-		 * Go to the previous active button in the menu or wrap around
-		 * to the first active button in the menu if already at the end.
-		 * If the menu does not already have key focus, give it key
-		 * focus and go to the first active button.
-		 */
-		if (e->state == SDL_RELEASED && mods == KMOD_NONE) {
-			if (c) {
-				if (d->ftb->step_control) {
-					(*d->ftb->step_control)(d, w, c,
-						SDL_FALSE);
-				}
-			} else if (d->ftb->goto_first_control) {
-				(*d->ftb->goto_first_control)(d, w);
-			}
-		}
-		return SDL_TRUE;
-	}
+	sdlpui_end_focus_transaction();
 
 	return sdlpui_dialog_handle_key(d, w, e);
-}
-
-
-static SDL_bool handle_simple_menu_textin(struct sdlpui_dialog *d,
-		struct sdlpui_window *w, const struct SDL_TextInputEvent *e)
-{
-	/*
-	 * Swap which keys do what depending on the orientation of the menu.
-	 * All correspond to in-game motion commands from either keyset.
-	 */
-	struct ti_dirsyms {
-		uint32_t fwd_alt1, fwd_alt2, bck_alt1, bck_alt2, nxt_alt1,
-			nxt_alt2, prv_alt1, prv_alt2;
-	};
-	static const struct ti_dirsyms vsyms = {
-		/* East descends into the menu hierarchy. */
-		'6', 'l',
-		/* West backs out. */
-		'4', 'h',
-		/* South goes to the next item in this menu. */
-		'2', 'j',
-		/* North goes to the previous item in this menu. */
-		'8', 'k'
-	};
-	static const struct ti_dirsyms hsyms = {
-		/* South descends. */
-		'2', 'j',
-		/* North backs out. */
-		'8', 'k',
-		/* East goes to the next item in this menu. */
-		'6', 'l',
-		/* West goes to the previous item in this menu. */
-		'4', 'h'
-	};
-	const struct ti_dirsyms *csyms;
-	/*
-	 * Most of the additional event handling is as a proxy for the menu's
-	 * control with keyboard focus so remember what that is.
-	 */
-	struct sdlpui_control *c = d->c_key;
-	struct sdlpui_simple_menu *p;
-	uint32_t ch = sdlpui_utf8_to_codepoint(e->text);
-
-	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_MENU && d->priv);
-	p = d->priv;
-	csyms = (p->vertical) ? &vsyms : &hsyms;
-
-	if (ch == csyms->fwd_alt1 || ch == csyms->fwd_alt2) {
-		/*
-		 * Invoke the default action on the menu entry which will
-		 * descend deeper into the menu hierarchy if the entry leads
-		 * to a submenu.  If there's no menu entry with keyboard focus,
-		 * give keyboard focus to the first active entry.
-		 */
-		if (c) {
-			if (c->ftb->respond_default) {
-				SDLPUI_EVENT_TRACER(
-					(*c->ftb->get_type_name)(c), c,
-					(c->ftb->get_caption)
-					? (*c->ftb->get_caption)(c) : "(none)",
-					"invoking default response");
-				(*c->ftb->respond_default)(c, d, w,
-					SDLPUI_ACTION_HINT_KEY);
-			}
-		} else if (d->ftb->goto_first_control) {
-			(*d->ftb->goto_first_control)(d, w);
-		}
-		return SDL_TRUE;
-	}
-
-	if (ch == csyms->bck_alt1 || ch == csyms->bck_alt2) {
-		/*
-		 * Back out to the previous level of the menu hierarchy, if any.
-		 */
-		sdlpui_dialog_give_key_focus_to_parent(d, w);
-		return SDL_TRUE;
-	}
-
-	if (ch == csyms->nxt_alt1 || ch == csyms->nxt_alt2) {
-		/*
-		 * Go to the next active button in the menu or wrap around to
-		 * the first active button in the menu if already at the end.
-		 * If the menu does not already have key focus, give it key
-		 * focus and go to the first active button.
-		 */
-		if (c) {
-			if (d->ftb->step_control) {
-				(*d->ftb->step_control)(d, w, c, SDL_TRUE);
-			}
-		} else if (d->ftb->goto_first_control) {
-			(*d->ftb->goto_first_control)(d, w);
-		}
-		return SDL_TRUE;
-	}
-
-	if (ch == csyms->prv_alt1 || ch == csyms->prv_alt2) {
-		/*
-		 * Got to the previous active button in the menu or wrap around
-		 * to the last active button in the menu if already at the
-		 * beginning.  If the menu does not already have key focus,
-		 * give it key focus and go to the first active button.
-		 */
-		if (c) {
-			if (d->ftb->step_control) {
-				(*d->ftb->step_control)(d, w, c, SDL_FALSE);
-			}
-		} else if (d->ftb->goto_first_control) {
-			(*d->ftb->goto_first_control)(d, w);
-		}
-		return SDL_TRUE;
-	}
-
-	return sdlpui_dialog_handle_textin(d, w, e);
 }
 
 
@@ -453,12 +331,11 @@ static void render_simple_menu(struct sdlpui_dialog *d, struct sdlpui_window *w)
 			color->a);
 		SDL_RenderDrawRect(r, &dst_r);
 	}
-	d->dirty = SDL_FALSE;
 }
 
 
-static void goto_simple_menu_first_control(struct sdlpui_dialog *d,
-		struct sdlpui_window *w)
+static struct sdlpui_control* goto_simple_menu_first_control(
+		struct sdlpui_dialog *d, struct sdlpui_window *w)
 {
 	struct sdlpui_simple_menu *p;
 	int i = 0;
@@ -470,35 +347,26 @@ static void goto_simple_menu_first_control(struct sdlpui_dialog *d,
 		int comp_ind;
 
 		if (i >= p->n_vis) {
-			/* There's no members that can take focus. */
-			SDLPUI_EVENT_TRACER("dialog", d, "(not extracted)",
-				"gains key focus");
-			if (d->c_key && d->c_key->ftb->lose_key) {
-				(*d->c_key->ftb->lose_key)(d->c_key, d, w,
-					NULL, d);
-			}
-			d->c_key = NULL;
-			/* Anyways, still give the dialog key focus. */
-			sdlpui_dialog_gain_key_focus(w, d);
-			return;
+			/*
+			 * There are no members that can take focus.  Still
+			 * give focus to the dialog.
+			 */
+			sdlpui_begin_focus_transaction();
+			(void)sdlpui_change_focus(NULL, 0, d, w,
+				SDLPUI_ACTION_HINT_KEY, SDL_FALSE, SDL_TRUE);
+			sdlpui_end_focus_transaction();
+			return NULL;
 		}
 		comp_ind = (p->v_ctrls[i]->ftb->get_interactable_component) ?
 			(p->v_ctrls[i]->ftb->get_interactable_component)(
 				p->v_ctrls[i], SDL_TRUE) : 0;
 		if (comp_ind) {
-			SDLPUI_EVENT_TRACER("dialog", d, "(not extracted)",
-				"gains key focus");
-			if (d->c_key && d->c_key->id != p->v_ctrls[i]->id
-					&& d->c_key->ftb->lose_key) {
-				(*d->c_key->ftb->lose_key)(d->c_key, d, w,
-					p->v_ctrls[i], d);
-			}
-			SDL_assert(p->v_ctrls[i]->ftb->gain_key);
-			(*p->v_ctrls[i]->ftb->gain_key)(
-				p->v_ctrls[i], d, w, comp_ind - 1);
-			d->c_key = p->v_ctrls[i];
-			sdlpui_dialog_gain_key_focus(w, d);
-			return;
+			sdlpui_begin_focus_transaction();
+			(void)sdlpui_change_focus(p->v_ctrls[i], comp_ind - 1,
+				d, w, SDLPUI_ACTION_HINT_KEY, SDL_FALSE,
+				SDL_TRUE);
+			sdlpui_end_focus_transaction();
+			return p->v_ctrls[i];
 		}
 		++i;
 	}
@@ -510,14 +378,18 @@ static void step_simple_menu_control(struct sdlpui_dialog *d,
 		SDL_bool forward)
 {
 	struct sdlpui_simple_menu *p;
-	int istart, itry;
+	int comp_ind, istart, itry;
 
 	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_MENU && d->priv);
 	p = d->priv;
 
-	if (c->ftb->step_within && (*c->ftb->step_within)(c, forward)) {
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
+	comp_ind = (c->ftb->step_within)
+		? (*c->ftb->step_within)(c, forward) : 0;
+	if (comp_ind) {
+		sdlpui_begin_focus_transaction();
+		(void)sdlpui_change_focus(c, comp_ind - 1, d, w,
+				SDLPUI_ACTION_HINT_KEY, SDL_FALSE, SDL_TRUE);
+		sdlpui_end_focus_transaction();
 		return;
 	}
 
@@ -538,8 +410,6 @@ static void step_simple_menu_control(struct sdlpui_dialog *d,
 	}
 	itry = istart;
 	while (1) {
-		int comp_ind;
-
 		if (forward) {
 			++itry;
 			if (itry == p->n_vis) {
@@ -551,28 +421,26 @@ static void step_simple_menu_control(struct sdlpui_dialog *d,
 				itry = p->n_vis - 1;
 			}
 		}
-		if (itry == istart) {
-			/*
-			 * Wrapped around without finding another control that
-			 * can accept focus.
-			 */
-			SDL_assert(d->c_key && d->c_key->id == c->id);
-			break;
-		}
 		comp_ind = (p->v_ctrls[itry]->ftb->get_interactable_component) ?
 			(*p->v_ctrls[itry]->ftb->get_interactable_component)(
 				p->v_ctrls[itry], forward) : 0;
 		if (comp_ind) {
-			if (d->c_key && d->c_key->id != p->v_ctrls[itry]->id
-					&& d->c_key->ftb->lose_key) {
-				(*d->c_key->ftb->lose_key)(d->c_key, d, w,
-					p->v_ctrls[itry], d);
-			}
-			if (p->v_ctrls[itry]->ftb->gain_key) {
-				(*p->v_ctrls[itry]->ftb->gain_key)(
-					p->v_ctrls[itry], d, w, comp_ind - 1);
-			}
-			d->c_key = p->v_ctrls[itry];
+			sdlpui_begin_focus_transaction();
+			(void)sdlpui_change_focus(p->v_ctrls[itry],
+				comp_ind - 1, d, w, SDLPUI_ACTION_HINT_KEY,
+				SDL_FALSE, SDL_TRUE);
+			sdlpui_end_focus_transaction();
+			break;
+		}
+		if (itry == istart) {
+			/*
+			 * Wrapped around without finding a control that can
+			 * accept focus.
+			 */
+			sdlpui_begin_focus_transaction();
+			(void)sdlpui_change_focus(NULL, 0, d, w,
+				SDLPUI_ACTION_HINT_KEY, SDL_FALSE, SDL_TRUE);
+			sdlpui_end_focus_transaction();
 			break;
 		}
 	}
@@ -698,13 +566,80 @@ static struct sdlpui_dialog *get_simple_menu_parent(struct sdlpui_dialog *d)
 }
 
 
-static struct sdlpui_dialog *get_simple_menu_child(struct sdlpui_dialog *d)
+static int get_simple_menu_child_dialog_count(const struct sdlpui_dialog *d)
 {
-	struct sdlpui_simple_menu *p;
+	const struct sdlpui_simple_menu *p;
+	int count = 0, i;
 
 	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_MENU && d->priv);
 	p = d->priv;
-	return p->child;
+	for (i = 0; i < (int)(sizeof(p->children) / sizeof(p->children[0]))
+			&& p->children[i]; ++i) {
+		++count;
+	}
+	return count;
+}
+
+
+static struct sdlpui_dialog *get_simple_menu_child_dialog_by_index(
+		struct sdlpui_dialog *d, int ind)
+{
+	const struct sdlpui_simple_menu *p;
+
+	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_MENU && d->priv);
+	p = d->priv;
+	if (ind >= 0 && ind < 3) {
+		return p->children[ind];
+	}
+	return NULL;
+}
+
+
+static int add_simple_menu_child_dialog(struct sdlpui_dialog *d,
+		struct sdlpui_dialog *child)
+{
+	struct sdlpui_simple_menu *p;
+	int i;
+
+	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_MENU && d->priv);
+	p = d->priv;
+	for (i = 0; i < (int)(sizeof(p->children) / sizeof(p->children[0]));
+			++i) {
+		if (!p->children[i]) {
+			p->children[i] = child;
+			return i;
+		}
+	}
+	return -1;
+}
+
+
+static SDL_bool remove_simple_menu_child_dialog(struct sdlpui_dialog *d,
+		struct sdlpui_dialog *child)
+{
+	struct sdlpui_simple_menu *p;
+	int i;
+
+	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_MENU && d->priv);
+	p = d->priv;
+	for (i = 0; i < (int)(sizeof(p->children) / sizeof(p->children[0]));
+			++i) {
+		if (!p->children[i]) {
+			return SDL_TRUE;
+		}
+		if (p->children[i]->id == child->id) {
+			int j;
+
+			for (j = i; j < (int)(sizeof(p->children)
+					/ sizeof(p->children[0])) - 1; ++j) {
+				p->children[j] = p->children[j + 1];
+			}
+			p->children[(sizeof(p->children)
+				/ sizeof(p->children[0])) - 1] = NULL;
+			return SDL_FALSE;
+		}
+	}
+	return SDL_TRUE;
 }
 
 
@@ -716,17 +651,6 @@ static struct sdlpui_control *get_simple_menu_parent_ctrl(
 	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_MENU && d->priv);
 	p = d->priv;
 	return p->parent_ctrl;
-}
-
-
-static void set_simple_menu_child(struct sdlpui_dialog *d,
-		struct sdlpui_dialog *child)
-{
-	struct sdlpui_simple_menu *p;
-
-	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_MENU && d->priv);
-	p = d->priv;
-	p->child = child;
 }
 
 
@@ -1062,23 +986,21 @@ static void render_simple_info(struct sdlpui_dialog *d,
 	dst_r.w -= 2;
 	dst_r.h -= 2;
 	SDL_RenderDrawRect(r, &dst_r);
-	d->dirty = SDL_FALSE;
 }
 
 
-static void goto_simple_info_first_control(struct sdlpui_dialog *d,
-		struct sdlpui_window *w)
+static struct sdlpui_control* goto_simple_info_first_control(
+		struct sdlpui_dialog *d, struct sdlpui_window *w)
 {
 	struct sdlpui_simple_info *id;
 
 	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_INFO && d->priv);
 	id = d->priv;
-
-	SDL_assert(id->button.ftb->gain_key);
-	(*id->button.ftb->gain_key)(&id->button, d, w, 0);
-	SDL_assert(!d->c_key || d->c_key->id == id->button.id);
-	d->c_key = &id->button;
-	sdlpui_dialog_gain_key_focus(w, d);
+	sdlpui_begin_focus_transaction();
+	(void)sdlpui_change_focus(&id->button, 0, d, w, SDLPUI_ACTION_HINT_KEY,
+		SDL_FALSE, SDL_TRUE);
+	sdlpui_end_focus_transaction();
+	return &id->button;
 }
 
 
@@ -1210,6 +1132,16 @@ static void cleanup_simple_info(struct sdlpui_dialog *d)
 
 
 /**
+ * Return SDL_TRUE and reset the redraw flag if the given dialog should be
+ * redrawn.  Otherwise, return SDL_FALSE.
+ */
+SDL_bool sdlpui_dialog_should_redraw(struct sdlpui_dialog *d)
+{
+	return SDL_AtomicCAS(&d->dirty, SDL_TRUE, SDL_FALSE);
+}
+
+
+/**
  * Determine if a given coordinate, relative to the window, is in a dialog.
  *
  * \param d is the dialog of interest.
@@ -1233,31 +1165,65 @@ SDL_bool sdlpui_is_in_dialog(const struct sdlpui_dialog *d, Sint32 x, Sint32 y)
  * Determine if the dialog, other, is a descendant of ancestor.
  *
  * \param ancestor is the dialog to test as a possible ancestor of other.
- * Must not be NULL.
  * \param other is the dialog to test as a possible descendant of ancestor.
  * May be NULL.
  * \return SDL_TRUE if other is a descendant of ancestor; return
  * SDL_FALSE if other is NULL or is not a descendant of ancestor.
  */
 SDL_bool sdlpui_is_descendant_dialog(struct sdlpui_dialog *ancestor,
-		const struct sdlpui_dialog *other)
+		struct sdlpui_dialog *other)
 {
-	if (!other) {
+	if (!ancestor || !other) {
 		return SDL_FALSE;
 	}
 	while (1) {
-		struct sdlpui_dialog *child =
-			sdlpui_get_dialog_child(ancestor);
-
-		if (!child) {
+		other = sdlpui_get_dialog_parent(other);
+		if (!other) {
 			return SDL_FALSE;
 		}
-		if (child->id == other->id) {
+		if (other->id == ancestor->id) {
 			return SDL_TRUE;
 		}
-		ancestor = child;
 	}
 }
+
+
+/**
+ * Return the base of the shortest tree containing both a and b.
+ *
+ * Returns NULL if no such tree exists or a or b are NULL.
+ */
+struct sdlpui_dialog *sdlpui_shortest_dialog_tree_with(struct sdlpui_dialog *a,
+		struct sdlpui_dialog *b)
+{
+	if (!a || !b) {
+		return NULL;
+	}
+	while (1) {
+		if (a->id == b->id) {
+			return b;
+		}
+		if (sdlpui_is_descendant_dialog(a, b)) {
+			return a;
+		}
+		a = sdlpui_get_dialog_parent(a);
+		if (!a) {
+			return NULL;
+		}
+	}
+}
+
+
+/**
+ * Mark that the given dialog should be redrawn.
+ */
+void sdlpui_dialog_mark_for_redraw(struct sdlpui_dialog *d,
+		struct sdlpui_window *w)
+{
+	(void)SDL_AtomicSet(&d->dirty, SDL_TRUE);
+	sdlpui_signal_redraw(w);
+}
+
 
 /**
  * Pop up a dialog.
@@ -1271,127 +1237,366 @@ void sdlpui_popup_dialog(struct sdlpui_dialog *d, struct sdlpui_window *w,
 		SDL_bool give_key_focus)
 {
 	/* Assume it may have been obscured and needs to be redrawn. */
-	d->dirty = SDL_TRUE;
-	sdlpui_signal_redraw(w);
+	sdlpui_dialog_mark_for_redraw(d, w);
 	if (d->pop_callback) {
 		(*d->pop_callback)(d, w, SDL_TRUE);
 	}
 	sdlpui_dialog_push_to_top(w, d);
 	if (give_key_focus) {
-		sdlpui_dialog_gain_key_focus(w, d);
+		sdlpui_begin_focus_transaction();
+		(void)sdlpui_change_focus(NULL, 0, d, w, SDLPUI_ACTION_HINT_KEY,
+			SDL_FALSE, SDL_TRUE);
+		sdlpui_end_focus_transaction();
 	}
 }
 
 
 /**
- * Remove the dialog, any of its child dialogs, and, if all_parents is not
- * SDL_FALSE, any of its parents up to the first parent that is pinned.
+ * Help sdlpui_popdown_dialog() determine if the given dialog should be popped
+ * down.
  *
- * \param d is the dialog to remove.
- * \param w is the window containing the dialog.
- * \param all_parents will cause all of the parents, up to the first parent
- * that is pinned, if not SDL_FALSE.
+ * \param d is the dialog to test.
+ * \param mouse_d is the dialog with mouse focus or NULL if not preserving
+ * mouse focus.
+ * \param mouse_c is the control with mouse focus or NULL if not preserving
+ * mouse focus.
+ * \param key_d is the dialog with key focus or NULL if not preserving key
+ * focus.
+ * \param key_c is the control with key focus or NULL if not preserving key
+ * focus.
+ * \return SDL_TRUE if the dialog should be popped.  Otherwise, return
+ * SDL_FALSE.
  */
-void sdlpui_popdown_dialog(struct sdlpui_dialog *d, struct sdlpui_window *w,
-		SDL_bool all_parents)
+static SDL_bool sdlpui_popdown_dialog_test(struct sdlpui_dialog *d,
+		struct sdlpui_dialog *mouse_d, struct sdlpui_control *mouse_c,
+		struct sdlpui_dialog *key_d, struct sdlpui_control *key_c)
 {
-	struct sdlpui_dialog *stopping_point = (all_parents) ?
-		NULL : sdlpui_get_dialog_parent(d);
-
-	while (1) {
-		struct sdlpui_dialog *child = sdlpui_get_dialog_child(d);
-
-		if (!child) {
-			break;
+	if (mouse_d) {
+		if (mouse_d->id == d->id
+				|| sdlpui_is_descendant_dialog(d, mouse_d)) {
+			return SDL_FALSE;
 		}
-		d = child;
-	}
+		if (mouse_c) {
+			struct sdlpui_control *parent_c =
+				sdlpui_get_dialog_parent_ctrl(d);
 
-	while (1) {
-		struct sdlpui_dialog *parent = sdlpui_get_dialog_parent(d);
-		struct sdlpui_control *parent_ctrl =
-			sdlpui_get_dialog_parent_ctrl(d);
-
-		if (d->pop_callback) {
-			(*d->pop_callback)(d, w, SDL_FALSE);
-		}
-		sdlpui_dialog_pop(w, d);
-		if (parent_ctrl && parent_ctrl->ftb->lose_child) {
-			(*parent_ctrl->ftb->lose_child)(parent_ctrl, d);
-		}
-		if (parent) {
-			SDL_assert(parent->ftb->set_child);
-			(*parent->ftb->set_child)(parent, NULL);
-
-			/*
-			 * If the parent control has key focus but not mouse
-			 * focus, lose that focus when the child is lost.
-			 */
-			if (parent_ctrl && parent->c_key
-					&& parent->c_key->id == parent_ctrl->id
-					&& (!parent->c_mouse
-					|| parent->c_mouse->id
-					!= parent_ctrl->id)) {
-				if (parent_ctrl->ftb->lose_key) {
-					(*parent_ctrl->ftb->lose_key)(
-						parent_ctrl, parent, w,
-						NULL, NULL);
-				}
-				parent->c_key = NULL;
+			if (parent_c && parent_c->id == mouse_c->id) {
+				return SDL_FALSE;
 			}
 		}
-		if (d->ftb->cleanup) {
-			(*d->ftb->cleanup)(d);
-		}
-		sdlpui_unregister_dialog(d);
-		SDL_free(d);
-
-		if ((parent && parent->pinned)
-				|| (!parent && !stopping_point)
-				|| (parent && stopping_point
-				&& parent->id == stopping_point->id)) {
-			break;
-		}
-		d = parent;
 	}
+	if (key_d) {
+		if (key_d->id == d->id
+				|| sdlpui_is_descendant_dialog(d, key_d)) {
+			return SDL_FALSE;
+		}
+		if (key_c) {
+			struct sdlpui_control *parent_c =
+				sdlpui_get_dialog_parent_ctrl(d);
+
+			if (parent_c && parent_c->id == key_c->id) {
+				return SDL_FALSE;
+			}
+		}
+	}
+	return SDL_TRUE;
+}
+
+
+/**
+ * Remove the dialog, any of its child dialogs, and, if all_parents is not
+ * SDL_FALSE, any of its parents and their children up to the first parent
+ * that is pinned.
+ *
+ * \param d is the dialog to remove.
+ * \param all_parents will, if not SDL_FALSE, cause all of the parents to be
+ * removed, up to the first parent that is pinned.
+ * \param exclude_mouse will, if not SDL_FALSE, protect any dialog, and its
+ * ancestors, from being popped down if the dialog's parent control has mouse
+ * focus or the dialog or any descendant has mouse focus.
+ * \param exclude_key will, if not SDL_FALSE, protect any dialog, and its
+ * ancestors, from being popped down if the dialog's parent control has key
+ * focus of the dialog or any descendant has key focus.
+ * \return SDL_TRUE if d was popped down.  Otherwise, return SDL_FALSE.  The
+ * latter is only possible if exclude_mouse or exclude_key is not SDL_FALSE.
+ */
+SDL_bool sdlpui_popdown_dialog(struct sdlpui_dialog *d, struct sdlpui_window *w,
+		SDL_bool all_parents, SDL_bool exclude_mouse,
+		SDL_bool exclude_key)
+{
+	struct sdlpui_dialog *mouse_d = NULL, *key_d = NULL;
+	struct sdlpui_control *mouse_c = NULL, *key_c = NULL;
+	struct sdlpui_dialog **stack;
+	int n_stack, i_stack, max_stack;
+	SDL_bool result = SDL_TRUE;
+
+	if (exclude_mouse || exclude_key) {
+		sdlpui_begin_focus_transaction();
+		if (exclude_mouse) {
+			mouse_d = sdlpui_get_dialog_with_focus(
+				SDLPUI_ACTION_HINT_MOUSE);
+			mouse_c = sdlpui_get_control_with_focus(
+				SDLPUI_ACTION_HINT_MOUSE);
+		}
+		if (exclude_key) {
+			key_d = sdlpui_get_dialog_with_focus(
+				SDLPUI_ACTION_HINT_KEY);
+			key_c = sdlpui_get_control_with_focus(
+				SDLPUI_ACTION_HINT_KEY);
+		}
+	}
+
+	/* Remember which dialogs will be popped down. */
+	max_stack = 32;
+	stack = SDL_malloc(max_stack * sizeof(*stack));
+	if (!stack) {
+		sdlpui_force_quit();
+	}
+	i_stack = 0;
+	n_stack = 0;
+
+	/*
+	 * If neccessary, add the predecessors of d and any of their children
+	 * that are not d, to the stack of dialogs that will be popped down.
+	 * They will be popped down after d is.
+	 */
+	if (all_parents) {
+		struct sdlpui_dialog *parent_d = d;
+
+		/* Ascend to the furthest ancestor that could be popped. */
+		while (1) {
+			struct sdlpui_dialog *next_parent_d =
+				sdlpui_get_dialog_parent(parent_d);
+
+			if (!next_parent_d || next_parent_d->pinned
+					|| !sdlpui_popdown_dialog_test(
+					next_parent_d, mouse_d, mouse_c, key_d,
+					key_c)) {
+				break;
+			}
+			parent_d = next_parent_d;
+		}
+
+		if (parent_d->id != d->id) {
+			SDL_assert(i_stack == n_stack && n_stack < max_stack);
+			stack[n_stack] = parent_d;
+			++n_stack;
+
+			while (i_stack < n_stack) {
+				int i, n = sdlpui_get_child_dialog_count(
+					stack[i_stack]);
+
+				if (n > max_stack - n_stack) {
+					if (n > max_stack) {
+						if (n > INT_MAX - max_stack
+								|| (size_t)n
+								> SIZE_MAX
+								/ sizeof(*stack)
+								- max_stack) {
+							sdlpui_force_quit();
+						}
+						max_stack += n;
+					} else {
+						if (max_stack > INT_MAX / 2
+								|| (size_t)max_stack
+								> SIZE_MAX
+								/ (2 * sizeof(*stack))) {
+							sdlpui_force_quit();
+						}
+						max_stack *= 2;
+					}
+					stack = SDL_realloc(stack,
+						max_stack * sizeof(*stack));
+					if (!stack) {
+						sdlpui_force_quit();
+					}
+				}
+				for (i = 0; i < n; ++i) {
+					stack[n_stack] =
+						sdlpui_get_child_dialog_by_index(
+						stack[i_stack], i);
+					if (stack[n_stack]->id != d->id
+							&& sdlpui_popdown_dialog_test(
+							stack[n_stack],
+							mouse_d, mouse_c,
+							key_d, key_c)) {
+						++n_stack;
+					}
+				}
+				++i_stack;
+			}
+		}
+	}
+
+	/*
+	 * Assemble all the descendants of d in order of increasing distance
+	 * from d.
+	 */
+	SDL_assert(i_stack == n_stack);
+	if (!d->pinned && sdlpui_popdown_dialog_test(d, mouse_d, mouse_c, key_d,
+			key_c)) {
+		if (n_stack == max_stack) {
+			if (max_stack > INT_MAX / 2 || (size_t)max_stack
+					> SIZE_MAX / (2 * sizeof(*stack))) {
+				sdlpui_force_quit();
+			}
+			max_stack *= 2;
+			stack = SDL_realloc(stack, max_stack * sizeof(*stack));
+			if (!stack) {
+				sdlpui_force_quit();
+			}
+		}
+		stack[n_stack] = d;
+		++n_stack;
+	} else {
+		i_stack = -1;
+		result = SDL_FALSE;
+	}
+
+	while (i_stack < n_stack) {
+		struct sdlpui_dialog *parent_d;
+		int i, n;
+
+		if (i_stack == -1) {
+			parent_d = d;
+			i_stack = n_stack;
+		} else {
+			parent_d = stack[i_stack];
+			++i_stack;
+		}
+		n = sdlpui_get_child_dialog_count(parent_d);
+		if (n > max_stack - n_stack) {
+			if (n > max_stack) {
+				if (n > INT_MAX - max_stack
+						|| (size_t)n > SIZE_MAX
+						/ sizeof(*stack) - max_stack) {
+					sdlpui_force_quit();
+				}
+				max_stack += n;
+			} else {
+				if (max_stack > INT_MAX / 2
+						|| (size_t)max_stack > SIZE_MAX
+						/ (2 * sizeof(*stack))) {
+					sdlpui_force_quit();
+				}
+				max_stack *= 2;
+			}
+			stack = SDL_realloc(stack, max_stack * sizeof(*stack));
+			if (!stack) {
+				sdlpui_force_quit();
+			}
+		}
+		for (i = 0; i < n; ++i) {
+			stack[n_stack] = sdlpui_get_child_dialog_by_index(
+				parent_d, i);
+
+			if (sdlpui_popdown_dialog_test(stack[n_stack],
+					mouse_d, mouse_c, key_d, key_c)) {
+				++n_stack;
+			}
+		}
+	}
+
+	/* Pop down the dialogs in reverse order. */
+	while (n_stack) {
+		struct sdlpui_dialog *parent_d;
+		struct sdlpui_control *parent_c;
+
+		--n_stack;
+		SDLPUI_EVENT_TRACER("dialog", stack[n_stack], "(not extracted)",
+			"popping down");
+		parent_d = sdlpui_get_dialog_parent(stack[n_stack]);
+		parent_c = sdlpui_get_dialog_parent_ctrl(stack[n_stack]);
+		if (stack[n_stack]->pop_callback) {
+			(*stack[n_stack]->pop_callback)(stack[n_stack], w,
+				SDL_FALSE);
+		}
+		sdlpui_begin_focus_transaction();
+		if (sdlpui_dialog_has_focus(stack[n_stack],
+				SDLPUI_ACTION_HINT_MOUSE)) {
+			(void)sdlpui_change_focus(NULL, 0, NULL, w,
+				SDLPUI_ACTION_HINT_MOUSE, SDL_TRUE, SDL_FALSE);
+		} else if (sdlpui_dialog_has_focus(stack[n_stack],
+				SDLPUI_ACTION_HINT_KEY)) {
+			(void)sdlpui_change_focus(NULL, 0, NULL, w,
+				SDLPUI_ACTION_HINT_KEY, SDL_TRUE, SDL_FALSE);
+		}
+		if (parent_c && parent_c->ftb->lose_child) {
+			(*parent_c->ftb->lose_child)(parent_c, stack[n_stack]);
+		}
+		if (parent_d) {
+			if (sdlpui_remove_child_dialog(parent_d,
+					stack[n_stack])) {
+				SDL_assert(0);
+			}
+
+			/*
+			 * If the parent control has key or mouse focus, lose
+			 * that focus when the child is lost (assumes that the
+			 * parent control is part of a nested menu system and
+			 * that it pops up its child automatically when it has
+			 * focus).
+			 */
+			if (parent_c && sdlpui_control_has_focus(parent_c,
+					SDLPUI_ACTION_HINT_MOUSE)) {
+				(void)sdlpui_change_focus(NULL, 0, parent_d, w,
+					SDLPUI_ACTION_HINT_MOUSE, SDL_FALSE,
+					SDL_TRUE);
+			} else if (parent_c && sdlpui_control_has_focus(parent_c,
+					SDLPUI_ACTION_HINT_KEY)) {
+				(void)sdlpui_change_focus(NULL, 0, parent_d, w,
+					SDLPUI_ACTION_HINT_KEY, SDL_FALSE,
+					SDL_TRUE);
+			}
+		}
+		sdlpui_end_focus_transaction();
+		if (stack[n_stack]->ftb->cleanup) {
+			(*stack[n_stack]->ftb->cleanup)(stack[n_stack]);
+		}
+		sdlpui_dialog_pop(w, stack[n_stack]);
+		sdlpui_unregister_dialog(stack[n_stack]);
+		SDL_free(stack[n_stack]);
+	}
+
+	if (exclude_mouse || exclude_key) {
+		sdlpui_end_focus_transaction();
+	}
+
+	SDL_free(stack);
+
+	return result;
 }
 
 
 /**
  * Give the keyboard focus for a dialog or menu to its parent.  If there is no
  * parent and the dialog is not pinned, acts like sdlpui_popdown_dialog(d, w,
- * SDL_FALSE).
+ * SDL_TRUE, SDL_TRUE, SDL_FALSE).
  *
  * \param d is the dialog that's ceding focus.
  * \param w is the window containing the dialog.
+ *
+ * Does nothing if keyboard focus is currently locked.  Note that if invoked
+ * for a nested menu when there is no parent and the menu or its descendants
+ * do not have mouse focus, this will pop down menu and its children (via the
+ * lose focus callback of the control in the menu with key focus).
  */
 void sdlpui_dialog_give_key_focus_to_parent(struct sdlpui_dialog *d,
 		struct sdlpui_window *w)
 {
-	struct sdlpui_dialog *parent = sdlpui_get_dialog_parent(d);
+	struct sdlpui_dialog *parent_d;
+	struct sdlpui_control *parent_c;
 
-	if (parent) {
-		if (d->c_key && d->c_key->ftb->lose_key) {
-			(*d->c_key->ftb->lose_key)(d->c_key, d, w, NULL,
-				parent);
-		}
-		d->c_key = NULL;
-		SDLPUI_EVENT_TRACER("dialog", d,
-			"(not extracted)", "yields key focus");
-		sdlpui_dialog_yield_key_focus(w, d);
-		SDLPUI_EVENT_TRACER("dialog", parent,
-			"(not extracted)", "gains key focus");
-		sdlpui_dialog_gain_key_focus(w, parent);
-	} else {
-		SDLPUI_EVENT_TRACER("dialog", d,
-			"(not extracted)", "yields key focus");
-		sdlpui_dialog_yield_key_focus(w, d);
-		if (!d->pinned) {
-			SDLPUI_EVENT_TRACER("dialog", d,
-				"(not extracted)", "popping down");
-			sdlpui_popdown_dialog(d, w, SDL_FALSE);
-		}
+	sdlpui_begin_focus_transaction();
+	if (sdlpui_is_focus_locked(SDLPUI_ACTION_HINT_KEY)) {
+		sdlpui_end_focus_transaction();
+		return;
 	}
+	parent_d = sdlpui_get_dialog_parent(d);
+	parent_c = sdlpui_get_dialog_parent_ctrl(d);
+	(void)sdlpui_change_focus(parent_c, 0, parent_d, w,
+		SDLPUI_ACTION_HINT_KEY, SDL_FALSE, SDL_TRUE);
+	sdlpui_end_focus_transaction();
 }
 
 
@@ -1409,15 +1614,72 @@ struct sdlpui_dialog *sdlpui_get_dialog_parent(struct sdlpui_dialog *d)
 
 
 /**
- * For a nested menu/dialog, return its child.
+ * Return the number of active child dialogs for the given dialog.
  *
  * \param d is the dialog to query.
- * \return the child.  That will be NULL if the menu/dialog does not have
- * a child.
+ * \return the number of active child dialogs.
  */
-struct sdlpui_dialog *sdlpui_get_dialog_child(struct sdlpui_dialog *d)
+int sdlpui_get_child_dialog_count(const struct sdlpui_dialog *d)
 {
-	return (d->ftb->get_child) ? (*d->ftb->get_child)(d) : NULL;
+	return (d->ftb->get_child_dialog_count)
+		? (*d->ftb->get_child_dialog_count)(d) : 0;
+}
+
+
+/**
+ * Return a child dialog for the given dialog.
+ *
+ * \param d is the dialog to query.
+ * \param ind is the zero-based index for the child dialog to return.  If ind
+ * is in [0, sdlpui_dialog_get_child_dialog_count(d) - 1], the return value
+ * will not be NULL.
+ * \return the child dialog at ind.  That will be NULL if the menu/dialog does
+ * not have child dialogs or ind is not in [0,
+ * sdlpui_dialog_get_child_dialog_count(d) - 1].
+ */
+struct sdlpui_dialog *sdlpui_get_child_dialog_by_index(struct sdlpui_dialog *d,
+		int ind)
+{
+	if (d->ftb->get_child_dialog_by_index) {
+		return (*d->ftb->get_child_dialog_by_index)(d, ind);
+	}
+	return NULL;
+}
+
+
+/**
+ * Add a child dialog to the given dialog.
+ *
+ * \param d is the dialog to modify.
+ * \param child is the dialog to add as a child.  It must not be d itself or
+ * have a descendant that is d.
+ * \return the index for the added child or -1 if the child could not be added.
+ */
+int sdlpui_add_child_dialog(struct sdlpui_dialog *d,
+		struct sdlpui_dialog *child)
+{
+	if (d->ftb->add_child_dialog) {
+		return (*d->ftb->add_child_dialog)(d, child);
+	}
+	return -1;
+}
+
+
+/**
+ * Remove a child dialog from the given child dialog.
+ *
+ * \param d is the dialog to modify.
+ * \param child is the dialog to remove.
+ * \return SDL_FALSE if child was among the children of d.  Otherwise, return
+ * SDL_TRUE.
+ */
+SDL_bool sdlpui_remove_child_dialog(struct sdlpui_dialog *d,
+		struct sdlpui_dialog *child)
+{
+	if (d->ftb->remove_child_dialog) {
+		return (*d->ftb->remove_child_dialog)(d, child);
+	}
+	return SDL_FALSE;
 }
 
 
@@ -1446,38 +1708,45 @@ struct sdlpui_control *sdlpui_get_dialog_parent_ctrl(struct sdlpui_dialog *d)
 SDL_bool sdlpui_dialog_handle_key(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const struct SDL_KeyboardEvent *e)
 {
+	struct sdlpui_control *c_key;
 	SDL_Keymod mods;
+	SDL_bool handled;
+
+	sdlpui_begin_focus_transaction();
 
 	/* Relay to the control with focus.  If it handles it, we are done. */
-	if (d->c_key && d->c_key->ftb->handle_key
-			&& (*d->c_key->ftb->handle_key)(d->c_key, d, w, e)) {
+	c_key = sdlpui_get_control_with_focus(SDLPUI_ACTION_HINT_KEY);
+	if (c_key && c_key->ftb->handle_key
+			&& (*c_key->ftb->handle_key)(c_key, d, w, e)) {
+		sdlpui_end_focus_transaction();
 		return SDL_TRUE;
 	}
 
 	mods = sdlpui_get_interesting_keymods();
+	handled = SDL_FALSE;
 	switch (e->keysym.sym) {
 	case SDLK_ESCAPE:
-		if (e->state == SDL_RELEASED && mods == KMOD_NONE) {
-			while (1) {
-				struct sdlpui_dialog *child =
-					sdlpui_get_dialog_child(d);
-
-				if (!child) {
-					break;
-				}
-				d = child;
-			}
-			if (!d->pinned) {
-				SDLPUI_EVENT_TRACER("dialog", d,
-					"(not extracted)", "popping down");
-				sdlpui_popdown_dialog(d, w, SDL_TRUE);
+		if (e->state == SDL_PRESSED && mods == KMOD_NONE
+				&& !sdlpui_is_focus_locked(
+				SDLPUI_ACTION_HINT_KEY)) {
+			/*
+			 * Dismiss the dialog or menu; if that is not
+			 * possible (it is pinned), lose focus.
+			 */
+			handled = SDL_TRUE;
+			if (!sdlpui_popdown_dialog(d, w, SDL_TRUE, SDL_FALSE,
+					SDL_FALSE)) {
+				(void)sdlpui_change_focus(NULL, 0, NULL, w,
+					SDLPUI_ACTION_HINT_MOUSE, SDL_FALSE,
+					SDL_TRUE);
 			}
 		}
 		break;
 
 	case SDLK_RETURN:
-		if (e->state == SDL_RELEASED && mods == KMOD_NONE
+		if (e->state == SDL_PRESSED && mods == KMOD_NONE
 				&& d->ftb->respond_default) {
+			handled = SDL_TRUE;
 			SDLPUI_EVENT_TRACER("dialog", d, "(not extracted)",
 				"invoking default response");
 			(*d->ftb->respond_default)(d, w);
@@ -1485,23 +1754,26 @@ SDL_bool sdlpui_dialog_handle_key(struct sdlpui_dialog *d,
 		break;
 
 	case SDLK_TAB:
-		if (e->state == SDL_RELEASED
+		if (e->state == SDL_PRESSED
 				&& (mods & ~(KMOD_SHIFT | KMOD_CTRL))
-				== KMOD_NONE) {
-			if (!d->c_key) {
+				== KMOD_NONE
+				&& !sdlpui_is_focus_locked(SDLPUI_ACTION_HINT_KEY)) {
+			handled = SDL_TRUE;
+			if (!c_key) {
 				if (d->ftb->goto_first_control) {
-					(*d->ftb->goto_first_control)(d, w);
+					(void)(*d->ftb->goto_first_control)(d, w);
 				}
 			} else if (d->ftb->step_control) {
-				(*d->ftb->step_control)(d, w, d->c_key,
+				(*d->ftb->step_control)(d, w, c_key,
 					(mods & (KMOD_SHIFT)) == 0);
 			}
 		}
 		break;
 	}
 
-	/* Swallow the event, even if nothing was done. */
-	return SDL_TRUE;
+	sdlpui_end_focus_transaction();
+
+	return handled;
 }
 
 
@@ -1517,11 +1789,19 @@ SDL_bool sdlpui_dialog_handle_key(struct sdlpui_dialog *d,
 SDL_bool sdlpui_dialog_handle_textin(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const struct SDL_TextInputEvent *e)
 {
+	struct sdlpui_control *c_key;
+
+	sdlpui_begin_focus_transaction();
+
 	/* Relay to the control with focus.  If it handles it, we are done. */
-	if (d->c_key && d->c_key->ftb->handle_textin
-			&& (*d->c_key->ftb->handle_textin)(d->c_key, d, w, e)) {
+	c_key = sdlpui_get_control_with_focus(SDLPUI_ACTION_HINT_KEY);
+	if (c_key && c_key->ftb->handle_textin
+			&& (*c_key->ftb->handle_textin)(c_key, d, w, e)) {
+		sdlpui_end_focus_transaction();
 		return SDL_TRUE;
 	}
+
+	sdlpui_end_focus_transaction();
 
 	/* Do nothing and swallow the event. */
 	return SDL_TRUE;
@@ -1540,12 +1820,19 @@ SDL_bool sdlpui_dialog_handle_textin(struct sdlpui_dialog *d,
 SDL_bool sdlpui_dialog_handle_textedit(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const struct SDL_TextEditingEvent *e)
 {
+	struct sdlpui_control *c_key;
+
+	sdlpui_begin_focus_transaction();
+
 	/* Relay to the control with focus.  If it handles it, we are done. */
-	if (d->c_key && d->c_key->ftb->handle_textedit
-			&& (*d->c_key->ftb->handle_textedit)(
-				d->c_key, d, w, e)) {
+	c_key = sdlpui_get_control_with_focus(SDLPUI_ACTION_HINT_KEY);
+	if (c_key && c_key->ftb->handle_textedit
+			&& (*c_key->ftb->handle_textedit)(c_key, d, w, e)) {
+		sdlpui_end_focus_transaction();
 		return SDL_TRUE;
 	}
+
+	sdlpui_end_focus_transaction();
 
 	/* Do nothing and swallow the event. */
 	return SDL_TRUE;
@@ -1564,12 +1851,36 @@ SDL_bool sdlpui_dialog_handle_textedit(struct sdlpui_dialog *d,
 SDL_bool sdlpui_dialog_handle_mouseclick(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const struct SDL_MouseButtonEvent *e)
 {
+	struct sdlpui_control *c_mouse;
+
+	sdlpui_begin_focus_transaction();
+
+	/*
+	 * If there is no control with focus but the mouse click is in a child,
+	 * give that child focus.
+	 */
+	c_mouse = sdlpui_get_control_with_focus(SDLPUI_ACTION_HINT_MOUSE);
+	if (!c_mouse && sdlpui_is_focus_locked(SDLPUI_ACTION_HINT_KEY_OR_MOUSE)
+			&& d->ftb->find_control_containing) {
+		int comp_ind;
+
+		c_mouse = (*d->ftb->find_control_containing)(d, w, e->x, e->y,
+			&comp_ind);
+		if (c_mouse) {
+			sdlpui_change_focus(c_mouse, comp_ind, d, w,
+				SDLPUI_ACTION_HINT_MOUSE, SDL_FALSE, SDL_TRUE);
+		}
+	}
+
 	/* Relay to the control with focus.  If it handles it, we are done. */
-	if (d->c_mouse && d->c_mouse->ftb->handle_mouseclick
-			&& (*d->c_mouse->ftb->handle_mouseclick)(
-				d->c_mouse, d, w, e)) {
+	if (c_mouse && c_mouse->ftb->handle_mouseclick
+			&& (*c_mouse->ftb->handle_mouseclick)(
+				c_mouse, d, w, e)) {
+		sdlpui_end_focus_transaction();
 		return SDL_TRUE;
 	}
+
+	sdlpui_end_focus_transaction();
 
 	/* Do nothing and swallow the event. */
 	return SDL_TRUE;
@@ -1588,78 +1899,41 @@ SDL_bool sdlpui_dialog_handle_mouseclick(struct sdlpui_dialog *d,
 SDL_bool sdlpui_dialog_handle_mousemove(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const struct SDL_MouseMotionEvent *e)
 {
-	struct sdlpui_control *c_mouse = d->c_mouse, *c;
+	struct sdlpui_control *c, *c_mouse;
 	int comp_ind;
 
+	sdlpui_begin_focus_transaction();
+
 	/* Relay to the control with focus.  If it handles it, we are done. */
+	c_mouse = sdlpui_get_control_with_focus(SDLPUI_ACTION_HINT_MOUSE);
 	if (c_mouse && c_mouse->ftb->handle_mousemove
 			&& (*c_mouse->ftb->handle_mousemove)(
 				c_mouse, d, w, e)) {
+		sdlpui_end_focus_transaction();
+		return SDL_TRUE;
+	}
+
+	/* If not allowed to change focus, swallow the event. */
+	if (sdlpui_is_focus_locked(SDLPUI_ACTION_HINT_KEY_OR_MOUSE)) {
+		sdlpui_end_focus_transaction();
 		return SDL_TRUE;
 	}
 
 	/*
-	 * Ignore motion events while a mouse button is pressed (at least up
-	 * to the point that the mouse leaves the window).
-	 */
-	if (e->state != 0) {
-		return SDL_TRUE;
-	}
-
-	/*
-	 * Otherwise, see if the mouse has entered another control in the
-	 * dialog.  If it has, give focus to that control.
+	 * See if the mouse has entered another control in the dialog.  If it
+	 * has, give focus to that control.
 	 */
 	c = (d->ftb->find_control_containing) ?
 		(*d->ftb->find_control_containing)(d, w, e->x, e->y, &comp_ind) :
 		NULL;
-	if (c) {
-		if (c_mouse && c_mouse->ftb->lose_mouse) {
-			(*c_mouse->ftb->lose_mouse)(c_mouse, d, w, c, d);
-		}
-		if (c->ftb->gain_mouse) {
-			(*c->ftb->gain_mouse)(c, d, w, comp_ind);
-		}
-		d->c_mouse = c;
-
-		/* Have keyboard focus follow the mouse. */
-		if (!d->c_key || d->c_key->id != c->id) {
-			if (d->c_key && d->c_key->ftb->lose_key) {
-				(*d->c_key->ftb->lose_key)(d->c_key, d, w, c,
-					d);
-			}
-			if (c && c->ftb->gain_key) {
-				(c->ftb->gain_key)(c, d, w, comp_ind);
-			}
-			d->c_key = c;
-		}
-	}
 	if (c || sdlpui_is_in_dialog(d, e->x, e->y)) {
-		if (!c) {
-			if (c_mouse) {
-				if (c_mouse->ftb->lose_mouse) {
-					(*c_mouse->ftb->lose_mouse)(
-						c_mouse, d, w, NULL, d);
-				}
-				d->c_mouse = NULL;
-			}
-			/* Have keyboard focus follow the mouse. */
-			if (d->c_key) {
-				if (d->c_key->ftb->lose_key) {
-					(*d->c_key->ftb->lose_key)(
-						d->c_key, d, w, NULL, d);
-				}
-				d->c_key = NULL;
-			}
-		}
-		SDLPUI_EVENT_TRACER("dialog", d, "(not extracted)",
-			"gains mouse focus");
-		SDLPUI_EVENT_TRACER("dialog", d, "(not extracted)",
-			"gains key focus");
-		sdlpui_dialog_gain_mouse_focus(w, d);
-		sdlpui_dialog_gain_key_focus(w, d);
+		(void)sdlpui_change_focus(c, comp_ind, d, w,
+			SDLPUI_ACTION_HINT_MOUSE, SDL_FALSE, SDL_TRUE);
+		sdlpui_end_focus_transaction();
 		return SDL_TRUE;
 	}
+
+	sdlpui_end_focus_transaction();
 
 	/*
 	 * Let the window handle the mouse motion.  For now keep focus though
@@ -1681,12 +1955,20 @@ SDL_bool sdlpui_dialog_handle_mousemove(struct sdlpui_dialog *d,
 SDL_bool sdlpui_dialog_handle_mousewheel(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const struct SDL_MouseWheelEvent *e)
 {
+	struct sdlpui_control *c_mouse;
+
+	sdlpui_begin_focus_transaction();
+
 	/* Relay to the control with focus.  If it handles it, we're done. */
-	if (d->c_mouse && d->c_mouse->ftb->handle_mousewheel
-			&& (*d->c_mouse->ftb->handle_mousewheel)(
-				d->c_mouse, d, w, e)) {
+	c_mouse = sdlpui_get_control_with_focus(SDLPUI_ACTION_HINT_MOUSE);
+	if (c_mouse && c_mouse->ftb->handle_mousewheel
+			&& (*c_mouse->ftb->handle_mousewheel)(
+				c_mouse, d, w, e)) {
+		sdlpui_end_focus_transaction();
 		return SDL_TRUE;
 	}
+
+	sdlpui_end_focus_transaction();
 
 	/* Do nothing and swallow the event. */
 	return SDL_TRUE;
@@ -1694,17 +1976,15 @@ SDL_bool sdlpui_dialog_handle_mousewheel(struct sdlpui_dialog *d,
 
 
 /**
- * This is a synonym for sdlpui_popdown_dialog(d, w, SDL_FALSE), usable as the
- * respond_default hook for a dialog.
+ * This is a synonym for sdlpui_popdown_dialog(d, w, SDL_TRUE, SDL_FALSE,
+ * SDL_FALSE), usable as the respond_default hook for a dialog.
  *
  * \param d is the dialog or menu to pop down.
  * \param w is the window containing the dialog or menu.
  */
 void sdlpui_dismiss_dialog(struct sdlpui_dialog *d, struct sdlpui_window *w)
 {
-	SDLPUI_EVENT_TRACER("dialog", d, "(not extracted)",
-		"popping down dialog");
-	sdlpui_popdown_dialog(d, w, SDL_FALSE);
+	(void)sdlpui_popdown_dialog(d, w, SDL_TRUE, SDL_FALSE, SDL_FALSE);
 }
 
 
@@ -1713,41 +1993,15 @@ void sdlpui_dismiss_dialog(struct sdlpui_dialog *d, struct sdlpui_window *w)
  *
  * \param d is the dialog.
  * \param w is the window containing the dialog.
+ *
+ * Called from routines in pui-foc.h so do not need calls to
+ * sdlpui_begin_focus_transaction() and sdlpui_end_focus_transaction().
  */
 void sdlpui_dialog_handle_window_loses_mouse(struct sdlpui_dialog *d,
 		struct sdlpui_window *w)
 {
-	if (d->c_mouse) {
-		if (d->c_mouse->ftb->disarm) {
-			(*d->c_mouse->ftb->disarm)(d->c_mouse, d, w,
-				SDLPUI_ACTION_HINT_NONE);
-		}
-		if (d->c_mouse->ftb->lose_mouse) {
-			(*d->c_mouse->ftb->lose_mouse)(d->c_mouse, d, w, NULL,
-				NULL);
-		}
-		/* Key focus follows mouse. */
-		if (d->c_key && d->c_key->id == d->c_mouse->id
-				&& d->c_mouse->ftb->lose_key) {
-			(*d->c_mouse->ftb->lose_key)(d->c_mouse, d, w, NULL,
-				NULL);
-		}
-	}
-	/* Key focus follows mouse. */
-	if (d->c_key && (!d->c_mouse || d->c_key->id != d->c_mouse->id)) {
-		if (d->c_key->ftb->disarm) {
-			(*d->c_key->ftb->disarm)(d->c_key, d, w,
-				SDLPUI_ACTION_HINT_NONE);
-		}
-		if (d->c_key->ftb->lose_key) {
-			(*d->c_key->ftb->lose_key)(d->c_key, d, w, NULL,
-				NULL);
-		}
-	}
-	d->c_mouse = NULL;
-	d->c_key = NULL;
-	sdlpui_dialog_yield_mouse_focus(w, d);
-	sdlpui_dialog_yield_key_focus(w, d);
+	(void)sdlpui_change_focus(NULL, 0, NULL, w, SDLPUI_ACTION_HINT_MOUSE,
+		SDL_TRUE, SDL_TRUE);
 }
 
 
@@ -1756,6 +2010,9 @@ void sdlpui_dialog_handle_window_loses_mouse(struct sdlpui_dialog *d,
  *
  * \param d is the menu.
  * \param w is the window containing the menu.
+ *
+ * Called from routines in pui-foc.h so do not need calls to
+ * sdlpui_begin_focus_transaction() and sdlpui_end_focus_transaction().
  */
 void sdlpui_menu_handle_window_loses_mouse(struct sdlpui_dialog *d,
 		struct sdlpui_window *w)
@@ -1763,9 +2020,8 @@ void sdlpui_menu_handle_window_loses_mouse(struct sdlpui_dialog *d,
 	if (d->pinned) {
 		sdlpui_dialog_handle_window_loses_mouse(d, w);
 	} else {
-		SDLPUI_EVENT_TRACER("dialog", d, "(not extracted)",
-			"popping down");
-		sdlpui_popdown_dialog(d, w, SDL_TRUE);
+		(void)sdlpui_popdown_dialog(d, w, SDL_TRUE, SDL_FALSE,
+			SDL_FALSE);
 	}
 }
 
@@ -1775,21 +2031,15 @@ void sdlpui_menu_handle_window_loses_mouse(struct sdlpui_dialog *d,
  *
  * \param d is the dialog.
  * \param w is the window containing the dialog or menu.
+ *
+ * Called from routines in pui-foc.h so do not need calls to
+ * sdlpui_begin_focus_transaction() and sdlpui_end_focus_transaction().
  */
 void sdlpui_dialog_handle_window_loses_key(struct sdlpui_dialog *d,
 		struct sdlpui_window *w)
 {
-	if (d->c_key) {
-		if (d->c_key->ftb->disarm) {
-			(*d->c_key->ftb->disarm)(d->c_key, d, w,
-				SDLPUI_ACTION_HINT_KEY);
-		}
-		if (d->c_key->ftb->lose_key) {
-			(*d->c_key->ftb->lose_key)(d->c_key, d, w, NULL, NULL);
-		}
-	}
-	d->c_key = NULL;
-	sdlpui_dialog_yield_key_focus(w, d);
+	(void)sdlpui_change_focus(NULL, 0, NULL, w, SDLPUI_ACTION_HINT_KEY,
+		SDL_TRUE, SDL_TRUE);
 }
 
 
@@ -1798,50 +2048,18 @@ void sdlpui_dialog_handle_window_loses_key(struct sdlpui_dialog *d,
  *
  * \param d is the menu.
  * \param w is the window containing the menu.
+ *
+ * Called from routines in pui-foc.h so do not need calls to
+ * sdlpui_begin_focus_transaction() and sdlpui_end_focus_transaction().
  */
 void sdlpui_menu_handle_window_loses_key(struct sdlpui_dialog *d,
 		struct sdlpui_window *w)
 {
-	/*
-	 * Dimiss all the child dialogs up to the one which has mouse focus
-	 * or has a parent control with mouse focus.  If the dialog itself
-	 * is not dismissed in that process, treat it like a generic dialog
-	 * when the window loses key focus.
-	 */
-	struct sdlpui_dialog *deepest = d;
+	SDL_bool popped = sdlpui_popdown_dialog(d, w, SDL_TRUE, SDL_TRUE,
+		SDL_FALSE);
 
-	while (1) {
-		struct sdlpui_dialog *child = sdlpui_get_dialog_child(deepest);
-
-		if (!child) {
-			break;
-		}
-		deepest = child;
-	}
-	while (1) {
-		struct sdlpui_dialog *d_mouse =
-			sdlpui_dialog_with_mouse_focus(w);
-		struct sdlpui_dialog *parent =
-			sdlpui_get_dialog_parent(deepest);
-		struct sdlpui_control *parent_ctrl =
-			sdlpui_get_dialog_parent_ctrl(deepest);
-
-		if (deepest->pinned || deepest->c_mouse
-				|| (d_mouse && deepest->id == d_mouse->id)
-				|| (parent && parent->c_mouse && parent_ctrl
-				&& parent->c_mouse->id == parent_ctrl->id)) {
-			if (deepest->id == d->id) {
-				sdlpui_dialog_handle_window_loses_key(d, w);
-			}
-			break;
-		}
-		SDLPUI_EVENT_TRACER("dialog", deepest, "(not extracted)",
-			"popping down");
-		sdlpui_popdown_dialog(deepest, w, SDL_FALSE);
-		if (!parent) {
-			break;
-		}
-		deepest = parent;
+	if (!popped) {
+		sdlpui_dialog_handle_window_loses_key(d, w);
 	}
 }
 
@@ -1852,17 +2070,102 @@ void sdlpui_menu_handle_window_loses_key(struct sdlpui_dialog *d,
  * \param d is the dialog.
  * \param w is the window containing the menu.
  * \param new_c is the control gaining mouse focus.  It may be NULL.
+ * \param new_ind is the zero-based index of the component of new_c gaining
+ * mouse focus.  It is ignored if new_c is NULL.
  * \param new_d is the dialog gaining mouse focus.  It may be NULL.
  */
 void sdlpui_dialog_handle_loses_mouse(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, struct sdlpui_control *new_c,
-		struct sdlpui_dialog *new_d)
+		int new_ind, struct sdlpui_dialog *new_d)
+{
+	sdlpui_begin_focus_transaction();
+	if (sdlpui_dialog_has_focus(d, SDLPUI_ACTION_HINT_MOUSE)) {
+		(void)sdlpui_change_focus(new_c, new_ind, new_d, w,
+			SDLPUI_ACTION_HINT_MOUSE, SDL_FALSE, SDL_TRUE);
+	}
+	sdlpui_end_focus_transaction();
+}
+
+
+/**
+ * Help sdlpui_menu_handle_loses_mouse() and sdlpui_menu_handle_loses_key().
+ *
+ * \param d is the menu losing focus.
+ * \param w is the window containing the menu.
+ * \param new_c is the control gaining focus.  It may be NULL and must be NULL
+ * \param new_ind is the zero-based index of the component of new_c gaining
+ * mouse focus.  It is ignored if new_c is NULL.
+ * if new_d is NULL.
+ * \param new_d is the dialog gaining focus.  It may be NULL.
+ * \param ah specifies the type of focus in question it must be
+ * SDLPUI_ACTION_HINT_MOUSE or SDLPUI_ACTION_HINT_KEY.
+ *
+ * Assumes a focus transaction is in effect.
+ */
+static void sdlpui_help_menu_loses_focus(struct sdlpui_dialog *d,
+		struct sdlpui_window *w, struct sdlpui_control *new_c,
+		int new_ind, struct sdlpui_dialog *new_d,
+		enum sdlpui_action_hint ah)
 {
 	/*
-	 * Gets the same treatment as if the mouse left the window containing
-	 * the dialog.
+	 * Find the base of the shortest tree containing d and new_d.  If that
+	 * tree does not exist, pop down d.  If it exists and is not rooted at
+	 * d, pop down the child of that base that has d as a descendant (when
+	 * the base is new_d, may need to stop and not pop anything down if
+	 * d is that child or descend one deeper if the child's parent control
+	 * is new_c).  Update the focus when done popping down whatever needed
+	 * to be popped down.  When popping down, avoid popping down stuff with
+	 * mouse focus when what is being lost is key focus.
 	 */
-	sdlpui_dialog_handle_window_loses_mouse(d, w);
+	struct sdlpui_dialog *base_d =
+		sdlpui_shortest_dialog_tree_with(d, new_d);
+
+	if (base_d) {
+		if (base_d->id != d->id) {
+			int n = sdlpui_get_child_dialog_count(base_d), i = 0;
+			struct sdlpui_dialog *child_d;
+
+			while (1) {
+				SDL_assert(i < n);
+				child_d = sdlpui_get_child_dialog_by_index(
+					base_d, i);
+				SDL_assert(child_d
+					&& !sdlpui_is_descendant_dialog(child_d,
+					new_d));
+				if (child_d->id == d->id
+						|| sdlpui_is_descendant_dialog(
+						child_d, d)) {
+					if (new_c) {
+						struct sdlpui_control *parent_c
+							= sdlpui_get_dialog_parent_ctrl(child_d);
+
+						if (parent_c && parent_c->id
+								== new_c->id) {
+							if (child_d->id == d->id) {
+								break;
+							}
+							n = sdlpui_get_child_dialog_count(child_d);
+							i = 0;
+							base_d = child_d;
+							continue;
+						}
+					}
+					(void)sdlpui_popdown_dialog(child_d, w,
+						SDL_FALSE,
+						ah == SDLPUI_ACTION_HINT_KEY,
+						SDL_FALSE);
+					break;
+				}
+				++i;
+			}
+		}
+	} else {
+		(void)sdlpui_popdown_dialog(d, w, SDL_TRUE,
+			ah == SDLPUI_ACTION_HINT_KEY, SDL_FALSE);
+	}
+
+	(void)sdlpui_change_focus(new_c, new_ind, new_d, w, ah, SDL_FALSE,
+		SDL_TRUE);
 }
 
 
@@ -1870,123 +2173,26 @@ void sdlpui_dialog_handle_loses_mouse(struct sdlpui_dialog *d,
  * Respond to another dialog or menu taking mouse focus from this pulldown/popup
  * menu.
  *
- * \param d is the dialog.
+ * \param d is the menu.
  * \param w is the window containing the menu.
- * \param new_c is the control gaining mouse focus.  It may be NULL.
+ * \param new_c is the control gaining mouse focus.  It may be NULL and must
+ * be NULL if new_d is NULL.
+ * \param new_ind is the zero-based index of the component of new_c gaining
+ * mouse focus.  It is ignored if new_c is NULL.
  * \param new_d is the dialog gaining mouse focus.  It may be NULL.
  */
 void sdlpui_menu_handle_loses_mouse(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, struct sdlpui_control *new_c,
-		struct sdlpui_dialog *new_d)
+		int new_ind, struct sdlpui_dialog *new_d)
 {
-	/*
-	 * The mouse left the menu.  If the mouse is in a descendant, do
-	 * not pop anything down and update what has focus in this menu.  If
-	 * the mouse is in the parent control, pop down any children of this
-	 * menu and update what has focus in this menu.  In other cases, pop
-	 * down the menu, any children, and any parents up to the parent that
-	 * contains the mouse or is pinned.
-	 */
-	SDL_bool pop_parents = SDL_TRUE;
-
-	if (new_d && sdlpui_is_descendant_dialog(d, new_d)) {
-		pop_parents = SDL_FALSE;
-	} else if (new_c && new_d) {
-		struct sdlpui_dialog *parent_d = sdlpui_get_dialog_parent(d);
-		struct sdlpui_control *parent_c =
-			sdlpui_get_dialog_parent_ctrl(d);
-
-		if ((parent_d && new_d->id == parent_d->id)
-				&& (parent_c && new_c->id == parent_c->id)) {
-			struct sdlpui_dialog *child_d =
-				sdlpui_get_dialog_child(d);
-
-			if (child_d && !child_d->pinned) {
-				SDLPUI_EVENT_TRACER("dialog", child_d,
-					"(not extracted)", "popping down");
-				sdlpui_popdown_dialog(child_d, w, SDL_FALSE);
-			}
-			pop_parents = SDL_FALSE;
-		}
-	} else if (d->pinned) {
-		pop_parents = SDL_FALSE;
+	sdlpui_begin_focus_transaction();
+	if (sdlpui_is_focus_locked(SDLPUI_ACTION_HINT_KEY_OR_MOUSE)) {
+		sdlpui_end_focus_transaction();
+		return;
 	}
-
-	if (pop_parents) {
-		while (1) {
-			struct sdlpui_dialog *parent_d =
-				sdlpui_get_dialog_parent(d);
-
-			if (!parent_d || parent_d->pinned
-					|| (new_d
-					&& parent_d->id == new_d->id)) {
-				SDLPUI_EVENT_TRACER("dialog", d,
-					"(not extracted)", "popping down");
-				sdlpui_popdown_dialog(d, w, SDL_FALSE);
-				break;
-			}
-			if (new_d) {
-				struct sdlpui_control *parent_c =
-					sdlpui_get_dialog_parent_ctrl(d);
-
-				if (new_c && parent_c
-						&& new_d->id == parent_d->id
-						&& new_c->id == parent_c->id) {
-					struct sdlpui_dialog *child_d =
-						sdlpui_get_dialog_child(d);
-
-					SDL_assert(child_d);
-					SDLPUI_EVENT_TRACER("dialog",
-						child_d, "(not extracted)",
-						"popping down");
-					SDL_assert(!child_d->pinned);
-					sdlpui_popdown_dialog(child_d, w,
-						SDL_FALSE);
-					break;
-				} else if (new_d->id == parent_d->id) {
-					SDLPUI_EVENT_TRACER("dialog", d,
-						"(not extracted)",
-						"popping down");
-					sdlpui_popdown_dialog(d, w, SDL_FALSE);
-					break;
-				}
-			}
-			d = parent_d;
-		}
-	} else {
-		if (d->c_mouse) {
-			if (d->c_mouse->ftb->disarm) {
-				(*d->c_mouse->ftb->disarm)(d->c_mouse, d, w,
-					SDLPUI_ACTION_HINT_NONE);
-			}
-			if (d->c_mouse->ftb->lose_mouse) {
-				(*d->c_mouse->ftb->lose_mouse)(d->c_mouse, d,
-					w, new_c, new_d);
-			}
-			/* Key focus follows mouse. */
-			if (d->c_key && d->c_key->id == d->c_mouse->id
-					&& d->c_mouse->ftb->lose_key) {
-				(*d->c_mouse->ftb->lose_key)(d->c_mouse, d,
-					w, new_c, new_d);
-			}
-		}
-		/* Key focus follows mouse. */
-		if (d->c_key && (!d->c_mouse
-				|| d->c_key->id != d->c_mouse->id)) {
-			if (d->c_key->ftb->disarm) {
-				(*d->c_key->ftb->disarm)(d->c_key, d, w,
-					SDLPUI_ACTION_HINT_NONE);
-			}
-			if (d->c_key->ftb->lose_key) {
-				(*d->c_key->ftb->lose_key)(d->c_key, d,
-					w, new_c, new_d);
-			}
-		}
-		d->c_mouse = NULL;
-		d->c_key = NULL;
-		sdlpui_dialog_yield_mouse_focus(w, d);
-		sdlpui_dialog_yield_key_focus(w, d);
-	}
+	sdlpui_help_menu_loses_focus(d, w, new_c, new_ind, new_d,
+		SDLPUI_ACTION_HINT_MOUSE);
+	sdlpui_end_focus_transaction();
 }
 
 
@@ -1996,17 +2202,20 @@ void sdlpui_menu_handle_loses_mouse(struct sdlpui_dialog *d,
  * \param d is the dialog.
  * \param w is the window containing the menu.
  * \param new_c is the control gaining key focus.  It may be NULL.
+ * \param new_ind is the zero-based index of the component of new_c gaining
+ * key focus.  It is ignored if new_c is NULL.
  * \param new_d is the dialog gaining key focus.  It may be NULL.
  */
 void sdlpui_dialog_handle_loses_key(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, struct sdlpui_control *new_c,
-		struct sdlpui_dialog *new_d)
+		int new_ind, struct sdlpui_dialog *new_d)
 {
-	/*
-	 * Gets the same treatment as if the window containing the dialog lost
-	 * key focus.
-	 */
-	sdlpui_dialog_handle_window_loses_key(d, w);
+	sdlpui_begin_focus_transaction();
+	if (sdlpui_dialog_has_focus(d, SDLPUI_ACTION_HINT_KEY)) {
+		(void)sdlpui_change_focus(new_c, new_ind, new_d, w,
+			SDLPUI_ACTION_HINT_KEY, SDL_FALSE, SDL_TRUE);
+	}
+	sdlpui_end_focus_transaction();
 }
 
 
@@ -2016,114 +2225,24 @@ void sdlpui_dialog_handle_loses_key(struct sdlpui_dialog *d,
  *
  * \param d is the menu.
  * \param w is the window containing the menu.
- * \param new_c is the new control with key focus.
+ * \param new_c is the control gaining mouse focus.  It may be NULL and must
+ * be NULL if new_d is NULL.
+ * \param new_ind is the zero-based index of the component of new_c gaining
+ * key focus.  It is ignored if new_c is NULL.
  * \param new_d is the dialog or menu that contains new_c.
  */
 void sdlpui_menu_handle_loses_key(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, struct sdlpui_control *new_c,
-		struct sdlpui_dialog *new_d)
+		int new_ind, struct sdlpui_dialog *new_d)
 {
-	/*
-	 * The menu lost key focus.  If the dialog receiving focus is a
-	 * descendant of this one, only update focus for this dialog.  If the
-	 * control receiving focus is the parent control for this dialog or
-	 * the parent control for this dialog has mouse focus, pop down the
-	 * children of this dialog unless they have mouse focus and update focus
-	 * for this dialog.  Othrwise, descend to the deepest child of
-	 * this dialog and pop down it and all parents up to the first dialog
-	 * that is either pinned, has mouse focus, or has a parent control
-	 * that has mouse focus.  If this dialog is not popped down in that
-	 * process, update what has focus.
-	 */
-	SDL_bool pop_parents = SDL_TRUE;
-
-	if (new_d && sdlpui_is_descendant_dialog(d, new_d)) {
-		pop_parents = SDL_FALSE;
-	} else {
-		struct sdlpui_dialog *parent_d = sdlpui_get_dialog_parent(d);
-		struct sdlpui_control *parent_c =
-			sdlpui_get_dialog_parent_ctrl(d);
-
-		if (parent_c && parent_d && ((parent_d->c_mouse
-				&& parent_d->c_mouse->id == parent_c->id)
-				|| (new_c && new_d && new_c->id == parent_c->id
-				&& new_d->id == parent_d->id))) {
-			struct sdlpui_dialog *child_d =
-				sdlpui_get_dialog_child(d);
-			struct sdlpui_dialog *mouse_d =
-				sdlpui_dialog_with_mouse_focus(w);
-
-			if (child_d && !child_d->pinned
-					&& (!mouse_d
-					|| !sdlpui_is_descendant_dialog(d,
-					mouse_d))) {
-				SDLPUI_EVENT_TRACER("dialog", child_d,
-					"(not extracted)", "popping down");
-				sdlpui_popdown_dialog(child_d, w, SDL_FALSE);
-			}
-			pop_parents = SDL_FALSE;
-		} else if (d->pinned) {
-			pop_parents = SDL_FALSE;
-		}
+	sdlpui_begin_focus_transaction();
+	if (sdlpui_is_focus_locked(SDLPUI_ACTION_HINT_KEY)) {
+		sdlpui_end_focus_transaction();
+		return;
 	}
-
-	if (pop_parents) {
-		struct sdlpui_dialog *deepest = d;
-
-		while (1) {
-			struct sdlpui_dialog *child =
-				sdlpui_get_dialog_child(deepest);
-
-			if (!child) {
-				break;
-			}
-			deepest = child;
-		}
-		while (1) {
-			struct sdlpui_dialog *d_mouse =
-				sdlpui_dialog_with_mouse_focus(w);
-			struct sdlpui_dialog *parent =
-				sdlpui_get_dialog_parent(deepest);
-			struct sdlpui_control *parent_ctrl =
-				sdlpui_get_dialog_parent_ctrl(deepest);
-
-			if (deepest->pinned || deepest->c_mouse
-					|| (d_mouse
-					&& deepest->id == d_mouse->id)
-					|| (parent && parent->c_mouse
-					&& parent_ctrl
-					&& parent->c_mouse->id
-					== parent_ctrl->id)) {
-				if (deepest->id == d->id) {
-					pop_parents = SDL_FALSE;
-				}
-				break;
-			}
-			SDLPUI_EVENT_TRACER("dialog", deepest,
-				"(not extracted)", "popping down");
-			sdlpui_popdown_dialog(deepest, w, SDL_FALSE);
-			if (!parent) {
-				break;
-			}
-			deepest = parent;
-		}
-		if (pop_parents) {
-			return;
-		}
-	}
-
-	if (d->c_key) {
-		if (d->c_key->ftb->disarm) {
-			(*d->c_key->ftb->disarm)(d->c_key, d, w,
-				SDLPUI_ACTION_HINT_NONE);
-		}
-		if (d->c_key->ftb->lose_key) {
-			(*d->c_key->ftb->lose_key)(d->c_key, d, w, new_c,
-				new_d);
-		}
-		d->c_key = NULL;
-	}
-	sdlpui_dialog_yield_key_focus(w, d);
+	sdlpui_help_menu_loses_focus(d, w, new_c, new_ind, new_d,
+		SDLPUI_ACTION_HINT_KEY);
+	sdlpui_end_focus_transaction();
 }
 
 
@@ -2188,7 +2307,9 @@ struct sdlpui_dialog *sdlpui_start_simple_menu(struct sdlpui_dialog *parent,
 	}
 
 	psm->parent = parent;
-	psm->child = NULL;
+	psm->children[0] = NULL;
+	psm->children[1] = NULL;
+	psm->children[2] = NULL;
 	psm->parent_ctrl = parent_ctrl;
 	if (preallocated > 0) {
 		psm->size = preallocated;
@@ -2230,14 +2351,12 @@ struct sdlpui_dialog *sdlpui_start_simple_menu(struct sdlpui_dialog *parent,
 	result->next_r = NULL;
 	result->prev_r = NULL;
 	result->texture = NULL;
-	result->c_mouse = NULL;
-	result->c_key = NULL;
 	result->priv = psm;
 	result->id = id;
 	result->type_code = SDLPUI_DIALOG_SIMPLE_MENU;
 	result->tag = tag;
 	result->pinned = SDL_FALSE;
-	result->dirty = SDL_TRUE;
+	result->dirty.value = SDL_TRUE;
 	sdlpui_register_dialog(result);
 
 	return result;
@@ -2402,14 +2521,12 @@ struct sdlpui_dialog *sdlpui_start_simple_info(const char *button_label,
 	result->next_r = NULL;
 	result->prev_r = NULL;
 	result->texture = NULL;
-	result->c_mouse = NULL;
-	result->c_key = NULL;
 	result->priv = psi;
 	result->id = id;
 	result->type_code = SDLPUI_DIALOG_SIMPLE_INFO;
 	result->tag = tag;
 	result->pinned = SDL_FALSE;
-	result->dirty = SDL_TRUE;
+	result->dirty.value = SDL_TRUE;
 	sdlpui_register_dialog(result);
 
 	return result;

@@ -122,6 +122,7 @@ SDL2MAINFILES = \
 	main-sdl2.o \
 	sdl2/pui-ctrl.o \
 	sdl2/pui-dlg.o \
+	sdl2/pui-foc.o \
 	sdl2/pui-misc.o
 
 SDLMAINFILES = main-sdl.o

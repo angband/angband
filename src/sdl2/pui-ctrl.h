@@ -14,9 +14,10 @@ struct sdlpui_window;
 
 /**
  * Default width for empty space around labels, push buttons, and menu buttons
- * Two is smallest useful value (one pixel to indicate focus; another to
- * indicate arming).  Larger than that will leave some blank space between
- * the caption for a control and what's drawn to indicate focus or arming.
+ * Two is the smallest useful value (one pixel of empty space and one pixel to
+ * indicate focus and feedback about starting or continuing an action).
+ * Larger than that will leave some blank space between the caption for a
+ * control and what is drawn to indicate focus or feedback.
  */
 #define SDLPUI_DEFAULT_CTRL_BORDER 3
 
@@ -51,7 +52,9 @@ enum sdlpui_menu_button_type {
 enum sdlpui_action_hint {
 	SDLPUI_ACTION_HINT_NONE,
 	SDLPUI_ACTION_HINT_KEY,
-	SDLPUI_ACTION_HINT_MOUSE
+	SDLPUI_ACTION_HINT_MOUSE,
+	SDLPUI_ACTION_HINT_KEY_OR_MOUSE,
+	SDLPUI_ACTION_HINT_KEY_AND_MOUSE
 };
 
 /** How to horizontally align something (usually a label) in a larger box. */
@@ -180,44 +183,47 @@ struct sdlpui_control_funcs {
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		enum sdlpui_action_hint hint);
 	/**
-	 * Signal that the given control has gained keyboard focus and
-	 * perhaps should change its appearance when rendered.  comp_ind is
-	 * only relevant for compound controls and is the index of the component
-	 * that should receive focus.  Negative indices are relative to the
-	 * number of controls in the compound control so -1 is the "last"
-	 * control.  Can be NULL.
+	 * Signal that the given control has gained focus or already has focus
+	 * but the component with focus has changed.  ah specifies the type of
+	 * focus:  SDLPUI_ACTION_HINT_KEY for keyboard focus or
+	 * SDLPUI_ACTION_HINT_MOUSE_FOCUS for mouse focus.  comp_ind is only
+	 * relevant for compound controls and is the zero-based index of the
+	 * component that should receive focus.  Can be NULL:  the control
+	 * either does not accept focus (get_interactable_component is NULL
+	 * or always returns zero and get_interactable_component_at is NULL
+	 * or always returns zero) or does not need to do anything beyond
+	 * what is done by the functions in pui-foc.h.  The caller will signal
+	 * that the containing dialog and window need redrawing so this hook
+	 * does not need to do that.  When called, the state returned by the
+	 * routines in pui-foc.h refers to the state after the change of
+	 * focus.  This hook should be treated as for the private use of the
+	 * routines in pui-foc.h:  all others should use those routines to
+	 * manage where focus is routed.
 	 */
-	void (*gain_key)(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, int comp_ind);
+	void (*gain_focus)(struct sdlpui_control *c, struct sdlpui_dialog *d,
+		struct sdlpui_window *w, enum sdlpui_action_hint ah,
+		int comp_ind);
 	/**
-	 * Signal that the given control has lost keyboard focus.  Can be NULL.
-	 * new_c is the control gaining key focus; it will be NULL if no
-	 * control is taking focus or new_d is NULL.
-	 * new_d is the dialog gaining key focus; it will be NULL if no
-	 * dialog is taking focus or the dialog is unknown (in another
-	 * window).
+	 * Signal that the given control has lost focus.  ah specifies the type
+	 * of focus:  SDLPUI_ACTION_HINT_KEY for keyboard focus or
+	 * SDLPUI_ACTION_HINT_MOUSE_FOCUS for mouse focus.  new_c is the
+	 * control gaining key focus; it will be NULL if no control is taking
+	 * focus or new_d is NULL.  new_d is the dialog gaining key focus; it
+	 * will be NULL if no dialog is taking focus or the dialog is unknown
+	 * (in another window).  Can be NULL:  the control either does not
+	 * accept focus (get_interactable_component is NULL or always returns
+	 * zero and get_interactable_component_at is NULL or always returns
+	 * zero) or does not need to do anything beyond what is done by the
+	 * functions in pui-foc.h.  The caller will signal that the containing
+	 * dialog and window need redrawing so this hook does not need to do
+	 * that.  When called, the state returned by the routines in pui-foc.h
+	 * refers to the state after the change of focus.  This hook should be
+	 * treated as for the private use of the routines in pui-foc.h:  all
+	 * others should use those routines to manage where focus is routed.
 	 */
-	void (*lose_key)(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, struct sdlpui_control *new_c,
-		struct sdlpui_dialog *new_d);
-	/**
-	 * Signal that the given control has gained mouse focus and
-	 * perhaps should change its appearance when rendered.  comp_ind
-	 * has the same meaning as for gain_key above.  Can be NULL.
-	 */
-	void (*gain_mouse)(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, int comp_ind);
-	/**
-	 * Signal that the given control has lost mouse focus.  Can be NULL.
-	 * new_c is the control gaining mouse focus; it will be NULL if no
-	 * control is taking focus or new_d is NULL.
-	 * new_d is the dialog gaining mouse focus; it will be NULL if no
-	 * dialog is taking focus or the dialog is unknown (in another
-	 * window).
-	 */
-	void (*lose_mouse)(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, struct sdlpui_control *new_c,
-		struct sdlpui_dialog *new_d);
+	void (*lose_focus)(struct sdlpui_control *c, struct sdlpui_dialog *d,
+		struct sdlpui_window *w, enum sdlpui_action_hint ah,
+		struct sdlpui_control *new_c, struct sdlpui_dialog *new_d);
 	/**
 	 * Signal that the child dialog for a control has been removed.  Can
 	 * be NULL if the control does not create a dialog, set the created
@@ -227,18 +233,6 @@ struct sdlpui_control_funcs {
 	void (*lose_child)(struct sdlpui_control *c,
 		struct sdlpui_dialog *child);
 	/**
-	 * Signal that the control has become armed (i.e. key or mouse button
-	 * depressed while the control has focus).  Can be NULL.
-	 */
-	void (*arm)(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, enum sdlpui_action_hint hint);
-	/**
-	 * Signal that the control has become disarmed (i.e. key or mouse button
-	 * released while the control has focus).  Can be NULL.
-	 */
-	void (*disarm)(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, enum sdlpui_action_hint hint);
-	/**
 	 * For simple controls, either returns zero (the control does not
 	 * accept focus) or one (it does).  For compound controls it returns:
 	 *     a) Zero if none of the components accepts focus.
@@ -246,21 +240,22 @@ struct sdlpui_control_funcs {
 	 *        the first component that can accept focus.
 	 *     c) If first is SDL_FALSE, returns the one-based index of the last
 	 *        component that can accept focus.
-	 * May be NULL:  callers will then assume the control can't accept
+	 * May be NULL:  callers will then assume the control cannot accept
 	 * focus.
 	 */
 	int (*get_interactable_component)(struct sdlpui_control *c,
 		SDL_bool first);
 	/**
-	 * Step (forward if forward is not SDL_FALSE; backward otherwise;
-	 * never wrap around) between the interactable components within the
-	 * given control, assumed to already have key focus, and transfer the
-	 * key focus to the result of the step.  Return SDL_FALSE if stepping
-	 * was not possible; otherwise return SDL_TRUE.  May be NULL:  callers
-	 * will then assume that any attempt to step within the control will
-	 * be ineffective.
+	 * Return the one-based index of the next (if forward is true) or
+	 * previous (if forward is false) component to receive focus.  The
+	 * current component with focus can be retrieved with
+	 * sdlpui_control_has_focus().  Return zero if there is not a component
+	 * that can receive focus for the step specified by forward.  Do not
+	 * wrap around when considering which component should receive focus.
+	 * May be NULL:  callers will then assume that any attempt to step
+	 * within the control will be ineffective.
 	 */
-	SDL_bool (*step_within)(struct sdlpui_control *c, SDL_bool forward);
+	int (*step_within)(struct sdlpui_control *c, SDL_bool forward);
 	/**
 	 * For a simple control, either returns zero (the control does not
 	 * accept focus or contain the given coordinates, relative to the
@@ -371,23 +366,13 @@ struct sdlpui_menu_button {
 	char *caption;
 	/** Invoked by the menu button's respond_default handler. */
 	void (*callback)(struct sdlpui_control*, struct sdlpui_dialog*,
-		struct sdlpui_window *w);
+		struct sdlpui_window *w, enum sdlpui_action_hint hint);
 	enum sdlpui_hor_align halign;
 	/**
 	 * This is a hook for the application to differentiate buttons with
 	 * the same contents for callback, subtype_code, and v.
 	 */
 	int tag;
-	int has_key;	/**< 0 = no key focus, 1 = key focus (for ranged_int
-				button, left side has focus), 2 = key focus
-				for right side of ranged_int button */
-	int has_mouse;	/**< 0 = no mouse focus, 1 = mouse focus (for ranged_int
-				button, left side has focus), 2 = mouse focus
-				for right side of ranged_int button */
-	int armed;	/**< 0 = not depressed, 1 = button depressed (for
-				ranged_int button, left side depressed), 2 =
-				ranged_int button right side depressed,
-				3 = ranged_int button both sides depressed */
 	SDL_bool disabled;
 			/**< if not SDL_FALSE, no response to events and
 				different look */
@@ -422,7 +407,7 @@ struct sdlpui_push_button {
 	char *caption;
 	/** Invoked by the push button's respond_default handler. */
 	void (*callback)(struct sdlpui_control*, struct sdlpui_dialog*,
-		struct sdlpui_window*);
+		struct sdlpui_window*, enum sdlpui_action_hint hint);
 	enum sdlpui_hor_align halign;
 	/**
 	 * This is a hook for the application to differentiate push buttons
@@ -431,9 +416,6 @@ struct sdlpui_push_button {
 	int tag;
 	SDL_bool disabled;	/**< if not SDL_FALSE, no response to events and
 					different look */
-	SDL_bool has_key;	/**< if not SDL_FALSE, has key focus */
-	SDL_bool has_mouse;	/**< if not SDL_FALSE, has mouse focus */
-	SDL_bool armed;		/**< if not SDL_FALSE, button is depressed */
 };
 
 
@@ -460,7 +442,8 @@ SDL_bool sdlpui_control_handle_mousemove(struct sdlpui_control *c,
 
 /* Standard callbacks for button controls */
 void sdlpui_invoke_dialog_default_action(struct sdlpui_control *c,
-		struct sdlpui_dialog *d, struct sdlpui_window *w);
+		struct sdlpui_dialog *d, struct sdlpui_window *w,
+		enum sdlpui_action_hint hint);
 
 /* Constructors for controls in generic dialogs */
 void sdlpui_create_image(struct sdlpui_control *c, SDL_Texture *image,
@@ -471,25 +454,28 @@ void sdlpui_create_label(struct sdlpui_control *c, const char *caption,
 void sdlpui_create_push_button(struct sdlpui_control *c, const char *caption,
 		enum sdlpui_hor_align halign, void (*callback)(
 		struct sdlpui_control*, struct sdlpui_dialog*,
-		struct sdlpui_window*), int tag, SDL_bool disabled);
+		struct sdlpui_window*, enum sdlpui_action_hint), int tag,
+		SDL_bool disabled);
 
 /* Constructors for controls in menus */
 void sdlpui_create_menu_button(struct sdlpui_control *c, const char *caption,
 		enum sdlpui_hor_align halign, void (*callback)(
 		struct sdlpui_control*, struct sdlpui_dialog*,
-		struct sdlpui_window*), int tag, SDL_bool disabled);
+		struct sdlpui_window*, enum sdlpui_action_hint), int tag,
+		SDL_bool disabled);
 void sdlpui_create_menu_indicator(struct sdlpui_control *c, const char *caption,
 		enum sdlpui_hor_align halign, int tag, SDL_bool curr_value);
 void sdlpui_create_menu_ranged_int(struct sdlpui_control *c,
 		const char *caption, enum sdlpui_hor_align halign,
 		void (*callback)(struct sdlpui_control*, struct sdlpui_dialog*,
-		struct sdlpui_window*), int tag, SDL_bool disabled,
+		struct sdlpui_window*, enum sdlpui_action_hint), int tag,
+		SDL_bool disabled,
 		int curr_value, int min_value, int max_value);
 void sdlpui_create_menu_toggle(struct sdlpui_control *c, const char *caption,
 		enum sdlpui_hor_align halign, void (*callback)(
 		struct sdlpui_control*, struct sdlpui_dialog*,
-		struct sdlpui_window*), int tag, SDL_bool disabled,
-		SDL_bool curr_value);
+		struct sdlpui_window*, enum sdlpui_action_hint), int tag,
+		SDL_bool disabled, SDL_bool curr_value);
 void sdlpui_create_submenu_button(struct sdlpui_control *c, const char *caption,
 		enum sdlpui_hor_align halign, struct sdlpui_dialog *(*creator)(
 		struct sdlpui_control*, struct sdlpui_dialog*, struct

@@ -416,6 +416,7 @@ add_executable(OurExecutable
         $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/main-sdl2.c>
         $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/sdl2/pui-ctrl.c>
         $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/sdl2/pui-dlg.c>
+        $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/sdl2/pui-foc.c>
         $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/sdl2/pui-misc.c>
         $<$<BOOL:${SUPPORT_WINDOWS_FRONTEND}>:${OUR_WINDOWS_RC}>
         $<$<BOOL:${SUPPORT_WINDOWS_FRONTEND}>:src/main-win.c>
