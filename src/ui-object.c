@@ -1532,9 +1532,6 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 				}
 			}
 
-			/* Redraw */
-			player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
-
 			/* Redraw windows */
 			redraw_stuff(player);
 
