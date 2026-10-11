@@ -33,7 +33,7 @@ typedef struct monster_lore
 	uint16_t deaths;		/* Count deaths from this monster */
 
 	uint16_t pkills;		/* Count monsters killed in this life */
-	uint16_t thefts;		/* Count objects stolen in this life */
+	uint16_t thefts;		/* Count objects stolen from the monster's drop in this life */
 	uint16_t tkills;		/* Count monsters killed in all lives */
 
 	uint8_t wake;			/* Number of times woken up (?) */
