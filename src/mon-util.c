@@ -1474,9 +1474,22 @@ void steal_monster_item(struct monster *mon, int midx)
 
 		/* Try and steal */
 		if (monster_reaction < steal_skill) {
+			/* Success! */
 			int wake = 35 - player->state.skills[SKILL_STEALTH];
 
-			/* Success! */
+			/*
+			 * Track thefts from the monster's own drop without
+			 * wrapping the counter around.  This is sloppy if the
+			 * monster can pick up or steal and is not a unique:
+			 * cannot distinguish this monster's drop and items
+			 * picked up or stolen that are from another monster
+			 * of the same race.
+			 */
+			if (obj->origin_race == mon->race
+					&& lore->thefts < 65535) {
+				lore->thefts++;
+			}
+
 			obj->held_m_idx = 0;
 			pile_excise(&mon->held_obj, obj);
 			if (tval_is_money(obj)) {
@@ -1502,9 +1515,6 @@ void steal_monster_item(struct monster *mon, int midx)
 					inven_carry(player, obj, true, true);
 				}
 			}
-
-			/* Track thefts */
-			lore->thefts++;
 
 			/* Monster wakes a little */
 			mon_dec_timed(mon, MON_TMD_SLEEP, wake, MON_TMD_FLG_NOTIFY);
