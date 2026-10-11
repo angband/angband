@@ -314,10 +314,28 @@ void lore_update(const struct monster_race *race, struct monster_lore *lore)
 	 * once at runtime and memorizing the result for later calls.
 	 */
 	if (initialize_masks) {
+		bitflag temp_mask[RF_SIZE];
+
 		create_mon_flag_mask(obv_mask, RFT_OBV, RFT_MAX);
+		/*
+		 * The display flags are otherwise not learned (except by
+		 * probing or cheating).  Make them obvious so they do not
+		 * count against all_known / lore_is_fully_known().  Other
+		 * than that, they do not affect lore display.
+		 */
+		create_mon_flag_mask(temp_mask, RFT_DISP, RFT_MAX);
+		rf_union(obv_mask, temp_mask);
+
 		create_mon_flag_mask(obv_at_death_mask, RFT_RACE_A, RFT_RACE_N,
 			RFT_DROP, RFT_MAX);
-		rf_on(obv_at_death_mask, RF_FORCE_DEPTH);
+		/*
+		 * Make the generation flags obivous at death.  Outside of the
+		 * effect on all_known / lore_is_fully_known(), only
+		 * FORCE_DEPTH affects lore display.
+		 */
+		create_mon_flag_mask(temp_mask, RFT_GEN, RFT_MAX);
+		rf_union(obv_at_death_mask, temp_mask);
+
 		initialize_masks = false;
 	}
 
@@ -457,7 +475,7 @@ bool lore_is_fully_known(const struct monster_race *race)
 	/* Check if already known */
 	if (lore->all_known)
 		return true;
-		
+
 	if (!lore->armour_known)
 		return false;
 	/* Only check spells if the monster can cast them */
@@ -467,7 +485,7 @@ bool lore_is_fully_known(const struct monster_race *race)
 		return false;
 	if (!lore->sleep_known)
 		return false;
-		
+
 	/* Check if blows are known */
 	for (i = 0; i < z_info->mon_blows_max; i++){
 		/* Only check if the blow exists */
@@ -475,20 +493,18 @@ bool lore_is_fully_known(const struct monster_race *race)
 			break;
 		if (!lore->blow_known[i])
 			return false;
-		
 	}
-		
+
 	/* Check all the flags */
-	for (i = 0; i < RF_SIZE; i++)
-		if (!lore->flags[i])
-			return false;
-		
-		
+	if (!rf_is_subset(lore->flags, race->flags)) {
+		return false;
+	}
+
 	/* Check spell flags */
-	for (i = 0; i < RSF_SIZE; i++)
-		if (lore->spell_flags[i] != race->spell_flags[i])			
-			return false;
-	
+	if (!rsf_is_equal(lore->spell_flags, race->spell_flags)) {
+		return false;
+	}
+
 	/* The player knows everything */
 	lore->all_known = true;
 	lore_update(race, lore);
