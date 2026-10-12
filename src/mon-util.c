@@ -422,8 +422,16 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 				player->upkeep->redraw |= (PR_HEALTH);
 
 			/* Count "fresh" sightings */
-			if (lore->sights < SHRT_MAX)
+			if (lore->sights < SHRT_MAX) {
 				lore->sights++;
+				/*
+				 * Ensure obvious flags are learned on first
+				 * sighting.
+				 */
+				if (lore->sights == 1) {
+					lore_update(mon->race, lore);
+				}
+			}
 
 			/* Window stuff */
 			player->upkeep->redraw |= PR_MONLIST;
