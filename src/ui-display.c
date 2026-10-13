@@ -1463,7 +1463,8 @@ static void do_animation(void)
 			continue;
 
 		mon->attr = attr;
-		player->upkeep->redraw |= (PR_MAP | PR_MONLIST);
+		event_signal_point(EVENT_MAP, mon->grid.x, mon->grid.y);
+		player->upkeep->redraw |= (PR_MONLIST);
 	}
 
 	flicker++;
