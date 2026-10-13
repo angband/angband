@@ -111,6 +111,9 @@ struct borg_struct {
     /* Current location */
     struct loc c;
 
+    /* panel count */
+    struct loc panels;
+
     /* avoidance: this is the level of danger the borg tries to avoid */
     /* it is usually the current hit points but can be boosted or reduced */
     /* depending on the situation */

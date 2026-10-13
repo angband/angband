@@ -154,6 +154,8 @@ static void borg_note_internal(bool warning, const char *what)
         msg("%s", what);
     } else {
         message_add(what, MSG_GENERIC);
+        /* Send refresh event */
+        event_signal_message(EVENT_MESSAGE, MSG_GENERIC, NULL);
     }
 
     /* Log the message */

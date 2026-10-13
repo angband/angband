@@ -286,15 +286,6 @@ bool borg_react_prompted(const char *buf, struct keypress *key,
             return true;
         }
 
-        /* Check for "sector" mode */
-        if (prefix(buf, "Map sector ")) {
-            /* Leave this mode */
-            key->code = ESCAPE;
-
-            /* Done */
-            return true;
-        }
-
         /* Check for "browse spells" mode */
         /* this shouldn't happen because we now pull spell information */
         /* directly from the game */

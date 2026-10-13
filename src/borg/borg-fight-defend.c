@@ -91,7 +91,6 @@ enum {
     BD_BANISHMENT, /* Priest spell */
     BD_DETECT_INVISO,
     BD_LIGHT_BEAM,
-    BD_SHIFT_PANEL,
     BD_REST,
     BD_TELE_AWAY_MORGOTH,
     BD_BANISHMENT_MORGOTH,
@@ -2817,78 +2816,66 @@ static int borg_defend_aux_lbeam(int p1)
 }
 
 /* Shift the panel to locate offscreen monsters */
-static int borg_defend_aux_panel_shift(void)
+static bool borg_defend_panel_shift(void)
 {
     int dir = 0;
-    int wx  = Term->offset_x / borg_panel_wid();
-    int wy  = Term->offset_y / borg_panel_hgt();
+
+    int panel_num_x = 1;
+    int panel_num_y = 1;
+
+    int pos_on_panel_x = borg.c.x - Term->offset_x;
+    int pos_on_panel_y = borg.c.y - Term->offset_y;
 
     /* no need */
     if (!borg.need_shift_panel && borg.trait[BI_CDEPTH] < 70)
-        return 0;
+        return false;
 
     /* if Morgy is on my panel, dont do it */
     if (borg.trait[BI_CDEPTH] == 100 && w_y == borg.mon.morgoth_panel.y
         && w_x == borg.mon.morgoth_panel.x)
-        return 0;
+        return false;
 
+    if (Term->offset_x > borg_panel_wid())
+        panel_num_x = ((Term->offset_x * 2) / borg_panel_wid()) + 1;
+
+    if (Term->offset_y > borg_panel_hgt())
+        panel_num_y = ((Term->offset_y * 2) / borg_panel_hgt()) + 1;
+
+    /* Shift if within 5 spaces of the edge */
     /* Which direction do we need to move? */
     /* Shift panel to the right */
-    if (borg.c.x >= 52 && borg.c.x <= 60 && wx == 0)
-        dir = 6;
-    if (borg.c.x >= 84 && borg.c.x <= 94 && wx == 1)
-        dir = 6;
-    if (borg.c.x >= 116 && borg.c.x <= 123 && wx == 2)
-        dir = 6;
-    if (borg.c.x >= 148 && borg.c.x <= 159 && wx == 3)
+    if (((borg_panel_wid() - pos_on_panel_x) < 5)
+        && (panel_num_x < borg.panels.x))
         dir = 6;
     /* Shift panel to the left */
-    if (borg.c.x <= 142 && borg.c.x >= 136 && wx == 4)
+    if ((pos_on_panel_x < 5) && (panel_num_x > 1))
         dir = 4;
-    if (borg.c.x <= 110 && borg.c.x >= 103 && wx == 3)
-        dir = 4;
-    if (borg.c.x <= 78 && borg.c.x >= 70 && wx == 2)
-        dir = 4;
-    if (borg.c.x <= 46 && borg.c.x >= 37 && wx == 1)
-        dir = 4;
+    /* Shift panel to the down */
+    if (((borg_panel_hgt() - pos_on_panel_y) < 5)
+        && (panel_num_y < borg.panels.y))
+        dir = 2;
+    /* Shift panel to the up */
+    if ((pos_on_panel_y < 5) && (panel_num_y > 1))
+        dir = 8;
 
-    /* Shift panel down */
-    if (borg.c.y >= 15 && borg.c.y <= 19 && wy == 0)
-        dir = 2;
-    if (borg.c.y >= 25 && borg.c.y <= 30 && wy == 1)
-        dir = 2;
-    if (borg.c.y >= 36 && borg.c.y <= 41 && wy == 2)
-        dir = 2;
-    if (borg.c.y >= 48 && borg.c.y <= 52 && wy == 3)
-        dir = 2;
-    /* Shift panel up */
-    if (borg.c.y <= 51 && borg.c.y >= 47 && wy == 4)
-        dir = 8;
-    if (borg.c.y <= 39 && borg.c.y >= 35 && wy == 3)
-        dir = 8;
-    if (borg.c.y <= 28 && borg.c.y >= 24 && wy == 2)
-        dir = 8;
-    if (borg.c.y <= 17 && borg.c.y >= 13 && wy == 1)
-        dir = 8;
+    if (dir == 0)
+        return false;
 
     /* Do the Shift if needed, then note it,  reset the flag */
     if (borg.need_shift_panel == true) {
         /* Send action (view panel info) */
         borg_keypress('L');
-
-        if (dir)
-            borg_keypress(I2D(dir));
-        borg_keypress(ESCAPE);
+        borg_keypress(I2D(dir));
 
         borg_note("# Shifted panel to locate offscreen monster.");
         borg.need_shift_panel = false;
 
         /* Leave the panel shift mode */
         borg_keypress(ESCAPE);
+        return true;
     } else
     /* check to make sure its appropriate */
     {
-
         /* Not if I just did one */
         if (borg.when_shift_panel
             && (borg_timer(borg.when_shift_panel) <= 10
@@ -2904,13 +2891,13 @@ static int borg_defend_aux_panel_shift(void)
                     && track_step.y[track_step.num - 1] != borg.c.y - 1) {
                     /* Send action (view panel info) */
                     borg_keypress('L');
-                    if (dir)
-                        borg_keypress(I2D(dir));
+                    borg_keypress(I2D(dir));
                     borg_note("# Shifted panel as a precaution.");
                     /* Mark the time to avoid loops */
                     borg.when_shift_panel = borg.time.now;
                     /* Leave the panel shift mode */
                     borg_keypress(ESCAPE);
+                    return true;
                 }
                 /* shift down? only if a south corridor */
                 else if (dir == 2
@@ -2925,6 +2912,7 @@ static int borg_defend_aux_panel_shift(void)
                     borg.when_shift_panel = borg.time.now;
                     /* Leave the panel shift mode */
                     borg_keypress(ESCAPE);
+                    return true;
                 }
                 /* shift Left? only if a west corridor */
                 else if (dir == 4
@@ -2933,13 +2921,13 @@ static int borg_defend_aux_panel_shift(void)
                          && track_step.x[track_step.num - 1] != borg.c.x - 1) {
                     /* Send action (view panel info) */
                     borg_keypress('L');
-                    if (dir)
-                        borg_keypress(I2D(dir));
+                    borg_keypress(I2D(dir));
                     borg_note("# Shifted panel as a precaution.");
                     /* Mark the time to avoid loops */
                     borg.when_shift_panel = borg.time.now;
                     /* Leave the panel shift mode */
                     borg_keypress(ESCAPE);
+                    return true;
                 }
                 /* shift Right? only if a east corridor */
                 else if (dir == 6
@@ -2948,19 +2936,19 @@ static int borg_defend_aux_panel_shift(void)
                          && track_step.x[track_step.num - 1] != borg.c.x + 1) {
                     /* Send action (view panel info) */
                     borg_keypress('L');
-                    if (dir)
-                        borg_keypress(I2D(dir));
+                    borg_keypress(I2D(dir));
                     borg_note("# Shifted panel as a precaution.");
                     /* Mark the time to avoid loops */
                     borg.when_shift_panel = borg.time.now;
                     /* Leave the panel shift mode */
                     borg_keypress(ESCAPE);
+                    return true;
                 }
             }
         }
     }
-    /* This uses no energy */
-    return 0;
+
+    return false;
 }
 
 /* This and the next routine is used on level 100 and when
@@ -3526,9 +3514,6 @@ static int borg_calculate_defense_effectiveness(int what, int p1)
     case BD_LIGHT_BEAM: {
         return (borg_defend_aux_lbeam(p1));
     }
-    case BD_SHIFT_PANEL: {
-        return (borg_defend_aux_panel_shift());
-    }
     case BD_REST: {
         return (borg_defend_aux_rest());
     }
@@ -3552,6 +3537,10 @@ bool borg_defend(int p1)
 {
     int n, b_n = 0;
     int g, b_g = -1;
+
+    /* first try shifting the panels around so we can see better */
+    if (borg_defend_panel_shift())
+        return true;
 
     /* Simulate */
     borg_simulate = true;
