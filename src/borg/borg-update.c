@@ -87,7 +87,6 @@ bool **borg_detect_evil = NULL;
 bool **borg_detect_obj = NULL;
 
 /* panel count tracking */
-static struct loc panels = { -1, -1 };
 static struct loc old_panels = { -1, -1 };
 
 #if 0
@@ -1563,14 +1562,14 @@ void borg_update(void)
     w_x = Term->offset_x;
 
     /* get the current panel count */
-    panels.x = 1;
+    borg.panels.x = 1;
     if (cave->width > borg_panel_wid())
-        panels.x
+        borg.panels.x
             = ((((cave->width - borg_panel_wid()) * 2) / borg_panel_wid())) + 1;
 
-    panels.y = 1;
+    borg.panels.y = 1;
     if (cave->height > borg_panel_hgt())
-        panels.y
+        borg.panels.y
             = ((((cave->height - borg_panel_hgt()) * 2) / borg_panel_hgt()))
               + 1;
 
@@ -2135,8 +2134,8 @@ void borg_update(void)
         borg.time.detect_obj = 0;
 
         /* Clear "panel" flags */
-        for (y = 0; y < panels.y; y++) {
-            for (x = 0; x < panels.x; x++) {
+        for (y = 0; y < borg.panels.y; y++) {
+            for (x = 0; x < borg.panels.x; x++) {
                 borg_detect_wall[y][x] = false;
                 borg_detect_trap[y][x] = false;
                 borg_detect_door[y][x] = false;
@@ -3154,12 +3153,12 @@ void borg_alloc_detection(void)
     int i;
     /* arrays are one larger than the number of panels */
     /* this is because the code is sloppy about current panel plus one */
-    int array_size_y = panels.y + 1;
-    int array_size_x = panels.x + 1;
+    int array_size_y = borg.panels.y + 1;
+    int array_size_x = borg.panels.x + 1;
 
     /* only reallocate the detection arrays if the number of panels */
     /* has changed */
-    if (old_panels.x == panels.x && old_panels.y == panels.y) {
+    if (old_panels.x == borg.panels.x && old_panels.y == borg.panels.y) {
         return;
     }
 
@@ -3190,7 +3189,7 @@ void borg_alloc_detection(void)
         borg_detect_obj[i] = mem_zalloc(array_size_x * sizeof(bool));
     }
 
-    old_panels = panels;
+    old_panels = borg.panels;
 }
 
 void borg_init_update(void)
