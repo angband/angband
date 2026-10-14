@@ -98,8 +98,13 @@ void borg_delete_take(int i)
 
     /* Note */
     if (borg_cfg[BORG_VERBOSE])
-        borg_note(format("# Forgetting an object '%s' at (%d,%d)",
-            (k_info[take->kidx].name), take->y, take->x));
+        if (take->kidx >= z_info->k_max) {
+            borg_note(
+                format("# Forgetting an object at (%d,%d)", take->y, take->x));
+        } else {
+            borg_note(format("# Forgetting an object '%s' at (%d,%d)",
+                (k_info[take->kidx].name), take->y, take->x));
+        }
 
     /* Access the grid */
     ag = &borg_grids[take->y][take->x];
