@@ -2175,7 +2175,7 @@ static void subwindow_flag_changed(int win_idx, uint32_t flag, bool new_state)
 	void (*set_register_or_deregister)(game_event_type *type, size_t n_events,
 									   game_event_handler *fn, void *user);
 
-	/* Decide whether to register or deregister an evenrt handler */
+	/* Decide whether to register or deregister an event handler */
 	if (new_state == false) {
 		register_or_deregister = event_remove_handler;
 		set_register_or_deregister = event_remove_handler_set;

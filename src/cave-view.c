@@ -914,7 +914,7 @@ void update_view(struct chunk *c, struct player *p)
 	for (grid.y = 0; grid.y < c->height; grid.y++) {
 		for (grid.x = 0; grid.x < c->width; grid.x++) {
 			/*
-			 * A square we have LOS to get marked as in the view,
+			 * A square in LOS gets marked as in the view,
 			 * and perhaps seen
 			 */
 			update_view_one(c, grid, p);
