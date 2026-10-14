@@ -232,8 +232,8 @@ void borg_write_map(bool ask)
             /* Known Items */
             if (ag->take) {
                 borg_take *take = &borg_takes[ag->take];
-                if (take->kind) {
-                    struct object_kind *k_ptr = take->kind;
+                if (take->kidx) {
+                    struct object_kind *k_ptr = &k_info[take->kidx];
                     ch                        = k_ptr->d_char;
                 }
             }

@@ -93,13 +93,19 @@ void borg_delete_take(int i)
     borg_take *take = &borg_takes[i];
 
     /* Paranoia -- Already wiped */
-    if (!take->kind)
+    if (!take->kidx)
         return;
 
     /* Note */
-    if (borg_cfg[BORG_VERBOSE])
-        borg_note(format("# Forgetting an object '%s' at (%d,%d)",
-            (take->kind->name), take->y, take->x));
+    if (borg_cfg[BORG_VERBOSE]) {
+        if (take->kidx >= z_info->k_max) {
+            borg_note(
+                format("# Forgetting an object at (%d,%d)", take->y, take->x));
+        } else {
+            borg_note(format("# Forgetting an object '%s' at (%d,%d)",
+                (k_info[take->kidx].name), take->y, take->x));
+        }
+    }
 
     /* Access the grid */
     ag = &borg_grids[take->y][take->x];
@@ -157,13 +163,13 @@ void borg_follow_take(int i)
     struct object_kind  *old_kind;
 
     /* Paranoia */
-    if (!take->kind)
+    if (!take->kidx)
         return;
 
     /* Old location */
     ox       = take->x;
     oy       = take->y;
-    old_kind = take->kind;
+    old_kind = &k_info[take->kidx];
 
     /* delete them if they are under me */
     if (take->y == borg.c.y && take->x == borg.c.x) {
@@ -203,7 +209,7 @@ static int borg_new_take(struct object_kind *kind, int y, int x)
     /* Look for a "dead" object */
     for (i = 1; (n < 0) && (i < borg_takes_nxt); i++) {
         /* Reuse "dead" objects */
-        if (!borg_takes[i].kind)
+        if (!borg_takes[i].kidx)
             n = i;
     }
 
@@ -232,7 +238,7 @@ static int borg_new_take(struct object_kind *kind, int y, int x)
     take = &borg_takes[n];
 
     /* Save the kind */
-    take->kind = kind;
+    take->kidx = kind->kidx;
     take->tval = kind->tval;
 
     /* Save the location */
@@ -272,8 +278,8 @@ static int borg_new_take(struct object_kind *kind, int y, int x)
         take->value = -10;
 
     /* Note */
-    borg_note(format("# Creating an object '%s' at (%d,%d)", (take->kind->name),
-        take->x, take->y));
+    borg_note(format("# Creating an object '%s' at (%d,%d)",
+        (k_info[take->kidx].name), take->x, take->y));
 
     /* Wipe goals only if I have some light source */
     if (borg.trait[BI_LIGHT])
@@ -337,7 +343,7 @@ bool observe_take_move(int y, int x, int d, uint8_t a, wchar_t c)
         borg_take *take = &borg_takes[i];
 
         /* Skip dead objects */
-        if (!take->kind)
+        if (!take->kidx)
             continue;
 
         /* Skip assigned objects */
@@ -356,7 +362,7 @@ bool observe_take_move(int y, int x, int d, uint8_t a, wchar_t c)
             continue;
 
         /* Access the kind */
-        k_ptr = take->kind;
+        k_ptr = &k_info[take->kidx];
 
         /* Require matching char if not hallucinating*/
         if (!borg.trait[BI_ISIMAGE] && c != k_ptr->d_char)
@@ -479,7 +485,7 @@ bool borg_flow_take(bool viewable, int nearness)
         borg_take *take = &borg_takes[i];
 
         /* Skip dead objects */
-        if (!take->kind)
+        if (!take->kidx)
             continue;
 
         /* Access the location */
@@ -519,8 +525,8 @@ bool borg_flow_take(bool viewable, int nearness)
             && borg_cfg[BORG_MONEY_SCUM_AMOUNT] == 0) {
             if (take->tval == TV_GOLD)
                 continue;
-            if (tval_is_book_k(&k_info[take->kind->kidx])
-                && !obj_kind_can_browse(&k_info[take->kind->kidx]))
+            if (tval_is_book_k(&k_info[take->kidx])
+                && !obj_kind_can_browse(&k_info[take->kidx]))
                 continue;
             if ((take->tval == TV_SHOT || take->tval == TV_ARROW
                     || take->tval == TV_BOLT)
@@ -628,7 +634,7 @@ bool borg_flow_take_scum(bool viewable, int nearness)
         borg_take *take = &borg_takes[i];
 
         /* Skip dead objects */
-        if (!take->kind)
+        if (!take->kidx)
             continue;
 
         /* Access the location */
@@ -728,7 +734,7 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
     /* Scan the object list -- set filter*/
     for (i = 1; i < borg_takes_nxt; i++) {
         borg_take          *take  = &borg_takes[i];
-        struct object_kind *k_ptr = take->kind;
+        struct object_kind *k_ptr = &k_info[take->kidx];
 
         bool item_bad;
 
@@ -745,8 +751,8 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
 
         /* Gold is good to have */
         if (take->tval == TV_GOLD) {
-            borg_note(
-                format("# Lunal Item %s, at %d,%d", take->kind->name, y, x));
+            borg_note(format(
+                "# Lunal Item %s, at %d,%d", k_info[take->kidx].name, y, x));
             item_bad = false;
         }
 
@@ -764,7 +770,7 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
                         continue;
 
                     /* Both objects should have the same kind value */
-                    if (take->kind->kidx != borg_items[ii].kind)
+                    if (take->kidx != borg_items[ii].kind)
                         continue;
 
                     if (k_ptr->sval == borg_items[ii].sval
@@ -780,7 +786,7 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
                         continue;
 
                     /* Both objects should have the same kind value */
-                    if (take->kind->kidx != borg_items[ii].kind)
+                    if (take->kidx != borg_items[ii].kind)
                         continue;
 
                     /* Certain types of items can stack */
@@ -803,10 +809,10 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
 
                 /* Certain Potions are worthless */
                 if (take->tval == TV_POTION
-                    && (take->kind->sval >= sv_potion_inc_str)
-                    && (take->kind->sval <= sv_potion_detect_invis)) {
+                    && (k_info[take->kidx].sval >= sv_potion_inc_str)
+                    && (k_info[take->kidx].sval <= sv_potion_detect_invis)) {
                     borg_note(format(
-                        "# Lunal Item %s, at %d,%d", take->kind->name, y, x));
+                        "# Lunal Item %s, at %d,%d", k_info[take->kidx].name, y, x));
                     item_bad = false;
                 }
 
@@ -814,9 +820,9 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
                  * of this.  So if an item were added after the last artifact,
                  * it would also be picked up.
                  */
-                if (kf_has(take->kind->kind_flags, KF_INSTA_ART)) {
+                if (kf_has(k_info[take->kidx].kind_flags, KF_INSTA_ART)) {
                     borg_note(format(
-                        "# Lunal Item %s, at %d,%d", take->kind->name, y, x));
+                        "# Lunal Item %s, at %d,%d", k_info[take->kidx].name, y, x));
                     item_bad = false;
                 }
 

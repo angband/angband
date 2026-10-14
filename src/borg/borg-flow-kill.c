@@ -1349,11 +1349,11 @@ int borg_locate_kill(char *who, struct loc c, int r)
         take = &borg_takes[i];
 
         /* Skip "dead" objects */
-        if (!take->kind)
+        if (!take->kidx)
             continue;
 
         /* Access kind */
-        k_ptr = take->kind;
+        k_ptr = &k_info[take->kidx];
 
         /* Verify char */
         if (k_ptr->d_char != r_ptr->d_char)
@@ -1392,7 +1392,7 @@ int borg_locate_kill(char *who, struct loc c, int r)
 
         /* Note */
         borg_note(format("# Converting an object '%s' at (%d,%d)",
-            (take->kind->name), take->y, take->x));
+            (k_info[take->kidx].name), take->y, take->x));
 
         /* Save location */
         c.x = take->x;

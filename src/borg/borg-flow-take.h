@@ -34,7 +34,7 @@
 typedef struct borg_take borg_take;
 
 struct borg_take {
-    struct object_kind *kind; /* Kind */
+    uint32_t            kidx;
     bool                known; /* Verified kind */
     bool                seen; /* Assigned motion */
     bool                extra; /* Unused */
