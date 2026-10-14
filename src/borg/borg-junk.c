@@ -56,8 +56,9 @@ bool borg_destroy_floor(void)
     if (take->value != -10)
         return false;
 
-    if (take->kind && take->kind->base)
-        borg_note(format("# Destroying floor item %s%s", take->kind->base->name, take->kind->name));
+    if (take->kidx && k_info[take->kidx].base)
+        borg_note(format("# Destroying floor item %s%s",
+            k_info[take->kidx].base->name, k_info[take->kidx].name));
     else
         borg_note("# Destroying floor item.");
 
@@ -208,7 +209,7 @@ static bool borg_consume(int i)
 
     case TV_FOOD:
         /* Check the grub */
-        if (item->sval == sv_food_ration 
+        if (item->sval == sv_food_ration
             || item->sval == sv_food_slime_mold
             || item->sval == sv_food_waybread)
 
@@ -225,11 +226,11 @@ static bool borg_consume(int i)
             || item->sval == sv_mush_fast_recovery
             || item->sval == sv_mush_cure_mind
             || item->sval == sv_mush_restoring
-            || item->sval == sv_mush_emergency 
+            || item->sval == sv_mush_emergency
             || item->sval == sv_mush_terror
-            || item->sval == sv_mush_stoneskin 
+            || item->sval == sv_mush_stoneskin
             || item->sval == sv_mush_debility
-            || item->sval == sv_mush_sprinting 
+            || item->sval == sv_mush_sprinting
             || item->sval == sv_mush_purging)
 
             /* Try eating the food (unless Bloated) */
@@ -502,10 +503,10 @@ bool borg_drop_junk(void)
  * presence of unknown items by a massively heuristic value.
  *
  * The borg makes two attempts to find something to drop.  The first
- * time important things are never dropped.  The second time, things 
- * that are somewhat important, like things not identified yet, can be 
+ * time important things are never dropped.  The second time, things
+ * that are somewhat important, like things not identified yet, can be
  * considered.
- * 
+ *
  * If the Borg cannot find something to drop, which should only
  * happen if he fills up with artifacts, then he will probably act
  * rather twitchy for a while.
@@ -526,7 +527,7 @@ bool borg_drop_hole(bool desperate)
     /* Do not destroy items unless we need the space */
     if (!borg_items[PACK_SLOTS - 1].iqty)
         return false;
-    
+
     /* only on the floor */
     if (borg_grids[borg.c.y][borg.c.x].feat != FEAT_FLOOR)
         return false;
@@ -674,7 +675,7 @@ bool borg_drop_hole(bool desperate)
         /* Penalize loss of "gold" */
 
         /* if the item gives a bonus to a stat, boost its value */
-        if (item->modifiers[OBJ_MOD_STR] > 0 
+        if (item->modifiers[OBJ_MOD_STR] > 0
             || item->modifiers[OBJ_MOD_INT] > 0
             || item->modifiers[OBJ_MOD_WIS] > 0
             || item->modifiers[OBJ_MOD_DEX] > 0
@@ -1254,7 +1255,7 @@ bool borg_dump_quiver(void)
  *
  * Basically, we evaluate the world both with the current set of
  * equipment, and in the alternate world in which various items
- * are removed, and we take one step towards the world in which 
+ * are removed, and we take one step towards the world in which
  * we have the most "power".
  */
 bool borg_remove_stuff(void)

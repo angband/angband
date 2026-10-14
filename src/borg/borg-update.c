@@ -1619,7 +1619,7 @@ void borg_update(void)
         borg_take *take = &borg_takes[i];
 
         /* Skip dead objects */
-        if (!take->kind)
+        if (!take->kidx)
             continue;
 
         /* Clear flags */
@@ -1641,7 +1641,7 @@ void borg_update(void)
 
         /* Note */
         borg_note(format("# Expiring an object '%s' (%lu) at (%d,%d)",
-            (take->kind->name), (unsigned long)take->kind->kidx,
+            (k_info[take->kidx].name), (unsigned long)k_info[take->kidx].kidx,
             take->y, take->x));
 
         /* Kill the object */
@@ -3037,7 +3037,7 @@ void borg_update(void)
         borg_take *take = &borg_takes[i];
 
         /* Skip dead objects */
-        if (!take->kind)
+        if (!take->kidx)
             continue;
 
         /* Skip seen objects */
