@@ -85,6 +85,36 @@ struct sdlpui_stipple *sdlpui_get_stipple(struct sdlpui_window *w);
 						in dialogs and inner boundary
 						for dialogs that are not
 						menus */
+#define SDLPUI_COLOR_MENU_ACTION_FEEDBACK (7)
+					/* color for a menu control's focus
+						indicator if a repeating
+						action is in progress or,
+						briefly, after initiating a
+						non-repeating action */
+#define SDLPUI_COLOR_MENU_ACTION_UNAVAIL (8)
+					/* color for a menu control's focus
+						indicator if an ineffective
+						repeating action is in progress
+						or, briefly, after trying to
+						initiate a an action that is
+						not possible in the current
+						circumstances */
+#define SDLPUI_COLOR_MENU_ACTION_DRAG (9)
+					/* color for a menu control's focus
+						indicator if the element with
+						focus is being dragged */
+#define SDLPUI_COLOR_ACTION_FEEDBACK (10)
+					/* like SDLPUI_COLOR_MENU_ACTION_FEEDBACK
+						but for a control that is
+						in a normal dialog */
+#define SDLPUI_COLOR_ACTION_UNAVAIL (11)
+					/* like SDLPUI_COLOR_MENU_ACTION_UNAVAIL
+						but for a control that is
+						in a normal dialog */
+#define SDLPUI_COLOR_ACTION_DRAG (12)
+					/* like SDLPUI_COLOR_MENU_ACTION_DRAG
+						but for a control that is
+						in a normal dialog */
 
 /**
  * Retrieve a reference to the color to use for a specific role when
@@ -99,7 +129,9 @@ const SDL_Color *sdlpui_get_color(struct sdlpui_window *w, int role);
 
 /**
  * Signal that the window needs to be redrawn to reflect the state of the
- * dialogs and menus.
+ * dialogs and menus.  This can be invoked from a separate thread (namely
+ * one handling timer callbacks), so synchronizing access from multiple
+ * threads is necessary.
  */
 void sdlpui_signal_redraw(struct sdlpui_window *w);
 
@@ -126,61 +158,6 @@ void sdlpui_dialog_push_to_top(struct sdlpui_window *w,
  * them and signalling that a redraw is necessary for the window.
  */
 void sdlpui_dialog_pop(struct sdlpui_window *w, struct sdlpui_dialog *d);
-
-/**
- * Tell the given window that the given dialog wants to take keyboard focus
- * and receive all keyboard, text input, or text editing events in the window
- * until it yields keyboard focus.
- *
- * \param w is the window containing the dialog.
- * \param d is the dialog that wants to gain focus.
- */
-void sdlpui_dialog_gain_key_focus(struct sdlpui_window *w,
-		struct sdlpui_dialog *d);
-
-/**
- * Tell the given window that the given dialog wants to give up keyboard focus
- * and not be sent keyboard, text input, or text editing events until it
- * reacquires keyboard focus.
- *
- * \param w is the window containing the dialog.
- * \param d is the dialog that is yielding focus.
- */
-void sdlpui_dialog_yield_key_focus(struct sdlpui_window *w,
-		struct sdlpui_dialog *d);
-
-/**
- * Tell the given window that the given dialog wants to take mouse focus and
- * receive all mouse button, mouse wheel, and mouse motion events in the window
- * until it yields mouse focus.
- *
- * \param w is the window containing the dialog.
- * \param d is the dialog that wants to gain focus.
- */
-void sdlpui_dialog_gain_mouse_focus(struct sdlpui_window *w,
-		struct sdlpui_dialog *d);
-
-/**
- * Tell the given window that the given dialog wants to give up mouse focus
- * and not be sent mouse button or mouse wheel events until it reacquires
- * mouse focus.  Mouse motion events may be sent to a dialog without focus to
- * see if that event would cause it to reacquire focus.
- *
- * \param w is the window containing the dialog.
- * \param d is the dialog that is yielding focus.
- */
-void sdlpui_dialog_yield_mouse_focus(struct sdlpui_window *w,
-		struct sdlpui_dialog *d);
-
-/**
- * Get the dialog with key focus, if any.
- */
-struct sdlpui_dialog *sdlpui_dialog_with_key_focus(struct sdlpui_window *w);
-
-/**
- * Get the dialog with mouse focus, if any.
- */
-struct sdlpui_dialog *sdlpui_dialog_with_mouse_focus(struct sdlpui_window *w);
 
 /**
  * Quit the application.  Expected to not return.
