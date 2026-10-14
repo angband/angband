@@ -761,7 +761,7 @@ static bool borg_play_step(int y2, int x2)
     }
 
     /* Objects -- Take */
-    if (ag->take && borg_takes[ag->take].kind) {
+    if (ag->take && borg_takes[ag->take].kidx) {
         borg_take *take = &borg_takes[ag->take];
 
         /*** Handle Chests ***/
@@ -772,8 +772,8 @@ static bool borg_play_step(int y2, int x2)
          * So there is no advantage to the borg.
          */
 
-        if (strstr(take->kind->name, "chest")
-            && !strstr(take->kind->name, "Ruined")) {
+        if (strstr(k_info[take->kidx].name, "chest")
+            && !strstr(k_info[take->kidx].name, "Ruined")) {
             struct object *o_ptr = borg_get_top_object(cave, loc(x2, y2));
 
             /* this should only happen when something picks up the chest */
@@ -788,7 +788,7 @@ static bool borg_play_step(int y2, int x2)
                 && borg.trait[BI_DEV] - o_ptr->pval
                        >= borg_cfg[BORG_CHEST_FAIL_TOLERANCE]) {
                 borg_note(format("# Disarming a '%s' at (%d,%d)",
-                    take->kind->name, take->y, take->x));
+                    k_info[take->kidx].name, take->y, take->x));
 
                 /* Open it */
                 borg_keypress('D');
@@ -799,7 +799,7 @@ static bool borg_play_step(int y2, int x2)
             /* No trap, or unknown trap that passed above checks - Open it */
             if (o_ptr->pval < 0 || !o_ptr->known) {
                 borg_note(format("# Opening a '%s' at (%d,%d)",
-                    take->kind->name, take->y, take->x));
+                    k_info[take->kidx].name, take->y, take->x));
 
                 /* Open it */
                 borg_keypress('o');
@@ -866,7 +866,7 @@ static bool borg_play_step(int y2, int x2)
         /*** Handle other takes ***/
         /* Message */
         borg_note(format("# Walking onto and deleting a '%s' at (%d,%d)",
-            take->kind->name, take->y, take->x));
+            k_info[take->kidx].name, take->y, take->x));
 
         /* Delete the item from the list */
         borg_delete_take(ag->take);

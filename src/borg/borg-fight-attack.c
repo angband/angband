@@ -1345,7 +1345,7 @@ static int borg_launch_bolt_aux_hack(int i, int dam, int typ, int ammo_location)
 static int borg_launch_destroy_stuff(borg_grid *ag, int typ)
 {
     struct borg_take *take = &borg_takes[ag->take];
-    struct object_kind *k_ptr = take->kind;
+    struct object_kind *k_ptr = &k_info[take->kidx];
 
     switch (typ) {
     case BORG_ATTACK_ACID:
@@ -1659,7 +1659,7 @@ static int borg_launch_bolt_at_location(
             /* probable damage int was just changed by b_l_b_a_h*/
 
             /* check destroyed stuff. */
-            if (ag->take && borg_takes[ag->take].kind)
+            if (ag->take && borg_takes[ag->take].kidx)
                 n -= borg_launch_destroy_stuff(ag, typ);
         }
     }
@@ -1985,7 +1985,7 @@ static int borg_launch_arc_at_location(
                 /* Collect damage, lowered by distance */
                 n += borg_launch_bolt_aux_hack(ag->kill, dam / (r + 1), typ, 0);
 
-            if (ag->take && borg_takes[ag->take].kind)
+            if (ag->take && borg_takes[ag->take].kidx)
                 n -= borg_launch_destroy_stuff(ag, typ);
         }
     }

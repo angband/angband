@@ -827,7 +827,7 @@ static void borg_cmd_grid_objects(void)
         borg_take* take = &borg_takes[i];
 
         /* Still alive */
-        if (take->kind) {
+        if (take->kidx) {
             int x = take->x;
             int y = take->y;
 
