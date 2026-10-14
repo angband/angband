@@ -433,7 +433,7 @@ void prt(const char *str, int row, int col) {
  * important that every call to screen_save() is balanced by a call to
  * screen_load() or screen_load_all() later on.  'screen_save_depth' is used
  * by the game to keep track of whether it should try to update the map and
- * sidebar or not, so if you miss out a screen_load or screen_load_all you will
+ * sidebar or not, so if you skip a screen_load or screen_load_all you will
  * not get proper game updates.
  *
  * Term_save() / Term_load() / Term_load_all() do all the heavy lifting here.

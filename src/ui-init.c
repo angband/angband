@@ -88,7 +88,10 @@ void textui_init(void)
 		textui_knowledge_init();
 	}
 
-	/* initialize window options that will be overridden by the savefile */
+	/*
+	 * Initialize window options that will be overridden by windows.prf in
+	 * ANGBAND_DIR_USER.
+	 */
 	memset(window_flag, 0, sizeof(uint32_t)*ANGBAND_TERM_MAX);
 	memset(default_window_flag, 0, sizeof default_window_flag);
 	if (ANGBAND_TERM_MAX > 1) default_window_flag[1] = (PW_MESSAGE);
