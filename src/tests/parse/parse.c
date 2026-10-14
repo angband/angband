@@ -556,6 +556,29 @@ static int test_char2(void *state) {
 		eq(wasok, 1);
 		e = parser_parse(state, "test-char2:££:3");
 		eq(e, PARSE_ERROR_FIELD_TOO_LONG);
+		/*
+		 * Starts with a continuation byte; "0x81:" is treated as the
+		 * character; as the next character is not ":" or NUL, parser
+		 * says the field is too long
+		 */
+		e = parser_parse(state, "test-char2:0x81:3");
+		eq(e, PARSE_ERROR_FIELD_TOO_LONG);
+		/* A non-continuation byte before the end of a character */
+		e = parser_parse(state, "test-char2:\xE1\xA0:3");
+		eq(e, PARSE_ERROR_NOT_UTF8);
+		/* Overlong encoding (should be a single byte, 0x3f) */
+		e = parser_parse(state, "test-char2:\xC0\xBF:3");
+		eq(e, PARSE_ERROR_NOT_UTF8);
+		/*
+		 * Decodes to greater than U+10FFFF; on some platforms (Debian
+		 * 13 for arm64 is one) this does not trigger an error from
+		 * parser.c but instead breaks in helper_char2().
+		 */
+		e = parser_parse(state, "test-char2:\xF4\x91\x80\x80:3");
+		require(e == PARSE_ERROR_NOT_UTF8 || e == PARSE_ERROR_GENERIC);
+		/* Decodes to surrogate used by UTF-16 */
+		e = parser_parse(state, "test-char2:\xED\xA3:3");
+		eq(e, PARSE_ERROR_NOT_UTF8);
 	}
 #endif
 	ok;
