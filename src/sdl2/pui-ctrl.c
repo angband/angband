@@ -19,6 +19,7 @@
 
 #include "pui-ctrl.h"
 #include "pui-dlg.h"
+#include "pui-foc.h"
 #include "pui-misc.h"
 
 
@@ -56,20 +57,6 @@ static void render_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 static void respond_default_pb(struct sdlpui_control *c,
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		enum sdlpui_action_hint hint);
-static void gain_key_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, int comp_ind);
-static void lose_key_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, struct sdlpui_control *new_c,
-		struct sdlpui_dialog *new_d);
-static void gain_mouse_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, int comp_ind);
-static void lose_mouse_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, struct sdlpui_control *new_c,
-		struct sdlpui_dialog *new_d);
-static void arm_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, enum sdlpui_action_hint hint);
-static void disarm_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, enum sdlpui_action_hint hint);
 static int get_pb_interactable_component(struct sdlpui_control *c,
 		SDL_bool first);
 static void resize_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
@@ -102,25 +89,17 @@ static void render_mb(struct sdlpui_control *c,
 static void respond_default_mb(struct sdlpui_control *c,
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		enum sdlpui_action_hint hint);
-static void gain_key_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, int comp_ind);
-static void lose_key_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, struct sdlpui_control *new_c,
-		struct sdlpui_dialog *new_d);
-static void gain_mouse_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, int comp_ind);
-static void lose_mouse_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, struct sdlpui_control *new_c,
-		struct sdlpui_dialog *new_d);
+static void gain_focus_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
+		struct sdlpui_window *w, enum sdlpui_action_hint ah,
+		int comp_ind);
+static void lose_focus_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
+		struct sdlpui_window *w, enum sdlpui_action_hint ah,
+		struct sdlpui_control *new_c, struct sdlpui_dialog *new_d);
 static void lose_child_mb(struct sdlpui_control *c,
 		struct sdlpui_dialog *child);
-static void arm_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, enum sdlpui_action_hint hint);
-static void disarm_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, enum sdlpui_action_hint hint);
 static int get_mb_interactable_component(struct sdlpui_control *c,
 		SDL_bool first);
-static SDL_bool step_within_mb(struct sdlpui_control *c, SDL_bool forward);
+static int step_within_mb(struct sdlpui_control *c, SDL_bool forward);
 static int get_mb_interactable_component_at(struct sdlpui_control *c, Sint32 x,
 		Sint32 y);
 static void resize_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
@@ -160,10 +139,6 @@ static const struct sdlpui_control_funcs image_funcs = {
 	NULL,
 	NULL,
 	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
 	resize_image,
 	query_image_natural_size,
 	NULL,
@@ -185,10 +160,6 @@ static const struct sdlpui_control_funcs label_funcs = {
 	get_label_caption,
 	change_label_caption,
 	render_label,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
 	NULL,
 	NULL,
 	NULL,
@@ -218,13 +189,9 @@ const struct sdlpui_control_funcs push_button_funcs = {
 	change_pb_caption,
 	render_pb,
 	respond_default_pb,
-	gain_key_pb,
-	lose_key_pb,
-	gain_mouse_pb,
-	lose_mouse_pb,
 	NULL,
-	arm_pb,
-	disarm_pb,
+	NULL,
+	NULL,
 	get_pb_interactable_component,
 	NULL,
 	NULL,
@@ -250,13 +217,9 @@ static const struct sdlpui_control_funcs menu_button_funcs = {
 	change_mb_caption,
 	render_mb,
 	respond_default_mb,
-	gain_key_mb,
-	lose_key_mb,
-	gain_mouse_mb,
-	lose_mouse_mb,
+	gain_focus_mb,
+	lose_focus_mb,
 	lose_child_mb,
-	arm_mb,
-	disarm_mb,
 	get_mb_interactable_component,
 	step_within_mb,
 	get_mb_interactable_component_at,
@@ -452,8 +415,7 @@ static void change_label_caption(struct sdlpui_control *c,
 	SDL_free(lp->caption);
 	lp->caption = caption_copy;
 	resize_label(c, d, w, c->rect.w, c->rect.h);
-	d->dirty = SDL_TRUE;
-	sdlpui_signal_redraw(w);
+	sdlpui_dialog_mark_for_redraw(d, w);
 }
 
 
@@ -602,8 +564,7 @@ static void change_pb_caption(struct sdlpui_control *c,
 	SDL_free(pbp->caption);
 	pbp->caption = caption_copy;
 	resize_pb(c, d, w, c->rect.w, c->rect.h);
-	d->dirty = SDL_TRUE;
-	sdlpui_signal_redraw(w);
+	sdlpui_dialog_mark_for_redraw(d, w);
 }
 
 
@@ -615,6 +576,7 @@ static void render_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 		SDLPUI_COLOR_COUNTERSINK);
 	TTF_Font *font = sdlpui_get_ttf(w);
 	struct sdlpui_push_button *pbp;
+	struct sdlpui_control_feedback cf;
 	SDL_Rect dst_r;
 
 	SDL_assert(c->type_code == SDLPUI_CTRL_PUSH_BUTTON && c->priv);
@@ -623,10 +585,7 @@ static void render_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 		(*c->ftb->get_caption)(c), c->rect, pbp->caption_rect,
 		d->texture);
 
-	/*
-	 * Always draw a border.  There's one pixel between these to leave
-	 * space for indicating whether it's armed or not.
-	 */
+	/* Always draw a border. */
 	SDL_SetRenderDrawColor(r, countersink_color->r, countersink_color->g,
 		countersink_color->b, countersink_color->a);
 	dst_r = c->rect;
@@ -638,42 +597,54 @@ static void render_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 		dst_r.y += d->rect.y;
 	}
 	SDL_RenderDrawRect(r, &dst_r);
-	dst_r.x += 2;
-	dst_r.y += 2;
-	dst_r.w -= 4;
-	dst_r.h -= 4;
-	SDL_SetRenderDrawColor(r, fg->r, fg->g, fg->b, fg->a);
-	SDL_RenderDrawRect(r, &dst_r);
+	++dst_r.x;
+	++dst_r.y;
+	dst_r.w -= 2;
+	dst_r.h -= 2;
 
-	if (pbp->has_key || pbp->has_mouse) {
+	sdlpui_begin_focus_transaction();
+	if (sdlpui_query_feedback(c, &cf)) {
 		/* Strengthen the inner border to signal that it has focus. */
-		++dst_r.x;
-		++dst_r.y;
-		dst_r.w -= 2;
-		dst_r.h -= 2;
-		SDL_RenderDrawRect(r, &dst_r);
-	}
+		const SDL_Color *fc;
+		SDL_bool is_fg;
 
-	if (!pbp->armed) {
-		/*
-		 * Button is not depressed.  Highlight left and top edges
-		 * as if there's lighting from the upper left since it
-		 * protrudes above the surface.
-		 */
-		SDL_Point points[3];
-
-		points[0].x = c->rect.x + 1;
-		points[0].y = c->rect.y + c->rect.h - 2;
-		if (!d->texture) {
-			points[0].x += d->rect.x;
-			points[0].y += d->rect.y;
+		sdlpui_end_focus_transaction();
+		if (cf.mf_mouse == SDLPUI_FEEDBACK_UNAVAIL
+				|| cf.mf_key == SDLPUI_FEEDBACK_UNAVAIL
+				|| (cf.mf_mouse == SDLPUI_FEEDBACK_NONE
+				&& cf.cf_mouse == SDLPUI_FEEDBACK_UNAVAIL)
+				|| (cf.mf_key == SDLPUI_FEEDBACK_NONE
+				&& cf.cf_key == SDLPUI_FEEDBACK_UNAVAIL)) {
+			fc = sdlpui_get_color(w, SDLPUI_COLOR_ACTION_UNAVAIL);
+			is_fg = SDL_FALSE;
+		} else if (cf.mf_mouse == SDLPUI_FEEDBACK_ACTION
+				|| cf.mf_key == SDLPUI_FEEDBACK_ACTION
+				|| (cf.mf_mouse == SDLPUI_FEEDBACK_NONE
+				&& cf.cf_mouse == SDLPUI_FEEDBACK_ACTION)
+				|| (cf.mf_key == SDLPUI_FEEDBACK_NONE
+				&& cf.cf_key == SDLPUI_FEEDBACK_ACTION)) {
+			fc = sdlpui_get_color(w, SDLPUI_COLOR_ACTION_FEEDBACK);
+			is_fg = SDL_FALSE;
+		} else {
+			fc = fg;
+			is_fg = SDL_TRUE;
 		}
-		points[1].x = points[0].x;
-		points[1].y = points[0].y - c->rect.h + 3;
-		points[2].x = points[0].x + c->rect.w - 3;
-		points[2].y = points[1].y;
-		SDL_RenderDrawLines(r, points, 3);
+
+		SDL_SetRenderDrawColor(r, fc->r, fc->g, fc->b, fc->a);
+		SDL_RenderDrawRect(r, &dst_r);
+		if (!is_fg) {
+			SDL_SetRenderDrawColor(r, fg->r, fg->g, fg->b, fg->a);
+		}
+	} else {
+		sdlpui_end_focus_transaction();
+		SDL_SetRenderDrawColor(r, fg->r, fg->g, fg->b, fg->a);
 	}
+	/* Draw the inner border */
+	++dst_r.x;
+	++dst_r.y;
+	dst_r.w -= 2;
+	dst_r.h -= 2;
+	SDL_RenderDrawRect(r, &dst_r);
 
 	if (pbp->caption_rect.h > 0 && pbp->caption_rect.w > 0) {
 		dst_r = pbp->caption_rect;
@@ -695,10 +666,10 @@ static void render_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
 			dst_r.x += d->rect.x;
 			dst_r.y += d->rect.y;
 		}
-		dst_r.x += 2;
-		dst_r.y += 2;
-		dst_r.w -= 4;
-		dst_r.h -= 4;
+		++dst_r.x;
+		++dst_r.y;
+		dst_r.w -= 2;
+		dst_r.h -= 2;
 		sdlpui_stipple_rect(r, stipple, &dst_r);
 	}
 }
@@ -715,115 +686,17 @@ static void respond_default_pb(struct sdlpui_control *c,
 	if (!pbp->disabled && pbp->callback) {
 		SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
 			(*c->ftb->get_caption)(c), "default action invoked");
-		(pbp->callback)(c, d, w);
+		sdlpui_begin_focus_transaction();
+		sdlpui_trigger_momentary_feedback(hint, SDL_TRUE);
+		sdlpui_end_focus_transaction();
+		sdlpui_dialog_mark_for_redraw(d, w);
+		(pbp->callback)(c, d, w, hint);
 	} else {
 		SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
 			(*c->ftb->get_caption)(c),
 			(pbp->disabled)
 			? ((pbp->callback) ? "default action suppressed; disable yes, callback available" : "default action suppressed; disable yes, callback unavailable")
 			: ((pbp->callback) ? "default action suppressed; disable no, callback available" : "default action suppressed; disable no, callback unavailable"));
-	}
-}
-
-
-static void gain_key_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, int comp_ind)
-{
-	struct sdlpui_push_button *pbp;
-
-	SDL_assert(comp_ind == 0 || comp_ind == -1);
-	SDL_assert(c->type_code == SDLPUI_CTRL_PUSH_BUTTON && c->priv);
-	pbp = c->priv;
-	if (!pbp->has_key) {
-		SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
-			(*c->ftb->get_caption)(c), "gains key focus");
-		pbp->has_key = SDL_TRUE;
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
-	}
-}
-
-
-static void lose_key_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, struct sdlpui_control *new_c,
-		struct sdlpui_dialog *new_d)
-{
-	struct sdlpui_push_button *pbp;
-
-	SDL_assert(c->type_code == SDLPUI_CTRL_PUSH_BUTTON && c->priv);
-	pbp = c->priv;
-	if (pbp->has_key) {
-		SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
-			(*c->ftb->get_caption)(c), "loses key focus");
-		pbp->has_key = SDL_FALSE;
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
-	}
-}
-
-
-static void gain_mouse_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, int comp_ind)
-{
-	struct sdlpui_push_button *pbp;
-
-	SDL_assert(comp_ind == 0 || comp_ind == -1);
-	SDL_assert(c->type_code == SDLPUI_CTRL_PUSH_BUTTON && c->priv);
-	pbp = c->priv;
-	if (!pbp->has_mouse) {
-		SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
-			(*c->ftb->get_caption)(c), "gains mouse focus");
-		pbp->has_mouse = SDL_TRUE;
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
-	}
-}
-
-
-static void lose_mouse_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, struct sdlpui_control *new_c,
-		struct sdlpui_dialog *new_d)
-{
-	struct sdlpui_push_button *pbp;
-
-	SDL_assert(c->type_code == SDLPUI_CTRL_PUSH_BUTTON && c->priv);
-	pbp = c->priv;
-	if (pbp->has_mouse) {
-		SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
-			(*c->ftb->get_caption)(c), "loses mouse focus");
-		pbp->has_mouse = SDL_FALSE;
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
-	}
-}
-
-
-static void arm_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, enum sdlpui_action_hint hint)
-{
-	struct sdlpui_push_button *pbp;
-
-	SDL_assert(c->type_code == SDLPUI_CTRL_PUSH_BUTTON && c->priv);
-	pbp = c->priv;
-	if (!pbp->armed) {
-		pbp->armed = SDL_TRUE;
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
-	}
-}
-
-
-static void disarm_pb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, enum sdlpui_action_hint hint)
-{
-	struct sdlpui_push_button *pbp;
-
-	SDL_assert(c->type_code == SDLPUI_CTRL_PUSH_BUTTON && c->priv);
-	pbp = c->priv;
-	if (pbp->armed) {
-		pbp->armed = SDL_FALSE;
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
 	}
 }
 
@@ -930,8 +803,7 @@ static SDL_bool set_pb_disabled(struct sdlpui_control *c,
 	old_value = pbp->disabled;
 	if (!old_value != !disabled) {
 		pbp->disabled = (disabled) ? SDL_TRUE : SDL_FALSE;
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
+		sdlpui_dialog_mark_for_redraw(d, w);
 	}
 	return old_value;
 }
@@ -1006,11 +878,12 @@ static void help_mb_popup_submenu(struct sdlpui_control *c,
 	default:
 		SDL_assert(0);
 	}
+
 	mbp->v.submenu.child = (*mbp->v.submenu.creator)(c, d, w, ul_x_win,
 		ul_y_win);
-
-	SDL_assert(d->ftb->set_child);
-	(*d->ftb->set_child)(d, mbp->v.submenu.child);
+	if (sdlpui_add_child_dialog(d, mbp->v.submenu.child) < 0) {
+		SDL_assert(0);
+	}
 	if (mbp->v.submenu.child->pop_callback) {
 		(*mbp->v.submenu.child->pop_callback)(mbp->v.submenu.child,
 			w, SDL_TRUE);
@@ -1023,13 +896,6 @@ static SDL_bool handle_mb_mousemove(struct sdlpui_control *c,
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		const struct SDL_MouseMotionEvent *e)
 {
-	/*
-	 * Ignore moution events while a mouse button is pressed (at least up
-	 * to the point that the mouse leaves the window).
-	 */
-	if (e->state != 0) {
-		return SDL_TRUE;
-	}
 	if (sdlpui_is_in_control(c, d, e->x, e->y)) {
 		/*
 		 * ranged_int buttons care whether the mouse is in the left or
@@ -1041,51 +907,37 @@ static SDL_bool handle_mb_mousemove(struct sdlpui_control *c,
 		SDL_assert(c->type_code == SDLPUI_CTRL_MENU_BUTTON && c->priv);
 		mbp = c->priv;
 		if (mbp->subtype_code == SDLPUI_MB_RANGED_INT) {
-			int old = mbp->has_mouse;
+			sdlpui_begin_focus_transaction();
+			if (!sdlpui_is_focus_locked(
+					SDLPUI_ACTION_HINT_KEY_OR_MOUSE)) {
+				int new_ci, old_ci = sdlpui_control_has_focus(c,
+					SDLPUI_ACTION_HINT_MOUSE);
 
-			if (e->x <= d->rect.x + c->rect.x + c->rect.w / 2) {
-				mbp->has_mouse = (mbp->v.ranged_int.curr
-					> mbp->v.ranged_int.min) ? 1 : 0;
-			} else {
-				mbp->has_mouse = (mbp->v.ranged_int.curr
-					< mbp->v.ranged_int.max) ? 2 : 0;
-			}
-			if (old != mbp->has_mouse) {
-				if (!mbp->has_mouse) {
-					SDLPUI_EVENT_TRACER(
-						(*c->ftb->get_type_name)(c),
-						c, (*c->ftb->get_caption)(c),
-						"loses mouse focus");
-					d->c_mouse = NULL;
-				} else if (!old) {
-					SDLPUI_EVENT_TRACER(
-						(*c->ftb->get_type_name)(c),
-						c, (*c->ftb->get_caption)(c),
-						"gains mouse focus");
-					d->c_mouse = c;
+				if (e->x <= d->rect.x + c->rect.x
+						+ c->rect.w / 2) {
+					new_ci = (mbp->v.ranged_int.curr
+						> mbp->v.ranged_int.min)
+						? 1 : 0;
+				} else {
+					new_ci = (mbp->v.ranged_int.curr
+						< mbp->v.ranged_int.max)
+						? 2 : 0;
 				}
-				/* Have keyboard focus follow the mouse. */
-				if (mbp->has_key != mbp->has_mouse) {
-					if (!mbp->has_mouse) {
-						SDLPUI_EVENT_TRACER(
-							(*c->ftb->get_type_name)(c),
-							c,
-							(*c->ftb->get_caption)(c),
-							"loses key focus");
-						d->c_key = NULL;
-					} else if (!mbp->has_key) {
-						SDLPUI_EVENT_TRACER(
-							(*c->ftb->get_type_name)(c),
-							c,
-							(*c->ftb->get_caption)(c),
-							"gains key focus");
-						d->c_key = c;
+				if (old_ci != new_ci) {
+					if (!new_ci) {
+						(void)sdlpui_change_focus(NULL,
+							0, d, w,
+							SDLPUI_ACTION_HINT_MOUSE,
+							SDL_FALSE, SDL_TRUE);
+					} else {
+						(void)sdlpui_change_focus(c,
+							new_ci - 1, d, w,
+							SDLPUI_ACTION_HINT_MOUSE,
+							SDL_FALSE, SDL_TRUE);
 					}
-					mbp->has_key = mbp->has_mouse;
 				}
-				d->dirty = SDL_TRUE;
-				sdlpui_signal_redraw(w);
 			}
+			sdlpui_end_focus_transaction();
 		}
 		return SDL_TRUE;
 	}
@@ -1103,6 +955,7 @@ static SDL_bool handle_mb_mousewheel(struct sdlpui_control *c,
 {
 	struct sdlpui_menu_button *mbp;
 	Sint32 change, result;
+	int comp_ind;
 
 	SDL_assert(c->type_code == SDLPUI_CTRL_MENU_BUTTON && c->priv);
 	mbp = c->priv;
@@ -1116,6 +969,14 @@ static SDL_bool handle_mb_mousewheel(struct sdlpui_control *c,
 		return SDL_TRUE;
 	}
 
+	sdlpui_begin_focus_transaction();
+	comp_ind = sdlpui_control_has_focus(c, SDLPUI_ACTION_HINT_MOUSE);
+	sdlpui_end_focus_transaction();
+	if (comp_ind < 1 || comp_ind > 2) {
+		SDL_assert(0);
+		return SDL_TRUE;
+	}
+
 	change = e->y;
 #if SDL_VERSION_ATLEAST(2, 0, 4)
 	if (e->direction == SDL_MOUSEWHEEL_FLIPPED) {
@@ -1126,7 +987,7 @@ static SDL_bool handle_mb_mousewheel(struct sdlpui_control *c,
 	 * Also flip if the left side of the control has focus (so the default
 	 * direction of changes is negative).
 	 */
-	if (mbp->has_mouse == 1) {
+	if (comp_ind == 1) {
 		change *= -1;
 	}
 	result = mbp->v.ranged_int.curr + change;
@@ -1145,15 +1006,18 @@ static SDL_bool handle_mb_mousewheel(struct sdlpui_control *c,
 		SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
 			(*c->ftb->get_caption)(c),
 			"value changed by mouse wheel");
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
+		sdlpui_dialog_mark_for_redraw(d, w);
 		if (mbp->callback) {
-			(*mbp->callback)(c, d, w);
+			(*mbp->callback)(c, d, w, SDLPUI_ACTION_HINT_MOUSE);
 		}
 	} else {
 		SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
 			(*c->ftb->get_caption)(c),
 			"value left as is by mouse wheel");
+		sdlpui_begin_focus_transaction();
+		sdlpui_trigger_momentary_feedback(SDLPUI_ACTION_HINT_MOUSE,
+			SDL_FALSE);
+		sdlpui_end_focus_transaction();
 	}
 	return SDL_TRUE;
 }
@@ -1211,7 +1075,6 @@ static const char *get_mb_caption(const struct sdlpui_control *c)
 		}
 		(void)SDL_snprintf(mbp->v.ranged_int.expanded_caption,
 			ecap_sz, mbp->caption, mbp->v.ranged_int.curr);
-
 	}
 	return mbp->v.ranged_int.expanded_caption;
 }
@@ -1239,8 +1102,7 @@ static void change_mb_caption(struct sdlpui_control *c,
 		mbp->v.ranged_int.expanded_caption = NULL;
 	}
 	resize_mb(c, d, w, c->rect.w, c->rect.h);
-	d->dirty = SDL_TRUE;
-	sdlpui_signal_redraw(w);
+	sdlpui_dialog_mark_for_redraw(d, w);
 }
 
 
@@ -1251,6 +1113,7 @@ static void render_mb(struct sdlpui_control *c,
 	const SDL_Color *fg = sdlpui_get_color(w, SDLPUI_COLOR_MENU_FG);
 	TTF_Font *font = sdlpui_get_ttf(w);
 	struct sdlpui_menu_button *mbp;
+	struct sdlpui_control_feedback cf;
 	struct SDL_Rect dst_r;
 
 	SDL_assert(c->type_code == SDLPUI_CTRL_MENU_BUTTON && c->priv);
@@ -1259,7 +1122,262 @@ static void render_mb(struct sdlpui_control *c,
 		(*c->ftb->get_caption)(c), c->rect, mbp->caption_rect,
 		d->texture);
 
-	SDL_SetRenderDrawColor(r, fg->r, fg->g, fg->b, fg->a);
+	sdlpui_begin_focus_transaction();
+	if (sdlpui_query_feedback(c, &cf)) {
+		/* Put a border on it to signal that it has focus. */
+		SDL_bool last_fg;
+
+		sdlpui_end_focus_transaction();
+		if (mbp->subtype_code != SDLPUI_MB_RANGED_INT) {
+			const SDL_Color *fc;
+
+			if (cf.mf_mouse == SDLPUI_FEEDBACK_UNAVAIL
+					|| cf.mf_key == SDLPUI_FEEDBACK_UNAVAIL
+					|| (cf.mf_mouse == SDLPUI_FEEDBACK_NONE
+					&& cf.cf_mouse == SDLPUI_FEEDBACK_UNAVAIL)
+					|| (cf.mf_key == SDLPUI_FEEDBACK_NONE
+					&& cf.cf_key == SDLPUI_FEEDBACK_UNAVAIL)) {
+				fc = sdlpui_get_color(w,
+					SDLPUI_COLOR_ACTION_UNAVAIL);
+				last_fg = SDL_FALSE;
+			} else if (cf.mf_mouse == SDLPUI_FEEDBACK_ACTION
+					|| cf.mf_key == SDLPUI_FEEDBACK_ACTION
+					|| (cf.mf_mouse == SDLPUI_FEEDBACK_NONE
+					&& cf.cf_mouse == SDLPUI_FEEDBACK_ACTION)
+					|| (cf.mf_key == SDLPUI_FEEDBACK_NONE
+					&& cf.cf_key == SDLPUI_FEEDBACK_ACTION)) {
+				fc = sdlpui_get_color(w,
+					SDLPUI_COLOR_ACTION_FEEDBACK);
+				last_fg = SDL_FALSE;
+			} else {
+				fc = fg;
+				last_fg = SDL_TRUE;
+			}
+			SDL_SetRenderDrawColor(r, fc->r, fc->g, fc->b, fc->a);
+
+			dst_r = c->rect;
+			if (!d->texture) {
+				/*
+				 * Rendering directly to the window's buffer
+				 * so use its coordinates.
+				 */
+				dst_r.x += d->rect.x;
+				dst_r.y += d->rect.y;
+			}
+			++dst_r.x;
+			++dst_r.y;
+			dst_r.w -= 2;
+			dst_r.h -= 2;
+			SDL_RenderDrawRect(r, &dst_r);
+		} else if (cf.key_focus && cf.mouse_focus
+				&& cf.key_focus != cf.mouse_focus) {
+			/*
+			 * Both sides have focus.  Take care if the color of
+			 * each side's indicator is different.
+			 */
+			if (cf.mf_mouse == cf.mf_key
+					&& (cf.mf_mouse != SDLPUI_FEEDBACK_NONE
+					|| cf.cf_mouse == cf.cf_key)) {
+				const SDL_Color *fc;
+
+				if (cf.mf_mouse == SDLPUI_FEEDBACK_UNAVAIL
+						|| (cf.mf_mouse
+						== SDLPUI_FEEDBACK_NONE
+						&& cf.cf_mouse
+						== SDLPUI_FEEDBACK_UNAVAIL)) {
+					fc = sdlpui_get_color(w,
+						SDLPUI_COLOR_ACTION_UNAVAIL);
+					last_fg = SDL_FALSE;
+				} else if (cf.mf_mouse == SDLPUI_FEEDBACK_ACTION
+						|| (cf.mf_mouse
+						== SDLPUI_FEEDBACK_NONE
+						&& cf.cf_mouse
+						== SDLPUI_FEEDBACK_ACTION)) {
+					fc = sdlpui_get_color(w,
+						SDLPUI_COLOR_ACTION_FEEDBACK);
+					last_fg = SDL_FALSE;
+				} else {
+					fc = fg;
+					last_fg = SDL_TRUE;
+				}
+				SDL_SetRenderDrawColor(r, fc->r, fc->g, fc->b,
+					fc->a);
+
+				dst_r = c->rect;
+				if (!d->texture) {
+					/*
+					 * Rendering directly to the window's
+					 * buffer so use its coordinates.
+					 */
+					dst_r.x += d->rect.x;
+					dst_r.y += d->rect.y;
+				}
+				++dst_r.x;
+				++dst_r.y;
+				dst_r.w -= 2;
+				dst_r.h -= 2;
+				SDL_RenderDrawRect(r, &dst_r);
+			} else {
+				const SDL_Color *leftc, *rightc;
+				SDL_Point points[4];
+				SDL_bool left_fg, right_fg;
+
+				/*
+				 * For now, assume the left side has mouse
+				 * focus and the right side has key focus.
+				 * Swap later if necessary.
+				 */
+				if (cf.mf_mouse == SDLPUI_FEEDBACK_UNAVAIL
+						|| (cf.mf_mouse ==
+						SDLPUI_FEEDBACK_NONE
+						&& cf.cf_mouse ==
+						SDLPUI_FEEDBACK_UNAVAIL)) {
+					leftc = sdlpui_get_color(w,
+						SDLPUI_COLOR_ACTION_UNAVAIL);
+					left_fg = SDL_FALSE;
+				} else if (cf.mf_mouse == SDLPUI_FEEDBACK_ACTION
+						|| (cf.mf_mouse ==
+						SDLPUI_FEEDBACK_NONE
+						&& cf.cf_mouse ==
+						SDLPUI_FEEDBACK_ACTION)) {
+					leftc = sdlpui_get_color(w,
+						SDLPUI_COLOR_ACTION_FEEDBACK);
+					left_fg = SDL_FALSE;
+				} else {
+					leftc = fg;
+					left_fg = SDL_TRUE;
+				}
+				if (cf.mf_key == SDLPUI_FEEDBACK_UNAVAIL
+						|| (cf.mf_key ==
+						SDLPUI_FEEDBACK_NONE
+						&& cf.cf_key ==
+						SDLPUI_FEEDBACK_UNAVAIL)) {
+					rightc = sdlpui_get_color(w,
+						SDLPUI_COLOR_ACTION_UNAVAIL);
+					right_fg = SDL_FALSE;
+				} else if (cf.mf_key == SDLPUI_FEEDBACK_ACTION
+						|| (cf.mf_key ==
+						SDLPUI_FEEDBACK_NONE
+						&& cf.cf_key ==
+						SDLPUI_FEEDBACK_ACTION)) {
+					rightc = sdlpui_get_color(w,
+						SDLPUI_COLOR_ACTION_FEEDBACK);
+					right_fg = SDL_FALSE;
+				} else {
+					rightc = fg;
+					right_fg = SDL_TRUE;
+				}
+				if (cf.key_focus == 1) {
+					const SDL_Color *tmp = leftc;
+
+					leftc = rightc;
+					rightc = tmp;
+					last_fg = left_fg;
+				} else {
+					last_fg = right_fg;
+				}
+
+				points[0].x = c->rect.x + c->rect.w / 2;
+				points[0].y = c->rect.y + 1;
+				if (!d->texture) {
+					points[0].x += d->rect.x;
+					points[0].y += d->rect.y;
+				}
+				points[1].x = points[0].x - (c->rect.w - 2) / 2;
+				points[1].y = points[0].y;
+				points[2].x = points[1].x;
+				points[2].y = points[1].y + c->rect.h - 3;
+				points[3].x = points[0].x;
+				points[3].y = points[2].y;
+				SDL_SetRenderDrawColor(r, leftc->r, leftc->g,
+					leftc->b, leftc->a);
+				SDL_RenderDrawLines(r, points, 4);
+				points[0].x = c->rect.x + c->rect.w / 2 + 1;
+				points[0].y = c->rect.y + 1;
+				if (!d->texture) {
+					points[0].x += d->rect.x;
+					points[0].y += d->rect.y;
+				}
+				points[1].x = points[0].x +
+					(c->rect.w - 5) / 2;
+				points[1].y = points[0].y;
+				points[2].x = points[1].x;
+				points[2].y = points[1].y + c->rect.h - 3;
+				points[3].x = points[0].x;
+				points[3].y = points[2].y;
+				SDL_SetRenderDrawColor(r, rightc->r, rightc->g,
+					rightc->b, rightc->a);
+				SDL_RenderDrawLines(r, points, 4);
+			}
+		} else {
+			/*
+			 * Only the left or right side has focus.  Do not draw
+			 * the line that would split the button in two.
+			 */
+			const SDL_Color *fc;
+			SDL_Point points[4];
+
+			if (cf.mf_mouse == SDLPUI_FEEDBACK_UNAVAIL
+					|| cf.mf_key == SDLPUI_FEEDBACK_UNAVAIL
+					|| (cf.mf_mouse == SDLPUI_FEEDBACK_NONE
+					&& cf.cf_mouse
+					== SDLPUI_FEEDBACK_UNAVAIL)
+					|| (cf.mf_key == SDLPUI_FEEDBACK_NONE
+					&& cf.cf_key
+					== SDLPUI_FEEDBACK_UNAVAIL)) {
+				fc = sdlpui_get_color(w,
+					SDLPUI_COLOR_ACTION_UNAVAIL);
+				last_fg = SDL_FALSE;
+			} else if (cf.mf_mouse == SDLPUI_FEEDBACK_ACTION
+					|| cf.mf_key == SDLPUI_FEEDBACK_ACTION
+					|| (cf.mf_mouse == SDLPUI_FEEDBACK_NONE
+					&& cf.cf_mouse
+					== SDLPUI_FEEDBACK_ACTION)
+					|| (cf.mf_key == SDLPUI_FEEDBACK_NONE
+					&& cf.cf_key
+					== SDLPUI_FEEDBACK_ACTION)) {
+				fc = sdlpui_get_color(w,
+					SDLPUI_COLOR_ACTION_FEEDBACK);
+				last_fg = SDL_FALSE;
+			} else {
+				fc = fg;
+				last_fg = SDL_TRUE;
+			}
+			SDL_SetRenderDrawColor(r, fc->r, fc->g, fc->b, fc->a);
+
+			if (cf.key_focus == 1 || cf.mouse_focus == 1) {
+				points[0].x = c->rect.x + c->rect.w / 2;
+				points[0].y = c->rect.y + 1;
+				if (!d->texture) {
+					points[0].x += d->rect.x;
+					points[0].y += d->rect.y;
+				}
+				points[1].x = points[0].x - c->rect.w / 2 + 1;
+				points[1].y = points[0].y;
+			} else {
+				points[0].x = c->rect.x + c->rect.w / 2 + 1;
+				points[0].y = c->rect.y + 1;
+				if (!d->texture) {
+					points[0].x += d->rect.x;
+					points[0].y += d->rect.y;
+				}
+				points[1].x = points[0].x +
+					(c->rect.w - 5) / 2;
+				points[1].y = points[0].y;
+			}
+			points[2].x = points[1].x;
+			points[2].y = points[1].y + c->rect.h - 3;
+			points[3].x = points[0].x;
+			points[3].y = points[2].y;
+			SDL_RenderDrawLines(r, points, 4);
+		}
+		if (!last_fg) {
+			SDL_SetRenderDrawColor(r, fg->r, fg->g, fg->b, fg->a);
+		}
+	} else {
+		sdlpui_end_focus_transaction();
+		SDL_SetRenderDrawColor(r, fg->r, fg->g, fg->b, fg->a);
+	}
 
 	if (mbp->caption_rect.h > 0 && mbp->caption_rect.w > 0) {
 		dst_r = mbp->caption_rect;
@@ -1306,112 +1424,6 @@ static void render_mb(struct sdlpui_control *c,
 		}
 	}
 
-	if (mbp->has_key || mbp->has_mouse) {
-		/*
-		 * Put a border on it to signal that it has focus.  The border
-		 * leaves space for the highlighting that happens if armed.
-		 */
-		if (mbp->subtype_code != SDLPUI_MB_RANGED_INT
-				|| (mbp->has_key && mbp->has_mouse
-				&& mbp->has_key != mbp->has_mouse)) {
-			dst_r = c->rect;
-			if (!d->texture) {
-				/*
-				 * Rendering directly to the window's buffer
-				 * so use its coordinates.
-				 */
-				dst_r.x += d->rect.x;
-				dst_r.y += d->rect.y;
-			}
-			--dst_r.w;
-			--dst_r.h;
-			SDL_RenderDrawRect(r, &dst_r);
-		} else {
-			/*
-			 * Only the left or right side has focus.  Don't draw
-			 * the line that would split the button in two.
-			 */
-			SDL_Point points[4];
-
-			if (mbp->has_key == 1 || mbp->has_mouse == 1) {
-				points[0].x = c->rect.x + c->rect.w / 2;
-				points[0].y = c->rect.y;
-				if (!d->texture) {
-					points[0].x += d->rect.x;
-					points[0].y += d->rect.y;
-				}
-				points[1].x = points[0].x - c->rect.w / 2;
-				points[1].y = points[0].y;
-			} else {
-				points[0].x = c->rect.x + c->rect.w / 2 + 1;
-				points[0].y = c->rect.y;
-				if (!d->texture) {
-					points[0].x += d->rect.x;
-					points[0].y += d->rect.y;
-				}
-				points[1].x = points[0].x +
-					(c->rect.w + 1) / 2 - 2;
-				points[1].y = points[0].y;
-			}
-			points[2].x = points[1].x;
-			points[2].y = points[1].y + c->rect.h - 1;
-			points[3].x = points[0].x;
-			points[3].y = points[2].y;
-			SDL_RenderDrawLines(r, points, 4);
-		}
-	}
-
-	if (mbp->armed) {
-		/*
-		 * Button is depressed.  Was flat with the surface; now
-		 * highlight right and bottom edges as if there's lighting from
-		 * the upper left.
-		 */
-		SDL_Point points[3];
-		int npt;
-
-		if (mbp->subtype_code != SDLPUI_MB_RANGED_INT
-				|| mbp->armed == 3) {
-			points[0].x = c->rect.x;
-			points[0].y = c->rect.y + c->rect.h - 1;
-			if (!d->texture) {
-				points[0].x += d->rect.x;
-				points[0].y += d->rect.y;
-			}
-			points[1].x = points[0].x + c->rect.w - 1;
-			points[1].y = points[0].y;
-			points[2].x = points[1].x;
-			points[2].y = points[1].y - c->rect.h + 1;
-			npt = 3;
-		} else if (mbp->armed == 1) {
-			/* Only the left side is depressed. */
-			points[0].x = c->rect.x;
-			points[0].y = c->rect.y + c->rect.h - 1;
-			if (!d->texture) {
-				points[0].x += d->rect.x;
-				points[0].y += d->rect.y;
-			}
-			points[1].x = points[0].x + c->rect.w / 2;
-			points[1].y = points[0].y;
-			npt = 2;
-		} else {
-			SDL_assert(mbp->armed == 2);
-			/* Only the right side is depressed. */
-			points[0].x = c->rect.x + c->rect.w / 2 + 1;
-			points[0].y = c->rect.y + c->rect.h - 1;
-			if (!d->texture) {
-				points[0].x += d->rect.x;
-				points[0].y += d->rect.y;
-			}
-			points[1].x = points[0].x + (c->rect.w + 1) / 2 - 2;
-			points[1].y = points[0].y;
-			points[2].x = points[1].x;
-			points[2].y = points[1].y - c->rect.h + 1;
-			npt = 3;
-		}
-		SDL_RenderDrawLines(r, points, npt);
-	}
-
 	if (mbp->disabled) {
 		struct sdlpui_stipple *stipple = sdlpui_get_stipple(w);
 
@@ -1430,7 +1442,8 @@ static void respond_default_mb(struct sdlpui_control *c,
 		enum sdlpui_action_hint hint)
 {
 	struct sdlpui_menu_button *mbp;
-	int inci, newi;
+	int has_key, has_mouse, inci, newi;
+	SDL_bool child_already;
 
 	SDL_assert(c->type_code == SDLPUI_CTRL_MENU_BUTTON && c->priv);
 	mbp = c->priv;
@@ -1440,54 +1453,95 @@ static void respond_default_mb(struct sdlpui_control *c,
 	}
 
 	switch (mbp->subtype_code) {
-	case SDLPUI_MB_SUBMENU:
-		if (!mbp->v.submenu.child) {
-			struct sdlpui_dialog *other_child =
-				sdlpui_get_dialog_child(d);
+	case SDLPUI_MB_NONE:
+		sdlpui_begin_focus_transaction();
+		sdlpui_trigger_momentary_feedback(hint,
+			(mbp->callback) ? SDL_TRUE : SDL_FALSE);
+		sdlpui_end_focus_transaction();
+		sdlpui_dialog_mark_for_redraw(d, w);
+		break;
 
-			if (other_child) {
-				sdlpui_popdown_dialog(other_child, w,
-					SDL_FALSE);
-			}
-			help_mb_popup_submenu(c, d, w);
-		} else {
+	case SDLPUI_MB_SUBMENU:
+		if (mbp->v.submenu.child) {
 			SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
 				(*c->ftb->get_caption)(c),
 				"child menu already displayed");
+			child_already = SDL_TRUE;
+		} else {
+			help_mb_popup_submenu(c, d, w);
+			child_already = SDL_FALSE;
 		}
-		/* Give the first button in the child menu keyboard focus. */
-		if (mbp->v.submenu.child->ftb->goto_first_control) {
-			(*mbp->v.submenu.child->ftb->goto_first_control)(
-				mbp->v.submenu.child, w);
+		/*
+		 * Give the first button in the child menu keyboard focus.  If
+		 * the menu was already displayed and key focus does not
+		 * change, provide visual feedback.
+		 */
+		if (child_already) {
+			struct sdlpui_control *old_key, *new_key;
+
+			sdlpui_begin_focus_transaction();
+			old_key = sdlpui_get_control_with_focus(
+				SDLPUI_ACTION_HINT_KEY);
+			if (mbp->v.submenu.child->ftb->goto_first_control) {
+				new_key = (*mbp->v.submenu.child->ftb->goto_first_control)(mbp->v.submenu.child, w);
+			} else {
+				new_key = old_key;
+			}
+			if ((!old_key && !new_key) || (old_key && new_key
+					&& old_key->id == new_key->id)) {
+				sdlpui_trigger_momentary_feedback(hint,
+					SDL_FALSE);
+				sdlpui_dialog_mark_for_redraw(d, w);
+			}
+			sdlpui_end_focus_transaction();
+		} else {
+			if (mbp->v.submenu.child->ftb->goto_first_control) {
+				(void)(*mbp->v.submenu.child->ftb->goto_first_control)(
+					mbp->v.submenu.child, w);
+			}
 		}
 		break;
 
 	case SDLPUI_MB_RANGED_INT:
-		if (hint == SDLPUI_ACTION_HINT_KEY
-				|| mbp->has_key == mbp->has_mouse) {
-			inci = (mbp->has_key == 1) ?
-				-1 : ((mbp->has_key == 2) ? 1 : 0);
-		} else if (hint == SDLPUI_ACTION_HINT_MOUSE
-				|| mbp->has_key == 0) {
-			inci = (mbp->has_mouse == 1) ?
-				-1 : ((mbp->has_mouse == 2) ? 1 : 0);
-		} else if (mbp->has_mouse == 0) {
-			inci = (mbp->has_key == 1) ?
-				-1 : ((mbp->has_key == 2) ? 1 : 0);
+		sdlpui_begin_focus_transaction();
+		has_key = sdlpui_control_has_focus(c, SDLPUI_ACTION_HINT_KEY);
+		has_mouse = sdlpui_control_has_focus(c,
+			SDLPUI_ACTION_HINT_MOUSE);
+		if (hint == SDLPUI_ACTION_HINT_KEY || has_key == has_mouse) {
+			inci = (has_key == 1) ? -1 : ((has_key == 2) ? 1 : 0);
+		} else if (hint == SDLPUI_ACTION_HINT_MOUSE || has_key == 0) {
+			inci = (has_mouse == 1)
+				? -1 : ((has_mouse == 2) ? 1 : 0);
+		} else if (has_mouse == 0) {
+			inci = (has_key == 1) ? -1 : 1;
 		} else {
 			/* It's not clear what should be done, so do nothing. */
 			inci = 0;
 		}
-		newi = mbp->v.ranged_int.curr + inci;
-		if (newi < mbp->v.ranged_int.min) {
-			newi = mbp->v.ranged_int.min;
-		} else if (newi > mbp->v.ranged_int.max) {
-			newi = mbp->v.ranged_int.max;
+		if (inci > 0) {
+			if (mbp->v.ranged_int.curr > mbp->v.ranged_int.max
+					- inci) {
+				newi = mbp->v.ranged_int.max;
+			} else {
+				newi = mbp->v.ranged_int.curr + inci;
+			}
+		} else if (inci < 0) {
+			if (mbp->v.ranged_int.curr < mbp->v.ranged_int.min
+					- inci) {
+				newi = mbp->v.ranged_int.min;
+			} else {
+				newi = mbp->v.ranged_int.curr + inci;
+			}
+		} else {
+			newi = mbp->v.ranged_int.curr;
 		}
 		if (newi == mbp->v.ranged_int.curr) {
 			SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
 				(*c->ftb->get_caption)(c),
 				"left unchanged by default response");
+			sdlpui_trigger_momentary_feedback(hint, SDL_FALSE);
+			sdlpui_end_focus_transaction();
+			sdlpui_dialog_mark_for_redraw(d, w);
 			return;
 		}
 		if (mbp->v.ranged_int.expanded_caption) {
@@ -1499,8 +1553,8 @@ static void respond_default_mb(struct sdlpui_control *c,
 		SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
 			(*c->ftb->get_caption)(c),
 			"changed by default response");
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
+		sdlpui_end_focus_transaction();
+		sdlpui_dialog_mark_for_redraw(d, w);
 		break;
 
 	case SDLPUI_MB_TOGGLE:
@@ -1508,8 +1562,7 @@ static void respond_default_mb(struct sdlpui_control *c,
 			(*c->ftb->get_caption)(c),
 			"changed by default response");
 		mbp->v.toggled = !mbp->v.toggled;
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
+		sdlpui_dialog_mark_for_redraw(d, w);
 		break;
 
 	default:
@@ -1517,136 +1570,65 @@ static void respond_default_mb(struct sdlpui_control *c,
 	}
 
 	if (mbp->callback) {
-		(*mbp->callback)(c, d, w);
+		(*mbp->callback)(c, d, w, hint);
 	}
 }
 
 
-static void gain_key_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, int comp_ind)
+static void gain_focus_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
+		struct sdlpui_window *w, enum sdlpui_action_hint ah,
+		int comp_ind)
 {
 	struct sdlpui_menu_button *mbp;
-	int old;
 
 	SDL_assert(c->type_code == SDLPUI_CTRL_MENU_BUTTON && c->priv);
 	mbp = c->priv;
 
-	SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
-		(*c->ftb->get_caption)(c), "gains key focus");
-	old = mbp->has_key;
-	if (mbp->subtype_code == SDLPUI_MB_RANGED_INT) {
-		if (comp_ind < 0) {
-			comp_ind += 2;
-		}
-		SDL_assert(comp_ind == 0 || comp_ind == 1);
-		mbp->has_key = comp_ind + 1;
-	} else if (mbp->subtype_code == SDLPUI_MB_INDICATOR) {
-		SDL_assert(0);
-	} else {
-		SDL_assert(comp_ind == 0 || comp_ind == -1);
-		mbp->has_key = 1;
-	}
-	if (old != mbp->has_key) {
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
-	}
 	if (mbp->subtype_code == SDLPUI_MB_SUBMENU && !mbp->v.submenu.child) {
 		help_mb_popup_submenu(c, d, w);
 	}
 }
 
 
-static void lose_key_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, struct sdlpui_control *new_c,
-		struct sdlpui_dialog *new_d)
+static void lose_focus_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
+		struct sdlpui_window *w, enum sdlpui_action_hint ah,
+		struct sdlpui_control *new_c, struct sdlpui_dialog *new_d)
 {
 	struct sdlpui_menu_button *mbp;
 
 	SDL_assert(c->type_code == SDLPUI_CTRL_MENU_BUTTON && c->priv);
 	mbp = c->priv;
 
-	if (mbp->has_key) {
-		SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
-			(*c->ftb->get_caption)(c), "loses key focus");
-		mbp->has_key = 0;
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
-	}
-	/*
-	 * Pop down the child dialog if what is gaining focus is not a
-	 * descendant of it.
-	 */
-	if (mbp->subtype_code == SDLPUI_MB_SUBMENU && mbp->v.submenu.child
-			&& (!new_d || !sdlpui_is_descendant_dialog(d, new_d))) {
-		SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
-			(*c->ftb->get_caption)(c), "popping down submenu");
-		sdlpui_popdown_dialog(mbp->v.submenu.child, w, SDL_FALSE);
-		mbp->v.submenu.child = NULL;
-	}
-}
-
-
-static void gain_mouse_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, int comp_ind)
-{
-	struct sdlpui_menu_button *mbp;
-	int old;
-
-	SDL_assert(c->type_code == SDLPUI_CTRL_MENU_BUTTON && c->priv);
-	mbp = c->priv;
-
-	SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
-		(*c->ftb->get_caption)(c), "gains mouse focus");
-	old = mbp->has_mouse;
-	if (mbp->subtype_code == SDLPUI_MB_RANGED_INT) {
-		if (comp_ind < 0) {
-			comp_ind += 2;
+	switch (mbp->subtype_code) {
+	case SDLPUI_MB_SUBMENU:
+		if (mbp->v.submenu.child) {
+			/*
+			 * Pop down whatever parts of the menu tree with the
+			 * the child that no longer have focus.
+			 */
+			(void)sdlpui_popdown_dialog(mbp->v.submenu.child,
+				w, SDL_TRUE, SDL_TRUE, SDL_TRUE);
 		}
-		SDL_assert(comp_ind == 0 || comp_ind == 1);
-		mbp->has_mouse = comp_ind + 1;
-	} else if (mbp->subtype_code == SDLPUI_MB_INDICATOR) {
+		break;
+
+	case SDLPUI_MB_NONE:
+	case SDLPUI_MB_INDICATOR:
+	case SDLPUI_MB_RANGED_INT:
+	case SDLPUI_MB_TOGGLE:
+		/*
+		 * If a new dialog is gaining focus, pop down whatevers parts
+		 * of the menu tree including the parent menu for this control
+		 * that no longer have focus.
+		 */
+		if (!new_d || new_d->id != d->id) {
+			(void)sdlpui_popdown_dialog(d, w, SDL_TRUE, SDL_TRUE,
+				SDL_TRUE);
+		}
+		break;
+
+	default:
 		SDL_assert(0);
-	} else {
-		SDL_assert(comp_ind == 0 || comp_ind == -1);
-		mbp->has_mouse = 1;
-	}
-	if (old != mbp->has_mouse) {
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
-	}
-	if (mbp->subtype_code == SDLPUI_MB_SUBMENU && !mbp->v.submenu.child) {
-		help_mb_popup_submenu(c, d, w);
-	}
-}
-
-
-static void lose_mouse_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, struct sdlpui_control *new_c,
-		struct sdlpui_dialog *new_d)
-
-{
-	struct sdlpui_menu_button *mbp;
-
-	SDL_assert(c->type_code == SDLPUI_CTRL_MENU_BUTTON && c->priv);
-	mbp = c->priv;
-
-	if (mbp->has_mouse) {
-		SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
-			(*c->ftb->get_caption)(c), "loses mouse focus");
-		mbp->has_mouse = 0;
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
-	}
-	/*
-	 * Pop down the child dialog if what is gaining focus is not a
-	 * descendant of it.
-	 */
-	if (mbp->subtype_code == SDLPUI_MB_SUBMENU && mbp->v.submenu.child
-			&& (!new_d || !sdlpui_is_descendant_dialog(d, new_d))) {
-		SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
-			(*c->ftb->get_caption)(c), "popping down submenu");
-		sdlpui_popdown_dialog(mbp->v.submenu.child, w, SDL_FALSE);
-		mbp->v.submenu.child = NULL;
+		break;
 	}
 }
 
@@ -1659,69 +1641,12 @@ static void lose_child_mb(struct sdlpui_control *c, struct sdlpui_dialog *child)
 	mbp = c->priv;
 	SDL_assert(mbp->subtype_code == SDLPUI_MB_SUBMENU);
 
-	if (mbp->v.submenu.child) {
-		SDL_assert(mbp->v.submenu.child == child);
+	/*
+	 * Only forget the child if it is the one going away; this button may
+	 * already hold a newer one.
+	 */
+	if (mbp->v.submenu.child && mbp->v.submenu.child->id == child->id) {
 		mbp->v.submenu.child = NULL;
-	}
-}
-
-
-static void arm_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, enum sdlpui_action_hint hint)
-{
-	struct sdlpui_menu_button *mbp;
-	int old;
-
-	SDL_assert(c->type_code == SDLPUI_CTRL_MENU_BUTTON && c->priv);
-	mbp = c->priv;
-
-	SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
-		(*c->ftb->get_caption)(c), "arming");
-	old = mbp->armed;
-	if (mbp->subtype_code != SDLPUI_MB_RANGED_INT) {
-		mbp->armed = 1;
-	} else {
-		if (hint == SDLPUI_ACTION_HINT_KEY
-				|| hint == SDLPUI_ACTION_HINT_NONE) {
-			mbp->armed |= mbp->has_key;
-		}
-		if (hint == SDLPUI_ACTION_HINT_MOUSE
-				|| hint == SDLPUI_ACTION_HINT_NONE) {
-			mbp->armed |= mbp->has_mouse;
-		}
-	}
-	if (old != mbp->armed) {
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
-	}
-}
-
-
-static void disarm_mb(struct sdlpui_control *c, struct sdlpui_dialog *d,
-		struct sdlpui_window *w, enum sdlpui_action_hint hint)
-{
-	struct sdlpui_menu_button *mbp;
-	int old;
-
-	SDL_assert(c->type_code == SDLPUI_CTRL_MENU_BUTTON && c->priv);
-	mbp = c->priv;
-
-	SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
-		(*c->ftb->get_caption)(c), "disarming");
-	old = mbp->armed;
-	if (mbp->subtype_code != SDLPUI_MB_RANGED_INT
-			|| hint == SDLPUI_ACTION_HINT_NONE) {
-		mbp->armed = 0;
-	} else {
-		if (hint == SDLPUI_ACTION_HINT_KEY) {
-			mbp->armed &= ~mbp->has_key;
-		} else if (hint == SDLPUI_ACTION_HINT_MOUSE) {
-			mbp->armed &= ~mbp->has_mouse;
-		}
-	}
-	if (old != mbp->armed) {
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
 	}
 }
 
@@ -1757,30 +1682,35 @@ static int get_mb_interactable_component(struct sdlpui_control *c,
 }
 
 
-static SDL_bool step_within_mb(struct sdlpui_control *c, SDL_bool forward)
+static int step_within_mb(struct sdlpui_control *c, SDL_bool forward)
 {
 	struct sdlpui_menu_button *mbp;
+	int result = 0;
 
 	SDL_assert(c->type_code == SDLPUI_CTRL_MENU_BUTTON && c->priv);
 	mbp = c->priv;
 
-	SDL_assert(mbp->has_key);
 	if (mbp->subtype_code == SDLPUI_MB_RANGED_INT) {
+		int has_key;
+
+		sdlpui_begin_focus_transaction();
+
+		has_key = sdlpui_control_has_focus(c, SDLPUI_ACTION_HINT_KEY);
 		if (forward) {
-			if (mbp->has_key == 1 && mbp->v.ranged_int.curr
+			if (has_key == 1 && mbp->v.ranged_int.curr
 					< mbp->v.ranged_int.max) {
-				mbp->has_key = 2;
-				return SDL_TRUE;
+				result = 2;
 			}
 		} else {
-			if (mbp->has_key == 2 && mbp->v.ranged_int.curr
+			if (has_key == 2 && mbp->v.ranged_int.curr
 					> mbp->v.ranged_int.min) {
-				mbp->has_key = 1;
-				return SDL_TRUE;
+				result = 1;
 			}
 		}
+
+		sdlpui_end_focus_transaction();
 	}
-	return SDL_FALSE;
+	return result;
 }
 
 
@@ -1974,8 +1904,7 @@ static SDL_bool set_mb_disabled(struct sdlpui_control *c,
 	old_value = mbp->disabled;
 	if (!old_value != !disabled) {
 		mbp->disabled = (disabled) ? SDL_TRUE : SDL_FALSE;
-		d->dirty = SDL_TRUE;
-		sdlpui_signal_redraw(w);
+		sdlpui_dialog_mark_for_redraw(d, w);
 	}
 	return old_value;
 }
@@ -2139,39 +2068,23 @@ SDL_bool sdlpui_control_handle_key(struct sdlpui_control *c,
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		const struct SDL_KeyboardEvent *e)
 {
-	if (e->keysym.sym == SDLK_RETURN) {
+	if (e->keysym.sym == SDLK_RETURN && e->state == SDL_PRESSED) {
 		SDL_Keymod mods = sdlpui_get_interesting_keymods();
 
-		if (e->state == SDL_PRESSED) {
-			if (mods == KMOD_NONE && c->ftb->arm) {
-				(*c->ftb->arm)(c, d, w, SDLPUI_ACTION_HINT_KEY);
-			}
-		} else {
-			/*
-			 * Always disarm, regardless of the modifier state,
-			 * in case a modifier key was pressed between
-			 * depressing and releasing the key.
-			 */
-			if (c->ftb->disarm) {
-				(*c->ftb->disarm)(c, d, w,
+		if (mods == KMOD_NONE) {
+			if (c->ftb->respond_default) {
+				SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c),
+					c,
+					(c->ftb->get_caption)
+					? (*c->ftb->get_caption)(c) : "(none)",
+					"invoking default reponse");
+				(*c->ftb->respond_default)(c, d, w,
 					SDLPUI_ACTION_HINT_KEY);
-			}
-			if (mods == KMOD_NONE) {
-				if (c->ftb->respond_default) {
-					SDLPUI_EVENT_TRACER(
-						(*c->ftb->get_type_name)(c), c,
-						(c->ftb->get_caption)
-						? (*c->ftb->get_caption)(c)
-						: "(none)",
-						"invoking default reponse");
-					(*c->ftb->respond_default)(c, d, w,
-						SDLPUI_ACTION_HINT_KEY);
-				} else if (d->ftb->respond_default) {
-					SDLPUI_EVENT_TRACER("dialog", d,
-						"(not extracted)",
-						"invoking default reponse");
-					(*d->ftb->respond_default)(d, w);
-				}
+			} else if (d->ftb->respond_default) {
+				SDLPUI_EVENT_TRACER("dialog", d,
+					"(not extracted)",
+					"invoking default reponse");
+				(*d->ftb->respond_default)(d, w);
 			}
 		}
 		return SDL_TRUE;
@@ -2199,27 +2112,13 @@ SDL_bool sdlpui_control_handle_mouseclick(struct sdlpui_control *c,
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		const struct SDL_MouseButtonEvent *e)
 {
-	if (e->button == SDL_BUTTON_LEFT) {
-		if (e->state == SDL_PRESSED) {
-			if (c->ftb->arm) {
-				(*c->ftb->arm)(c, d, w,
-					 SDLPUI_ACTION_HINT_MOUSE);
-			}
-		} else {
-			if (c->ftb->disarm) {
-				(*c->ftb->disarm)(c, d, w,
-					SDLPUI_ACTION_HINT_MOUSE);
-			}
-			if (c->ftb->respond_default) {
-				SDLPUI_EVENT_TRACER(
-					(*c->ftb->get_type_name)(c), c,
-					(c->ftb->get_caption)
-					? (*c->ftb->get_caption)(c) : "(none)",
-					"invoking default response");
-				(*c->ftb->respond_default)(c, d, w,
-					SDLPUI_ACTION_HINT_MOUSE);
-			}
-		}
+	if (e->button == SDL_BUTTON_LEFT && e->state == SDL_PRESSED
+			&& c->ftb->respond_default) {
+		SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
+			(c->ftb->get_caption)
+			? (*c->ftb->get_caption)(c) : "(none)",
+			"invoking default response");
+		(*c->ftb->respond_default)(c, d, w, SDLPUI_ACTION_HINT_MOUSE);
 	}
 	/* Swallow the event, even if nothing was done. */
 	return SDL_TRUE;
@@ -2243,12 +2142,8 @@ SDL_bool sdlpui_control_handle_mousemove(struct sdlpui_control *c,
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		const struct SDL_MouseMotionEvent *e)
 {
-	/*
-	 * Ignore motion events while a mouse button is pressed (at least
-	 * up to the point that the mouse leaves the window).  If the mouse
-	 * is moving within the control, it also does nothing.
-	 */
-	if (e->state != 0 || sdlpui_is_in_control(c, d, e->x, e->y)) {
+	/* If the mouse is moving within the control, it does nothing. */
+	if (sdlpui_is_in_control(c, d, e->x, e->y)) {
 		return SDL_TRUE;
 	}
 	/*
@@ -2266,10 +2161,14 @@ SDL_bool sdlpui_control_handle_mousemove(struct sdlpui_control *c,
  * \param c is the control which was activated.
  * \param d is the dialog containing the control.
  * \param w is the window containing the dialog.
+ * \param hint specifies the type of input that triggered the action.  It is
+ * ignored in this function.
  */
 void sdlpui_invoke_dialog_default_action(struct sdlpui_control *c,
-		struct sdlpui_dialog *d, struct sdlpui_window *w)
+		struct sdlpui_dialog *d, struct sdlpui_window *w,
+		enum sdlpui_action_hint hint)
 {
+	(void)hint;
 	if (d->ftb->respond_default) {
 		SDLPUI_EVENT_TRACER((*c->ftb->get_type_name)(c), c,
 			(c->ftb->get_caption) ? (*c->ftb->get_caption)(c)
@@ -2396,7 +2295,7 @@ void sdlpui_create_label(struct sdlpui_control *c, const char *caption,
  * independent of the lifetime of the control.
  * \param halign specifies how the label should be horizontally aligned within
  * the control's bounds if the control is wider than the label.
- * \param callback is the function to invoke when the button is released.  It
+ * \param callback is the function to invoke when the button is pressed.  It
  * may be NULL.
  * \param tag is a value the application can use as it wishes to have buttons
  * with the same callback act differently.
@@ -2412,7 +2311,8 @@ void sdlpui_create_label(struct sdlpui_control *c, const char *caption,
 void sdlpui_create_push_button(struct sdlpui_control *c, const char *caption,
 		enum sdlpui_hor_align halign, void (*callback)(
 		struct sdlpui_control*, struct sdlpui_dialog*,
-		struct sdlpui_window*), int tag, SDL_bool disabled)
+		struct sdlpui_window*, enum sdlpui_action_hint), int tag,
+		SDL_bool disabled)
 {
 	Uint32 id = sdlpui_reserve_id();
 	struct sdlpui_push_button *pbp;
@@ -2442,9 +2342,6 @@ void sdlpui_create_push_button(struct sdlpui_control *c, const char *caption,
 	pbp->halign = halign;
 	pbp->tag = tag;
 	pbp->disabled = (disabled) ? SDL_TRUE : SDL_FALSE;
-	pbp->has_key = SDL_FALSE;
-	pbp->has_mouse = SDL_FALSE;
-	pbp->armed = SDL_FALSE;
 	c->ftb = &push_button_funcs;
 	c->priv = pbp;
 	c->id = id;
@@ -2461,7 +2358,7 @@ void sdlpui_create_push_button(struct sdlpui_control *c, const char *caption,
  * independent of the lifetime of the control.
  * \param halign specifies how the label should be horizontally aligned within
  * the control's bounds if the control is wider than the label.
- * \param callback is the function to invoke when the button is released.  It
+ * \param callback is the function to invoke when the button is pressed.  It
  * may be NULL.
  * \param tag is a value the application can use as it wishes to have buttons
  * with the same callback act differently.
@@ -2477,7 +2374,8 @@ void sdlpui_create_push_button(struct sdlpui_control *c, const char *caption,
 void sdlpui_create_menu_button(struct sdlpui_control *c, const char *caption,
 		enum sdlpui_hor_align halign, void (*callback)(
 		struct sdlpui_control*, struct sdlpui_dialog*,
-		struct sdlpui_window *w), int tag, SDL_bool disabled)
+		struct sdlpui_window *w, enum sdlpui_action_hint), int tag,
+		SDL_bool disabled)
 {
 	Uint32 id = sdlpui_reserve_id();
 	struct sdlpui_menu_button *mbp;
@@ -2506,9 +2404,6 @@ void sdlpui_create_menu_button(struct sdlpui_control *c, const char *caption,
 	mbp->callback = callback;
 	mbp->halign = halign;
 	mbp->tag = tag;
-	mbp->has_key = 0;
-	mbp->has_mouse = 0;
-	mbp->armed = 0;
 	mbp->disabled = (disabled) ? SDL_TRUE : SDL_FALSE;
 	mbp->subtype_code = SDLPUI_MB_NONE;
 	c->ftb = &menu_button_funcs;
@@ -2566,9 +2461,6 @@ void sdlpui_create_menu_indicator(struct sdlpui_control *c, const char *caption,
 	mbp->callback = NULL;
 	mbp->halign = halign;
 	mbp->tag = tag;
-	mbp->has_key = 0;
-	mbp->has_mouse = 0;
-	mbp->armed = 0;
 	mbp->disabled = SDL_FALSE;
 	mbp->subtype_code = SDLPUI_MB_INDICATOR;
 	mbp->v.toggled = (curr_value) ? SDL_TRUE : SDL_FALSE;
@@ -2611,8 +2503,8 @@ void sdlpui_create_menu_indicator(struct sdlpui_control *c, const char *caption,
 void sdlpui_create_menu_ranged_int(struct sdlpui_control *c,
 		const char *caption, enum sdlpui_hor_align halign,
 		void (*callback)(struct sdlpui_control*, struct sdlpui_dialog*,
-		struct sdlpui_window*), int tag, SDL_bool disabled,
-		int curr_value, int min_value, int max_value)
+		struct sdlpui_window*, enum sdlpui_action_hint), int tag,
+		SDL_bool disabled, int curr_value, int min_value, int max_value)
 {
 	Uint32 id = sdlpui_reserve_id();
 	struct sdlpui_menu_button *mbp;
@@ -2641,9 +2533,6 @@ void sdlpui_create_menu_ranged_int(struct sdlpui_control *c,
 	mbp->callback = callback;
 	mbp->halign = halign;
 	mbp->tag = tag;
-	mbp->has_key = 0;
-	mbp->has_mouse = 0;
-	mbp->armed = 0;
 	mbp->disabled = (disabled) ? SDL_TRUE : SDL_FALSE;
 	mbp->subtype_code = SDLPUI_MB_RANGED_INT;
 	mbp->v.ranged_int.expanded_caption = NULL;
@@ -2668,7 +2557,7 @@ void sdlpui_create_menu_ranged_int(struct sdlpui_control *c,
  * independent of the lifetime of the control.
  * \param halign specifies how the label should be horizontally aligned within
  * the control's bounds if the control is wider than the label.
- * \param callback is the function to invoke when the button is released.  It
+ * \param callback is the function to invoke when the button is pressed.  It
  * may be NULL.
  * \param tag is a value the application can use as it wishes to have buttons
  * with the same callback act differently.
@@ -2685,8 +2574,8 @@ void sdlpui_create_menu_ranged_int(struct sdlpui_control *c,
 void sdlpui_create_menu_toggle(struct sdlpui_control *c, const char *caption,
 		enum sdlpui_hor_align halign, void (*callback)(
 		struct sdlpui_control*, struct sdlpui_dialog*,
-		struct sdlpui_window*), int tag, SDL_bool disabled,
-		SDL_bool curr_value)
+		struct sdlpui_window*, enum sdlpui_action_hint hint), int tag,
+		SDL_bool disabled, SDL_bool curr_value)
 {
 	Uint32 id = sdlpui_reserve_id();
 	struct sdlpui_menu_button *mbp;
@@ -2715,9 +2604,6 @@ void sdlpui_create_menu_toggle(struct sdlpui_control *c, const char *caption,
 	mbp->callback = callback;
 	mbp->halign = halign;
 	mbp->tag = tag;
-	mbp->has_key = 0;
-	mbp->has_mouse = 0;
-	mbp->armed = 0;
 	mbp->disabled = (disabled) ? SDL_TRUE : SDL_FALSE;
 	mbp->subtype_code = SDLPUI_MB_TOGGLE;
 	mbp->v.toggled = (curr_value) ? SDL_TRUE : SDL_FALSE;
@@ -2792,9 +2678,6 @@ void sdlpui_create_submenu_button(struct sdlpui_control *c, const char *caption,
 	mbp->callback = NULL;
 	mbp->halign = halign;
 	mbp->tag = tag;
-	mbp->has_key = 0;
-	mbp->has_mouse = 0;
-	mbp->armed = 0;
 	mbp->disabled = (disabled) ? SDL_TRUE : SDL_FALSE;
 	mbp->subtype_code = SDLPUI_MB_SUBMENU;
 	mbp->v.submenu.creator = creator;
