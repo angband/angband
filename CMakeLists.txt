@@ -855,6 +855,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     effects/info.c
     game/basic.c
     game/mage.c
+    game/status.c
     message/message.c
     monster/attack.c
     monster/desc.c
