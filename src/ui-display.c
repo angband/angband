@@ -1183,12 +1183,15 @@ static int longest_terrain_name(void)
  */
 static size_t prt_terrain(int row, int col)
 {
-	struct feature *feat = square_feat(cave, player->grid);
-	struct trap *trap = square_trap(cave, player->grid);
+	struct feature *feat = square_feat(player->cave, player->grid);
+	struct trap *trap = square_trap(player->cave, player->grid);
 	char buf[30];
 	uint8_t attr;
 
-	if (trap && !square_isinvis(cave, player->grid)) {
+	if (feat->mimic) {
+		feat = feat->mimic;
+	}
+	if (trap && square_isknown(cave, player->grid)) {
 		my_strcpy(buf, trap->kind->name, sizeof(buf));
 		attr = trap->kind->d_attr;
 	} else {
