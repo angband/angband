@@ -1415,7 +1415,7 @@ bool borg_best_stuff(void)
     if (borg_cfg[BORG_VERBOSE]) {
         if (found) {
             for (i = 0; i < z_info->equip_slots_max; i++) {
-                if (best[i] > 100) {
+                if (best[i] >= 100) {
                     borg_note(format("new best: %s",
                         borg_shops[BORG_HOME].ware[best[i] - 100].desc));
                 } else {
