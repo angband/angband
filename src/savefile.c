@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "game-world.h"
 #include "init.h"
+#include "obj-knowledge.h"
 #include "savefile.h"
 #include "save-charoutput.h"
 #include "z-file.h"
@@ -648,6 +649,27 @@ bool savefile_load(const char *path, bool cheat_death)
 			player->is_dead = false;
 			player->chp = player->mhp;
 			player->noscore |= NOSCORE_WIZARD;
+	}
+
+	if (!player->is_dead) {
+		/*
+		 * Bring the stock curse objects up-to-date with what the
+		 * player knows.
+		 */
+		update_player_object_knowledge(player);
+
+		/*
+		 * Reset the dungeon noise to what it was when the game was
+		 * saved.  Can skip that if the noise had not been calculated
+		 * yet:  the noise levels were all zero when the save happened
+		 * and that is what they are after the load calls cave_new().
+		 */
+		if (character_dungeon && (player->noise_grid.x
+				|| player->noise_grid.y)
+				&& square_in_bounds(cave, player->noise_grid)) {
+			make_noise(player, &player->noise_grid,
+				&player->noise_falloff);
+		}
 	}
 
 	/* Character is now "complete" */
