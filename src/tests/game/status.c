@@ -62,12 +62,16 @@ static void reset_square(void) {
 	player->state.cur_light = 2;
 }
 
-static int check_status(const char *expected, int expected_attr) {
+static int check_status(const char *name, int expected_attr) {
+	char expected[31];
 	char line[161];
 	wchar_t ch;
 	char *start;
 	int x, attr;
 
+	my_strcpy(expected, name, sizeof(expected) - 1);
+	my_strcap(expected);
+	my_strcat(expected, " ", sizeof(expected));
 	event_signal(EVENT_STATUS);
 	for (x = 0; x < 160; ++x) {
 		eq(Term_what(x, 23, &attr, &ch), 0);
@@ -88,13 +92,13 @@ static int test_seen(void *state) {
 	update_view(cave, player);
 	require(square_isseen(cave, player->grid));
 	require(square_isknown(cave, player->grid));
-	if (check_status("Down staircase ", f_info[FEAT_MORE].d_attr))
+	if (check_status(f_info[FEAT_MORE].name, f_info[FEAT_MORE].d_attr))
 		return 1;
 
 	/* Visible terrain changes still update the status line. */
 	square_set_feat(cave, player->grid, FEAT_LAVA);
 	square_note_spot(cave, player->grid);
-	return check_status("Lava ", f_info[FEAT_LAVA].d_attr);
+	return check_status(f_info[FEAT_LAVA].name, f_info[FEAT_LAVA].d_attr);
 }
 
 static int test_blind(void *state) {
@@ -103,7 +107,7 @@ static int test_blind(void *state) {
 	update_view(cave, player);
 	require(!square_isseen(cave, player->grid));
 	require(!square_isknown(cave, player->grid));
-	return check_status("Unknown grid ", f_info[FEAT_NONE].d_attr);
+	return check_status(f_info[FEAT_NONE].name, f_info[FEAT_NONE].d_attr);
 }
 
 static int test_unlit(void *state) {
@@ -112,7 +116,7 @@ static int test_unlit(void *state) {
 	update_view(cave, player);
 	require(!square_isseen(cave, player->grid));
 	require(!square_isknown(cave, player->grid));
-	return check_status("Unknown grid ", f_info[FEAT_NONE].d_attr);
+	return check_status(f_info[FEAT_NONE].name, f_info[FEAT_NONE].d_attr);
 }
 
 static int test_remembered(void *state) {
@@ -124,14 +128,14 @@ static int test_remembered(void *state) {
 	require(!square_isseen(cave, player->grid));
 	eq(square_feat(player->cave, player->grid), &f_info[FEAT_MORE]);
 	eq(square_feat(cave, player->grid), &f_info[FEAT_FLOOR]);
-	return check_status("Down staircase ", f_info[FEAT_MORE].d_attr);
+	return check_status(f_info[FEAT_MORE].name, f_info[FEAT_MORE].d_attr);
 }
 
 static int test_mimic(void *state) {
 	reset_square();
 	square_set_feat(player->cave, player->grid, FEAT_SECRET);
 	notnull(f_info[FEAT_SECRET].mimic);
-	return check_status("Granite wall ", f_info[FEAT_GRANITE].d_attr);
+	return check_status(f_info[FEAT_GRANITE].name, f_info[FEAT_GRANITE].d_attr);
 }
 
 static int test_hidden_trap(void *state) {
@@ -148,7 +152,7 @@ static int test_hidden_trap(void *state) {
 	square_memorize_traps(cave, player->grid);
 	notnull(square_trap(cave, player->grid));
 	null(square_trap(player->cave, player->grid));
-	return check_status("Open floor ", f_info[FEAT_FLOOR].d_attr);
+	return check_status(f_info[FEAT_FLOOR].name, f_info[FEAT_FLOOR].d_attr);
 }
 
 static int check_known_trap(struct trap_kind *kind) {
@@ -158,7 +162,7 @@ static int check_known_trap(struct trap_kind *kind) {
 	require(!data.in_view);
 	notnull(data.trap);
 	eq(data.trap->kind, kind);
-	return check_status("Pit ", kind->d_attr);
+	return check_status(kind->name, kind->d_attr);
 }
 
 static int test_remembered_trap(void *state) {
@@ -173,7 +177,7 @@ static int test_remembered_trap(void *state) {
 	trf_on(square_trap(cave, player->grid)->flags, TRF_VISIBLE);
 	square_memorize_traps(cave, player->grid);
 	notnull(square_trap(player->cave, player->grid));
-	if (check_status("Pit ", kind->d_attr))
+	if (check_status(kind->name, kind->d_attr))
 		return 1;
 
 	/* The map also displays remembered traps while blind or without light. */
@@ -190,7 +194,7 @@ static int test_remembered_trap(void *state) {
 	/* Forgetting terrain also hides any leftover trap memory. */
 	square_forget(cave, player->grid);
 	notnull(square_trap(player->cave, player->grid));
-	if (check_status("Unknown grid ", f_info[FEAT_NONE].d_attr))
+	if (check_status(f_info[FEAT_NONE].name, f_info[FEAT_NONE].d_attr))
 		return 1;
 	square_memorize(cave, player->grid);
 
@@ -198,11 +202,11 @@ static int test_remembered_trap(void *state) {
 	sqinfo_off(square(cave, player->grid)->info, SQUARE_SEEN);
 	square_remove_all_traps(cave, player->grid);
 	notnull(square_trap(player->cave, player->grid));
-	if (check_status("Pit ", kind->d_attr))
+	if (check_status(kind->name, kind->d_attr))
 		return 1;
 
 	square_memorize_traps(cave, player->grid);
-	return check_status("Open floor ", f_info[FEAT_FLOOR].d_attr);
+	return check_status(f_info[FEAT_FLOOR].name, f_info[FEAT_FLOOR].d_attr);
 }
 
 const char *suite_name = "game/status";
