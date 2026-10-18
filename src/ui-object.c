@@ -606,7 +606,6 @@ void show_floor(struct object **floor_list, int floor_num, int mode,
 static item_tester tester_m;
 static region area = { 20, 1, -1, -2 };
 static struct object *selection;
-static const char *prompt;
 static char header[80];
 static int i1, i2;
 static int e1, e2;
@@ -1349,7 +1348,6 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	item_mode = mode;
 	item_cmd = cmd;
 	tester_m = tester;
-	prompt = pmt;
 	allow_all = str ? false : true;
 
 	/* Object list display modes */
