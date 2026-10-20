@@ -288,6 +288,53 @@ dependencies provides those).
 Windows native build
 --------------------
 
+Using MSYS2 (with UCRT64) and CMake
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Install the dependencies by::
+
+    pacman -S make mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja
+
+Additional dependency for the native Windows client is::
+
+    pacman -S mingw-w64-ucrt-x86_64-libpng
+
+The additional dependency for ncurses is::
+
+    pacman -S mingw-w64-ucrt-x86_64-ncurses
+
+Additional dependencies for the SDL2 client are::
+
+    pacman -S mingw-w64-ucrt-x86_64-SDL2 mingw-w64-ucrt-x86_64-SDL2_image \
+        mingw-w64-ucrt-x86_64-SDL2_ttf mingw-w64-ucrt-x86_64-SDL2_mixer
+
+Then run the following to compile for native Windows::
+
+    cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON \
+        -DSUPPORT_STATIC_LINKING=ON \
+        -B build
+    cmake --build build
+
+For ncurses, do::
+
+    cmake -G Ninja -DSUPPORT_GCU_FRONTEND=ON \
+        -DSUPPORT_STATIC_LINKING=ON \
+        -B build
+    cmake --build build
+
+For SDL2, do::
+
+    cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON \
+        -DSUPPORT_SDL2_SOUND=ON \
+        -DSUPPORT_STATIC_LINKING=ON \
+        -B build
+    cmake --build build
+
+Once built, go to build/game/ subdirectory and start angband by::
+
+    cd build/game
+    ./angband.exe
+
 Using MSYS2 (with MinGW64) and CMake
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
