@@ -126,8 +126,8 @@ static int test_remembered(void *state) {
 	player->state.cur_light = 0;
 	update_view(cave, player);
 	require(!square_isseen(cave, player->grid));
-	eq(square_feat(player->cave, player->grid), &f_info[FEAT_MORE]);
-	eq(square_feat(cave, player->grid), &f_info[FEAT_FLOOR]);
+	ptreq(square_feat(player->cave, player->grid), &f_info[FEAT_MORE]);
+	ptreq(square_feat(cave, player->grid), &f_info[FEAT_FLOOR]);
 	return check_status(f_info[FEAT_MORE].name, f_info[FEAT_MORE].d_attr);
 }
 
@@ -161,7 +161,7 @@ static int check_known_trap(struct trap_kind *kind) {
 	map_info(player->grid, &data);
 	require(!data.in_view);
 	notnull(data.trap);
-	eq(data.trap->kind, kind);
+	ptreq(data.trap->kind, kind);
 	return check_status(kind->name, kind->d_attr);
 }
 
