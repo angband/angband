@@ -24,8 +24,8 @@
 #include "../ui-menu.h"
 
 #include "borg-danger.h"
-#include "borg-flow-kill.h"
 #include "borg-flow-misc.h"
+#include "borg-init.h"
 #include "borg-inventory.h"
 #include "borg-io.h"
 #include "borg-item-analyze.h"
@@ -1067,7 +1067,7 @@ static uint16_t borg_best_stuff_order(int n)
     case 11:
         return INVEN_NECK;
     default:
-        return 255;
+        return UINT16_MAX;
     }
 }
 
@@ -1210,17 +1210,16 @@ static bool borg_one_step_wearing_best(int skip)
  * Helper function (see below)
  */
 static void borg_best_stuff_aux(
-    int n, uint8_t *test, uint8_t *best, int32_t *vp)
+    int n, uint16_t *test, uint16_t *best, int32_t *vp)
 {
-    int i;
-
-    int slot;
+    uint16_t i;
+    int      slot;
 
     /* Extract the slot */
     slot = borg_best_stuff_order(n);
 
     /* All done */
-    if (slot == 255) {
+    if (slot == UINT16_MAX) {
         int32_t p;
 
         /* Examine */
@@ -1250,10 +1249,7 @@ static void borg_best_stuff_aux(
     borg_best_stuff_aux(n + 1, test, best, vp);
 
     /* Try other possible object combination */
-    for (i = 0; i < ((shop_num == BORG_HOME)
-                         ? (z_info->pack_size + z_info->store_inven_max)
-                         : z_info->pack_size);
-         i++) {
+    for (i = 0; i < (z_info->pack_size + z_info->store_inven_max); i++) {
         borg_item *item;
         if (i < z_info->pack_size)
             item = &borg_items[i];
@@ -1338,10 +1334,10 @@ bool borg_best_stuff(void)
 
     int32_t value;
 
-    int i;
+    uint16_t i;
 
-    uint8_t *test;
-    uint8_t *best;
+    uint16_t *test;
+    uint16_t *best;
 
     /* only do this at home */
     if (shop_num != BORG_HOME)
@@ -1359,12 +1355,12 @@ bool borg_best_stuff(void)
     if (!borg.goal.do_best)
         return false;
 
-    best = mem_alloc(sizeof(uint8_t) * z_info->equip_slots_max);
-    test = mem_alloc(sizeof(uint8_t) * z_info->equip_slots_max);
+    best = mem_alloc(sizeof(uint16_t) * z_info->equip_slots_max);
+    test = mem_alloc(sizeof(uint16_t) * z_info->equip_slots_max);
     /* Initialize */
     for (k = 0; k < z_info->equip_slots_max; k++) {
         /* Initialize */
-        best[k] = test[k] = 255;
+        best[k] = test[k] = UINT16_MAX;
     }
 
     /* Evaluate the inventory */
@@ -1388,7 +1384,7 @@ bool borg_best_stuff(void)
         i = best[k];
 
         /* Ignore non-changes */
-        if (i == borg_best_stuff_order(k) || 255 == i)
+        if (i == borg_best_stuff_order(k) || UINT16_MAX == i)
             continue;
 
         found = true;
@@ -1565,6 +1561,11 @@ void borg_init_item_wear(void)
     track_worn_size  = 10;
     track_worn_time  = 0;
     track_worn_name1 = mem_zalloc(track_worn_size * sizeof(uint8_t));
+
+    if (z_info->equip_slots_max + z_info->pack_size >= 100) {
+        msg("pack size plus equipment slots exceeds 100.  Need a rewrite of best_item code");
+        borg_init_failure = true;
+    }
 }
 
 void borg_free_item_wear(void)
