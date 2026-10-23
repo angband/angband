@@ -185,13 +185,16 @@ void lore_show_interactive(const struct monster_race *race,
 void lore_show_subwindow(const struct monster_race *race,
 						 const struct monster_lore *lore)
 {
+	int y;
 	textblock *tb;
 
 	assert(race && lore);
 
 	/* Erase the window, since textui_textblock_place() only clears what it
 	 * needs */
-	(void)Term_clear();
+	for (y = 0; y < Term->hgt; y++) {
+		Term_erase(0, y, Term->wid);
+	}
 
 	tb = textblock_new();
 	lore_description(tb, race, lore, false);
