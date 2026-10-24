@@ -138,7 +138,7 @@ struct cmd_info cmd_item[] =
  */
 struct cmd_info cmd_action[] =
 {
-	{ "Disarm a trap or chest", { 'D' }, CMD_DISARM, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Disarm a trap/chest; lock door", { 'D' }, CMD_DISARM, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Rest for a while", { 'R' }, CMD_NULL, textui_cmd_rest, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Look around", { 'l', 'x' }, CMD_NULL, do_cmd_look, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Target monster or location", { '*' }, CMD_NULL, textui_target, NULL, 0, NULL, NULL, NULL, 0 },
