@@ -65,10 +65,7 @@ static int borg_stuff_feeling[]
 bool borg_money_scum(void)
 {
 
-    int dir     = -1;
     int divisor = 2;
-
-    borg_grid *ag;
 
     /* Just a quick check to make sure we are supposed to do this */
     if (borg_cfg[BORG_MONEY_SCUM_AMOUNT] == 0)
@@ -113,26 +110,24 @@ bool borg_money_scum(void)
 
     /* sometimes twitch in order to move around some */
     if (borg.time.now % divisor) {
-        borg_keypress(ESCAPE);
+        int dirs[8], count = 0, i;
 
-        /* Pick a random direction */
-        while (dir == -1 || dir == 5 || dir == 0) {
-            dir = randint0(10);
-
-            /* Set goal */
-            borg.goal.g.x = borg.c.x + ddx[dir];
-            borg.goal.g.y = borg.c.y + ddy[dir];
-
-            ag            = &borg_grids[borg.goal.g.y][borg.goal.g.x];
-
-            /* Skip walls and shops */
-            if (ag->feat != FEAT_FLOOR)
-                dir = -1;
+        /* Enumerate candidates: there may be no adjacent floor at all. */
+        for (i = 0; i < 8; i++) {
+            struct loc next = loc(borg.c.x + ddx_ddd[i],
+                    borg.c.y + ddy_ddd[i]);
+            if (square_in_bounds_fully(cave, next)
+                    && borg_grids[next.y][next.x].feat == FEAT_FLOOR)
+                dirs[count++] = ddd[i];
         }
 
-        /* Normally move */
-        /* Send direction */
-        borg_keypress(I2D(dir));
+        /* With no destination, keep the rest command already queued. */
+        if (count) {
+            int dir = dirs[randint0(count)];
+            borg.goal.g = loc(borg.c.x + ddx[dir], borg.c.y + ddy[dir]);
+            borg_keypress(ESCAPE);
+            borg_keypress(I2D(dir));
+        }
     }
 
     /* reset the clocks */
