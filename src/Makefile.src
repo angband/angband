@@ -137,11 +137,12 @@ WINMAINFILES = \
         win/readdib.o \
         win/readpng.o \
         win/scrnshot.o \
-		win/win-layout.o
+        win/win-layout.o
 
 X11MAINFILES = main-x11.o
 
-STATSMAINFILES = main-stats.o \
+STATSMAINFILES = \
+        main-stats.o \
         stats/db.o
 
 SPOILMAINFILES = main-spoil.o
@@ -176,8 +177,8 @@ ANGFILES0 = \
 	debug.o \
 	effect-handler-attack.o \
 	effect-handler-general.o \
-	effects.o \
 	effects-info.o \
+	effects.o \
 	game-event.o \
 	game-input.o \
 	game-world.o \
@@ -226,7 +227,6 @@ ANGFILES0 = \
 	obj-util.o \
 	option.o \
 	parser.o \
-	randname.o \
 	player-attack.o \
 	player-birth.o \
 	player-calcs.o \
@@ -240,16 +240,17 @@ ANGFILES0 = \
 	player-timed.o \
 	player-util.o \
 	player.o \
-	project.o \
 	project-feat.o \
 	project-mon.o \
 	project-obj.o \
 	project-player.o \
+	project.o \
+	randname.o \
+	save-charoutput.o \
 	save.o \
 	savefile.o \
-	save-charoutput.o \
-	score.o \
 	score-util.o \
+	score.o \
 	sound-core.o \
 	source.o \
 	store.o \
@@ -262,9 +263,9 @@ ANGFILES0 = \
 	ui-death.o \
 	ui-display.o \
 	ui-effect.o \
-	ui-entry.o \
 	ui-entry-combiner.o \
 	ui-entry-renderers.o \
+	ui-entry.o \
 	ui-equip-cmp.o \
 	ui-event.o \
 	ui-game.o \
