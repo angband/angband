@@ -666,8 +666,6 @@ void check_for_player_interrupt(game_event_type type, game_event_data *data,
 
 static void pre_turn_refresh(void)
 {
-	term *old = Term;
-	int j;
 	if (character_dungeon) {
 		/* Redraw map */
 		player->upkeep->redraw |= (PR_MAP | PR_STATE);
@@ -682,14 +680,8 @@ static void pre_turn_refresh(void)
 			move_cursor_relative(player->grid.y, player->grid.x);
 		}
 
-		for (j = 0; j < ANGBAND_TERM_MAX; j++) {
-			if (!angband_term[j]) continue;
-
-			Term_activate(angband_term[j]);
-			Term_fresh();
-		}
+		(void)Term_fresh_all();
 	}
-	Term_activate(old);
 }
 
 /**

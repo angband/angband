@@ -974,7 +974,7 @@ static void colors_modify(const char *title, int row)
 		Term_xtra(TERM_XTRA_REACT, 0);
 
 		/* Redraw */
-		Term_redraw();
+		Term_redraw_all();
 	}
 }
 

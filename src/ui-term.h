@@ -81,7 +81,9 @@ struct term_win
  *	  This "term" is "mapped"
  *
  *	- Flag "total_erase"
- *	  This "term" should be fully erased
+ *	  The full contents of this "term" will be sent to the front end the
+ *	  next time it is refreshed rather than only sending what is believed
+ *	  to have changed
  *
  *	- Flag "fixed_shape"
  *	  This "term" is not allowed to resize
@@ -101,8 +103,9 @@ struct term_win
  *	- Flag "always_text"
  *	  Use the "Term_text()" routine for invisible text
  *
- *	- Flag "unused_flag"
- *	  Reserved for future use
+ *	- Flag "xtra_clear"
+ *	  Call Term_xtra(TERM_XTRA_CLEAR, 0) the next time this "term" is
+ *	  refreshed so the front end clears whatever represents the "term"
  *
  *	- Flag "never_bored"
  *	  Never call the "TERM_XTRA_BORED" action
@@ -174,7 +177,7 @@ struct term
 	bool always_pict;
 	bool higher_pict;
 	bool always_text;
-	bool unused_flag;
+	bool xtra_clear;
 	bool never_bored;
 	bool never_frosh;
 	int sidebar_mode;
@@ -353,6 +356,12 @@ extern term *angband_term[ANGBAND_TERM_MAX];
 extern char angband_term_name[ANGBAND_TERM_MAX][16];
 extern uint32_t window_flag[ANGBAND_TERM_MAX];
 /**
+ * If true, the front end's response to Term_xtra(TERM_XTRA_CLEAR, 0) affects
+ * all terminals.  If false (the default value), that response only affects
+ * the active terminal.
+ */
+extern bool term_global_clear;
+/**
  * Flags whether the terminals are in a "disconnecting" state.  Modifies the
  * behavior of Term_inkey().
  */
@@ -376,6 +385,8 @@ extern volatile sig_atomic_t terms_suspending;
  *  Available Functions
  * ------------------------------------------------------------------------ */
 
+extern errr Term_clear_all(void);
+extern errr Term_fresh_all(void);
 extern errr Term_redraw_all(void);
 extern errr Term_xtra(int n, int v);
 

@@ -299,6 +299,7 @@ char angband_term_name[ANGBAND_TERM_MAX][16] =
 };
 
 uint32_t window_flag[ANGBAND_TERM_MAX];
+bool term_global_clear = false;
 volatile sig_atomic_t terms_disconnecting = 0;
 volatile sig_atomic_t terms_suspending = 0;
 
@@ -438,9 +439,9 @@ static errr term_win_copy(term_win *s, term_win *f, int w, int h)
 
 
 /**
- * Redraw all the terminals.
+ * Clear all the terminals.
  */
-extern errr Term_redraw_all(void)
+extern errr Term_clear_all(void)
 {
 	term *old = Term;
 	errr combined = 0;
@@ -450,13 +451,70 @@ extern errr Term_redraw_all(void)
 		errr one_result;
 
 		if (!angband_term[j]) continue;
-		(void) Term_activate(angband_term[j]);
-		one_result = Term_redraw();
+		(void)Term_activate(angband_term[j]);
+		one_result = Term_clear();
 		if (!one_result) {
 			combined = one_result;
 		}
 	}
-	(void) Term_activate(old);
+	(void)Term_activate(old);
+
+	return combined;
+}
+
+/**
+ * Make requested changes on all terminals.
+ */
+extern errr Term_fresh_all(void)
+{
+	term *old = Term;
+	errr combined = 0;
+	int j;
+
+	for (j = 0; j < ANGBAND_TERM_MAX; j++) {
+		errr one_result;
+
+		if (!angband_term[j]) continue;
+		(void)Term_activate(angband_term[j]);
+		one_result = Term_fresh();
+		if (!one_result) {
+			combined = one_result;
+		}
+	}
+	(void)Term_activate(old);
+
+	return combined;
+}
+
+/**
+ * Redraw all the terminals.
+ *
+ * Checks term_global_clear to avoid extra clearing operations for the front
+ * ends where it is true.
+ */
+extern errr Term_redraw_all(void)
+{
+	term *old = Term;
+	errr combined = 0;
+	bool first = true;
+	int j;
+
+	for (j = 0; j < ANGBAND_TERM_MAX; j++) {
+		errr one_result;
+
+		if (!angband_term[j]) continue;
+		(void)Term_activate(angband_term[j]);
+		Term->total_erase = true;
+		if (!term_global_clear || first) {
+			Term->xtra_clear = true;
+			first = false;
+		}
+		one_result = Term_fresh();
+		if (!one_result) {
+			combined = one_result;
+		}
+	}
+	(void)Term_activate(old);
 
 	return combined;
 }
@@ -2324,9 +2382,7 @@ errr Term_erase(int x, int y, int n)
 
 
 /**
- * Clear the entire window, and move to the top left corner
- *
- * Note the use of the special "total_erase" code
+ * Clear the terminal's contents, and move to the top left corner
  */
 errr Term_clear(void)
 {
@@ -2366,9 +2422,6 @@ errr Term_clear(void)
 	Term->y1 = 0;
 	Term->y2 = h - 1;
 
-	/* Force "total erase" */
-	Term->total_erase = true;
-
 	/* Success */
 	return (0);
 }
@@ -2382,14 +2435,12 @@ errr Term_clear(void)
  */
 errr Term_redraw(void)
 {
-	/* Force "total erase" */
+	/* Force all the contents to be sent and a clear by the front end. */
 	Term->total_erase = true;
+	Term->xtra_clear = true;
 
 	/* Refresh */
-	Term_fresh();
-
-	/* Success */
-	return (0);
+	return Term_fresh();
 }
 
 

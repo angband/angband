@@ -475,11 +475,9 @@ void signals_perform_deferred_suspend(void)
 	/* Resume the "Term" */
 	Term_xtra(TERM_XTRA_ALIVE, 1);
 
-	/* Redraw the term */
-	Term_redraw();
+	/* Redraw the windows */
+	Term_redraw_all();
 
-	/* Flush the term */
-	Term_fresh();
 #else
 	/* Clear the indicator. */
 	terms_suspending = 0;

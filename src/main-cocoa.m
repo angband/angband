@@ -2104,9 +2104,6 @@ static BOOL initialized = NO;
     /* Redraw the contents */
     Term_redraw();
     
-    /* Flush the output */
-    Term_fresh();
-    
     /* Restore the old term */
     Term_activate(old);
 }

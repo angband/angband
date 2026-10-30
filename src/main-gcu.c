@@ -1445,6 +1445,12 @@ errr init_gcu(int argc, char **argv) {
 	/* Extract the game keymap */
 	keymap_game_prepare();
 
+	/*
+	 * This front end's response to TERM_XTRA_CLEAR affects all the
+	 * terminals.
+	 */
+	term_global_clear = true;
+
 	/* Now prepare the term(s) */
 	if (term_count > 1) 
 	{	
