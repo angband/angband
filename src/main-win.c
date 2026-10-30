@@ -2642,7 +2642,6 @@ static void windows_map(void)
 	td->map_active = false;
 
 	/* Restore screen */
-	Term_xtra_win_clear();
 	Term_redraw();
 
 	/* We are ready again */

@@ -2056,7 +2056,7 @@ void do_cmd_wiz_query_feature(struct command *cmd)
 
 	wiz_hack_map(cave, player, wiz_hack_map_query_feature, &selected);
 
-	Term_redraw();
+	Term_fresh();
 
 	msg("Press any key.");
 	inkey_ex();
@@ -2132,7 +2132,7 @@ void do_cmd_wiz_query_square_flag(struct command *cmd)
 
 	wiz_hack_map(cave, player, wiz_hack_map_query_square_flag, &flag);
 
-	Term_redraw();
+	Term_fresh();
 
 	msg("Press any key.");
 	inkey_ex();
