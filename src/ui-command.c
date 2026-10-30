@@ -94,8 +94,8 @@ void do_cmd_redraw(void)
 								   PR_OBJECT | PR_MONLIST | PR_ITEMLIST);
 	}
 
-	/* Clear screen */
-	Term_clear();
+	/* Clear every window */
+	(void)Term_clear_all();
 
 	if (character_dungeon) {
 		/* Update */
@@ -113,7 +113,7 @@ void do_cmd_redraw(void)
 	}
 
 	/* Redraw every window */
-	(void) Term_redraw_all();
+	(void)Term_redraw_all();
 }
 
 

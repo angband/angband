@@ -4901,11 +4901,11 @@ static void refresh_angband_terms(struct my_app *a)
 								   PR_EQUIP | PR_MESSAGE | PR_MONSTER |
 								   PR_OBJECT | PR_MONLIST | PR_ITEMLIST);
 
-		Term_clear();
+		(void)Term_clear_all();
 		handle_stuff(player);
 		move_cursor_relative(player->grid.x, player->grid.y);
 
-		Term_redraw_all();
+		(void)Term_redraw_all();
 	}
 
 	Term_activate(old);
