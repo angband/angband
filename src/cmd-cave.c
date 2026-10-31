@@ -1654,12 +1654,20 @@ void do_cmd_rest(struct command *cmd)
 	/* Redraw the state if requested */
 	handle_stuff(player);
 
-	/* Prepare to continue, or cancel and clean up */
+	/*
+	 * Prepare to continue, or cancel and clean up.  When continuing,
+	 * mark the command as a background command so, if the player requests
+	 * to repeat the last command issued, the command repeated is the one
+	 * that started the rest rather than the last command that continued
+	 * the rest.
+	 */
 	if (player_resting_count(player) > 0) {
 		cmdq_push(CMD_REST);
+		cmdq_peek()->background_command = 1;
 		cmd_set_arg_choice(cmdq_peek(), "choice", n - 1);
 	} else if (player_resting_is_special(n)) {
 		cmdq_push(CMD_REST);
+		cmdq_peek()->background_command = 1;
 		cmd_set_arg_choice(cmdq_peek(), "choice", n);
 		player_set_resting_repeat_count(player, 0);
 	} else {
