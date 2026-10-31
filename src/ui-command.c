@@ -197,6 +197,9 @@ void textui_cmd_rest(void)
 	/* Ask for duration */
 	if (!get_string(p, out_val, sizeof(out_val))) return;
 
+	/* Reset state left over from a prior interrupted rest. */
+	player_resting_cancel(player, false);
+
 	/* Rest... */
 	if (out_val[0] == '&') {
 		/* ...until done */
