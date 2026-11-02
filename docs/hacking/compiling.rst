@@ -288,6 +288,13 @@ dependencies provides those).
 Windows native build
 --------------------
 
+The Windows front end shows the details of the highlighted character in its
+open file dialog.  That dialog requires Windows Vista or later.  To build
+without it, using the classic open file dialog (which has no character
+details) so the front end itself does not require Vista, pass
+``-DSUPPORT_XP_COMPAT=ON`` to CMake or ``--enable-xp-compat`` to configure.
+This only affects the dialog.
+
 Using MSYS2 (with UCRT64) and CMake
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -73,8 +73,10 @@
 #include "win/win-menu.h"
 
 /* Set the minimum version of Windows to accept:
- * - ShellExecuteA() requires Windows XP (_WIN32_WINNT >= 0x0501)
+ * - AttachConsole() requires Windows XP (_WIN32_WINNT >= 0x0501)
  * - AlphaBlend() requires Windows 2000 (_WIN32_WINNT >= 0x0500)
+ * Note that win/opendlg.c requires Windows Vista (see there), unless
+ * FORCE_XP_COMPAT is defined.
  */
 #ifndef WINVER
 #define WINVER 0x0501
@@ -190,8 +192,9 @@
 #include <shellapi.h>
 
 /**
- * Include the support for loading bitmaps and saving screenshots
+ * Include the support for loading save files, loading bitmaps, and saving screenshots
  */
+#include "win/opendlg.h"
 #include "win/readdib.h"
 #include "win/scrnshot.h"
 
@@ -3502,8 +3505,6 @@ static void process_menus(WORD wCmd)
 
 	term_data *td;
 
-	OPENFILENAME ofn;
-
 	/* Analyze */
 	switch (wCmd)
 	{
@@ -3531,28 +3532,16 @@ static void process_menus(WORD wCmd)
 				plog("You cannot do that yet...");
 			} else if (game_in_progress) {
 				plog("You can't open a new game while you're still playing!");
-			} else {
-				memset(&ofn, 0, sizeof(ofn));
-				ofn.lStructSize = sizeof(ofn);
-				ofn.hwndOwner = data[0].w;
-				ofn.lpstrFilter = "Save Files (*.)\0*\0";
-				ofn.nFilterIndex = 1;
-				ofn.lpstrFile = savefile;
-				ofn.nMaxFile = 1024;
-				ofn.lpstrInitialDir = ANGBAND_DIR_SAVE;
-				ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+			} else if (get_savefile(data[0].w, ANGBAND_DIR_SAVE, savefile, sizeof(savefile))) {
+				/* Load 'savefile' */
+				validate_file(savefile);
 
-				if (GetOpenFileName(&ofn)) {
-					/* Load 'savefile' */
-					validate_file(savefile);
-
-					if (monitor_existing_savefile()) {
-						/* Start game */
-						game_in_progress = true;
-						Term_fresh();
-						play_game(GAME_LOAD);
-						quit(NULL);
-					}
+				if (monitor_existing_savefile()) {
+					/* Start game */
+					game_in_progress = true;
+					Term_fresh();
+					play_game(GAME_LOAD);
+					quit(NULL);
 				}
 			}
 			break;
