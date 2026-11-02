@@ -663,6 +663,9 @@
     <ClCompile Include="src\z-virt.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\win\opendlg.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\win\readdib.c">
       <Filter>Source Files</Filter>
     </ClCompile>

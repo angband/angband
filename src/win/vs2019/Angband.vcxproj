@@ -123,7 +123,7 @@ xcopy  "$(MSBuildProjectDirectory)\lib" "$(OutDir)lib" /DEISY </Command>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>zlib.lib;libpng.lib;msimg32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>zlib.lib;libpng.lib;msimg32.lib;winmm.lib;comdlg32.lib;shell32.lib;ole32.lib;uuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -140,7 +140,7 @@ xcopy  "$(MSBuildProjectDirectory)\lib" "$(OutDir)lib" /DEISY </Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>zlib.lib;libpng.lib;msimg32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>zlib.lib;libpng.lib;msimg32.lib;winmm.lib;comdlg32.lib;shell32.lib;ole32.lib;uuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy $(MSBuildProjectDirectory)\src\win\dll\*.dll $(OutDir) /DY 
@@ -161,6 +161,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>zlib.lib;libpng.lib;msimg32.lib;winmm.lib;comdlg32.lib;shell32.lib;ole32.lib;uuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -358,6 +359,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\ui-term.c" />
     <ClCompile Include="src\ui-visuals.c" />
     <ClCompile Include="src\ui-wizard.c" />
+    <ClCompile Include="src\win\opendlg.c" />
     <ClCompile Include="src\win\readdib.c" />
     <ClCompile Include="src\win\readpng.c" />
     <ClCompile Include="src\win\scrnshot.c" />

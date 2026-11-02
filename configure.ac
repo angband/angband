@@ -250,6 +250,10 @@ AC_ARG_ENABLE(win,
 	[AS_HELP_STRING([--enable-win], [enable Windows frontend (default: disabled)])],
 	[enable_win=$enableval],
 	[enable_win=no])
+AC_ARG_ENABLE(xp-compat,
+	[AS_HELP_STRING([--enable-xp-compat], [with --enable-win, use the classic open file dialog so Windows XP is supported (default: disabled)])],
+	[enable_xp_compat=$enableval],
+	[enable_xp_compat=no])
 AC_ARG_ENABLE(test,
 	[AS_HELP_STRING([--enable-test], [enable test frontend (default: disabled)])],
 	[enable_test=$enableval],
@@ -447,9 +451,11 @@ AS_IF([test "$enable_win" = "yes"],
 	AC_DEFINE(USE_WIN, 1, [Define to 1 if using the Windows interface.])
 	AC_DEFINE(SOUND, 1, [Define to 1 if including sound support.])
 	CPPFLAGS="${CPPFLAGS} -DWINDOWS -Iwin/include"
+	AS_IF([test "x$enable_xp_compat" = xyes],
+		[CPPFLAGS="${CPPFLAGS} -DFORCE_XP_COMPAT"])
 	CFLAGS="${CFLAGS} -static"
 	LDFLAGS="${LDFLAGS} -Lwin/lib"
-	LIBS="${LIBS} -mwindows -lwinmm -lzlib -llibpng -lmsimg32"
+	LIBS="${LIBS} -mwindows -lwinmm -lzlib -llibpng -lmsimg32 -lcomdlg32 -lshell32 -lole32 -luuid"
 	TEST_LIBS="${TEST_LIBS} -mwindows"
 	dnl Note complete replacement of all main files
 	MAINFILES="\$(WINMAINFILES)"])

@@ -37,3 +37,24 @@ jobs:
             -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-i686-mingw32-cross.cmake \
             ..
           ninja -j$(nproc)
+
+      - name: Build with CMake/Ninja without the Vista open dialog
+        id: cmake_xp_compat_build
+        run: |
+          mkdir build-xp-compat
+          cd build-xp-compat
+          cmake -G Ninja \
+            -DCMAKE_C_FLAGS="-Werror" \
+            -DSUPPORT_WINDOWS_FRONTEND=ON \
+            -DSUPPORT_XP_COMPAT=ON \
+            -DSUPPORT_BUNDLED_PNG=ON \
+            -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-i686-mingw32-cross.cmake \
+            ..
+          ninja -j$(nproc)
+
+      - name: Build with autotools without the Vista open dialog
+        id: autotools_xp_compat_build
+        run: |
+          make distclean
+          ./configure --enable-win --enable-xp-compat --build=i686-pc-linux-gnu --host=i686-w64-mingw32
+          env CFLAGS="-Werror" make -j$(nproc)

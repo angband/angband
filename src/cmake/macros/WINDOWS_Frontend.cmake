@@ -3,7 +3,7 @@ macro(configure_windows_frontend _NAME_TARGET _PNG_TARGET)
         if(SUPPORT_STATIC_LINKING)
             target_link_options(${_NAME_TARGET} PRIVATE -static)
         endif()
-        target_link_libraries(${_NAME_TARGET} PRIVATE ${_PNG_TARGET} msimg32 winmm)
+        target_link_libraries(${_NAME_TARGET} PRIVATE ${_PNG_TARGET} msimg32 winmm comdlg32 shell32 ole32 uuid)
         set_target_properties(${_NAME_TARGET} PROPERTIES WIN32_EXECUTABLE ON)
     endif()
 
@@ -15,4 +15,7 @@ macro(configure_windows_frontend _NAME_TARGET _PNG_TARGET)
             WINDOWS
             _CRT_SECURE_NO_WARNINGS
     )
+    if(SUPPORT_XP_COMPAT)
+        target_compile_definitions(${_NAME_TARGET} PRIVATE FORCE_XP_COMPAT)
+    endif()
 endmacro()

@@ -134,6 +134,7 @@ TESTMAINFILES = main-test.o
 WINMAINFILES = \
         win/$(PROGNAME).res \
         main-win.o \
+		win/opendlg.o \
         win/readdib.o \
         win/readpng.o \
         win/scrnshot.o \
