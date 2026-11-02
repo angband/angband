@@ -746,6 +746,11 @@ void process_world(struct chunk *c)
 
 			/* Determine the level */
 			if (target_depth > player->depth) {
+				/*
+				 * Flush the command queue to avoid losing an
+				 * action on the new level.
+				 */
+				cmdq_flush();
 				msgt(MSG_TPLEVEL, "The floor opens beneath you!");
 				dungeon_change_level(player, target_depth);
 			} else {
