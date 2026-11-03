@@ -1502,14 +1502,10 @@ void player_resting_complete_special(struct player *p)
 			/* Stop resting */
 			disturb(p);
 	} else if (p->upkeep->resting == REST_COMPLETE) {
-		if ((p->chp == p->mhp) &&
-			(p->csp == p->msp || player_has(p, PF_COMBAT_REGEN)) &&
-			!p->timed[TMD_BLIND] && !p->timed[TMD_CONFUSED] &&
-			!p->timed[TMD_POISONED] && !p->timed[TMD_AFRAID] &&
-			!p->timed[TMD_TERROR] && !p->timed[TMD_STUN] &&
-			!p->timed[TMD_CUT] && !p->timed[TMD_SLOW] &&
-			!p->timed[TMD_PARALYZED] && !p->timed[TMD_IMAGE] &&
-			!p->word_recall && !p->deep_descent)
+		if ((p->chp == p->mhp) && (p->csp == p->msp
+				|| player_has(p, PF_COMBAT_REGEN))
+				&& !player_timed_continues_rest(p)
+				&& !p->word_recall && !p->deep_descent)
 			/* Stop resting */
 			disturb(p);
 	} else if (p->upkeep->resting == REST_SOME_POINTS) {

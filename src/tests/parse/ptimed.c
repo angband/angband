@@ -977,6 +977,17 @@ static int test_flags0(void *state) {
 	eq(r, PARSE_ERROR_NONE);
 	eq(ps->t->flags, TMD_FLAG_NONSTACKING);
 
+	/* Check that flags set on separate lines stack. */
+	r = parser_parse(p, "flags:COMPLETE_REST");
+	eq(r, PARSE_ERROR_NONE);
+	eq(ps->t->flags, TMD_FLAG_COMPLETE_REST | TMD_FLAG_NONSTACKING);
+
+	/* Check that multiple flags can be set on the same line. */
+	ps->t->flags = 0;
+	r = parser_parse(p, "flags:COMPLETE_REST | NONSTACKING");
+	eq(r, PARSE_ERROR_NONE);
+	eq(ps->t->flags, TMD_FLAG_COMPLETE_REST | TMD_FLAG_NONSTACKING);
+
 	ok;
 }
 
