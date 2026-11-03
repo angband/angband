@@ -48,8 +48,13 @@ enum {
  * Bits in timed_effect_data's flags field
  */
 enum {
+	/*
+	 * A complete rest will only end normally if no timed effect with this
+	 * flag affects the player
+	 */
+	TMD_FLAG_COMPLETE_REST = 0x01,
 	/* Increases to duration will be blocked if effect is already active */
-	TMD_FLAG_NONSTACKING = 0x01,
+	TMD_FLAG_NONSTACKING = 0x02,
 };
 
 struct timed_grade {
@@ -133,5 +138,6 @@ bool player_dec_timed(struct player *p, int idx, int v, bool notify,
 	bool can_disturb);
 bool player_clear_timed(struct player *p, int idx, bool notify,
 	bool can_disturb);
+bool player_timed_continues_rest(const struct player *p);
 
 #endif /* !PLAYER_TIMED_H */

@@ -576,7 +576,9 @@ static enum parser_error parse_player_timed_effect_flags(struct parser *p)
 	flags = string_make(parser_getstr(p, "flags"));
 	s = strtok(flags, " |");
 	while (s) {
-		if (streq(s, "NONSTACKING")) {
+		if (streq(s, "COMPLETE_REST")) {
+			ps->t->flags |= TMD_FLAG_COMPLETE_REST;
+		} else if (streq(s, "NONSTACKING")) {
 			ps->t->flags |= TMD_FLAG_NONSTACKING;
 		} else {
 			string_free(flags);
@@ -1129,3 +1131,23 @@ bool player_clear_timed(struct player *p, int idx, bool notify,
 	return player_set_timed(p, idx, 0, notify, can_disturb);
 }
 
+/**
+ * Is the given player affected by any timed effect that necessitates
+ * continuing a complete rest?
+ *
+ * \param p is the player of interest.
+ * \return true if p is affected by any timed effect which has the
+ * COMPLETE_REST flag.  Otherwise, return false.
+ */
+bool player_timed_continues_rest(const struct player *p)
+{
+	int idx;
+
+	for (idx = 0; idx < TMD_MAX; ++idx) {
+		if (p->timed[idx] && (timed_effects[idx].flags
+				& TMD_FLAG_COMPLETE_REST)) {
+			return true;
+		}
+	}
+	return false;
+}

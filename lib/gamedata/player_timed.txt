@@ -177,6 +177,9 @@
 #         more than one flag can be specified each time it is used - the names
 #         of the flags must be separated by spaces or '|'; the flag names or
 #         that are understood are:
+#         COMPLETE_REST - a complete rest (i.e. 'R' followed by '&') will
+#             only end normally if no timed effect with this flag affects
+#             the player
 #         NONSTACKING - any attempt to increase the timed effect while it is
 #             already active will not increase the duration; this is a stronger
 #             restriction than having the timed effect fail because of the
@@ -200,6 +203,7 @@ grade:U:10000:Slow:You feel yourself moving slower!
 on-end:You feel yourself speed up.
 msgt:SLOW
 fail:1:FREE_ACT
+flags:COMPLETE_REST
 
 name:BLIND
 desc:blindness
@@ -207,6 +211,7 @@ grade:o:10000:Blind:You are blind.
 on-end:You blink and your eyes clear.
 msgt:BLIND
 fail:1:PROT_BLIND
+flags:COMPLETE_REST
 
 name:PARALYZED
 desc:paralysis
@@ -214,7 +219,7 @@ grade:r:10000:Paralyzed!:You are paralysed!
 on-end:You can move again.
 msgt:PARALYZED
 fail:1:FREE_ACT
-flags:NONSTACKING
+flags:COMPLETE_REST | NONSTACKING
 
 name:CONFUSED
 desc:confusion
@@ -224,6 +229,7 @@ on-increase:You are more confused!
 on-decrease:You feel a little less confused.
 msgt:CONFUSED
 fail:1:PROT_CONF
+flags:COMPLETE_REST
 
 name:AFRAID
 desc:fear
@@ -233,6 +239,7 @@ on-increase:You are more scared!
 msgt:AFRAID
 fail:1:PROT_FEAR
 flag-synonym:AFRAID:1
+flags:COMPLETE_REST
 
 name:IMAGE
 desc:hallucination
@@ -241,6 +248,7 @@ on-end:You can see clearly again.
 on-increase:You feel more drugged!
 msgt:DRUGGED
 fail:2:CHAOS
+flags:COMPLETE_REST
 
 name:POISONED
 desc:poisoning
@@ -251,6 +259,7 @@ on-decrease:You are less poisoned.
 msgt:POISONED
 fail:2:POIS
 fail:5:OPP_POIS
+flags:COMPLETE_REST
 
 name:CUT
 desc:wounds
@@ -264,6 +273,7 @@ grade:R:10000:Mortal Wound:You have been given a mortal wound.
 on-end:You are no longer bleeding.
 msgt:CUT
 fail:4:ROCK
+flags:COMPLETE_REST
 
 name:STUN
 desc:stunning
@@ -273,6 +283,7 @@ grade:r:10000:Knocked Out:You have been knocked out.
 on-end:You are no longer stunned.
 msgt:STUN
 fail:1:PROT_STUN
+flags:COMPLETE_REST
 
 # Note food grades are in percentages here, and are translated on parsing
 name:FOOD
@@ -401,6 +412,7 @@ desc:amnesia
 grade:o:10000:Amnesiac:You feel your memories fade.
 on-end:Your memories come flooding back.
 msgt:GENERIC
+flags:COMPLETE_REST
 
 name:TELEPATHY
 desc:telepathy
@@ -422,6 +434,7 @@ grade:r:10000:Terror:You feel the need to run away and fast!
 on-end:The urge to run dissipates.
 msgt:AFRAID
 flag-synonym:AFRAID:0
+flags:COMPLETE_REST
 
 name:SPRINT
 desc:sprinting
@@ -448,6 +461,7 @@ msgt:SCRAMBLE
 fail:2:NEXUS
 on-begin-effect:SCRAMBLE_STATS
 on-end-effect:UNSCRAMBLE_STATS
+flags:COMPLETE_REST
 
 name:TRAPSAFE
 desc:safety from traps
