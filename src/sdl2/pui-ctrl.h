@@ -7,6 +7,7 @@
 #define INCLUDED_SDL2_SDLPUI_CONTROL_H
 
 #include "SDL.h" /* SDL_*Event, SDL_Rect, SDL_Renderer, Sint32 */
+#include <limits.h>
 
 struct sdlpui_control;
 struct sdlpui_dialog;
@@ -20,6 +21,15 @@ struct sdlpui_window;
  * control and what is drawn to indicate focus or feedback.
  */
 #define SDLPUI_DEFAULT_CTRL_BORDER 3
+
+/**
+ * Set out the types of values that can be retrieved with sdlpui_get_values()
+ * or modified with sdlpui_set_values().
+ */
+#define SDLPUI_VC_MAXIMUM (INT_MIN + 20)
+#define SDLPUI_VC_MINIMUM (INT_MIN + 19)
+#define SDLPUI_VC_NULL (INT_MIN + 18)
+#define SDLPUI_VC_VALUE (INT_MIN + 17)
 
 /**
  * Set out predefined values for the type_code field of struct sdlpui_control.
@@ -161,6 +171,27 @@ struct sdlpui_control_funcs {
 	void (*change_caption)(struct sdlpui_control *c,
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		const char *new_caption);
+	/**
+	 * Get values associated with the control.  Returns the number of
+	 * values retrieved.  See sdlpui_get_values() for a description of
+	 * the fixed arguments and the handling of the variable arguments.
+	 * It may be NULL if the control does not need or want to report
+	 * values via sdlpui_get_values().
+	 */
+	int (*get_values)(const struct sdlpui_control *c,
+		const struct sdlpui_dialog *d, const struct sdlpui_window *w,			va_list vp);
+	/**
+	 * Change values associated with the control.  Return SDL_FALSE if
+	 * the change was accepted.  Returns SDL_TRUE if the requested change
+	 * was inconsistent, either with itself or with the values that were
+	 * not changed.  See sdlpui_set_values() for a description of the
+	 * fixed arguments and the handling of the variable arguments.  It may
+	 * be NULL if the control does not need or want to support changes via
+	 * sdlpui_set_values().
+	 */
+	SDL_bool (*set_values)(struct sdlpui_control *c,
+		struct sdlpui_dialog *d, struct sdlpui_window *w,
+		SDL_bool notify, enum sdlpui_action_hint hint, va_list vp);
 	/**
 	 * Render the control.  Can be NULL, but then the control will be
 	 * invisible.  Must not affect parts of the screen outside the
@@ -418,6 +449,14 @@ struct sdlpui_push_button {
 					different look */
 };
 
+/**
+ * For use with sdlpui_help_get_values() and sdlpui_help_set_values().
+ */
+struct sdlpui_values {
+	struct { int val; int set; } maximum;
+	struct { int val; int set; } minimum;
+	struct { int val; int set; } value;
+};
 
 SDL_bool sdlpui_is_in_control(const struct sdlpui_control *c,
 		const struct sdlpui_dialog *d, Sint32 x, Sint32 y);
@@ -428,6 +467,12 @@ int sdlpui_get_tag(const struct sdlpui_control *c);
 int sdlpui_set_tag(struct sdlpui_control *c, int new_tag);
 void sdlpui_change_caption(struct sdlpui_control *c, struct sdlpui_dialog *d,
 		struct sdlpui_window *w, const char *new_caption);
+int sdlpui_get_values(const struct sdlpui_control *c,
+		const struct sdlpui_dialog *d, const struct sdlpui_window *w,
+		...);
+SDL_bool sdlpui_set_values(struct sdlpui_control *c, struct sdlpui_dialog *d,
+		struct sdlpui_window *w, SDL_bool notify,
+		enum sdlpui_action_hint hint, ...);
 
 /* Standard event handlers for simple controls */
 SDL_bool sdlpui_control_handle_key(struct sdlpui_control *c,
@@ -482,5 +527,9 @@ void sdlpui_create_submenu_button(struct sdlpui_control *c, const char *caption,
 		sdlpui_window*, int ul_x_win, int ul_y_win),
 		enum sdlpui_child_menu_placement placement, int tag,
 		SDL_bool disabled);
+
+/* Functions to help controls implement hooks. */
+int sdlpui_help_get_values(const struct sdlpui_values *vals, va_list vp);
+SDL_bool sdlpui_help_set_values(struct sdlpui_values *vals, va_list vp);
 
 #endif /* INCLUDED_SDL2_SDLPUI_CONTROL_H */

@@ -83,6 +83,12 @@ static const char *get_mb_caption(const struct sdlpui_control *c);
 static void change_mb_caption(struct sdlpui_control *c,
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		const char *new_caption);
+static int get_mb_values(const struct sdlpui_control *c,
+		const struct sdlpui_dialog *d, const struct sdlpui_window *w,
+		va_list vp);
+static SDL_bool set_mb_values(struct sdlpui_control *c, struct sdlpui_dialog *d,
+		struct sdlpui_window *w, SDL_bool notify,
+		enum sdlpui_action_hint hint, va_list vp);
 static void render_mb(struct sdlpui_control *c,
 		struct sdlpui_dialog *d, struct sdlpui_window *w,
 		SDL_Renderer *r);
@@ -131,6 +137,8 @@ static const struct sdlpui_control_funcs image_funcs = {
 	get_image_type_name,
 	NULL,
 	NULL,
+	NULL,
+	NULL,
 	render_image,
 	NULL,
 	NULL,
@@ -159,6 +167,8 @@ static const struct sdlpui_control_funcs label_funcs = {
 	get_label_type_name,
 	get_label_caption,
 	change_label_caption,
+	NULL,
+	NULL,
 	render_label,
 	NULL,
 	NULL,
@@ -187,6 +197,8 @@ static const struct sdlpui_control_funcs push_button_funcs = {
 	get_pb_type_name,
 	get_pb_caption,
 	change_pb_caption,
+	NULL,
+	NULL,
 	render_pb,
 	respond_default_pb,
 	NULL,
@@ -215,6 +227,8 @@ static const struct sdlpui_control_funcs menu_button_funcs = {
 	get_mb_type_name,
 	get_mb_caption,
 	change_mb_caption,
+	get_mb_values,
+	set_mb_values,
 	render_mb,
 	respond_default_mb,
 	gain_focus_mb,
@@ -1103,6 +1117,133 @@ static void change_mb_caption(struct sdlpui_control *c,
 	}
 	resize_mb(c, d, w, c->rect.w, c->rect.h);
 	sdlpui_dialog_mark_for_redraw(d, w);
+}
+
+
+static int get_mb_values(const struct sdlpui_control *c,
+		const struct sdlpui_dialog *d, const struct sdlpui_window *w,
+		va_list vp)
+{
+	const struct sdlpui_menu_button *mbp;
+	struct sdlpui_values vals;
+
+	SDL_assert(c->type_code == SDLPUI_CTRL_MENU_BUTTON && c->priv);
+	mbp = c->priv;
+
+	SDL_zero(vals);
+	if (mbp->subtype_code == SDLPUI_MB_RANGED_INT) {
+		vals.maximum.val = mbp->v.ranged_int.max;
+		vals.maximum.set = 1;
+		vals.minimum.val = mbp->v.ranged_int.min;
+		vals.minimum.set = 1;
+		vals.value.val = mbp->v.ranged_int.curr;
+		vals.value.set = 1;
+	} else if (mbp->subtype_code == SDLPUI_MB_TOGGLE
+			|| mbp->subtype_code == SDLPUI_MB_INDICATOR) {
+		vals.value.val = (mbp->v.toggled) ? 1 : 0;
+		vals.value.set = 1;
+	}
+	return sdlpui_help_get_values(&vals, vp);
+}
+
+
+static SDL_bool set_mb_values(struct sdlpui_control *c, struct sdlpui_dialog *d,
+		struct sdlpui_window *w, SDL_bool notify,
+		enum sdlpui_action_hint hint, va_list vp)
+{
+	struct sdlpui_menu_button *mbp;
+	struct sdlpui_values vals;
+	int limits_changed, value_changed;
+
+	SDL_assert(c->type_code == SDLPUI_CTRL_MENU_BUTTON && c->priv);
+	mbp = c->priv;
+
+	SDL_zero(vals);
+	if (mbp->subtype_code == SDLPUI_MB_RANGED_INT) {
+		vals.maximum.val = mbp->v.ranged_int.max;
+		vals.maximum.set = -1;
+		vals.minimum.val = mbp->v.ranged_int.min;
+		vals.minimum.set = -1;
+		vals.value.val = mbp->v.ranged_int.curr;
+		vals.value.set = -1;
+	} else if (mbp->subtype_code == SDLPUI_MB_TOGGLE
+			|| mbp->subtype_code == SDLPUI_MB_INDICATOR) {
+		vals.value.val = (mbp->v.toggled) ? 1 : 0;
+		vals.value.set = -1;
+	}
+	if (sdlpui_help_set_values(&vals, vp)) {
+		return SDL_TRUE;
+	}
+
+	/* Check that the modifications are correct. */
+	limits_changed = 0;
+	value_changed = 0;
+	if (mbp->subtype_code == SDLPUI_MB_RANGED_INT) {
+		if (vals.maximum.val != mbp->v.ranged_int.max
+				|| vals.minimum.val != mbp->v.ranged_int.min) {
+			if (vals.minimum.val > vals.maximum.val) {
+				return SDL_TRUE;
+			}
+			if (vals.value.set > 0) {
+				if (vals.value.val < vals.minimum.val
+						|| vals.value.val
+						> vals.maximum.val) {
+					return SDL_TRUE;
+				}
+				value_changed = (vals.value.val
+					!= mbp->v.ranged_int.curr);
+			} else {
+				/* Coerce prior value to new range. */
+				if (vals.value.val < vals.minimum.val) {
+					vals.value.val = vals.minimum.val;
+					value_changed = 1;
+				} else if (vals.value.val > vals.maximum.val) {
+					vals.value.val = vals.maximum.val;
+					value_changed = 1;
+				}
+			}
+			limits_changed = 1;
+		} else if (vals.value.val != mbp->v.ranged_int.curr) {
+			if (vals.value.val < vals.minimum.val
+					|| vals.value.val > vals.maximum.val) {
+				return SDL_TRUE;
+			}
+			value_changed = 1;
+		}
+	} else if (mbp->subtype_code == SDLPUI_MB_TOGGLE
+			|| mbp->subtype_code == SDLPUI_MB_INDICATOR) {
+		if (!vals.value.val != !mbp->v.toggled) {
+			value_changed = 1;
+		}
+	}
+
+	/* Apply changes. */
+	if (limits_changed) {
+		SDL_assert(mbp->subtype_code == SDLPUI_MB_RANGED_INT);
+		mbp->v.ranged_int.max = vals.maximum.val;
+		mbp->v.ranged_int.min = vals.minimum.val;
+		resize_mb(c, d, w, c->rect.w, c->rect.h);
+	}
+	if (value_changed) {
+		if (mbp->subtype_code == SDLPUI_MB_RANGED_INT) {
+			mbp->v.ranged_int.old = mbp->v.ranged_int.curr;
+			mbp->v.ranged_int.curr = vals.value.val;
+		} else if (mbp->subtype_code == SDLPUI_MB_TOGGLE
+				|| mbp->subtype_code == SDLPUI_MB_INDICATOR) {
+			mbp->v.toggled =
+				(vals.value.val) ? SDL_TRUE : SDL_FALSE;
+		} else {
+			SDL_assert(0);
+		}
+		if (notify && mbp->callback) {
+			(*mbp->callback)(c, d, w, hint);
+		}
+	}
+	if (limits_changed || value_changed) {
+		sdlpui_dialog_mark_for_redraw(d, w);
+	}
+
+	return SDL_FALSE;
 }
 
 
@@ -2031,6 +2172,124 @@ int sdlpui_set_tag(struct sdlpui_control *c, int new_tag)
 
 
 /**
+ * Get integer values associated with a control.
+ *
+ * \param c is the control to query.
+ * \param d is the dialog containing the control.
+ * \param w is the window containing the dialog.
+ * \return the number of values retrieved; that will differ from the number
+ * of code-value combinations in the variable part of the argument list if
+ * c does not support returning some of the requested values.
+ *
+ * The variable part of the argument list must have zero or more code-value
+ * combinations separated by commas and followed by a comma and a terminating
+ * SDLPUI_VC_NULL.  A code-value combination is one of the following:
+ *   - SDLPUI_VC_MAXIMUM, pointer to integer : Retrieves the maximum associated
+ *     with the control and stores it at the given location.  Relevant for
+ *     sdlpui_menu_button when it represents a range of integers.
+ *   - SDLPUI_VC_MINIMUM, pointer to integer : Retrieves the minimum associated
+ *     with the control and stores it at the given location.  Relevant for
+ *     sdlpui_menu_button when it represents a range of integers.
+ *   - SDLPUI_VC_VALUE, pointer to integer : Retrieves the value of the control
+ *     and stores it at the given location.  Relevant for sdlpui_menu_button
+ *     when it represents a range of integers, a toggle, or an indicator.  For
+ *     the range of integers, the retrieved value is the current value in the
+ *     range.  For a toggle or indicator, the retrieved value is zero if the
+ *     state of the button is off or a non-zero value if the state of the
+ *     button is on.
+ */
+int sdlpui_get_values(const struct sdlpui_control *c,
+		const struct sdlpui_dialog *d, const struct sdlpui_window *w,
+		...)
+{
+	int count;
+
+	if (c->ftb->get_values) {
+		va_list vp;
+
+		va_start(vp, w);
+		count = (*c->ftb->get_values)(c, d, w, vp);
+		va_end(vp);
+	} else {
+		count = 0;
+	}
+	return count;
+}
+
+
+/**
+ * Change integer values associated with a control.
+ *
+ * \param c is the control to modify.
+ * \param d is the dialog containing the control.
+ * \param w is the window containing the dialog.
+ * \param notify will, if not SDL_FALSE, cause the control's callbacks for a
+ * change in the value to be invoked.  If notify is SDL_FALSE, the callbacks are
+ * not invoked:  it is assumed the caller will handle what the callbacks would
+ * do.  The callbacks in question are sdlpui_menu_button's callback if the
+ * value of a ranged int or toggle menu button changes.
+ * \param hint specifies the type of event triggering the call to
+ * sdlpui_set_values.  Its value will only be used if notify is true.  In that
+ * case, it will be passed to the callback.
+ * \return SDL_FALSE if the changes were applied.  Return SDL_TRUE if the
+ * requested changes were invalid or the control does not support one or more
+ * of the requested changes.
+ *
+ * The variable part of the argument list must have zero or more code-value
+ * combinations separated by commas and followed by a comma and a terminating
+ * SDLPUI_VC_NULL.  A code-value combination is one of the following:
+ *   - SDLPUI_VC_MAXIMUM, integer :  Changes the maximum for the control.
+ *     Relevant for sdlpui_menu_button if it represents a range of integers.
+ *     If the control is a sdlpui_menu_button, the new maximum must be at
+ *     least as large as the minimum (either the new minimum if included in the
+ *     changes or the current minimum).  Changing the maximum without also
+ *     changing the value associated with SDLPUI_VC_VALUE will cause that value
+ *     to be coerced to the new range.  For a sdlpui_menu_button, the value
+ *     will be coerced to the new maximum if it exceeds the new maximum.
+ *   - SDLPUI_VC_MINIMUM, integer :  Changes the minimum for the control.
+ *     Relevant for sdlpui_menu_button if it represents a range of integers.
+ *     If the  control is a sdlpui_menu_button, the new minimum must not be
+ *     larger than the maximum (either the new maximum if included in the
+ *     changes or the current maximum).  Changing the minimum without also
+ *     changing the value associated with SDLPUI_VC_VALUE will cause that value
+ *     to be the new minimum if that value is less than the new minimum.
+ *   - SDLPUI_VC_VALUE, integer :  Changes the value of the control.  Relevant
+ *     for sdlpui_menu_button if it represents a range of integers, a toggle,
+ *     or an indicator.  If the control is a sdlpui_menu_button that represents
+ *     a toggle or an indicator, a non-zero new value puts the control in the
+ *     "on" state and the a new value of zero puts the control in the "off"
+ *     state.  If the control is a sdlpui_menu_button representing an integer
+ *     range, the new value must fall in that range:  it must be greater than
+ *     or equal to the minimum (either the new minimum if included in the
+ *     changes or the current minimum) and less than or equal to the maximum
+ *     (either the new maximum if included in the changes or the current
+ *     maximum).
+ */
+SDL_bool sdlpui_set_values(struct sdlpui_control *c, struct sdlpui_dialog *d,
+		struct sdlpui_window *w, SDL_bool notify,
+		enum sdlpui_action_hint hint, ...)
+{
+	va_list vp;
+	SDL_bool failed;
+
+	va_start(vp, hint);
+	if (c->ftb->set_values) {
+		failed = (*c->ftb->set_values)(c, d, w, notify, hint, vp);
+	} else {
+		/*
+		 * The control does not support changes, so anything other than
+		 * an empty list of changes fails.
+		 */
+		int code = va_arg(vp, int);
+
+		failed = (code != SDLPUI_VC_NULL);
+	}
+	va_end(vp);
+	return failed;
+}
+
+
+/**
  * Change the caption for a control.
  *
  * \param c is the control to modify.
@@ -2424,7 +2683,9 @@ void sdlpui_create_menu_button(struct sdlpui_control *c, const char *caption,
  * the control's bounds if the control is wider than the label.
  * \param tag is a value the application can use as it wishes to have otherwise
  * similar indicators act differently.
- * \param curr_value is whether or not the indicator is currently on.
+ * \param curr_value sets the initial state of the indicator.  If curr_value
+ * is not SDL_FALSE, the indicator starts out on.  If curr_value is SDL_FALSE,
+ * the indicator starts out off.
  *
  * Note that the bounding rectangle for the control is not set.  The caller
  * should use c->ftb->resize to set that (perhaps in conjunction with
@@ -2489,10 +2750,11 @@ void sdlpui_create_menu_indicator(struct sdlpui_control *c, const char *caption,
  * keyboard events and be displayed with an altered appearance until the
  * button is reenabled.
  * \param curr_value is the current value for the integer associated with the
- * button.
+ * button.  It must be greater than or equal to min_value and less than or
+ * equal to max_value.
  * \param min_value is the minimum value for the integer associated with the
  * button.
- * \param max_value is the minimum value for the integer associated with the
+ * \param max_value is the maximum value for the integer associated with the
  * button.  max_value must be greater than or equal to min_value.
  *
  * Note that the bounding rectangle for the control is not set.  The caller
@@ -2506,10 +2768,23 @@ void sdlpui_create_menu_ranged_int(struct sdlpui_control *c,
 		struct sdlpui_window*, enum sdlpui_action_hint), int tag,
 		SDL_bool disabled, int curr_value, int min_value, int max_value)
 {
-	Uint32 id = sdlpui_reserve_id();
+	Uint32 id;
 	struct sdlpui_menu_button *mbp;
 	char *caption_copy;
 
+	if (max_value < min_value) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"maximum value is less than the minimum value for "
+			"sdlpui_create_menu_ranged_int()");
+		sdlpui_force_quit();
+	}
+	if (curr_value < min_value || curr_value > max_value) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+			"current value is not between the minimum and "
+			"maximum value for sdlpui_create_menu_ranged_int()");
+		sdlpui_force_quit();
+	}
+	id = sdlpui_reserve_id();
 	if (!id) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
 			"could not acquire control ID in "
@@ -2687,4 +2962,135 @@ void sdlpui_create_submenu_button(struct sdlpui_control *c, const char *caption,
 	c->priv = mbp;
 	c->id = id;
 	c->type_code = SDLPUI_CTRL_MENU_BUTTON;
+}
+
+
+/**
+ * Help a control implement the get_values hook.
+ *
+ * \param vals holds which values are relevant for the control.  If a value,
+ * x, is relevant, vals.x.set should be non-zero and vals.x.val should hold the
+ * control's current setting for that value.  If a value, x, is not relevant,
+ * vals->x.set should be zero.  vals->x.val is not used in that case.  The
+ * stereotypical way to prepare the contents of *vals prior to calling this
+ * function is to use SDL_zero() to zero out the entire structure and then set
+ * the val and set fields of the members that are relevant for the control.
+ * \param vp is the variable argument list passed to the get_values hook.
+ * \return the number of assignments made.
+ */
+int sdlpui_help_get_values(const struct sdlpui_values *vals, va_list vp)
+{
+	int count = 0;
+
+	while (1) {
+		int code = va_arg(vp, int);
+		int *ptr;
+
+		if (code == SDLPUI_VC_NULL) {
+			return count;
+		}
+		ptr = va_arg(vp, int*);
+		switch (code) {
+		case SDLPUI_VC_MAXIMUM:
+			if (vals->maximum.set) {
+				*ptr = vals->maximum.val;
+				++count;
+			}
+			break;
+
+		case SDLPUI_VC_MINIMUM:
+			if (vals->minimum.set) {
+				*ptr = vals->minimum.val;
+				++count;
+			}
+			break;
+
+		case SDLPUI_VC_VALUE:
+			if (vals->value.set) {
+				*ptr = vals->value.val;
+				++count;
+			}
+			break;
+
+		default:
+			SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+				"sdlpui_help_get_values(): invalid type "
+				"of value, %d, requested", code);
+			sdlpui_force_quit();
+			break;
+		}
+	}
+	return count;
+}
+
+
+/**
+ * Help a control implement the change_values hook.
+ *
+ * \param vals should, at entry, have the set field equal to zero for any
+ * member that the control does not allow to be changed and equal to a
+ * non-zero value (use something different than one if you want to tell what
+ * is modified in this function).  The contents of the val field at entry will
+ * not be used.  At exit, the set field for a member changed by the variable
+ * argument list will be one, and the val field for that member will hold the
+ * value extracted from the variable argument list for that member.  The set
+ * and val fields for other members will remain unchanged between entry and
+ * exit.  The stereotypical way to prepare the contents of *vals prior to
+ * calling this function is to use SDL_zero() to zero out the entire structure
+ * and then set the val and set fields of the members that can be modified
+ * Set the val field for such a member to its current value, and the set field
+ * to -1.
+ * \param vp is the variable argument list passed to the change_values hook.
+ * \return SDL_FALSE if vp only changed values the control allows to be changed.
+ * Otherwise, return SDL_TRUE.
+ */
+SDL_bool sdlpui_help_set_values(struct sdlpui_values *vals, va_list vp)
+{
+	SDL_bool any_bad = SDL_FALSE;
+
+	while (1) {
+		int code = va_arg(vp, int), val;
+
+		if (code == SDLPUI_VC_NULL) {
+			break;
+		}
+		val = va_arg(vp, int);
+		switch (code) {
+		case SDLPUI_VC_MAXIMUM:
+			if (vals->maximum.set) {
+				vals->maximum.val = val;
+				vals->maximum.set = 1;
+			} else {
+				any_bad = SDL_TRUE;
+			}
+			break;
+
+		case SDLPUI_VC_MINIMUM:
+			if (vals->minimum.set) {
+				vals->minimum.val = val;
+				vals->minimum.set = 1;
+			} else {
+				any_bad = SDL_TRUE;
+			}
+			break;
+
+		case SDLPUI_VC_VALUE:
+			if (vals->value.set) {
+				vals->value.val = val;
+				vals->value.set = 1;
+			} else {
+				any_bad = SDL_TRUE;
+			}
+			break;
+
+		default:
+			SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+				"sdlpui_help_set_values():  invalid type, %d,"
+				"of value modified", code);
+			sdlpui_force_quit();
+			any_bad = SDL_TRUE;
+			break;
+		}
+	}
+	return any_bad;
 }

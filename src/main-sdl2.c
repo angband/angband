@@ -2473,15 +2473,13 @@ static void signal_move_state(struct sdlpui_window *window)
 		window->move_state.active = true;
 	}
 	if (window->move_button) {
-		struct sdlpui_menu_button *mb;
-
-		SDL_assert(window->move_button->type_code
-			== SDLPUI_CTRL_MENU_BUTTON);
-		mb = (struct sdlpui_menu_button*)window->move_button->priv;
-		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
-		mb->v.toggled = (window->move_state.active)
-			? SDL_TRUE : SDL_FALSE;
-		sdlpui_dialog_mark_for_redraw(window->status_bar, window);
+		if (sdlpui_set_values(window->move_button,
+				window->status_bar, window, SDL_FALSE,
+				SDLPUI_ACTION_HINT_NONE,
+				SDLPUI_VC_VALUE, (window->move_state.active) ? SDL_TRUE : SDL_FALSE,
+				SDLPUI_VC_NULL)) {
+			SDL_assert(0);
+		}
 	}
 
 	SDL_SetWindowGrab(window->window, was_active ? SDL_FALSE : SDL_TRUE);
@@ -2506,15 +2504,13 @@ static void signal_size_state(struct sdlpui_window *window)
 		window->size_state.active = true;
 	}
 	if (window->size_button) {
-		struct sdlpui_menu_button *mb;
-
-		SDL_assert(window->size_button->type_code
-			== SDLPUI_CTRL_MENU_BUTTON);
-		mb = (struct sdlpui_menu_button*)window->size_button->priv;
-		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
-		mb->v.toggled = (window->size_state.active)
-			? SDL_TRUE : SDL_FALSE;
-		sdlpui_dialog_mark_for_redraw(window->status_bar, window);
+		if (sdlpui_set_values(window->size_button,
+				window->status_bar, window, SDL_FALSE,
+				SDLPUI_ACTION_HINT_NONE,
+				SDLPUI_VC_VALUE, (window->size_state.active) ? SDL_TRUE : SDL_FALSE,
+				SDLPUI_VC_NULL)) {
+			SDL_assert(0);
+		}
 	}
 
 	SDL_SetWindowGrab(window->window, was_active ? SDL_FALSE : SDL_TRUE);
@@ -2525,8 +2521,7 @@ static void handle_button_movesize(struct sdlpui_control *ctrl,
 		enum sdlpui_action_hint hint)
 {
 	(void)hint;
-	SDL_assert(ctrl->ftb->get_tag);
-	if ((*ctrl->ftb->get_tag)(ctrl) == 0) {
+	if (sdlpui_get_tag(ctrl) == 0) {
 		if (window->size_state.active) {
 			/* toggle size button */
 			signal_size_state(window);
@@ -2557,12 +2552,10 @@ static void handle_menu_window(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
 		enum sdlpui_action_hint hint)
 {
-	int tag;
+	int tag = sdlpui_get_tag(ctrl);
 	struct sdlpui_window *other;
 
 	(void)hint;
-	SDL_assert(ctrl->ftb->get_tag);
-	tag = (*ctrl->ftb->get_tag)(ctrl);
 	SDL_assert(tag >= 0);
 	(void)sdlpui_popdown_dialog(dlg, window, SDL_TRUE, SDL_FALSE,
 		SDL_FALSE);
@@ -2726,21 +2719,19 @@ static void handle_menu_tile_set(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
 		enum sdlpui_action_hint hint)
 {
-	int new_id;
+	int new_id = sdlpui_get_tag(ctrl);
 
-	SDL_assert(ctrl->ftb->get_tag);
-	new_id = (*ctrl->ftb->get_tag)(ctrl);
 	if (new_id == current_graphics_mode->grafID) {
 		/*
 		 * There's no change from the current graphics mode.
 		 * Leave that button toggled on.
 		 */
-		struct sdlpui_menu_button *mb;
-
-		SDL_assert(ctrl->type_code == SDLPUI_CTRL_MENU_BUTTON);
-		mb = (struct sdlpui_menu_button*)ctrl->priv;
-		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
-		mb->v.toggled = SDL_TRUE;
+		if (sdlpui_set_values(ctrl, dlg, window, SDL_FALSE,
+				SDLPUI_ACTION_HINT_NONE,
+				SDLPUI_VC_VALUE, SDL_TRUE,
+				SDLPUI_VC_NULL)) {
+			SDL_assert(0);
+		}
 		sdlpui_begin_focus_transaction();
 		sdlpui_trigger_momentary_feedback(hint, SDL_FALSE);
 		sdlpui_end_focus_transaction();
@@ -2756,17 +2747,17 @@ static void handle_menu_tile_set(struct sdlpui_control *ctrl,
 		SDL_assert(dlg->type_code == SDLPUI_DIALOG_SIMPLE_MENU);
 		sm = (struct sdlpui_simple_menu*)dlg->priv;
 		for (i = 0; i < sm->number; ++i) {
-			struct sdlpui_menu_button *mb;
-
-			SDL_assert(sm->controls[i].type_code
-				== SDLPUI_CTRL_MENU_BUTTON);
-			mb = (struct sdlpui_menu_button*)sm->controls[i].priv;
-			SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
-			if (mb->tag == old_id) {
-				mb->v.toggled = SDL_FALSE;
-				sdlpui_dialog_mark_for_redraw(dlg, window);
-				break;
+			if (sdlpui_get_tag(sm->controls + i) != old_id) {
+				continue;
 			}
+			if (sdlpui_set_values(sm->controls + i,
+					dlg, window, SDL_FALSE,
+					SDLPUI_ACTION_HINT_NONE,
+					SDLPUI_VC_VALUE, SDL_FALSE,
+					SDLPUI_VC_NULL)) {
+				SDL_assert(0);
+			}
+			break;
 		}
 		reload_all_graphics(window->app, mode);
 		refresh_angband_terms(window->app);
@@ -2777,19 +2768,18 @@ static void handle_menu_tile_size(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
 		enum sdlpui_action_hint hint)
 {
-	struct sdlpui_menu_button *mb;
-	int tag;
+	int dim;
 
 	(void)hint;
-	SDL_assert(ctrl->type_code == SDLPUI_CTRL_MENU_BUTTON);
-	mb = (struct sdlpui_menu_button*)ctrl->priv;
-	SDL_assert(mb->subtype_code == SDLPUI_MB_RANGED_INT);
-	SDL_assert(ctrl->ftb->get_tag);
-	tag = (*ctrl->ftb->get_tag)(ctrl);
-	if (tag) {
-		tile_height = mb->v.ranged_int.curr;
+	if (sdlpui_get_values(ctrl, dlg, window,
+			SDLPUI_VC_VALUE, &dim,
+			SDLPUI_VC_NULL) != 1) {
+		SDL_assert(0);
+	}
+	if (sdlpui_get_tag(ctrl)) {
+		tile_height = dim;
 	} else {
-		tile_width = mb->v.ranged_int.curr;
+		tile_width = dim;
 	}
 	refresh_angband_terms(window->app);
 }
@@ -2885,25 +2875,23 @@ static void handle_menu_pw(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
 		enum sdlpui_action_hint hint)
 {
-	int tag, subw_idx, flag_idx;
-	struct sdlpui_menu_button *mb;
+	int tag = sdlpui_get_tag(ctrl), subw_idx, flag_idx, is_on;
 	uint32_t *new_flags;
 
 	(void)hint;
-	SDL_assert(ctrl->ftb->get_tag);
-	tag = (*ctrl->ftb->get_tag)(ctrl);
 	SDL_assert(tag >= 0);
 	subw_idx = tag / (int)N_ELEMENTS(window_flag_desc);
 	SDL_assert(subw_idx >= 0 && subw_idx != MAIN_SUBWINDOW
 		&& subw_idx < (int)N_ELEMENTS(window_flag));
 	flag_idx = tag % (int)N_ELEMENTS(window_flag_desc);
-	SDL_assert(ctrl->type_code == SDLPUI_CTRL_MENU_BUTTON);
-	mb = (struct sdlpui_menu_button*)ctrl->priv;
-	SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
 	new_flags = mem_alloc(N_ELEMENTS(window_flag) * sizeof(*new_flags));
 	memcpy(new_flags, window_flag, N_ELEMENTS(window_flag)
 		* sizeof(*new_flags));
-	if (mb->v.toggled) {
+	if (sdlpui_get_values(ctrl, dlg, window,
+			SDLPUI_VC_VALUE, &is_on,
+			SDLPUI_VC_NULL) != 1) {
+		SDL_assert(0);
+	} else if (is_on) {
 		new_flags[subw_idx] |= (uint32_t)1 << flag_idx;
 	} else {
 		new_flags[subw_idx] &= ~((uint32_t)1 << flag_idx);
@@ -2933,16 +2921,15 @@ static void handle_menu_font_name(struct sdlpui_control *ctrl,
 		/*
 		 * Already selected; pushing the button doesn't toggle it off.
 		 */
-		struct sdlpui_menu_button *mb;
-
-		SDL_assert(ctrl->type_code == SDLPUI_CTRL_MENU_BUTTON);
-		mb = (struct sdlpui_menu_button*)ctrl->priv;
-		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
-		mb->v.toggled = SDL_TRUE;
+		if (sdlpui_set_values(ctrl, dlg, window, SDL_FALSE,
+				SDLPUI_ACTION_HINT_NONE,
+				SDLPUI_VC_VALUE, SDL_TRUE,
+				SDLPUI_VC_NULL)) {
+			SDL_assert(0);
+		}
 		sdlpui_begin_focus_transaction();
 		sdlpui_trigger_momentary_feedback(hint, SDL_FALSE);
 		sdlpui_end_focus_transaction();
-		sdlpui_dialog_mark_for_redraw(dlg, window);
 		return;
 	}
 
@@ -2961,15 +2948,16 @@ static void handle_menu_font_name(struct sdlpui_control *ctrl,
 			SDL_assert(dlg->type_code == SDLPUI_DIALOG_SIMPLE_MENU);
 			sm = (struct sdlpui_simple_menu*)dlg->priv;
 			for (i = 0; i < sm->number; ++i) {
-				struct sdlpui_menu_button *mb;
-
-				SDL_assert(sm->controls[i].type_code
-					== SDLPUI_CTRL_MENU_BUTTON);
-				mb = (struct sdlpui_menu_button*)sm->controls[i].priv;
-				if (mb->tag == target_tag) {
-					mb->v.toggled = SDL_FALSE;
-					sdlpui_dialog_mark_for_redraw(dlg,
-						window);
+				if (sdlpui_get_tag(sm->controls + i)
+						== target_tag) {
+					if (sdlpui_set_values(
+							sm->controls + i,
+							dlg, window, SDL_FALSE,
+							SDLPUI_ACTION_HINT_NONE,
+							SDLPUI_VC_VALUE, SDL_FALSE,
+							SDLPUI_VC_NULL)) {
+						SDL_assert(0);
+					}
 					searching = false;
 					break;
 				}
@@ -3003,14 +2991,13 @@ static void handle_menu_font_name(struct sdlpui_control *ctrl,
 		 * Subwindow can't be resized to accommodate the font so
 		 * disable it.
 		 */
-		struct sdlpui_menu_button *mb;
-
-		SDL_assert(ctrl->type_code == SDLPUI_CTRL_MENU_BUTTON);
-		mb = (struct sdlpui_menu_button*)ctrl->priv;
-		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
-		mb->disabled = SDL_TRUE;
-		mb->v.toggled = SDL_FALSE;
-		sdlpui_dialog_mark_for_redraw(dlg, window);
+		sdlpui_set_disabled(ctrl, dlg, window, 1);
+		if (sdlpui_set_values(ctrl, dlg, window, SDL_FALSE,
+				SDLPUI_ACTION_HINT_NONE,
+				SDLPUI_VC_VALUE, SDL_FALSE,
+				SDLPUI_VC_NULL)) {
+			SDL_assert(0);
+		}
 	}
 }
 
@@ -3018,21 +3005,20 @@ static void handle_menu_font_size(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
 		enum sdlpui_action_hint hint)
 {
-	int tag;
+	int tag = sdlpui_get_tag(ctrl), size;
 	struct subwindow *subwindow;
-	struct sdlpui_menu_button *mb;
 	struct font_info *info;
 
 	(void)hint;
-	SDL_assert(ctrl->ftb->get_tag);
-	tag = (*ctrl->ftb->get_tag)(ctrl);
 	subwindow = get_subwindow_by_index(window, (unsigned int)tag, false);
 	SDL_assert(subwindow && subwindow->font);
 	info = &window->app->fonts[subwindow->font->index];
-	SDL_assert(ctrl->type_code == SDLPUI_CTRL_MENU_BUTTON);
-	mb = (struct sdlpui_menu_button*)ctrl->priv;
-	SDL_assert(mb->subtype_code == SDLPUI_MB_RANGED_INT);
-	info->size = mb->v.ranged_int.curr;
+	if (sdlpui_get_values(ctrl, dlg, window,
+			SDLPUI_VC_VALUE, &size,
+			SDLPUI_VC_NULL) != 1) {
+		SDL_assert(0);
+	}
+	info->size = size;
 	if (reload_font(subwindow, info)) {
 		int minw, minh;
 
@@ -3052,14 +3038,12 @@ static struct sdlpui_dialog *handle_menu_font_sizes(
 		struct sdlpui_control *ctrl, struct sdlpui_dialog *dlg,
 		struct sdlpui_window *window, int ul_x_win, int ul_y_win)
 {
-	int tag;
+	int tag = sdlpui_get_tag(ctrl);
 	struct subwindow *subwindow;
 	bool is_vector_font;
 	struct sdlpui_dialog *result;
 	struct sdlpui_control *c;
 
-	SDL_assert(ctrl->ftb->get_tag);
-	tag = (*ctrl->ftb->get_tag)(ctrl);
 	subwindow = get_subwindow_by_index(window, (unsigned int)tag, false);
 	SDL_assert(subwindow);
 	is_vector_font = window->app->fonts[subwindow->font->index].type
@@ -3149,11 +3133,9 @@ static struct sdlpui_dialog *handle_menu_purpose(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
 		int ul_x_win, int ul_y_win)
 {
-	int i = 0, subw_idx;
+	int i = 0, subw_idx = sdlpui_get_tag(ctrl);
 	struct sdlpui_dialog *result;
 
-	SDL_assert(ctrl->ftb->get_tag);
-	subw_idx = (*ctrl->ftb->get_tag)(ctrl);
 	SDL_assert(subw_idx >= 0 && subw_idx != MAIN_SUBWINDOW);
 	result = sdlpui_start_simple_menu(dlg, ctrl,
 		(int)N_ELEMENTS(window_flag_desc), SDL_TRUE, SDL_FALSE, NULL,
@@ -3183,14 +3165,11 @@ static struct sdlpui_dialog *handle_menu_font(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
 		int ul_x_win, int ul_y_win)
 {
-	int tag;
-	struct sdlpui_dialog *result;
+	int tag = sdlpui_get_tag(ctrl);
+	struct sdlpui_dialog *result = sdlpui_start_simple_menu(dlg, ctrl, 2,
+		SDL_TRUE, SDL_FALSE, NULL, NULL, 0);
 	struct sdlpui_control *c;
 
-	SDL_assert(ctrl->ftb->get_tag);
-	tag = (*ctrl->ftb->get_tag)(ctrl);
-	result = sdlpui_start_simple_menu(dlg, ctrl, 2, SDL_TRUE, SDL_FALSE,
-		NULL, NULL, 0);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_submenu_button(c, "Name", SDLPUI_HOR_LEFT,
 		handle_menu_font_names, SDLPUI_CHILD_MENU_RIGHT, tag,
@@ -3210,12 +3189,10 @@ static void handle_menu_borders(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
 		enum sdlpui_action_hint hint)
 {
-	int tag;
+	int tag = sdlpui_get_tag(ctrl);
 	struct subwindow *subwindow;
 
 	(void)hint;
-	SDL_assert(ctrl->ftb->get_tag);
-	tag = (*ctrl->ftb->get_tag)(ctrl);
 	SDL_assert(tag >= 0);
 	subwindow = get_subwindow_by_index(window, (unsigned int)tag, false);
 	SDL_assert(subwindow);
@@ -3227,13 +3204,11 @@ static void handle_menu_subwindow_alpha(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
 		enum sdlpui_action_hint hint)
 {
-	int tag;
+	int tag = sdlpui_get_tag(ctrl);
 	struct subwindow *subwindow;
 	struct sdlpui_simple_menu *sm;
 	int new_alpha, i;
 
-	SDL_assert(ctrl->ftb->get_tag);
-	tag = (*ctrl->ftb->get_tag)(ctrl);
 	SDL_assert(tag >= 0);
 	subwindow = get_subwindow_by_index(window, (unsigned int)tag / 101,
 		false);
@@ -3244,33 +3219,33 @@ static void handle_menu_subwindow_alpha(struct sdlpui_control *ctrl,
 		/*
 		 * Already selected; pushing the button doesn't toggle it off.
 		 */
-		struct sdlpui_menu_button *mb;
-
-		SDL_assert(ctrl->type_code == SDLPUI_CTRL_MENU_BUTTON);
-		mb = (struct sdlpui_menu_button*)ctrl->priv;
-		SDL_assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
-		mb->v.toggled = SDL_TRUE;
+		if (sdlpui_set_values(ctrl, dlg, window, SDL_FALSE,
+				SDLPUI_ACTION_HINT_NONE,
+				SDLPUI_VC_VALUE, SDL_TRUE,
+				SDLPUI_VC_NULL)) {
+			SDL_assert(0);
+		}
 		sdlpui_begin_focus_transaction();
 		sdlpui_trigger_momentary_feedback(hint, SDL_FALSE);
 		sdlpui_end_focus_transaction();
-		sdlpui_dialog_mark_for_redraw(dlg, window);
 		return;
 	}
 	/* Toggle off the previous setting. */
 	SDL_assert(dlg->type_code == SDLPUI_DIALOG_SIMPLE_MENU);
 	sm = (struct sdlpui_simple_menu*)dlg->priv;
 	for (i = 0; i < sm->number; ++i) {
-		struct sdlpui_menu_button *mb;
-		int alpha;
+		int alpha =
+			ALPHA_PERCENT((sdlpui_get_tag(sm->controls + i) % 101));
 
-		SDL_assert(sm->controls[i].type_code
-			== SDLPUI_CTRL_MENU_BUTTON);
-		mb = (struct sdlpui_menu_button*)sm->controls[i].priv;
-		alpha = ALPHA_PERCENT((mb->tag % 101));
 		if (is_close_to(alpha, subwindow->color.a,
 				DEFAULT_ALPHA_STEP / 2)) {
-			mb->v.toggled = SDL_FALSE;
-			sdlpui_dialog_mark_for_redraw(dlg, window);
+			if (sdlpui_set_values(sm->controls + i,
+					dlg, window, SDL_FALSE,
+					SDLPUI_ACTION_HINT_NONE,
+					SDLPUI_VC_VALUE, SDL_FALSE,
+					SDLPUI_VC_NULL)) {
+				SDL_assert(0);
+			}
 			break;
 		}
 	}
@@ -3285,12 +3260,10 @@ static struct sdlpui_dialog *handle_menu_alpha(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
 		int ul_x_win, int ul_y_win)
 {
-	int tag, nstep, i;
+	int tag = sdlpui_get_tag(ctrl), nstep, i;
 	struct subwindow *subwindow;
 	struct sdlpui_dialog *result;
 
-	SDL_assert(ctrl->ftb->get_tag);
-	tag = (*ctrl->ftb->get_tag)(ctrl);
 	SDL_assert(tag >= 0);
 	subwindow = get_subwindow_by_index(window, (unsigned int)tag, false);
 	SDL_assert(subwindow);
@@ -3322,12 +3295,10 @@ static void handle_menu_top(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
 		enum sdlpui_action_hint hint)
 {
-	int tag;
+	int tag = sdlpui_get_tag(ctrl);
 	struct subwindow *subwindow;
 
 	(void)hint;
-	SDL_assert(ctrl->ftb->get_tag);
-	tag = (*ctrl->ftb->get_tag)(ctrl);
 	SDL_assert(tag >= 0);
 	subwindow = get_subwindow_by_index(window, (unsigned int)tag, false);
 	SDL_assert(subwindow);
@@ -3353,13 +3324,11 @@ static struct sdlpui_dialog *handle_menu_terms(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
 		int ul_x_win, int ul_y_win)
 {
-	int tag;
+	int tag = sdlpui_get_tag(ctrl);
 	struct subwindow *subwindow;
 	struct sdlpui_dialog *result;
 	struct sdlpui_control *c;
 
-	SDL_assert(ctrl->ftb->get_tag);
-	tag = (*ctrl->ftb->get_tag)(ctrl);
 	SDL_assert(tag >= 0);
 	subwindow = get_subwindow_by_index(window, (unsigned int)tag, false);
 	SDL_assert(subwindow);
@@ -6157,14 +6126,12 @@ static void handle_button_open_subwindow(struct sdlpui_control *ctrl,
 		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
 		enum sdlpui_action_hint hint)
 {
-	int tag;
+	int tag = sdlpui_get_tag(ctrl);
 	unsigned int index;
 	struct subwindow *subwindow;
 	int minw, minh;
 
 	(void)hint;
-	assert(ctrl->ftb->get_tag);
-	tag = (*ctrl->ftb->get_tag)(ctrl);
 	assert(tag >= 0);
 	index = (unsigned int)tag;
 	subwindow = get_subwindow_by_index(window, index, false);
@@ -6723,18 +6690,18 @@ static void detach_subwindow_from_window(struct sdlpui_window *window,
 		int cidx = subwindow->index
 			+ ((window->index == MAIN_WINDOW) ? 1 : 0);
 		struct sdlpui_simple_menu *sm;
-		struct sdlpui_menu_button *mb;
 
 		assert(window->status_bar->type_code
 			== SDLPUI_DIALOG_SIMPLE_MENU);
 		sm = (struct sdlpui_simple_menu*)window->status_bar->priv;
 		assert(cidx < sm->number);
-		assert(sm->controls[cidx].type_code
-			== SDLPUI_CTRL_MENU_BUTTON);
-		mb = (struct sdlpui_menu_button*)sm->controls[cidx].priv;
-		assert(mb->subtype_code == SDLPUI_MB_TOGGLE);
-		mb->v.toggled = SDL_FALSE;
-		sdlpui_dialog_mark_for_redraw(window->status_bar, window);
+		if (sdlpui_set_values(sm->controls + cidx,
+				window->status_bar, window, SDL_FALSE,
+				SDLPUI_ACTION_HINT_NONE,
+				SDLPUI_VC_VALUE, SDL_FALSE,
+				SDLPUI_VC_NULL)) {
+			SDL_assert(0);
+		}
 	}
 }
 
