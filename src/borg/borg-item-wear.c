@@ -699,7 +699,7 @@ bool borg_backup_swap(int p)
             b_p2 = 9999;
     }
 
-    /* Pass on the swap which yields the best result */
+    /* prefer the lower danger among available swaps. */
     if (weapon_swap && (!armour_swap || b_p2 <= b_p1)) {
         b_p  = b_p2;
         swap = weapon_swap - 1;
