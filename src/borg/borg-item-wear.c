@@ -537,8 +537,8 @@ bool borg_backup_swap(int p)
     int swap;
 
     int32_t b_p  = 0L;
-    int32_t b_p1 = 0L;
-    int32_t b_p2 = 0L;
+    int32_t b_p1 = 9999L;
+    int32_t b_p2 = 9999L;
 
     int i;
 
@@ -559,9 +559,6 @@ bool borg_backup_swap(int p)
     if (borg.antibounce_count > 300)
         return false;
 
-    /* make sure we have an appropriate swap */
-    if (!armour_swap && !weapon_swap)
-        return false;
 
     if (armour_swap) {
         /* Save our normal condition */
@@ -700,7 +697,7 @@ bool borg_backup_swap(int p)
     }
 
     /* Pass on the swap which yields the best result */
-    if (b_p1 <= b_p2) {
+    if (b_p2 <= b_p1) {
         b_p  = b_p2;
         swap = weapon_swap - 1;
     } else {
