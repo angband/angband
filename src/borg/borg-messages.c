@@ -440,11 +440,11 @@ static void borg_parse_aux(char *msg, int len)
 
     if (streq(msg, "You have been knocked out.")) {
         borg_note("Ignoring Messages While KO'd");
-        borg_dont_react = true;
+        borg.dont_react = true;
     }
     if (streq(msg, "You are paralyzed")) {
         borg_note("Ignoring Messages While Paralyzed");
-        borg_dont_react = true;
+        borg.dont_react = true;
     }
 
     /* Hallucination -- Open */

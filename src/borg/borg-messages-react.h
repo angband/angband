@@ -26,7 +26,6 @@
 
 #ifdef ALLOW_BORG
 
-extern bool borg_dont_react;
 
 /*
  * Handle various "important" messages

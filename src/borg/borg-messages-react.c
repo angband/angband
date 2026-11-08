@@ -31,7 +31,6 @@
 #include "borg-trait.h"
 #include "borg.h"
 
-bool borg_dont_react = false;
 
 /*
  * Handle various "important" messages
@@ -42,7 +41,7 @@ void borg_react(const char *msg, const char *buf)
 {
     int len;
 
-    if (borg_dont_react || borg.trait[BI_ISPARALYZED]) {
+    if (borg.dont_react || borg.trait[BI_ISPARALYZED]) {
         borg_note("# Ignoring messages.");
         return;
     }

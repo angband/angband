@@ -309,7 +309,7 @@ static struct keypress generate_keypress(int flush_first)
 
     /* Flush messages */
     borg_parse(NULL);
-    borg_dont_react = false;
+    borg.dont_react = false;
 
     /* Check for key on the queue */
     borg_ch = borg_inkey(true);

@@ -917,7 +917,7 @@ bool borg_caution(void)
     }
 
     /* Note if ignorig messages */
-    if (borg_dont_react) {
+    if (borg.dont_react) {
         borg_note("# Borg ignoring messges.");
     }
 
