@@ -115,26 +115,9 @@ jobs:
             mingw-w64-i686-cmake
             mingw-w64-i686-ninja
             mingw-w64-i686-gcc
-            mingw-w64-i686-libpng
 
       - name: Clone Project
         uses: actions/checkout@v6
-
-      - name: Configure with CMake/Ninja and static linking
-        run: |
-          mkdir build
-          cd build
-          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_STATIC_LINKING=ON ..
-
-      - name: Build with Ninja
-        run: |
-          cd build
-          ninja -j$(nproc)
-
-      - name: Run Tests
-        run: |
-          cd build
-          ninja -j$(nproc) alltests
 
       - name: Configure and build with bundled PNG
         run: |
@@ -142,6 +125,11 @@ jobs:
           cd build-bundled-png
           cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_BUNDLED_PNG=ON ..
           ninja -j$(nproc)
+
+      - name: Run Tests
+        run: |
+          cd build-bundled-png
+          ninja -j$(nproc) alltests
 
   cmake-win64:
     runs-on: windows-latest
