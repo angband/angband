@@ -406,7 +406,8 @@ bool get_savefile(HWND hwnd_owner, char *initial_dir, char *out_savefile, size_t
 	ofn.lpstrFile = buf;
 	ofn.nMaxFile = sizeof(buf);
 	ofn.lpstrInitialDir = initial_dir;
-	ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+	ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR | OFN_HIDEREADONLY
+		| OFN_NOREADONLYRETURN;
 
 	if (!GetOpenFileNameA(&ofn)) {
 		/* An error code of 0 means the user cancelled */
