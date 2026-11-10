@@ -322,13 +322,15 @@ errr grab_int_value(int *value, const char **value_type,
  */
 errr grab_int_range(int *lo, int *hi, const char *range, const char *sep)
 {
-	char *pe;
-	long lv1 = strtol(range, &pe, 10), lv2;
+	const char *pe;
+	char *next_pe;
+	long lv1 = strtol(range, &next_pe, 10), lv2;
 
 	/*
 	 * Reject INT_MIN and INT_MAX as well so don't have to check errno in
 	 * order to recognize overflow when sizeof(int) == sizeof(long).
 	 */
+	pe = next_pe;
 	if (pe == range || !isspace((unsigned char)*pe) || lv1 <= INT_MIN || lv1 >= INT_MAX) {
 		return PARSE_ERROR_INVALID_VALUE;
 	}
@@ -349,9 +351,9 @@ errr grab_int_range(int *lo, int *hi, const char *range, const char *sep)
 			return PARSE_ERROR_INVALID_VALUE;
 		}
 	}
-	lv2 = strtol(range, &pe, 10);
-	if (pe == range || !contains_only_spaces(pe) || lv2 <= INT_MIN
-			|| lv2 >= INT_MAX) {
+	lv2 = strtol(range, &next_pe, 10);
+	if (next_pe == range || !contains_only_spaces(next_pe)
+			|| lv2 <= INT_MIN || lv2 >= INT_MAX) {
 		return PARSE_ERROR_INVALID_VALUE;
 	}
 	*lo = (int)lv1;
