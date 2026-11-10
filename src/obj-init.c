@@ -87,7 +87,7 @@ static const char *element_names[] = {
 
 static bool grab_element_flag(struct element_info *info, const char *flag_name)
 {
-	char *under = strchr(flag_name, '_');
+	const char *under = strchr(flag_name, '_');
 	size_t i;
 
 	if (!under) {
