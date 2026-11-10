@@ -14,7 +14,7 @@ jobs:
         id: install_depend
         run: |
           sudo apt-get update
-          sudo apt-get install make dosbox-x
+          sudo apt-get install make dosbox-x xvfb
 
       - name: Clone Project
         uses: actions/checkout@v6
@@ -39,7 +39,7 @@ jobs:
           unzip $projname.zip -d dosroot
 
       - name: DOS runtime smoke test
-        timeout-minutes: 2
+        timeout-minutes: 3
         run: |
           projname=$(cd src && make -f Makefile.ibm print-project-name | sed -En 's/^our-project-name=//p')
           exename=$(cd src && make -f Makefile.ibm print-executable-name | sed -En 's/^our-executable-name=//p' | tr "[:lower:]" "[:upper:]")
@@ -66,6 +66,9 @@ jobs:
           EOF
 
           rm -f dosbox.log dosroot/OUT.LOG dosroot/$projname/lib/save/DOSUSER
+          echo "Set up xvfb as X server" >> dosroot/OUT.LOG
+          export DISPLAY=:99
+          sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
           dosbox-x -debug -conf dosbox.conf -nogui -exit > dosbox.log 2>&1
 
           echo "=== Save Directory ==="
