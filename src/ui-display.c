@@ -1179,24 +1179,34 @@ static int longest_terrain_name(void)
 }
 
 /**
- * Prints player trap (if any) or terrain
+ * Prints trap/glyph/web (if any) or terrain
  */
 static size_t prt_terrain(int row, int col)
 {
-	struct feature *feat = square_feat(player->cave, player->grid);
 	struct trap *trap = square_trap(player->cave, player->grid);
 	char buf[30];
 	uint8_t attr;
 
-	if (feat->mimic) {
-		feat = feat->mimic;
-	}
-	if (trap && square_isknown(cave, player->grid)) {
-		my_strcpy(buf, trap->kind->name, sizeof(buf));
-		attr = trap->kind->d_attr;
-	} else {
-		my_strcpy(buf, feat->name, sizeof(buf));
-		attr = feat->d_attr;
+	while (1) {
+		if (!trap) {
+			struct feature *feat =
+				square_feat(player->cave, player->grid);
+
+			if (feat->mimic) {
+				feat = feat->mimic;
+			}
+			my_strcpy(buf, feat->name, sizeof(buf));
+			attr = feat->d_attr;
+			break;
+		}
+		if (!trap->timeout && (trf_has(trap->flags, TRF_TRAP)
+				|| trf_has(trap->flags, TRF_GLYPH)
+				|| trf_has(trap->flags, TRF_WEB))) {
+			my_strcpy(buf, trap->kind->name, sizeof(buf));
+			attr = trap->kind->d_attr;
+			break;
+		}
+		trap = trap->next;
 	}
 	my_strcap(buf);
 	c_put_str(attr, format("%s ", buf), row, col);

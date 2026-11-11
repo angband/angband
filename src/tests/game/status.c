@@ -191,21 +191,32 @@ static int test_remembered_trap(void *state) {
 	if (check_known_trap(kind))
 		return 1;
 
-	/* Forgetting terrain also hides any leftover trap memory. */
+	/* Forgetting terrain has no effect on trap memory. */
 	square_forget(cave, player->grid);
 	notnull(square_trap(player->cave, player->grid));
-	if (check_status(f_info[FEAT_NONE].name, f_info[FEAT_NONE].d_attr))
+	if (check_known_trap(kind))
 		return 1;
-	square_memorize(cave, player->grid);
 
 	/* Changes outside the player's view do not change remembered traps. */
 	sqinfo_off(square(cave, player->grid)->info, SQUARE_SEEN);
 	square_remove_all_traps(cave, player->grid);
 	notnull(square_trap(player->cave, player->grid));
-	if (check_status(kind->name, kind->d_attr))
-		return 1;
+	return check_known_trap(kind);
+}
 
+static int test_disabled_trap(void *state) {
+	struct trap_kind *kind = lookup_trap("pit");
+
+	reset_square();
+	square_set_feat(cave, player->grid, FEAT_FLOOR);
+	square_memorize(cave, player->grid);
+	notnull(kind);
+	place_trap(cave, player->grid, kind->tidx, 1);
+	notnull(square_trap(cave, player->grid));
+	trf_on(square_trap(cave, player->grid)->flags, TRF_VISIBLE);
+	square_trap(cave, player->grid)->timeout = 50;
 	square_memorize_traps(cave, player->grid);
+	notnull(square_trap(player->cave, player->grid));
 	return check_status(f_info[FEAT_FLOOR].name, f_info[FEAT_FLOOR].d_attr);
 }
 
@@ -218,5 +229,6 @@ struct test tests[] = {
 	{ "mimic", test_mimic },
 	{ "hidden-trap", test_hidden_trap },
 	{ "remembered-trap", test_remembered_trap },
+	{ "disabled-trap", test_disabled_trap },
 	{ NULL, NULL }
 };
