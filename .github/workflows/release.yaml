@@ -269,10 +269,10 @@ jobs:
           path: ${{ steps.create_source_archive.outputs.archive_file }}
           retention-days: 1
 
-  windows:
+  windows-legacy-32bit:
     needs: [setup, docconvert]
-    name: Windows
-    runs-on: ubuntu-22.04
+    name: Windows Legacy (32-bit XP/Vista)
+    runs-on: ubuntu-24.04
     steps:
       - name: Download Artifact with Configuration Information
         uses: actions/download-artifact@v8
@@ -292,7 +292,7 @@ jobs:
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install gcc-mingw-w64 automake autoconf git make zip
+          sudo apt-get install gcc-mingw-w64 automake autoconf git make zip ninja-build
 
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
@@ -331,7 +331,7 @@ jobs:
       #
       # Conclusion: removing -g or stripping the binary are the main ways to reduce size,
       # while -Os yields a modest further reduction if minimal binary size is desired.
-      - name: Create Windows Archive
+      - name: Create Legacy Windows Archive
         id: create_windows_archive
         run: |
           cmake -S . -B build -G Ninja \
@@ -343,10 +343,104 @@ jobs:
           cmake --build build --parallel
           cp build/game/${{ steps.store_config.outputs.prog }}.exe build/game/libpng12.dll build/game/zlib1.dll .
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          echo "archive_file=${archive_prefix}-win-legacy32.zip" >> $GITHUB_OUTPUT
+          scripts/pkg_win $archive_prefix ${archive_prefix}-win-legacy32.zip
+
+      - name: Create Artifact with Windows Archive Path
+        run: |
+          echo archive_path= '${{ steps.create_windows_archive.outputs.archive_file }}' > $WIN_ARTIFACT_PATH-legacy32
+
+      - name: Upload Artifact with Windows Archive Path
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.WIN_ARTIFACT }}-legacy32
+          path: ${{ env.WIN_ARTIFACT_PATH }}-legacy32
+          retention-days: 1
+
+      - name: Upload Windows Archive as Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.WIN_ARCHIVE_ARTIFACT }}-legacy32
+          path: ${{ steps.create_windows_archive.outputs.archive_file }}
+          retention-days: 1
+
+  windows-release-ucrt64:
+    needs: [setup, docconvert]
+    name: Windows Official Release (64-bit UCRT)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        shell: bash
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "name=$name" >> $GITHUB_OUTPUT
+          prog=`sed -E -n -e 's/prog= //p' $CONFIG_ARTIFACT_PATH`
+          echo "prog=$prog" >> $GITHUB_OUTPUT
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Set up prerequisites
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          msystem: UCRT64
+          install: >-
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-libpng
+            zip
+
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.
+      - name: Clone Project
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download Artifact with Converted Documents
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.DOC_ARTIFACT }}
+
+      - name: Extract Converted Documents
+        shell: bash
+        run: |
+          tar -xf ${{ env.DOC_ARTIFACT_PATH }}
+
+      - name: Create Official Windows Archive
+        id: create_windows_archive
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror" \
+            -DSUPPORT_WINDOWS_FRONTEND=ON
+          cmake --build build --parallel
+          
+          # Copy the freshly compiled modern binary out
+          cp build/game/${{ steps.store_config.outputs.prog }}.exe .
+          
+          # Dynamically locate the system 64-bit dependencies and copy them along
+          # TODO: Dynamically locate the actual dependencies and copy them along (perhaps copydeps?)
+          #       Does pkg_win handle copying dependencies?
+          cp /ucrt64/bin/libpng16-16.dll .
+          cp /ucrt64/bin/zlib1.dll .
+          
+          archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
           echo "archive_file=${archive_prefix}-win.zip" >> $GITHUB_OUTPUT
           scripts/pkg_win $archive_prefix ${archive_prefix}-win.zip
 
       - name: Create Artifact with Windows Archive Path
+        shell: bash
         run: |
           echo archive_path= '${{ steps.create_windows_archive.outputs.archive_file }}' > $WIN_ARTIFACT_PATH
 
@@ -617,7 +711,7 @@ jobs:
 
   release:
     if: github.event_name == 'push'
-    needs: [ setup, source, windows, mac, _3ds, nds ]
+    needs: [ setup, source, windows-release-ucrt64, windows-legacy-32bit, mac, _3ds, nds ]
     name: Create GitHub Release
     runs-on: ubuntu-latest
     steps:
@@ -672,6 +766,23 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: ${{ env.WIN_ARCHIVE_ARTIFACT }}
+
+      # --- Legacy Windows Release (32-bit Cross-built) ---
+      - name: Download Artifact with Legacy Windows Archive Path
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.WIN_ARTIFACT }}-legacy32
+
+      - name: Extract Legacy Windows Archive Path and Store in Step Outputs
+        id: store_win_legacy32
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $WIN_ARTIFACT_PATH-legacy32`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with Legacy Windows Archive
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.WIN_ARCHIVE_ARTIFACT }}-legacy32
 
       - name: Download Artifact with Mac Archive Path
         uses: actions/download-artifact@v8
@@ -732,4 +843,11 @@ jobs:
           options="-t $release_tag"
           test x"${{ steps.store_config.outputs.draft }}" = xtrue && options="$options -d"
           test x"${{ steps.store_config.outputs.prerelease }}" = xtrue && options="$options -p"
-          gh release create $release_tag ${{ steps.store_src.outputs.archive_path }} ${{ steps.store_win.outputs.archive_path }} ${{ steps.store_mac.outputs.archive_path }} ${{ steps.store_3ds.outputs.archive_path }} ${{ steps.store_ds.outputs.archive_path }} $options
+          gh release create $release_tag \
+            ${{ steps.store_src.outputs.archive_path }} \
+            ${{ steps.store_win.outputs.archive_path }} \
+            ${{ steps.store_win_legacy32.outputs.archive_path }} \
+            ${{ steps.store_mac.outputs.archive_path }} \
+            ${{ steps.store_3ds.outputs.archive_path }} \
+            ${{ steps.store_ds.outputs.archive_path }} \
+            $options
