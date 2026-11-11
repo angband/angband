@@ -246,6 +246,52 @@ bool square_remove_all_traps_of_type(struct chunk *c, struct loc grid,
 }
 
 /**
+ * Remove all traps with the given flag.
+ *
+ * Return true if traps were removed.
+ */
+bool square_remove_all_traps_with_flag(struct chunk *c, struct loc grid,
+		int flag)
+{
+	bool removed = false;
+
+	/* Look at the traps in this grid */
+	struct trap *prev_trap = NULL;
+	struct trap *trap = square(c, grid)->trap;
+
+	while (trap) {
+		struct trap *next_trap = trap->next;
+
+		if (trf_has(trap->flags, flag)) {
+			mem_free(trap);
+			removed = true;
+
+			if (prev_trap) {
+				prev_trap->next = next_trap;
+			} else {
+				square_set_trap(c, grid, next_trap);
+				if (!next_trap) {
+					sqinfo_off(square(c, grid)->info,
+						SQUARE_TRAP);
+				}
+			}
+		} else {
+			prev_trap = trap;
+		}
+
+		trap = next_trap;
+	}
+
+	/* Refresh grids that the character can see */
+	if (removed && square_isseen(c, grid)) {
+		square_memorize_traps(c, grid);
+		square_light_spot(c, grid);
+	}
+
+	return removed;
+}
+
+/**
  * ------------------------------------------------------------------------
  * Player traps
  * ------------------------------------------------------------------------ */
@@ -441,9 +487,6 @@ bool square_reveal_trap(struct chunk *c, struct loc grid, bool always,
 			else
 				msg("You have found %d traps.", found_trap);
 		}
-
-		/* Memorize */
-		square_memorize(c, grid);
 
 		/* Redraw */
 		square_light_spot(c, grid);

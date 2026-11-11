@@ -1347,10 +1347,14 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Detect traps */
-			if (square_isplayertrap(cave, grid))
+			if (square_isplayertrap(cave, grid)) {
 				/* Reveal trap */
 				if (square_reveal_trap(cave, grid, true, false))
 					detect = true;
+			} else if (square_isplayertrap(player->cave, grid)) {
+				(void)square_remove_all_traps_with_flag(
+					player->cave, grid, TRF_TRAP);
+			}
 
 			/* Scan all objects in the grid to look for traps on chests */
 			for (obj = square_object(cave, grid); obj; obj = obj->next) {

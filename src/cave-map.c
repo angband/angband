@@ -140,20 +140,18 @@ void map_info(struct loc grid, struct grid_data *g)
 	}
 
 	/* There is a known trap in this square */
-	if (square_trap(player->cave, grid) && square_isknown(cave, grid)) {
+	if (square_trap(player->cave, grid)) {
 		struct trap *trap = square(player->cave, grid)->trap;
 
 		/* Scan the square trap list */
 		while (trap) {
-			if (trf_has(trap->flags, TRF_TRAP) ||
-				trf_has(trap->flags, TRF_GLYPH) ||
-				trf_has(trap->flags, TRF_WEB)) {
-				/* Accept the trap - only if not disabled, maybe we need
-				 * a special graphic for this */
-				if (!trap->timeout) {
-					g->trap = trap;
-					break;
-				}
+			/* Accept the trap - only if not disabled, maybe we need
+			 * a special graphic for this */
+			if (!trap->timeout && (trf_has(trap->flags, TRF_TRAP)
+					|| trf_has(trap->flags, TRF_GLYPH)
+					|| trf_has(trap->flags, TRF_WEB))) {
+				g->trap = trap;
+				break;
 			}
 			trap = trap->next;
 		}
