@@ -2301,8 +2301,12 @@ static enum parser_error parse_lore_name(struct parser *p) {
 	struct monster_race *race = lookup_monster(parser_getstr(p, "name"));
 	struct monster_lore *l = NULL;
 
-	/* Only set lore if we have a race, to allow for non-existent monsters */
-	if (race) {
+	/*
+	 * Only set lore if we have a race, to allow for non-existent monsters.
+	 * Also, skip if the race points to the player (can happen if
+	 * monster.txt was copied to lore.txt).
+	 */
+	if (race && !streq(race->name, "<player>")) {
 		l = &l_list[race->ridx];
 		l->ridx = race->ridx;
 	}
