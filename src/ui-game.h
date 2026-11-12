@@ -73,7 +73,7 @@ void savefile_set_name(const char *fname, bool make_safe, bool strip_suffix);
 bool savefile_name_already_used(const char *fname, bool make_safe,
 	bool strip_suffix);
 void save_game(void);
-bool save_game_checked(void);
+bool save_game_checked(bool is_dead);
 void close_game(bool prompt_failed_save);
 
 bool got_savefile(savefile_getter *pg);
