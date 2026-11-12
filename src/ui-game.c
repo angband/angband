@@ -530,7 +530,7 @@ void textui_process_command(void)
 			 * cancel disconnecting the UI.
 			 */
 			signals_protect(true);
-			saved = save_game_checked();
+			saved = save_game_checked(false);
 			signals_protect(false);
 			if (!saved && disconnect_denier_hook
 					&& (*disconnect_denier_hook)()) {
@@ -1015,53 +1015,61 @@ bool savefile_name_already_used(const char *fname, bool make_safe,
 
 /**
  * Save the game.
+ *
+ * Assumes the player is alive.
  */
 void save_game(void)
 {
 	signals_protect(true);
-	(void)save_game_checked();
+	(void)save_game_checked(false);
 	signals_protect(false);
 }
 
 /**
  * Save the game.
  *
+ * \param is_dead specifies whether the character being saved is dead.
  * \return whether the save was successful.
  */
-bool save_game_checked(void)
+bool save_game_checked(bool is_dead)
 {
 	char path[1024];
 	bool result;
 
-	/* Disturb the player */
-	disturb(player);
+	if (!is_dead) {
+		/* Disturb the player */
+		disturb(player);
 
-	/* Clear messages */
-	event_signal(EVENT_MESSAGE_FLUSH);
+		/* Clear messages */
+		event_signal(EVENT_MESSAGE_FLUSH);
 
-	/* Handle stuff */
-	handle_stuff(player);
+		/* Handle stuff */
+		handle_stuff(player);
 
-	/* Message */
-	prt("Saving game...", 0, 0);
+		/* Message */
+		prt("Saving game...", 0, 0);
 
-	/* Refresh */
-	Term_fresh();
+		/* Refresh */
+		Term_fresh();
 
-	/* The player is not dead */
-	my_strcpy(player->died_from, "(saved)", sizeof(player->died_from));
+		/* The player is not dead */
+		my_strcpy(player->died_from, "(saved)",
+			sizeof(player->died_from));
 
-	/* Save the player */
-	if (savefile_save(savefile)) {
-		prt("Saving game... done.", 0, 0);
-		result = true;
+		/* Save the player */
+		if (savefile_save(savefile)) {
+			prt("Saving game... done.", 0, 0);
+			result = true;
+		} else {
+			prt("Saving game... failed!", 0, 0);
+			result = false;
+		}
+
+		/* Refresh */
+		Term_fresh();
 	} else {
-		prt("Saving game... failed!", 0, 0);
-		result = false;
+		result = savefile_save(savefile);
 	}
-
-	/* Refresh */
-	Term_fresh();
 
 	/* Save the window prefs */
 	path_build(path, sizeof(path), ANGBAND_DIR_USER, "window.prf");
@@ -1080,8 +1088,11 @@ bool save_game_checked(void)
 	/* Refresh */
 	Term_fresh();
 
-	/* Note that the player is not dead */
-	my_strcpy(player->died_from, "(alive and well)", sizeof(player->died_from));
+	if (!is_dead) {
+		/* Note that the player is not dead */
+		my_strcpy(player->died_from, "(alive and well)",
+			sizeof(player->died_from));
+	}
 
 	return result;
 }
@@ -1133,7 +1144,7 @@ void close_game(bool prompt_failed_save)
 		}
 
 		/* Save dead player */
-		while (prompting && !savefile_save(savefile)) {
+		while (prompting && !save_game_checked(true)) {
 			if (!prompt_failed_save || terms_disconnecting
 					|| !get_check("Saving failed.  Try again? ")) {
 				prompting = false;
@@ -1143,7 +1154,7 @@ void close_game(bool prompt_failed_save)
 		}
 	} else {
 		/* Save the game */
-		while (prompting && !save_game_checked()) {
+		while (prompting && !save_game_checked(false)) {
 			if (!prompt_failed_save || terms_disconnecting
 					|| !get_check("Saving failed.  Try again? ")) {
 				prompting = false;
