@@ -697,6 +697,8 @@ static enum parser_error parse_constants_player(struct parser *p) {
 		z->start_gold = value;
 	else if (streq(label, "food-value"))
 		z->food_value = value;
+	else if (streq(label, "lore-cast-threshold"))
+		z->lore_cast_threshold = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 

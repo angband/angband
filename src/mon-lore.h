@@ -22,6 +22,8 @@
 #include "z-textblock.h"
 #include "monster.h"
 
+struct player;
+
 /**
  * Monster "lore" information
  */
@@ -105,21 +107,40 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 						const struct monster_lore *lore,
 						bitflag known_flags[RF_SIZE]);
 
-void lore_learn_spell_if_has(struct monster_lore *lore, const struct monster_race *race, int flag);
-void lore_learn_spell_if_visible(struct monster_lore *lore, const struct monster *mon, int flag);
-void lore_learn_flag_if_visible(struct monster_lore *lore, const struct monster *mon, int flag);
+void lore_learn_spell(struct monster_lore *lore, struct player *p,
+		const struct monster_race *race, int flag, bool incr);
+void lore_learn_spell_if_visible(struct monster_lore *lore, struct player *p,
+		const struct monster *mon, int flag, bool incr);
+void lore_learn_flag(struct monster_lore *lore, struct player *p,
+		const struct monster_race *race, int flag);
+void lore_learn_flags(struct monster_lore *lore, struct player *p,
+		const struct monster_race *race, ...);
+void lore_learn_flag_if_visible(struct monster_lore *lore, struct player *p,
+		const struct monster *mon, int flag);
+void lore_learn_flags_if_visible(struct monster_lore *lore, struct player *p,
+		const struct monster *mon, ...);
 
-void lore_update(const struct monster_race *race, struct monster_lore *lore);
-void cheat_monster_lore(const struct monster_race *race,
-						struct monster_lore *lore);
-void wipe_monster_lore(const struct monster_race *race,
-					   struct monster_lore *lore);
-void lore_do_probe(struct monster *m);
-bool lore_is_fully_known(const struct monster_race *race);
-void monster_flags_known(const struct monster_race *race,
-						 const struct monster_lore *lore,
-						 bitflag flags[RF_SIZE]);
-void lore_treasure(struct monster *mon, int num_item, int num_gold);
+bool lore_record_blow(struct monster_lore *lore, int blow_index);
+void lore_record_player_death(struct monster_lore *lore, struct player *p,
+		const struct monster_race *race);
+void lore_record_player_victory(struct monster_lore *lore, struct player *p,
+		const struct monster_race *race);
+void lore_record_sighting(struct monster_lore *lore, struct player *p,
+		const struct monster_race *race);
+
+void lore_update(struct monster_lore *lore, struct player *p,
+		const struct monster_race *race);
+void cheat_monster_lore(struct monster_lore *lore,
+		const struct monster_race *race);
+void wipe_monster_lore(struct monster_lore *lore,
+		const struct monster_race *race);
+void lore_do_probe(struct player *p, const struct monster *m);
+bool lore_is_fully_known(const struct monster_lore *lore,
+		const struct monster_race *race);
+void monster_flags_known(const struct monster_lore *lore,
+		const struct monster_race *race, bitflag flags[RF_SIZE]);
+void lore_treasure(struct player *p, const struct monster *mon,
+		int num_item, int num_gold);
 struct monster_lore *get_lore(const struct monster_race *race);
 bool lore_save(const char *name);
 

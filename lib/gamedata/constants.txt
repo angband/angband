@@ -203,6 +203,9 @@ player:start-gold:600
 # Number of turns that 1% of player food capacity feeds them for
 player:food-value:100
 
+# Number of casts that have to be observed before knowing frequency for lore
+player:lore-cast-threshold:50
+
 #---------------------------------------------------------------------
 # Constants for non-O critical calculations
 # In general, those calculations compute the chance for a critical

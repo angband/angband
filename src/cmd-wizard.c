@@ -2189,12 +2189,18 @@ void do_cmd_wiz_recall_monster(struct command *cmd)
 	if (r_idx >= 0 && r_idx < z_info->r_max) {
 		const struct monster_race *race = &r_info[r_idx];
 
-		cheat_monster_lore(race, get_lore(race));
+		cheat_monster_lore(get_lore(race), race);
+		if (player->upkeep->monster_race == race) {
+			player->upkeep->redraw |= (PR_MONSTER);
+		}
 	} else if (r_idx == -1) {
 		int i;
 
 		for (i = 0; i < z_info->r_max; i++) {
-			cheat_monster_lore(&r_info[i], &l_list[i]);
+			cheat_monster_lore(&l_list[i], &r_info[i]);
+		}
+		if (player->upkeep->monster_race) {
+			player->upkeep->redraw |= (PR_MONSTER);
 		}
 	} else {
 		msg("No monster found.");
@@ -2887,12 +2893,18 @@ void do_cmd_wiz_wipe_recall(struct command *cmd)
 	if (r_idx >= 0 && r_idx < z_info->r_max) {
 		const struct monster_race *race = &r_info[r_idx];
 
-		wipe_monster_lore(race, get_lore(race));
+		wipe_monster_lore(get_lore(race), race);
+		if (player->upkeep->monster_race == race) {
+			player->upkeep->redraw |= (PR_MONSTER);
+		}
 	} else if (r_idx == -1) {
 		int i;
 
 		for (i = 0; i < z_info->r_max; i++) {
-			wipe_monster_lore(&r_info[i], &l_list[i]);
+			wipe_monster_lore(&l_list[i], &r_info[i]);
+		}
+		if (player->upkeep->monster_race) {
+			player->upkeep->redraw |= (PR_MONSTER);
 		}
 	} else {
 		msg("No monster found.");
