@@ -105,7 +105,8 @@ static bool does_resist(const struct monster *mon, int effect_type, int timer, i
 
 	/* Check resistances from monster flags */
 	if (rf_has(mon->race->flags, effect->flag_resist)) {
-		lore_learn_flag_if_visible(lore, mon, effect->flag_resist);
+		lore_learn_flag_if_visible(lore, player, mon,
+			effect->flag_resist);
 		return true;
 	}
 

@@ -1805,14 +1805,9 @@ static bool detect_monsters(int y_dist, int x_dist, monster_predicate pred)
 
 			/* Note invisible monsters */
 			if (monster_is_invisible(mon)) {
-				struct monster_lore *lore = get_lore(mon->race);
-				rf_on(lore->flags, RF_INVISIBLE);
+				lore_learn_flag(get_lore(mon->race), player,
+					mon->race, RF_INVISIBLE);
 			}
-
-			/* Update monster recall window */
-			if (player->upkeep->monster_race == mon->race)
-				/* Redraw stuff */
-				player->upkeep->redraw |= (PR_MONSTER);
 
 			/* Update the monster */
 			update_mon(mon, cave, false);
@@ -2493,7 +2488,7 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 			msg("%s has %d hit point%s.", m_name, mon->hp, (mon->hp == 1) ? "" : "s");
 
 			/* Learn all of the non-spell, non-treasure flags */
-			lore_do_probe(mon);
+			lore_do_probe(player, mon);
 
 			/* Probe worked */
 			probe = true;

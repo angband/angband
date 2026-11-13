@@ -275,36 +275,333 @@ static int blow_color(struct player *p, int blow_idx)
 	return blow->lore_attr;
 }
 
-void lore_learn_spell_if_has(struct monster_lore *lore, const struct monster_race *race, int flag)
+/**
+ * Learn about a monster's spell flag.
+ *
+ * \param lore points to the lore record to be updated for what is learned.
+ * \param p points to the player doing the learning.
+ * \param race points to the struct monster_race describing the monster doing
+ * the casting.
+ * \param flag is the spell flag, from list-mon-spells.h, for the spell.
+ * \param incr will, if true, cause the casting count to be incremented.
+ *
+ * Handles any side effects on the derived known fields in lore and marks
+ * what needs to be redrawn in the user interface.
+ */
+void lore_learn_spell(struct monster_lore *lore, struct player *p,
+		const struct monster_race *race, int flag, bool incr)
 {
-	if (rsf_has(race->spell_flags, flag)) {
-		rsf_on(lore->spell_flags, flag);
+	if (rsf_on(lore->spell_flags, flag)
+			&& rsf_has(race->spell_flags, flag)) {
+		if (incr) {
+			if (mon_spell_is_innate(flag)) {
+				if (lore->cast_innate < 255) {
+					if (lore->cast_innate == z_info->lore_cast_threshold) {
+						lore->innate_freq_known = true;
+					}
+					++lore->cast_innate;
+				}
+			} else {
+				if (lore->cast_spell < 255) {
+					if (lore->cast_spell == z_info->lore_cast_threshold) {
+						lore->spell_freq_known = true;
+					}
+					++lore->cast_spell;
+				}
+			}
+		}
+		/*
+		 * Gained something and it was applicable to this race.
+		 * See if everything is now known or if the user interface
+		 * needs to be redrawn.
+		 */
+		if (rsf_is_equal(lore->spell_flags, race->spell_flags)
+				&& lore_is_fully_known(lore, race)) {
+			lore->all_known = true;
+			lore_update(lore, p, race);
+		} else if (p->upkeep->monster_race == race) {
+			p->upkeep->redraw |= (PR_MONSTER);
+		}
 	}
 }
 
-void lore_learn_spell_if_visible(struct monster_lore *lore, const struct monster *mon, int flag)
+/*
+ * Learn about a monster's spell flag if the monster is visible.
+ *
+ * \param lore points to the lore record to be updated for what is learned.
+ * \param p points to the player doing the learning.
+ * \param mon points to the monster casting the spell.
+ * \param flag is the spell flag, from list-mon-spells.h, for the spell.
+ * \param incr will, if true, cause the casting count to be incremented.
+ *
+ * Handles any side effects on the derived known fields in lore and marks
+ * what needs to be redrawn in the user interface.
+ */
+void lore_learn_spell_if_visible(struct monster_lore *lore,
+		struct player *p, const struct monster* mon, int flag,
+		bool incr)
 {
 	if (monster_is_visible(mon)) {
-		rsf_on(lore->spell_flags, flag);
+		lore_learn_spell(lore, p, mon->race, flag, incr);
 	}
 }
 
-void lore_learn_flag_if_visible(struct monster_lore *lore, const struct monster *mon, int flag)
+/*
+ * Learn about a monster's flag.
+ *
+ * \param lore points to the lore record to be updated for what is learned.
+ * \param p points to the player doing the learning.
+ * \param race points to the struct monster_race describing the monster the
+ * player is learning about.
+ * \param flag is the race flag, from list-mon-race-flags.h, that the player
+ * is learning.
+ *
+ * Handles any side effects on the derived known fields in lore and marks
+ * what needs to be redrawn in the user interface.
+ */
+void lore_learn_flag(struct monster_lore *lore, struct player *p,
+		const struct monster_race *race, int flag)
+{
+	if (rf_on(lore->flags, flag) && rf_has(race->flags, flag)) {
+		/*
+		 * Gained something and it was applicable to this race.
+		 * See if everything is now known or if the user interface
+		 * needs to be redrawn.
+		 */
+		if (rf_is_subset(lore->flags, race->flags)
+				&& lore_is_fully_known(lore, race)) {
+			lore->all_known = true;
+			lore_update(lore, p, race);
+		} else if (p->upkeep->monster_race == race) {
+			p->upkeep->redraw |= (PR_MONSTER);
+		}
+	}
+}
+
+/*
+ * Learn about flags for a monster.
+ *
+ * \param lore points to the lore record to be updated for what is learned.
+ * \param p points to the player doing the learning.
+ * \param race points to the struct monster_race describing the monster the
+ * player is learning about.
+ *
+ * The flags, from list-mon-race-flags.h, to be learned appear after race,
+ * separated by commas and terminated with RF_MAX.  This can be a bit more
+ * efficient than separate calls to lore_learn_flag().
+ *
+ * Handles any side effects on the derived known fields in lore and marks
+ * what needs to be redrawn in the user interface.
+ */
+void lore_learn_flags(struct monster_lore *lore, struct player *p,
+		const struct monster_race *race, ...)
+{
+	va_list args;
+	int f;
+	bool learned = false;
+
+	va_start(args, race);
+	for (f = va_arg(args, int); f != RF_MAX; f = va_arg(args, int)) {
+		if (rf_on(lore->flags, f) && rf_has(race->flags, f)) {
+			learned = true;
+		}
+	}
+	va_end(args);
+
+	if (learned) {
+		if (rf_is_subset(lore->flags, race->flags)
+				&& lore_is_fully_known(lore, race)) {
+			lore->all_known = true;
+			lore_update(lore, p, race);
+		} else if (p->upkeep->monster_race == race) {
+			p->upkeep->redraw |= (PR_MONSTER);
+		}
+	}
+}
+
+/*
+ * Learn about a monster's flag if the monster is visible.
+ *
+ * \param lore points to the lore record to be updated for what is learned.
+ * \param p points to the player doing the learning.
+ * \param mon points to the monster the player is learning about.
+ * \param flag is the race flag, from list-mon-race-flags.h, that the player
+ * is learning.
+ *
+ * Handles any side effects on the derived known fields in lore and marks
+ * what needs to be redrawn in the user interface.
+ */
+void lore_learn_flag_if_visible(struct monster_lore *lore, struct player *p,
+		const struct monster *mon, int flag)
 {
 	if (monster_is_visible(mon)) {
-		rf_on(lore->flags, flag);
+		lore_learn_flag(lore, p, mon->race, flag);
+	}
+}
+
+/*
+ * Learn about flags for a monster if the monster is visible.
+ *
+ * \param lore points to the lore record to be updated for what is learned.
+ * \param p points to the player doing the learning.
+ * \param mon points to the monster the player is learning about.
+ *
+ * The flags, from list-mon-race-flags.h, to be learned appear after race,
+ * separated by commas and terminated with RF_MAX.  This can be a bit more
+ * efficient than separate calls to lore_learn_flag_if_visible().
+ *
+ * Handles any side effects on the derived known fields in lore and marks
+ * what needs to be redrawn in the user interface.
+ */
+void lore_learn_flags_if_visible(struct monster_lore *lore, struct player *p,
+		const struct monster *mon, ...)
+{
+	va_list args;
+	int f;
+	bool learned;
+
+	if (!monster_is_visible(mon)) return;
+
+	learned = false;
+	va_start(args, mon);
+	for (f = va_arg(args, int); f != RF_MAX; f = va_arg(args, int)) {
+		if (rf_on(lore->flags, f) && rf_has(mon->race->flags, f)) {
+			learned = true;
+		}
+	}
+	va_end(args);
+
+	if (learned) {
+		if (rf_is_subset(lore->flags, mon->race->flags)
+				&& lore_is_fully_known(lore, mon->race)) {
+			lore->all_known = true;
+			lore_update(lore, p, mon->race);
+		} else if (p->upkeep->monster_race == mon->race) {
+			p->upkeep->redraw |= (PR_MONSTER);
+		}
 	}
 }
 
 
 /**
- * Update which bits of lore are known
+ * Record in the lore that a player observed a monster's melee attack.
+ *
+ * \param lore is the lore record for the type of monster that attacked.
+ * \param blow_index is the index for the blow.  It must be greater than
+ * or equal to zero and less than z_info->mon_blows_max.
+ * \return true if something was learned and lore_update() should be called
+ * on the lore record.  Otherwise, return false.
  */
-void lore_update(const struct monster_race *race, struct monster_lore *lore)
+bool lore_record_blow(struct monster_lore *lore, int blow_index)
+{
+	assert(blow_index >= 0 && blow_index < z_info->mon_blows_max);
+	if (!lore->blows[blow_index].times_seen) {
+		/* The first time a blow is seen is significant for learning. */
+		lore->blows[blow_index].times_seen = 1;
+		return true;
+	}
+	if (lore->blows[blow_index].times_seen < INT_MAX) {
+		++lore->blows[blow_index].times_seen;
+	}
+	return false;
+}
+
+
+/**
+ * Record in the lore that a player died due to a monster.
+ *
+ * \param lore is the lore record for the type of monster that killed the
+ * player.
+ * \param p is the player that was killed.
+ * \param race points to the race record for the monster that was killed.
+ */
+void lore_record_player_death(struct monster_lore *lore, struct player *p,
+		const struct monster_race *race)
+{
+	if (lore->deaths < 65535) {
+		lore->deaths++;
+		if (p->upkeep->monster_race == race) {
+			p->upkeep->redraw |= (PR_MONSTER);
+		}
+	}
+}
+
+
+/**
+ * Record in the lore that a player killed a monster.
+ *
+ * \param lore is the lore record for the type of monster that was killed
+ * by the player.
+ * \param p is the player that killed the monster.
+ * \param race points to the race record for the monster that was killed.
+ */
+void lore_record_player_victory(struct monster_lore *lore, struct player *p,
+		const struct monster_race *race)
+{
+	bool check_redraw = false;
+
+	/* Count kills this life */
+	if (lore->pkills < 65535) {
+		++lore->pkills;
+		check_redraw = true;
+	}
+
+	/* Count kills in all lives */
+	if (!lore->tkills) {
+		/*
+		 * The first kill is significant for adding information.
+		 * Since lore_update() handles whether anything needs to
+		 * be redrawn, do not set check_redraw.
+		 */
+		lore->tkills = 1;
+		lore_update(lore, p, race);
+	} else if (lore->tkills < 65535) {
+		++lore->tkills;
+		check_redraw = true;
+	}
+
+	if (check_redraw && p->upkeep->monster_race == race) {
+		p->upkeep->redraw |= (PR_MONSTER);
+	}
+}
+
+
+/**
+ * Record in the lore that a player sighted a monster.
+ *
+ * \param lore is the lore record for the type of monster seen by the player.
+ * \param p is the player of interest.
+ * \param race points to the race record for the monster seen.
+ */
+void lore_record_sighting(struct monster_lore *lore, struct player *p,
+		const struct monster_race *race)
+{
+	if (lore->sights < 65535) {
+		++lore->sights;
+		/* Ensure obvious flags are learned on first sighting. */
+		if (lore->sights == 1) {
+			lore_update(lore, p, race);
+		}
+	}
+}
+
+
+/**
+ * Update which bits of lore are known after the caller has fiddled with the
+ * lore structure.
+ *
+ * \param lore points to the lore record to update.
+ * \param p points to the player for which the lore applies.  May be NULL
+ * to skip marking what needs to be redrawn.
+ * \param race points to the monster race corresponding to that lore.
+ */
+void lore_update(struct monster_lore *lore, struct player *p,
+		const struct monster_race *race)
 {
 	static bitflag obv_mask[RF_SIZE], obv_at_death_mask[RF_SIZE];
 	static bool initialize_masks = true;
 	int i;
+	bool fully_known = true;
 
 	if (!race || !lore) return;
 
@@ -341,62 +638,91 @@ void lore_update(const struct monster_race *race, struct monster_lore *lore)
 	/* Blows */
 	for (i = 0; i < z_info->mon_blows_max; i++) {
 		if (!race->blow) break;
-		if (lore->blow_known[i] || lore->blows[i].times_seen ||
-			lore->all_known) {
+		if (lore->blow_known[i] || lore->blows[i].times_seen
+				|| lore->all_known) {
 			lore->blow_known[i] = true;
 			lore->blows[i].method = race->blow[i].method;
 			lore->blows[i].effect = race->blow[i].effect;
 			lore->blows[i].dice = race->blow[i].dice;
+		} else {
+			fully_known = false;
 		}
 	}
 
 	/* Killing a monster reveals some properties */
-	if ((lore->tkills > 0) || lore->all_known) {
+	if (lore->tkills > 0 || lore->all_known) {
 		lore->armour_known = true;
 		lore->drop_known = true;
 		rf_union(lore->flags, obv_at_death_mask);
+	} else {
+		fully_known = false;
 	}
 
 	/* Awareness */
-	if ((((int)lore->wake * (int)lore->wake) > race->sleep) ||
-	    (lore->ignore == UCHAR_MAX) || lore->all_known ||
-	    ((race->sleep == 0) && (lore->tkills >= 10)))
+	if (lore->all_known || lore->ignore == 255
+			|| (int)lore->wake * (int)lore->wake > race->sleep
+			|| (race->sleep == 0 && lore->tkills >= 10)) {
 		lore->sleep_known = true;
+	} else {
+		fully_known = false;
+	}
 
 	/* Spellcasting frequency */
-	if (lore->cast_innate > 50 || lore->all_known) {
+	if (lore->cast_innate > z_info->lore_cast_threshold
+			|| lore->all_known) {
 		lore->innate_freq_known = true;
+	} else if (race->freq_innate) {
+		fully_known = false;
 	}
-	if (lore->cast_spell > 50 || lore->all_known) {
+	if (lore->cast_spell > z_info->lore_cast_threshold || lore->all_known) {
 		lore->spell_freq_known = true;
+	} else if (race->freq_spell) {
+		fully_known = false;
 	}
 
 	/* Flags for probing and cheating */
 	if (lore->all_known) {
 		rf_setall(lore->flags);
 		rsf_copy(lore->spell_flags, race->spell_flags);
+	} else if (fully_known && rf_is_subset(lore->flags, race->flags)
+			&& rsf_is_equal(lore->spell_flags, race->spell_flags)) {
+		lore->all_known = true;
+		lore->armour_known = true;
+		lore->drop_known = true;
+		lore->sleep_known = true;
+		lore->innate_freq_known = true;
+		lore->spell_freq_known = true;
+	}
+
+	if (p && p->upkeep->monster_race == race) {
+		p->upkeep->redraw |= (PR_MONSTER);
 	}
 }
 
 /**
  * Learn everything about a monster.
  *
- * Sets the all_known variable, all flags and all relevant spell flags.
+ * Sets the all_known variable, all flags and all relevant spell flags.  Does
+ * not mark what needs to be redrawn in the user interface.
  */
-void cheat_monster_lore(const struct monster_race *race, struct monster_lore *lore)
+void cheat_monster_lore(struct monster_lore *lore,
+		const struct monster_race *race)
 {
 	assert(race);
 	assert(lore);
 
 	/* Full knowledge */
 	lore->all_known = true;
-	lore_update(race, lore);
+	lore_update(lore, NULL, race);
 }
 
 /**
  * Forget everything about a monster.
+ *
+ * Does not mark what needs to be redrawn in the user interface.
  */
-void wipe_monster_lore(const struct monster_race *race, struct monster_lore *lore)
+void wipe_monster_lore(struct monster_lore *lore,
+		const struct monster_race *race)
 {
 	struct monster_blow *blows;
 	bool *blow_known;
@@ -446,27 +772,29 @@ void wipe_monster_lore(const struct monster_race *race, struct monster_lore *lor
 }
 
 /**
- * Learn about a monster (by "probing" it)
+ * Learn about a monster (by "probing" it).
+ *
+ * \param mon points to the monster being probed.
+ * \param p is the player doing the probing.
  */
-void lore_do_probe(struct monster *mon)
+void lore_do_probe(struct player *p, const struct monster *mon)
 {
 	struct monster_lore *lore = get_lore(mon->race);
 	
 	lore->all_known = true;
-	lore_update(mon->race, lore);
-
-	/* Update monster recall window */
-	if (player->upkeep->monster_race == mon->race)
-		player->upkeep->redraw |= (PR_MONSTER);
+	lore_update(lore, p, mon->race);
 }
 
 /**
  * Determine whether the monster is fully known
+ *
+ * \param lore points to the lore record to inspect for the monster.
+ * \param race points to the race of the monster.
  */
-bool lore_is_fully_known(const struct monster_race *race)
+bool lore_is_fully_known(const struct monster_lore *lore,
+		const struct monster_race *race)
 {
 	unsigned i;
-	struct monster_lore *lore = get_lore(race);
 
 	/* Check if already known */
 	if (lore->all_known)
@@ -475,7 +803,9 @@ bool lore_is_fully_known(const struct monster_race *race)
 	if (!lore->armour_known)
 		return false;
 	/* Only check spells if the monster can cast them */
-	if (!lore->spell_freq_known && race->freq_innate + race->freq_spell)
+	if (!lore->spell_freq_known && race->freq_spell)
+		return false;
+	if (!lore->innate_freq_known && race->freq_innate)
 		return false;
 	if (!lore->drop_known)
 		return false;
@@ -502,8 +832,6 @@ bool lore_is_fully_known(const struct monster_race *race)
 	}
 
 	/* The player knows everything */
-	lore->all_known = true;
-	lore_update(race, lore);
 	return true;
 }
 	
@@ -522,9 +850,11 @@ bool lore_is_fully_known(const struct monster_race *race)
  * described later by the monster recall code.  It gives the player a chance
  * to learn if a monster drops only objects or only gold.
  */
-void lore_treasure(struct monster *mon, int num_item, int num_gold)
+void lore_treasure(struct player *p, const struct monster *mon,
+		int num_item, int num_gold)
 {
 	struct monster_lore *lore = get_lore(mon->race);
+	bool learned = false;
 
 	assert(num_item >= 0);
 	assert(num_gold >= 0);
@@ -538,20 +868,28 @@ void lore_treasure(struct monster *mon, int num_item, int num_gold)
 	}
 
 	/* Learn about drop quality */
-	rf_on(lore->flags, RF_DROP_GOOD);
-	rf_on(lore->flags, RF_DROP_GREAT);
+	if (rf_on(lore->flags, RF_DROP_GOOD)) {
+		learned = true;
+	}
+	if (rf_on(lore->flags, RF_DROP_GREAT)) {
+		learned = true;
+	}
 
 	/* Have a chance to learn ONLY_ITEM and ONLY_GOLD */
 	if (num_item && (lore->drop_gold == 0) && one_in_(4)) {
-		rf_on(lore->flags, RF_ONLY_ITEM);
+		if (rf_on(lore->flags, RF_ONLY_ITEM)) {
+			learned = true;
+		}
 	}
 	if (num_gold && (lore->drop_item == 0) && one_in_(4)) {
-		rf_on(lore->flags, RF_ONLY_GOLD);
+		if (rf_on(lore->flags, RF_ONLY_GOLD)) {
+			learned = true;
+		}
 	}
 
 	/* Update monster recall window */
-	if (player->upkeep->monster_race == mon->race) {
-		player->upkeep->redraw |= (PR_MONSTER);
+	if (learned && p->upkeep->monster_race == mon->race) {
+		p->upkeep->redraw |= (PR_MONSTER);
 	}
 }
 
@@ -562,9 +900,8 @@ void lore_treasure(struct monster *mon, int num_item, int num_gold)
  * Known flags will be 1 for present, or 0 for not present. Unknown flags
  * will always be 0.
  */
-void monster_flags_known(const struct monster_race *race,
-						 const struct monster_lore *lore,
-						 bitflag flags[RF_SIZE])
+void monster_flags_known(const struct monster_lore *lore,
+		const struct monster_race *race, bitflag flags[RF_SIZE])
 {
 	rf_copy(flags, race->flags);
 	rf_inter(flags, lore->flags);

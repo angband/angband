@@ -100,10 +100,10 @@ void lore_description(textblock *tb, const struct monster_race *race,
 
 	/* Spoilers -- know everything */
 	if (spoilers)
-		cheat_monster_lore(race, lore);
+		cheat_monster_lore(lore, race);
 
 	/* Now get the known monster flags */
-	monster_flags_known(race, lore, known_flags);
+	monster_flags_known(lore, race, known_flags);
 
 	/* Appending the title here simplifies code in the callers. It also causes
 	 * a crash when generating spoilers (we don't need titles for them anwyay)*/
@@ -140,7 +140,7 @@ void lore_description(textblock *tb, const struct monster_race *race,
 	lore_append_attack(tb, race, lore, known_flags);
 
 	/* Do we know everything */
-	if (lore_is_fully_known(race))
+	if (lore->all_known)
 		textblock_append(tb, "You know everything about this monster.");
 
 	/* Notice "Quest" monsters */
