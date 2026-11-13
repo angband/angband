@@ -1444,17 +1444,26 @@ static void borg_notice_equipment(void)
         borg.trait[BI_ACON] += item->modifiers[OBJ_MOD_CON]
                                * player->obj_k->modifiers[OBJ_MOD_CON];
 
-        /* various slays: accumulate across slots.  Assigning them per
-         * slot made the last occupied slot (usually the light or boots,
-         * with no slays) erase the wielded weapon's slays. */
-        borg.trait[BI_WS_ANIMAL] |= item->slays[RF_ANIMAL];
-        borg.trait[BI_WS_EVIL]   |= item->slays[RF_EVIL];
-        borg.trait[BI_WS_UNDEAD] |= item->slays[RF_UNDEAD];
-        borg.trait[BI_WS_DEMON]  |= item->slays[RF_DEMON];
-        borg.trait[BI_WS_ORC]    |= item->slays[RF_ORC];
-        borg.trait[BI_WS_TROLL]  |= item->slays[RF_TROLL];
-        borg.trait[BI_WS_GIANT]  |= item->slays[RF_GIANT];
-        borg.trait[BI_WS_DRAGON] |= item->slays[RF_DRAGON];
+        /* various slays: keep the largest multiplier across slots, as
+         * the combat code does.  Assigning them per slot made the last
+         * occupied slot (usually the light or boots, with no slays)
+         * erase the wielded weapon's slays. */
+        borg.trait[BI_WS_ANIMAL] = MAX(borg.trait[BI_WS_ANIMAL],
+            item->slays[RF_ANIMAL]);
+        borg.trait[BI_WS_EVIL]   = MAX(borg.trait[BI_WS_EVIL],
+            item->slays[RF_EVIL]);
+        borg.trait[BI_WS_UNDEAD] = MAX(borg.trait[BI_WS_UNDEAD],
+            item->slays[RF_UNDEAD]);
+        borg.trait[BI_WS_DEMON]  = MAX(borg.trait[BI_WS_DEMON],
+            item->slays[RF_DEMON]);
+        borg.trait[BI_WS_ORC]    = MAX(borg.trait[BI_WS_ORC],
+            item->slays[RF_ORC]);
+        borg.trait[BI_WS_TROLL]  = MAX(borg.trait[BI_WS_TROLL],
+            item->slays[RF_TROLL]);
+        borg.trait[BI_WS_GIANT]  = MAX(borg.trait[BI_WS_GIANT],
+            item->slays[RF_GIANT]);
+        borg.trait[BI_WS_DRAGON] = MAX(borg.trait[BI_WS_DRAGON],
+            item->slays[RF_DRAGON]);
 
         /* the greater, race-destroying slays are stored under the same
          * race flag with the largest multiplier */
