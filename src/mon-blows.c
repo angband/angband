@@ -348,9 +348,11 @@ static int monster_elemental_damage(melee_effect_handler_context_t *context,
 		default: return 0;
 	}
 
-	rf_on(lore->flags, imm_flag);
 	if (hurt_flag) {
-		rf_on(lore->flags, hurt_flag);
+		lore_learn_flags(lore, player, context->t_mon->race, imm_flag,
+			hurt_flag, RF_MAX);
+	} else {
+		lore_learn_flag(lore, player, context->t_mon->race, imm_flag);
 	}
 
 	if (rf_has(context->t_mon->race->flags, imm_flag)) {

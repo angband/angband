@@ -143,6 +143,9 @@ struct angband_constants
 	uint16_t max_range;	/* Maximum missile and spell range */
 	uint16_t start_gold;	/* Amount of gold the player starts with */
 	uint16_t food_value;	/* Number of turns 1% of food lasts */
+	uint16_t lore_cast_threshold;
+				/* Number of casts that have to be observed
+					before knowing frequency for lore */
 
 	/*
 	 * Constants for non-O melee critical calculations; read from
