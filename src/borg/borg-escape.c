@@ -428,8 +428,9 @@ bool borg_caution_teleport(int emergency, int turns)
     q_x = w_x / borg_panel_wid();
     q_y = w_y / borg_panel_hgt();
 
-    /* must have the ability */
-    if (!borg.trait[BI_ATELEPORT] || !borg.trait[BI_AESCAPE])
+    /* must have the ability: a teleport scroll or spell, or a teleport
+     * staff or activation */
+    if (!borg.trait[BI_ATELEPORT] && !borg.trait[BI_AESCAPE])
         return false;
 
     /* Simulate 100 attempts */
