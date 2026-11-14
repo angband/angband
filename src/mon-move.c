@@ -1097,7 +1097,7 @@ static enum monster_stagger monster_turn_should_stagger(struct monster *mon)
 		return CONFUSED_STAGGER;
 	}
 	lore_learn_flags_if_visible(lore, player, mon, RF_RAND_25, RF_RAND_50,
-		RF_MAX);
+		RF_FRIGHTENED, RF_MAX);
 	return (roll < chance) ? INNATE_STAGGER : NO_STAGGER;
 }
 
