@@ -391,6 +391,9 @@ static void cleanup_image(struct sdlpui_control *c)
 
 	SDL_assert(c->type_code == SDLPUI_CTRL_IMAGE && c->priv);
 	ip = c->priv;
+	c->ftb = NULL;
+	c->priv = NULL;
+	c->type_code = 0;
 	SDL_DestroyTexture(ip->image);
 	SDL_free(ip);
 }
@@ -540,6 +543,9 @@ static void cleanup_label(struct sdlpui_control *c)
 
 	SDL_assert(c->type_code == SDLPUI_CTRL_LABEL && c->priv);
 	lp = c->priv;
+	c->ftb = NULL;
+	c->priv = NULL;
+	c->type_code = 0;
 	SDL_free(lp->caption);
 	SDL_free(lp);
 }
@@ -852,6 +858,9 @@ static void cleanup_pb(struct sdlpui_control *c)
 
 	SDL_assert(c->type_code == SDLPUI_CTRL_PUSH_BUTTON && c->priv);
 	pbp = c->priv;
+	c->ftb = NULL;
+	c->priv = NULL;
+	c->type_code = 0;
 	SDL_free(pbp->caption);
 	SDL_free(pbp);
 }
@@ -2080,6 +2089,9 @@ static void cleanup_mb(struct sdlpui_control *c)
 
 	SDL_assert(c->type_code == SDLPUI_CTRL_MENU_BUTTON && c->priv);
 	mbp = c->priv;
+	c->ftb = NULL;
+	c->priv = NULL;
+	c->type_code = 0;
 	SDL_free(mbp->caption);
 	if (mbp->subtype_code == SDLPUI_MB_RANGED_INT
 			&& mbp->v.ranged_int.expanded_caption) {

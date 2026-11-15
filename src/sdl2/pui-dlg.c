@@ -932,6 +932,9 @@ static void cleanup_simple_menu(struct sdlpui_dialog *d)
 
 	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_MENU && d->priv);
 	p = d->priv;
+	d->ftb = NULL;
+	d->priv = NULL;
+	d->type_code = 0;
 
 	for (i = 0; i < p->number; ++i) {
 		if (p->controls[i].ftb->cleanup) {
@@ -1117,6 +1120,9 @@ static void cleanup_simple_info(struct sdlpui_dialog *d)
 
 	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_INFO && d->priv);
 	id = d->priv;
+	d->ftb = NULL;
+	d->priv = NULL;
+	d->type_code = 0;
 
 	for (i = 0; i < id->number; ++i) {
 		if (id->labels[i].ftb->cleanup) {
