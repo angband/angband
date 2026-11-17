@@ -22,7 +22,10 @@
 #include "h-basic.h"
 
 
-struct my_rational { unsigned int n, d; }; /* numerator and denominator */
+struct my_rational {
+	unsigned int n; /**< numerator */
+	unsigned int d; /**< denominator */
+};
 
 
 /**

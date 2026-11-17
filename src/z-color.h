@@ -95,9 +95,9 @@
 typedef struct color_type color_type;
 struct color_type
 {
-	char index_char;            /* Character index:  'r' = red, etc. */
-	char name[32];              /* Color name */
-	uint8_t color_translate[MAX_ATTR]; /* Index for various in-game translations */
+	char index_char;            /**< Character index:  'r' = red, etc. */
+	char name[32];              /**< Color name */
+	uint8_t color_translate[MAX_ATTR]; /**< Index for various in-game translations */
 };
 
 extern uint8_t angband_color_table[MAX_COLORS][4];
