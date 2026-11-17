@@ -621,7 +621,7 @@ bool borg_backup_swap(int p)
         if (fix)
             borg_notice(true);
 
-        /*  skip random artifact not star id'd  */
+        /*  skip random artifact not fully id'd  */
         if (OPT(player, birth_randarts) && item->art_idx && !item->ident)
             b_p1 = 9999;
 
@@ -715,6 +715,10 @@ bool borg_backup_swap(int p)
         /* Wear it */
         borg_keypress('w');
         borg_keypress(all_letters_nohjkl[swap]);
+
+        /* for rings make sure you pick left (loose) ring */
+        if (borg_items[swap].tval == TV_RING)
+            borg_keypress(all_letters_nohjkl[INVEN_LEFT - INVEN_WIELD]);
 
         /* Did something */
         return true;
