@@ -25,14 +25,14 @@
 struct chunk;
 struct grid_counter_pred {
 	square_predicate pred;
-	/* Hold the number of grids that match pred and are in vaults. */
+	/** Hold the number of grids that match pred and are in vaults. */
 	int in_vault_count;
-	/*
+	/**
 	 * Hold the number of grids that match pred and are in rooms (but not
 	 * in vaults).
 	 */
 	int in_room_count;
-	/*
+	/**
 	 * Hold the number of grids that match pred and are neither in vaults
 	 * nor rooms.
 	 */
@@ -46,7 +46,7 @@ struct neighbor_counter_pred {
 	int other_histogram[9];
 };
 
-/* For stat_grid_counter_simple() */
+/** For stat_grid_counter_simple() */
 struct grid_counts {
 	int floor;
 	int upstair;
