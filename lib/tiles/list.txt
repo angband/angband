@@ -4,15 +4,16 @@
 
 # === Understanding list.txt ===
 
-# name: serial number : pref file name
+# name: serial number : menu name
 # directory: directory name
 # size: tile width : tile height : tileset file name
 # pref: preference file name
 # extra: alphblending : start row : end row of double high tiles
 
 # 'name' indicates the beginning of an entry. The serial number must
-# increase for each new item. The pref file name is the name used
-# on load to load the right pref file set for this tile set.
+# increase for each new item. The menu name is the name used for this
+# tile set in menus that select the tile set.  Only the first 31
+# characters of the menu name are used.
 
 # 'directory' is for the pathname to the directory storing this mode's files.
 
