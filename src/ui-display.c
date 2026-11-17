@@ -1430,6 +1430,14 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 	player->upkeep->redraw |= (PR_REFRESH_MAP);
 }
 
+static void hack_map(game_event_type type, game_event_data *data, void *user)
+{
+	assert(type == EVENT_HACK_MAP);
+	(void)user;
+	print_rel(data->hack_map.c, data->hack_map.a, data->hack_map.y,
+		data->hack_map.x);
+}
+
 /**
  * ------------------------------------------------------------------------
  * Animations.
@@ -2788,6 +2796,9 @@ static void ui_enter_world(game_event_type type, game_event_data *data,
 	/* Allow the player to cheat death, if appropriate */
 	event_add_handler(EVENT_CHEAT_DEATH, cheat_death, NULL);
 
+	/* Allow the debugging commands to change the appearance of the map */
+	event_add_handler(EVENT_HACK_MAP, hack_map, NULL);
+
 	/* Decrease "icky" depth */
 	screen_save_depth--;
 }
@@ -2856,6 +2867,9 @@ static void ui_leave_world(game_event_type type, game_event_data *data,
 
 	/* If we've gone into a store, we need to know how to leave */
 	event_add_handler(EVENT_LEAVE_STORE, leave_store, NULL);
+
+	/* Allow the debugging commands to change the appearance of the map */
+	event_remove_handler(EVENT_HACK_MAP, hack_map, NULL);
 
 	/* Increase "icky" depth */
 	screen_save_depth++;

@@ -100,6 +100,11 @@ typedef enum game_event_type
 	EVENT_GEN_ROOM_END, /* has flag in event data indicating success */
 	EVENT_GEN_TUNNEL_FINISHED, /* has tunnel in event data with results */
 
+	/* Events for implementing debugging commands */
+	EVENT_HACK_MAP, /* has hack_map in event data with the location to
+				change, the character to display, and the
+				color of that character */
+
 	EVENT_END  /* Can be sent at the end of a series of events */
 } game_event_type;
 
@@ -196,6 +201,13 @@ typedef union
 		 */
 		bool early;
 	} tunnel;
+
+	struct {
+		int y;		/**< y coordinate, in the full cave */
+		int x;		/**< x coordinate, in the full cave */
+		wchar_t c;	/**< character to put at that coordinate */
+		uint8_t a;	/**< the color to use for that character */
+	} hack_map;
 } game_event_data;
 
 
@@ -246,6 +258,7 @@ void event_signal_missile(game_event_type type,
 						  int x);
 void event_signal_size(game_event_type type, int h, int w);
 void event_signal_tunnel(game_event_type type, int nstep, int npierce, int ndug,
-	int dstart, int dend, bool early);
-
+		int dstart, int dend, bool early);
+void event_signal_hack_map(game_event_type type, int x, int y, wchar_t c,
+		uint8_t a);
 #endif /* INCLUDED_GAME_EVENT_H */

@@ -282,3 +282,15 @@ void event_signal_tunnel(game_event_type type, int nstep, int npierce, int ndug,
 	data.tunnel.early = early;
 	game_event_dispatch(type, &data);
 }
+
+void event_signal_hack_map(game_event_type type, int x, int y, wchar_t c,
+		uint8_t a)
+{
+	game_event_data data;
+
+	data.hack_map.x = x;
+	data.hack_map.y = y;
+	data.hack_map.c = c;
+	data.hack_map.a = a;
+	game_event_dispatch(type, &data);
+}
