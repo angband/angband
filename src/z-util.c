@@ -874,8 +874,11 @@ int text_iswprint(wint_t wc)
  */
 wchar_t *text_wcschr(const wchar_t *wcs, wchar_t wc)
 {
-	return (text_wcschr_hook) ?
-		(*text_wcschr_hook)(wcs, wc) : wcschr(wcs, wc);
+	if (text_wcschr_hook) {
+		return (*text_wcschr_hook)(wcs, wc);
+	}
+	/* Cast to void* is to avoid compiler warning about discarded const. */
+	return (void*)wcschr(wcs, wc);
 }
 
 /**
