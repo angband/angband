@@ -427,14 +427,19 @@ jobs:
           cmake --build build --parallel
           
           # Copy the freshly compiled modern binary out
-          cp build/game/${{ steps.store_config.outputs.prog }}.exe .
+          EXE_NAME="${{ steps.store_config.outputs.prog }}.exe"
+          cp "build/game/${EXE_NAME}" .
           
-          # Dynamically locate the system 64-bit dependencies and copy them along
-          # TODO: Dynamically locate the actual dependencies and copy them along (perhaps copydeps?)
-          #       Does pkg_win handle copying dependencies?
-          cp /ucrt64/bin/libpng16-16.dll .
-          cp /ucrt64/bin/zlib1.dll .
-          
+          # Copy explicit dependencies and verify the .exe actually links to them
+          DEPS=$(ldd "${EXE_NAME}")
+          for dll in /ucrt64/bin/libpng16-16.dll /ucrt64/bin/zlib1.dll; do
+            echo "${DEPS}" | grep -Fqi "${dll}"
+            cp "${dll}" .
+          done
+
+          # Fail if any other /ucrt64/ DLL is required by the executable
+          test $(echo "${DEPS}" | grep -ci "/ucrt64/") -eq 2
+                
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
           echo "archive_file=${archive_prefix}-win.zip" >> $GITHUB_OUTPUT
           scripts/pkg_win $archive_prefix ${archive_prefix}-win.zip
