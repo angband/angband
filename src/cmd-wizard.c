@@ -317,31 +317,37 @@ static void wiz_drop_object(struct object *obj)
  * Assumes the active terminal displays a map.
  */
 static void wiz_hack_map(struct chunk *c, struct player *p,
-	void (*func)(struct chunk *, void *, struct loc, bool *, uint8_t *),
-	void *closure)
+		void (*func)(struct chunk*, void*, struct loc, bool*, uint8_t*),
+		void *closure)
 {
-	int y;
+	struct loc grid;
+	int min_y, min_x, max_y, max_x;
 
-	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++) {
-		int x;
-
-		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
-			struct loc grid = loc(x, y);
+	get_panel(&min_y, &min_x, &max_y, &max_x);
+	if (min_y < 1) {
+		min_y = 1;
+	}
+	if (min_x < 1) {
+		min_x = 1;
+	}
+	if (max_y > c->height - 1) {
+		max_y = c->height - 1;
+	}
+	if (max_x > c->width - 1) {
+		max_x = c->width - 1;
+	}
+	for (grid.y = min_y; grid.y < max_y; ++grid.y) {
+		for (grid.x = min_x; grid.x < max_x; ++grid.x) {
 			bool show;
 			uint8_t color;
-
-			if (!square_in_bounds_fully(c, grid)) continue;
 
 			(*func)(c, closure, grid, &show, &color);
 			if (!show) continue;
 
-			if (loc_eq(grid, p->grid)) {
-				print_rel(L'@', color, y, x);
-			} else if (square_ispassable(c, grid)) {
-				print_rel(L'*', color, y, x);
-			} else {
-				print_rel(L'#', color, y, x);
-			}
+			event_signal_hack_map(EVENT_HACK_MAP, grid.x,
+				grid.y, (loc_eq(grid, p->grid)) ? L'@'
+				: ((square_ispassable(c, grid)) ? L'*'
+				: L'#'), color);
 		}
 	}
 }
@@ -1478,34 +1484,29 @@ void do_cmd_wiz_peek_noise_scent(struct command *cmd)
 {
 	int i;
 	char kp;
+	bool done;
 
 	/* Noise */
-	for (i = 0; i < 100; i++) {
+	for (i = 0, done = false; i < 100 && !done; i++) {
 		wiz_hack_map(cave, player, wiz_hack_map_peek_noise, &i);
 
 		/* Get key */
-		if (!get_com(format("Depth %d: ", i), &kp)) break;
+		done = !get_com(format("Depth %d: ", i), &kp);
 
 		/* Redraw map */
-		prt_map();
+		event_signal_point(EVENT_MAP, -1, -1);
 	}
 
 	/* Smell */
-	for (i = 0; i < 50; i++) {
+	for (i = 0, done = false; i < 50 && !done; i++) {
 		wiz_hack_map(cave, player, wiz_hack_map_peek_scent, &i);
 
 		/* Get key */
-		if (!get_com(format("Depth %d: ", i), &kp)) break;
+		done = !get_com(format("Depth %d: ", i), &kp);
 
 		/* Redraw map */
-		prt_map();
+		event_signal_point(EVENT_MAP, -1, -1);
 	}
-
-	/* Done */
-	prt("", 0, 0);
-
-	/* Redraw map */
-	prt_map();
 }
 
 
@@ -1948,6 +1949,7 @@ void do_cmd_wiz_query_feature(struct command *cmd)
 	const int featp[] = { FEAT_PERM };
 	const int featr[] = { FEAT_RUBBLE };
 	const int feata[] = { FEAT_PASS_RUBBLE };
+	char dummy;
 
 	if (cmd_get_arg_choice(cmd, "choice", &feature_class) != CMD_OK) {
 		char choice;
@@ -2056,14 +2058,12 @@ void do_cmd_wiz_query_feature(struct command *cmd)
 
 	wiz_hack_map(cave, player, wiz_hack_map_query_feature, &selected);
 
-	Term_fresh();
+	event_signal(EVENT_END);
 
-	msg("Press any key.");
-	inkey_ex();
-	prt("", 0, 0);
+	(void)get_com("Press any key.", &dummy);
 
 	/* Redraw map */
-	prt_map();
+	event_signal_point(EVENT_MAP, -1, -1);
 }
 
 
@@ -2105,6 +2105,7 @@ static void wiz_hack_map_query_square_flag(struct chunk *c, void *closure,
 void do_cmd_wiz_query_square_flag(struct command *cmd)
 {
 	int flag = 0;
+	char dummy;
 
 	if (cmd_get_arg_choice(cmd, "choice", &flag) != CMD_OK) {
 		char c;
@@ -2132,14 +2133,12 @@ void do_cmd_wiz_query_square_flag(struct command *cmd)
 
 	wiz_hack_map(cave, player, wiz_hack_map_query_square_flag, &flag);
 
-	Term_fresh();
+	event_signal(EVENT_END);
 
-	msg("Press any key.");
-	inkey_ex();
-	prt("", 0, 0);
+	(void)get_com("Press any key.", &dummy);
 
 	/* Redraw map */
-	prt_map();
+	event_signal_point(EVENT_MAP, -1, -1);
 }
 
 
