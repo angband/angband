@@ -39,31 +39,49 @@ struct owner {
 };
 
 struct store {
-	struct owner *owners;
-	struct owner *owner;
-	int feat;			/* index for entrance's terrain */
+	struct owner *owners;		/**< linked list of the possible
+						owners of the store */
+	struct owner *owner;		/**< pointer to the current owner of
+						the store */
+	int feat;			/**< index for entrance's terrain */
 
-	uint8_t stock_num;		/* Stock -- Number of entries */
-	int16_t stock_size;		/* Stock -- Total Size of Array */
-	struct object *stock;		/* Stock -- Actual stock items */
-	struct object *stock_k;		/* Stock -- Stock as known by the character */
+	uint8_t stock_num;		/**< number of stacks in stock */
+	int16_t stock_size;		/**< maximum number of stacks the
+						store can have in stock */
+	struct object *stock;		/**< actual stock items */
+	struct object *stock_k;		/**< stock as known by the character */
 
-	/* Always stock these items */
-	size_t always_size;
-	size_t always_num;
-	struct object_kind **always_table;
+	size_t always_size;		/**< maximum number of entries that can
+						be stored in always_table */
+	size_t always_num;		/**< current number of entries in
+						always_table */
+	struct object_kind **always_table;	/**< array of types of items the store always keeps in stock */
 
-	/* Select a number of these items to stock */
-	size_t normal_size;
-	size_t normal_num;
-	struct object_kind **normal_table;
+	size_t normal_size;		/**< maximum number of entries that
+						can be stored in normal_table */
+	size_t normal_num;		/**< current number of entries in
+						normal_table */
+	struct object_kind **normal_table;	/**< array of types of items
+							the store may keep in
+							stock */
 
-	/* Buy these items */
-	struct object_buy *buy;
+	struct object_buy *buy;		/**< linked list of types of items the
+						store is willing to buy */
 
-	int turnover;
-	int normal_stock_min;
-	int normal_stock_max;
+	int turnover;			/**< up to this number of stacks are
+						removed in store_maint(); if
+						zero, the bounds from
+						normal_stock_min and
+						normal_stock_max are not
+						applied */
+	int normal_stock_min;		/**< minimum number of stacks that are
+						not always stocked items to keep
+						in store_maint(); only relevant
+						if turnover is not zero */
+	int normal_stock_max;		/**< maximum number of stacks that are
+						not always stacked items to keep
+						in store_maint(); only relevant
+						if turnover is not zero */
 };
 
 extern struct store *stores;

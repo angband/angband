@@ -1,6 +1,6 @@
 /**
- * \file sound.h
- * \brief Sound handling
+ * \file snd-sdl.h
+ * \brief Declarations for SDL sound handling
  *
  * Copyright (c) 2016 Graeme Russ
  *
