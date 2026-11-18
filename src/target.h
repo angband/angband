@@ -22,18 +22,31 @@
 #include "mon-predicate.h"
 
 /**
- * Bit flags for target_set()
- *
- *	KILL: Target monsters
- *	LOOK: Describe grid fully
- *	XTRA: Currently unused flag (NOT USED)
- *	GRID: Select from all grids (NOT USED)
- * QUIET: Prevent targeting messages.
+ * Bit flag for the mode argument of target_set_closest() or
+ * target_set_interactive(); target monsters
  */
 #define TARGET_KILL   0x01
+/**
+ * Bit flag for the mode argument of target_set_closest() or
+ * target_set_interactive(); target monsters, objects, traps, interesting
+ * terrain, or player; allow providing more information about target grid
+ */
 #define TARGET_LOOK   0x02
+/**
+ * Bit flag for the mode argument of target_set_closest() or
+ * target_set_interactive(); not currently used
+ */
 #define TARGET_XTRA   0x04
+/**
+ * Bit flag for the mode argument of target_set_closest() or
+ * target_set_interactive(); not currently used; intended to allow selection
+ * from all grids
+ */
 #define TARGET_GRID   0x08
+/**
+ * Bit flag for the mode argument of target_set_closest(); suppress messages
+ * from targeting
+ */
 #define TARGET_QUIET  0x10
 
 struct target {

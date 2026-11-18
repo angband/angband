@@ -1,7 +1,11 @@
+/**
+ * \file source.h
+ * \brief Declarations for the source of an effect
+ */
 #ifndef EFFECT_SOURCE_H
 #define EFFECT_SOURCE_H
 
-/*
+/**
  * Structure that tells you where an effect came from
  */
 struct source {

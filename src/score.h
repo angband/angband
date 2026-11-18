@@ -47,20 +47,20 @@ struct player;
  * Note that "string comparisons" are thus valid on "pts".
  */
 struct high_score {
-	char what[8];		/* Version info (string) */
-	char pts[10];		/* Total Score (number) */
-	char gold[10];		/* Total Gold (number) */
-	char turns[10];		/* Turns Taken (number) */
-	char day[10];		/* Time stamp (string) */
-	char who[16];		/* Player Name (string) */
-	char uid[8];		/* Player UID (number) */
-	char p_r[3];		/* Player Race (number) */
-	char p_c[3];		/* Player Class (number) */
-	char cur_lev[4];	/* Current Player Level (number) */
-	char cur_dun[4];	/* Current Dungeon Level (number) */
-	char max_lev[4];	/* Max Player Level (number) */
-	char max_dun[4];	/* Max Dungeon Level (number) */
-	char how[32];		/* Method of death (string) */
+	char what[8];		/**< Version info (string) */
+	char pts[10];		/**< Total Score (number) */
+	char gold[10];		/**< Total Gold (number) */
+	char turns[10];		/**< Turns Taken (number) */
+	char day[10];		/**< Time stamp (string) */
+	char who[16];		/**< Player Name (string) */
+	char uid[8];		/**< Player UID (number) */
+	char p_r[3];		/**< Player Race (number) */
+	char p_c[3];		/**< Player Class (number) */
+	char cur_lev[4];	/**< Current Player Level (number) */
+	char cur_dun[4];	/**< Current Dungeon Level (number) */
+	char max_lev[4];	/**< Max Player Level (number) */
+	char max_dun[4];	/**< Max Dungeon Level (number) */
+	char how[32];		/**< Method of death (string) */
 };
 
 
