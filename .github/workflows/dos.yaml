@@ -58,8 +58,8 @@ jobs:
           cd $projname
           echo "Queue keys to create DOSUSER and exit" >> ..\OUT.LOG
           addkey p500 Enter @ Enter
-          addkey p10000 ^ x
-          addkey p11000 Enter Enter
+          addkey p13000 ^ x
+          addkey p14000 Enter Enter
           echo "Run $exename" >> ..\OUT.LOG
           $exename >> ..\OUT.LOG
           echo "$exename finished" >> ..\OUT.LOG
