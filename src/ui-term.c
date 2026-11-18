@@ -1806,12 +1806,15 @@ errr Term_fresh(void)
 	if (!Term->text_hook) Term->text_hook = Term_text_hack;
 	if (!Term->pict_hook) Term->pict_hook = Term_pict_hack;
 
-
-	/* Handle "total erase" */
-	if (Term->total_erase) {
+	if (Term->xtra_clear) {
 		/* Physically erase the entire window */
 		Term_xtra(TERM_XTRA_CLEAR, 0);
 
+		/* Forget */
+		Term->xtra_clear = false;
+	}
+
+	if (Term->total_erase) {
 		/* Clear all "cursor" data */
 		old->cv = old->cu = false;
 		old->cx = old->cy = 0;
