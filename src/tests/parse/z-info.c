@@ -166,6 +166,7 @@ TEST_CONSTANT(max_sight, "max-sight", "player")
 TEST_CONSTANT(max_range, "max-range", "player")
 TEST_CONSTANT(start_gold, "start-gold", "player")
 TEST_CONSTANT(food_value, "food-value", "player")
+TEST_CONSTANT(lore_cast_threshold, "lore-cast-threshold", "player")
 
 TEST_CONSTANT(m_crit_debuff_toh, "debuff-toh", "melee-critical")
 TEST_CONSTANT(m_crit_chance_weight_scl, "chance-weight-scale", "melee-critical")

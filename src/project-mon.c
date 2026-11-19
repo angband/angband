@@ -280,7 +280,10 @@ static int adjust_radius(project_monster_handler_context_t *context, int amount)
  */
 static void project_monster_resist_element(project_monster_handler_context_t *context, int flag, int factor)
 {
-	if (context->seen) rf_on(context->lore->flags, flag);
+	if (context->seen) {
+		lore_learn_flag(context->lore, player, context->mon->race,
+			flag);
+	}
 	if (rf_has(context->mon->race->flags, flag)) {
 		context->hurt_msg = MON_MSG_RESIST_A_LOT;
 		context->dam /= factor;
@@ -303,7 +306,10 @@ static void project_monster_resist_element(project_monster_handler_context_t *co
  */
 static void project_monster_resist_other(project_monster_handler_context_t *context, int flag, int factor, bool reduce, enum mon_messages msg)
 {
-	if (context->seen) rf_on(context->lore->flags, flag);
+	if (context->seen) {
+		lore_learn_flag(context->lore, player, context->mon->race,
+			flag);
+	}
 	if (rf_has(context->mon->race->flags, flag)) {
 		context->hurt_msg = msg;
 		context->dam *= factor;
@@ -331,8 +337,8 @@ static void project_monster_resist_other(project_monster_handler_context_t *cont
 static void project_monster_hurt_immune(project_monster_handler_context_t *context, int hurt_flag, int imm_flag, int hurt_factor, int imm_factor, enum mon_messages hurt_msg, enum mon_messages die_msg)
 {
 	if (context->seen) {
-		rf_on(context->lore->flags, imm_flag);
-		rf_on(context->lore->flags, hurt_flag);
+		lore_learn_flags(context->lore, player, context->mon->race,
+			imm_flag, hurt_flag, RF_MAX);
 	}
 
 	if (rf_has(context->mon->race->flags, imm_flag)) {
@@ -359,7 +365,10 @@ static void project_monster_hurt_immune(project_monster_handler_context_t *conte
  */
 static void project_monster_hurt_only(project_monster_handler_context_t *context, int flag, enum mon_messages hurt_msg, enum mon_messages die_msg)
 {
-	if (context->seen) rf_on(context->lore->flags, flag);
+	if (context->seen) {
+		lore_learn_flag(context->lore, player, context->mon->race,
+			flag);
+	}
 
 	if (rf_has(context->mon->race->flags, flag)) {
 		context->hurt_msg = hurt_msg;
@@ -385,8 +394,10 @@ static void project_monster_breath(project_monster_handler_context_t *context, i
 {
 	if (rsf_has(context->mon->race->spell_flags, flag)) {
 		/* Learn about breathers through resistance */
-		if (context->seen) rsf_on(context->lore->spell_flags, flag);
-
+		if (context->seen) {
+			lore_learn_spell(context->lore, player,
+				context->mon->race, flag, false);
+		}
 		context->hurt_msg = MON_MSG_RESIST;
 		context->dam *= factor;
 		context->dam /= randint1(6) + 6;
@@ -405,7 +416,10 @@ static void project_monster_breath(project_monster_handler_context_t *context, i
  */
 static void project_monster_teleport_away(project_monster_handler_context_t *context, int flag)
 {
-	if (context->seen) rf_on(context->lore->flags, flag);
+	if (context->seen) {
+		lore_learn_flag(context->lore, player, context->mon->race,
+			flag);
+	}
 
 	if (rf_has(context->mon->race->flags, flag)) {
 		context->teleport_distance = context->dam;
@@ -431,7 +445,10 @@ static void project_monster_teleport_away(project_monster_handler_context_t *con
  */
 static void project_monster_scare(project_monster_handler_context_t *context, int flag)
 {
-	if (context->seen) rf_on(context->lore->flags, flag);
+	if (context->seen) {
+		lore_learn_flag(context->lore, player, context->mon->race,
+			flag);
+	}
 
 	if (rf_has(context->mon->race->flags, flag)) {
 		context->mon_timed[MON_TMD_FEAR] =
@@ -458,7 +475,10 @@ static void project_monster_scare(project_monster_handler_context_t *context, in
  */
 static void project_monster_dispel(project_monster_handler_context_t *context, int flag)
 {
-	if (context->seen) rf_on(context->lore->flags, flag);
+	if (context->seen) {
+		lore_learn_flag(context->lore, player, context->mon->race,
+			flag);
+	}
 
 	if (rf_has(context->mon->race->flags, flag)) {
 		context->hurt_msg = MON_MSG_SHUDDER;
@@ -484,7 +504,10 @@ static void project_monster_dispel(project_monster_handler_context_t *context, i
  */
 static void project_monster_sleep(project_monster_handler_context_t *context, int flag)
 {
-	if (context->seen && flag) rf_on(context->lore->flags, flag);
+	if (context->seen && flag) {
+		lore_learn_flag(context->lore, player, context->mon->race,
+			flag);
+	}
 
 	if (flag && !rf_has(context->mon->race->flags, flag)) {
 		context->skipped = true;
@@ -533,11 +556,17 @@ static void project_monster_handler_POIS(project_monster_handler_context_t *cont
 /* Light -- opposite of Dark */
 static void project_monster_handler_LIGHT(project_monster_handler_context_t *context)
 {
-	if (context->seen) rf_on(context->lore->flags, RF_HURT_LIGHT);
+	if (context->seen) {
+		lore_learn_flag(context->lore, player, context->mon->race,
+			RF_HURT_LIGHT);
+	}
 
 	if (rsf_has(context->mon->race->spell_flags, RSF_BR_LIGHT)) {
 		/* Learn about breathers through resistance */
-		if (context->seen) rsf_on(context->lore->spell_flags, RSF_BR_LIGHT);
+		if (context->seen) {
+			lore_learn_spell(context->lore, player,
+				context->mon->race, RSF_BR_LIGHT, false);
+		}
 
 		context->hurt_msg = MON_MSG_RESIST;
 		context->dam *= 2;
@@ -592,19 +621,21 @@ static void project_monster_handler_NETHER(project_monster_handler_context_t *co
 	/* Update the lore */
 	if (context->seen) {
 		/* Acquire knowledge of undead type and nether resistance */
-		rf_on(context->lore->flags, RF_UNDEAD);
-		rf_on(context->lore->flags, RF_IM_NETHER);
+		lore_learn_flags(context->lore, player, context->mon->race,
+			RF_UNDEAD, RF_IM_NETHER, RF_MAX);
 
 		/* If it isn't undead, acquire extra knowledge */
 		if (!rf_has(context->mon->race->flags, RF_UNDEAD)) {
 			/* Learn this creature breathes nether if true */
 			if (rsf_has(context->mon->race->spell_flags, RSF_BR_NETH)) {
-				rsf_on(context->lore->spell_flags, RSF_BR_NETH);
+				lore_learn_spell(context->lore, player,
+					context->mon->race, RSF_BR_NETH, false);
 			}
 
 			/* Otherwise learn about evil type */
 			else {
-				rf_on(context->lore->flags, RF_EVIL);
+				lore_learn_flag(context->lore, player,
+					context->mon->race, RF_EVIL);
 			}
 		}
 	}
@@ -828,8 +859,8 @@ static void project_monster_handler_TURN_EVIL(project_monster_handler_context_t 
 static void project_monster_handler_TURN_LIVING(project_monster_handler_context_t *context)
 {
 	if (context->seen) {
-		rf_on(context->lore->flags, RF_NONLIVING);
-		rf_on(context->lore->flags, RF_UNDEAD);
+		lore_learn_flags(context->lore, player, context->mon->race,
+			RF_NONLIVING, RF_UNDEAD, RF_MAX);
 	}
 
 	if (monster_is_living(context->mon)) {
@@ -991,7 +1022,8 @@ static void project_monster_handler_MON_DRAIN(project_monster_handler_context_t 
 {
 	if (context->seen) context->obvious = true;
 	if (context->seen) {
-		rf_on(context->lore->flags, RF_UNDEAD);
+		lore_learn_flag(context->lore, player, context->mon->race,
+			RF_UNDEAD);
 	}
 	if (monster_is_nonliving(context->mon)) {
 		context->hurt_msg = MON_MSG_UNAFFECTED;

@@ -34,6 +34,7 @@
 #include "mon-util.h"
 #include "obj-knowledge.h"
 #include "player-attack.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
@@ -467,21 +468,11 @@ bool make_ranged_attack(struct monster *mon)
 
 	/* Remember what the monster did */
 	if (seen) {
-		rsf_on(lore->spell_flags, thrown_spell);
-		if (mon_spell_is_innate(thrown_spell)) {
-			/* Innate spell */
-			if (lore->cast_innate < UCHAR_MAX)
-				lore->cast_innate++;
-		} else {
-			/* Bolt or Ball, or Special spell */
-			if (lore->cast_spell < UCHAR_MAX)
-				lore->cast_spell++;
-		}
+		lore_learn_spell(lore, player, mon->race, thrown_spell, true);
 	}
-	if (player->is_dead && (lore->deaths < SHRT_MAX)) {
-		lore->deaths++;
+	if (player->is_dead) {
+		lore_record_player_death(lore, player, mon->race);
 	}
-	lore_update(mon->race, lore);
 
 	/* A spell was cast */
 	return true;
@@ -552,7 +543,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 	int ap_cnt;
 	char m_name[80];
 	char ddesc[80];
-	bool blinked = false;
+	bool blinked = false, lore_learned = false;
 
 	/* Not allowed to attack */
 	if (rf_has(mon->race->flags, RF_NEVER_BLOW)) return (false);
@@ -596,8 +587,8 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			/* Apply "protection from evil" */
 			if (p->timed[TMD_PROTEVIL] > 0) {
 				/* Learn about the evil flag */
-				if (monster_is_visible(mon))
-					rf_on(lore->flags, RF_EVIL);
+				lore_learn_flag_if_visible(lore, p, mon,
+					RF_EVIL);
 
 				if (monster_is_evil(mon) && p->lev >= rlev &&
 				    randint0(100) + p->lev > 50) {
@@ -727,9 +718,9 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		if (visible) {
 			/* Count "obvious" attacks (and ones that cause damage) */
 			if (obvious || damage || (lore->blows[ap_cnt].times_seen > 10)) {
-				/* Count attacks of this type */
-				if (lore->blows[ap_cnt].times_seen < UCHAR_MAX)
-					lore->blows[ap_cnt].times_seen++;
+				if (lore_record_blow(lore, ap_cnt)) {
+					lore_learned = true;
+				}
 			}
 		}
 
@@ -748,12 +739,14 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		effect_simple(EF_TELEPORT, source_monster(mon->midx), dice, 0, 0, 0, 0, 0, NULL);
 	}
 
-	/* Always notice cause of death */
-	if (p->is_dead && (lore->deaths < SHRT_MAX))
-		lore->deaths++;
+	if (lore_learned) {
+		lore_update(lore, p, mon->race);
+	}
 
-	/* Learn lore */
-	lore_update(mon->race, lore);
+	/* Always notice cause of death */
+	if (p->is_dead) {
+		lore_record_player_death(lore, p, mon->race);
+	}
 
 	/* Assume we attacked */
 	return (true);
@@ -769,7 +762,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 	int ap_cnt;
 	char m_name[80];
 	char t_name[80];
-	bool blinked = false;
+	bool blinked = false, lore_learned = false;
 
 	/* Not allowed to attack */
 	if (rf_has(mon->race->flags, RF_NEVER_BLOW)) return (false);
@@ -873,9 +866,9 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 		if (visible) {
 			/* Count "obvious" attacks (and ones that cause damage) */
 			if (obvious || damage || (lore->blows[ap_cnt].times_seen > 10)) {
-				/* Count attacks of this type */
-				if (lore->blows[ap_cnt].times_seen < UCHAR_MAX)
-					lore->blows[ap_cnt].times_seen++;
+				if (lore_record_blow(lore, ap_cnt)) {
+					lore_learned = true;
+				}
 			}
 		}
 
@@ -894,8 +887,9 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 		effect_simple(EF_TELEPORT, source_monster(mon->midx), dice, 0, 0, 0, 0, 0, NULL);
 	}
 
-	/* Learn lore */
-	lore_update(mon->race, lore);
+	if (lore_learned) {
+		lore_update(lore, player, mon->race);
+	}
 
 	/* Assume we attacked */
 	return (true);

@@ -511,16 +511,17 @@ static void learn_brand_slay_helper(struct player *p, struct object *obj1,
 
 			/* Learn about the monster. */
 			if (b->resist_flag) {
-				lore_learn_flag_if_visible(lore, mon,
+				lore_learn_flag_if_visible(lore, p, mon,
 					b->resist_flag);
 			}
 			if (b->vuln_flag) {
-				lore_learn_flag_if_visible(lore, mon,
+				lore_learn_flag_if_visible(lore, p, mon,
 					b->vuln_flag);
 			}
 		} else if (player_knows_brand(p, i)) {
 			/* Learn about the monster. */
-			lore_learn_flag_if_visible(lore, mon, b->resist_flag);
+			lore_learn_flag_if_visible(lore, p, mon,
+				b->resist_flag);
 		}
 	}
 
@@ -563,7 +564,7 @@ static void learn_brand_slay_helper(struct player *p, struct object *obj1,
 		if (react_to_specific_slay(s, mon)) {
 			/* Learn about the monster. */
 			if (s->race_flag) {
-				lore_learn_flag_if_visible(lore, mon,
+				lore_learn_flag_if_visible(lore, p, mon,
 					s->race_flag);
 			}
 			if (monster_is_visible(mon)) {
@@ -575,7 +576,7 @@ static void learn_brand_slay_helper(struct player *p, struct object *obj1,
 		} else if (player_knows_slay(p, i)) {
 			/* Learn about unaffected monsters. */
 			if (s->race_flag) {
-				lore_learn_flag_if_visible(lore, mon,
+				lore_learn_flag_if_visible(lore, p, mon,
 					s->race_flag);
 			}
 		}

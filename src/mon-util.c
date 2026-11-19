@@ -362,7 +362,8 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			/* Use "infravision" */
 			if (d <= player->state.see_infra) {
 				/* Learn about warm/cold blood */
-				rf_on(lore->flags, RF_COLD_BLOOD);
+				lore_learn_flag(lore, player, mon->race,
+					RF_COLD_BLOOD);
 
 				/* Handle "warm blooded" monsters */
 				if (!rf_has(mon->race->flags, RF_COLD_BLOOD)) {
@@ -374,7 +375,8 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			/* Use illumination */
 			if (square_isseen(c, mon->grid)) {
 				/* Learn about invisibility */
-				rf_on(lore->flags, RF_INVISIBLE);
+				lore_learn_flag(lore, player, mon->race,
+					RF_INVISIBLE);
 
 				/* Handle invisibility */
 				if (monster_is_invisible(mon)) {
@@ -422,16 +424,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 				player->upkeep->redraw |= (PR_HEALTH);
 
 			/* Count "fresh" sightings */
-			if (lore->sights < SHRT_MAX) {
-				lore->sights++;
-				/*
-				 * Ensure obvious flags are learned on first
-				 * sighting.
-				 */
-				if (lore->sights == 1) {
-					lore_update(mon->race, lore);
-				}
-			}
+			lore_record_sighting(lore, player, mon->race);
 
 			/* Window stuff */
 			player->upkeep->redraw |= PR_MONLIST;
@@ -721,14 +714,12 @@ bool monster_can_see(struct chunk *c, struct monster *mon, struct loc grid)
  */
 void become_aware(struct chunk *c, struct monster *mon)
 {
-	struct monster_lore *lore = get_lore(mon->race);
-
 	if (mflag_has(mon->mflag, MFLAG_CAMOUFLAGE)) {
+		struct monster_lore *lore = get_lore(mon->race);
 		mflag_off(mon->mflag, MFLAG_CAMOUFLAGE);
 
 		/* Learn about mimicry */
-		if (rf_has(mon->race->flags, RF_UNAWARE))
-			rf_on(lore->flags, RF_UNAWARE);
+		lore_learn_flag(lore, player, mon->race, RF_UNAWARE);
 
 		/* Delete any false items */
 		if (mon->mimicked_obj) {
@@ -1007,7 +998,7 @@ void monster_death(struct monster *mon, struct player *p, bool stats)
 
 	/* Take note of any dropped treasure */
 	if (visible && (dump_item || dump_gold))
-		lore_treasure(mon, dump_item, dump_gold);
+		lore_treasure(p, mon, dump_item, dump_gold);
 
 	/* Update monster list window */
 	p->upkeep->redraw |= PR_MONLIST;
@@ -1127,15 +1118,7 @@ static void player_kill_monster(struct monster *mon, struct player *p,
 
 	/* Recall even invisible uniques or winners */
 	if (monster_is_visible(mon) || monster_is_unique(mon)) {
-		/* Count kills this life */
-		if (lore->pkills < SHRT_MAX) lore->pkills++;
-
-		/* Count kills in all lives */
-		if (lore->tkills < SHRT_MAX) lore->tkills++;
-
-		/* Update lore and tracking */
-		lore_update(mon->race, lore);
-		monster_race_track(p->upkeep, mon->race);
+		lore_record_player_victory(lore, p, mon->race);
 	}
 
 	/* Delete the monster */

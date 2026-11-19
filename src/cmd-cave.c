@@ -1841,21 +1841,13 @@ void do_cmd_mon_command(struct command *cmd)
 
 			/* Remember what the monster did */
 			if (seen) {
-				rsf_on(lore->spell_flags, spell_index);
-				if (mon_spell_is_innate(spell_index)) {
-					/* Innate spell */
-					if (lore->cast_innate < UCHAR_MAX)
-						lore->cast_innate++;
-				} else {
-					/* Bolt or Ball, or Special spell */
-					if (lore->cast_spell < UCHAR_MAX)
-						lore->cast_spell++;
-				}
+				lore_learn_spell(lore, player, mon->race,
+					spell_index, true);
 			}
-			if (player->is_dead && (lore->deaths < SHRT_MAX)) {
-				lore->deaths++;
+			if (player->is_dead) {
+				lore_record_player_death(lore, player,
+					mon->race);
 			}
-			lore_update(mon->race, lore);
 
 			break;
 		}
@@ -1914,11 +1906,9 @@ void do_cmd_mon_command(struct command *cmd)
 			} else {
 				/* There's some kind of feature in the way, so learn about
 				 * kill-wall and pass-wall now */
-				if (monster_is_visible(mon)) {
-					rf_on(lore->flags, RF_PASS_WALL);
-					rf_on(lore->flags, RF_KILL_WALL);
-					rf_on(lore->flags, RF_SMASH_WALL);
-				}
+				lore_learn_flags_if_visible(lore, player, mon,
+					RF_PASS_WALL, RF_KILL_WALL,
+					RF_SMASH_WALL, RF_MAX);
 
 				/* Monster may be able to deal with walls and doors */
 				if (rf_has(mon->race->flags, RF_PASS_WALL)) {
@@ -1937,10 +1927,9 @@ void do_cmd_mon_command(struct command *cmd)
 					bool can_bash = rf_has(mon->race->flags, RF_BASH_DOOR);
 
 					/* Learn about door abilities */
-					if (monster_is_visible(mon)) {
-						rf_on(lore->flags, RF_OPEN_DOOR);
-						rf_on(lore->flags, RF_BASH_DOOR);
-					}
+					lore_learn_flags_if_visible(lore,
+						player, mon, RF_OPEN_DOOR,
+						RF_BASH_DOOR, RF_MAX);
 
 					/* If the monster can deal with doors, prefer to bash */
 					if (can_bash || can_open) {

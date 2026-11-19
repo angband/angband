@@ -2328,16 +2328,24 @@ static enum parser_error parse_lore_base(struct parser *p) {
 
 static enum parser_error parse_lore_counts(struct parser *p) {
 	struct monster_lore *l = parser_priv(p);
+	int v;
 
 	if (!l)
 		return PARSE_ERROR_NONE;
-	l->sights = parser_getint(p, "sights");
-	l->deaths = parser_getint(p, "deaths");
-	l->tkills = parser_getint(p, "tkills");
-	l->wake = parser_getint(p, "wake");
-	l->ignore = parser_getint(p, "ignore");
-	l->cast_innate = parser_getint(p, "innate");
-	l->cast_spell = parser_getint(p, "spell");
+	v = parser_getint(p, "sights");
+	l->sights = (v < 0) ? 0 : ((v < 65535) ? v : 65535);
+	v = parser_getint(p, "deaths");
+	l->deaths = (v < 0) ? 0 : ((v < 65535) ? v : 65535);
+	v = parser_getint(p, "tkills");
+	l->tkills = (v < 0) ? 0 : ((v < 65535) ? v : 65535);
+	v = parser_getint(p, "wake");
+	l->wake = (v < 0) ? 0 : ((v < 255) ? v : 255);
+	v = parser_getint(p, "ignore");
+	l->ignore = (v < 0) ? 0 : ((v < 255) ? v : 255);
+	v = parser_getint(p, "innate");
+	l->cast_innate = (v < 0) ? 0 : ((v < 255) ? v : 255);
+	v = parser_getint(p, "spell");
+	l->cast_spell = (v < 0) ? 0 : ((v < 255) ? v : 255);
 
 	return PARSE_ERROR_NONE;
 }
@@ -2648,7 +2656,7 @@ static errr finish_parse_lore(struct parser *p) {
 		}
 
 		/* update any derived values */
-		lore_update(r, l);
+		lore_update(l, NULL, r);
 	}
 
 	parser_destroy(p);

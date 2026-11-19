@@ -1042,8 +1042,7 @@ static bool monster_turn_multiply(struct monster *mon)
 	/* Multiply slower in crowded areas */
 	if ((k < 4) && (k == 0 || one_in_(k * z_info->repro_monster_rate))) {
 		/* Successful breeding attempt, learn about that now */
-		if (monster_is_visible(mon))
-			rf_on(lore->flags, RF_MULTIPLY);
+		lore_learn_flag_if_visible(lore, player, mon, RF_MULTIPLY);
 
 		/* Leave now if not a breeder */
 		if (!rf_has(mon->race->flags, RF_MULTIPLY))
@@ -1087,20 +1086,19 @@ static enum monster_stagger monster_turn_should_stagger(struct monster *mon)
 	/* RAND_25 and RAND_50 are cumulative */
 	if (rf_has(mon->race->flags, RF_RAND_25)) {
 		chance += 25;
-		if (monster_is_visible(mon))
-			rf_on(lore->flags, RF_RAND_25);
 	}
 
 	if (rf_has(mon->race->flags, RF_RAND_50)) {
 		chance += 50;
-		if (monster_is_visible(mon))
-			rf_on(lore->flags, RF_RAND_50);
 	}
 
 	roll = randint0(100);
-	return (roll < confused_chance) ?
-		 CONFUSED_STAGGER :
-		 ((roll < chance) ? INNATE_STAGGER : NO_STAGGER);
+	if (roll < confused_chance) {
+		return CONFUSED_STAGGER;
+	}
+	lore_learn_flags_if_visible(lore, player, mon, RF_RAND_25, RF_RAND_50,
+		RF_MAX);
+	return (roll < chance) ? INNATE_STAGGER : NO_STAGGER;
 }
 
 
@@ -1173,11 +1171,8 @@ static bool monster_turn_can_move(struct monster *mon, const char *m_name,
 
 	/* There's some kind of feature in the way, so learn about
 	 * kill-wall and pass-wall now */
-	if (monster_is_visible(mon)) {
-		rf_on(lore->flags, RF_PASS_WALL);
-		rf_on(lore->flags, RF_KILL_WALL);
-		rf_on(lore->flags, RF_SMASH_WALL);
-	}
+	lore_learn_flags_if_visible(lore, player, mon, RF_PASS_WALL,
+		RF_KILL_WALL, RF_SMASH_WALL, RF_MAX);
 
 	/* Monster may be able to deal with walls and doors */
 	if (rf_has(mon->race->flags, RF_PASS_WALL)) {
@@ -1212,9 +1207,9 @@ static bool monster_turn_can_move(struct monster *mon, const char *m_name,
 		if (can_open || can_bash) *did_something = true;
 
 		/* Learn about door abilities */
-		if (!confused && monster_is_visible(mon)) {
-			rf_on(lore->flags, RF_OPEN_DOOR);
-			rf_on(lore->flags, RF_BASH_DOOR);
+		if (!confused) {
+			lore_learn_flags_if_visible(lore, player, mon,
+				RF_OPEN_DOOR, RF_BASH_DOOR, RF_MAX);
 		}
 
 		/* If creature can open or bash doors, make a choice */
@@ -1252,9 +1247,8 @@ static bool monster_turn_can_move(struct monster *mon, const char *m_name,
 			}
 			if (confused) {
 				/* Didn't learn above; apply now since attempted to bash. */
-				if (monster_is_visible(mon)) {
-					rf_on(lore->flags, RF_BASH_DOOR);
-				}
+				lore_learn_flag_if_visible(lore, player,
+					mon, RF_BASH_DOOR);
 				/* When confused, can stun itself while bashing. */
 				monster_slightly_stun_by_move(mon);
 			}
@@ -1271,9 +1265,8 @@ static bool monster_turn_can_move(struct monster *mon, const char *m_name,
 
 				if (confused) {
 					/* Didn't learn above; apply since bashed the door. */
-					if (monster_is_visible(mon)) {
-						rf_on(lore->flags, RF_BASH_DOOR);
-					}
+					lore_learn_flag_if_visible(lore, player,
+						mon, RF_BASH_DOOR);
 					/* When confused, can stun itself while bashing. */
 					monster_slightly_stun_by_move(mon);
 				}
@@ -1343,10 +1336,8 @@ static bool monster_turn_try_push(struct monster *mon, const char *m_name,
 		monster_desc(n_name, sizeof(n_name), mon1, MDESC_IND_HID);
 
 		/* Learn about pushing and shoving */
-		if (monster_is_visible(mon)) {
-			rf_on(lore->flags, RF_KILL_BODY);
-			rf_on(lore->flags, RF_MOVE_BODY);
-		}
+		lore_learn_flags_if_visible(lore, player, mon, RF_KILL_BODY,
+			RF_MOVE_BODY, RF_MAX);
 
 		/* Reveal camouflaged monsters */
 		if (monster_is_camouflaged(mon1))
@@ -1381,8 +1372,8 @@ static void monster_turn_grab_objects(struct monster *mon, const char *m_name,
 	/* Learn about item pickup behavior */
 	for (obj = square_object(cave, new); obj; obj = obj->next) {
 		if (!tval_is_money(obj) && visible) {
-			rf_on(lore->flags, RF_TAKE_ITEM);
-			rf_on(lore->flags, RF_KILL_ITEM);
+			lore_learn_flags(lore, player, mon->race, RF_TAKE_ITEM,
+				RF_KILL_ITEM, RF_MAX);
 			break;
 		}
 	}
@@ -1519,18 +1510,14 @@ static void monster_turn(struct monster *mon)
 	/* If we're in a web, deal with that */
 	if (square_iswebbed(cave, mon->grid)) {
 		/* Learn web behaviour */
-		if (monster_is_visible(mon)) {
-			rf_on(lore->flags, RF_CLEAR_WEB);
-			rf_on(lore->flags, RF_PASS_WEB);
-		}
+		lore_learn_flags_if_visible(lore, player, mon, RF_CLEAR_WEB,
+			RF_PASS_WEB, RF_MAX);
 
 		/* If we can pass, no need to clear */
 		if (!rf_has(mon->race->flags, RF_PASS_WEB)) {
 			/* Learn wall behaviour */
-			if (monster_is_visible(mon)) {
-				rf_on(lore->flags, RF_PASS_WALL);
-				rf_on(lore->flags, RF_KILL_WALL);
-			}
+			lore_learn_flags_if_visible(lore, player, mon,
+				RF_PASS_WALL, RF_KILL_WALL, RF_MAX);
 
 			/* Now several possibilities */
 			if (rf_has(mon->race->flags, RF_PASS_WALL)) {
@@ -1604,8 +1591,8 @@ static void monster_turn(struct monster *mon)
 		/* Break a decoy if there is one */
 		if (square_isdecoyed(cave, new)) {
 			/* Learn about if the monster attacks */
-			if (monster_is_visible(mon))
-				rf_on(lore->flags, RF_NEVER_BLOW);
+			lore_learn_flag_if_visible(lore, player, mon,
+				RF_NEVER_BLOW);
 
 			/* Some monsters never attack */
 			if (rf_has(mon->race->flags, RF_NEVER_BLOW))
@@ -1620,8 +1607,8 @@ static void monster_turn(struct monster *mon)
 		/* The player is in the way. */
 		if (square_isplayer(cave, new)) {
 			/* Learn about if the monster attacks */
-			if (monster_is_visible(mon))
-				rf_on(lore->flags, RF_NEVER_BLOW);
+			lore_learn_flag_if_visible(lore, player, mon,
+				RF_NEVER_BLOW);
 
 			/* Some monsters never attack */
 			if (rf_has(mon->race->flags, RF_NEVER_BLOW))
@@ -1636,9 +1623,8 @@ static void monster_turn(struct monster *mon)
 			/* Some monsters never move */
 			if (rf_has(mon->race->flags, RF_NEVER_MOVE)) {
 				/* Learn about lack of movement */
-				if (monster_is_visible(mon))
-					rf_on(lore->flags, RF_NEVER_MOVE);
-
+				lore_learn_flag_if_visible(lore, player,
+					mon, RF_NEVER_MOVE);
 				return;
 			}
 		}
@@ -1660,8 +1646,7 @@ static void monster_turn(struct monster *mon)
 
 	if (did_something) {
 		/* Learn about no lack of movement */
-		if (monster_is_visible(mon))
-			rf_on(lore->flags, RF_NEVER_MOVE);
+		lore_learn_flag_if_visible(lore, player, mon, RF_NEVER_MOVE);
 
 		/* Possible disturb */
 		if (monster_is_visible(mon) && monster_is_in_view(mon) && 
@@ -1770,11 +1755,17 @@ static void monster_reduce_sleep(struct monster *mon)
 
 		/* Update knowledge */
 		if (monster_is_obvious(mon)) {
-			if (!woke_up && lore->ignore < UCHAR_MAX)
-				lore->ignore++;
-			else if (woke_up && lore->wake < UCHAR_MAX)
-				lore->wake++;
-			lore_update(mon->race, lore);
+			if (woke_up) {
+				if (lore->wake < 255) {
+					lore->wake++;
+					lore_update(lore, player, mon->race);
+				}
+			} else {
+				if (lore->ignore < 255) {
+					lore->ignore++;
+					lore_update(lore, player, mon->race);
+				}
+			}
 		}
 	}
 }
