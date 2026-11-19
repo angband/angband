@@ -1733,6 +1733,9 @@ bool borg_flow_kill(bool viewable, int nearness)
         int        y9   = kill->pos.y;
         int        ax, ay, d;
 
+        /* Each monster starts with a clean slate */
+        skip_monster = false;
+
         /* Skip dead monsters */
         if (!kill->r_idx)
             continue;
@@ -1812,6 +1815,7 @@ bool borg_flow_kill(bool viewable, int nearness)
         /* Avoid getting surrounded */
         if (borg_in_hall && (rf_has(r_info[kill->r_idx].flags, RF_GROUP_AI))) {
             /* check to see if monster is in a hall, */
+            hall_walls = 0;
             for (hall_x = -1; hall_x <= 1; hall_x++) {
                 for (hall_y = -1; hall_y <= 1; hall_y++) {
                     if (!square_in_bounds_fully(
@@ -1847,14 +1851,15 @@ bool borg_flow_kill(bool viewable, int nearness)
                      * of the room.  This would be dangerous for
                      * him as well.
                      */
-                    /* add 'em up */
-                    if (hall_walls < 4) {
-                        /* This monster is not in a hallway.
-                         * It may not be safe to fight.
-                         */
-                        skip_monster = true;
-                    }
                 }
+            }
+
+            /* add 'em up */
+            if (hall_walls < 4) {
+                /* This monster is not in a hallway.
+                 * It may not be safe to fight.
+                 */
+                skip_monster = true;
             }
         }
 
