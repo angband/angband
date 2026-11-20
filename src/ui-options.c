@@ -334,18 +334,22 @@ static void option_toggle_menu(const char *name, int page)
 	m->selections = selections;
 	m->flags = MN_DBL_TAP;
 
-	/* We add 10 onto the page amount to indicate we're at birth */
-	if (page == OPT_PAGE_BIRTH) {
+	/*
+	 * We add 2 * OPT_PAGE_MAX onto the page amount to indicate we're at
+	 * birth.
+	 */
+	if (page == OP_BIRTH) {
 		m->prompt = "You can only modify these options at character birth.";
 		m->cmd_keys = "";
 		m->flags = MN_NO_TAGS;
-	} else if (page == OPT_PAGE_BIRTH + 10 || page == OP_INTERFACE) {
+	} else if (page == OP_BIRTH + 2 * OPT_PAGE_MAX
+			|| page == OP_INTERFACE) {
 		m->prompt = "Set option (y/n/t), 's' to save, 'r' to restore, 'x' to reset";
 		m->cmd_keys = "YyNnTtSsRrXx";
 		/* Provide a context menu for equivalents to 's', 'r', .... */
 		m->context_hook = use_option_context_menu;
-		if (page == OPT_PAGE_BIRTH + 10) {
-			page -= 10;
+		if (page == OP_BIRTH + 2 * OPT_PAGE_MAX) {
+			page -= 2 * OPT_PAGE_MAX;
 		}
 	}
 
@@ -376,7 +380,7 @@ static void option_toggle_menu(const char *name, int page)
  */
 void do_cmd_options_birth(void)
 {
-	option_toggle_menu("Birth options", OPT_PAGE_BIRTH + 10);
+	option_toggle_menu("Birth options", OP_BIRTH + 2 * OPT_PAGE_MAX);
 }
 
 
