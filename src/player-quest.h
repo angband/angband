@@ -19,7 +19,7 @@
 #ifndef QUEST_H
 #define QUEST_H
 
-/* Quest list */
+/** Quest list */
 extern struct quest *quests;
 
 /* Functions */

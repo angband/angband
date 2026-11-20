@@ -14,9 +14,7 @@
  *    This software may be copied and distributed for educational, research,
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
- */
-
-/**
+ *
  * The basic structure of the parser is as follows: there is a table of hooks
  * which are run when a directive matching their format is encountered. When the
  * hook is called, all the arguments it declares in its format have been parsed

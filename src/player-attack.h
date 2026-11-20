@@ -30,11 +30,14 @@ struct attack_result {
     char *hit_verb;
 };
 
-/**
- * A list of the different hit types and their associated special message
- */
+/** Messaging for a type of hit or miss */
 struct hit_types {
+	/** The MSG_ code to use for messages */
 	uint32_t msg_type;
+	/**
+	 * Additional message to display; if NULL, no additional text is
+	 * displayed
+	 */
 	const char *text;
 };
 
