@@ -1,6 +1,7 @@
-/* File: main-ibm.c */
-
-/*
+/**
+ * \file main-ibm.c
+ * \brief Angband DOS port
+ *
  * Copyright (c) 1997 Ben Harrison, and others
  *
  * This work is free software; you can redistribute it and/or modify it
@@ -13,12 +14,9 @@
  *    This software may be copied and distributed for educational, research,
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
- */
-
-/* Purpose: Visual Display Support for "z-term.c", for the IBM */
-
-
-/*
+ *
+ * Provides an implementation for DOS hooked into main.c and ui-term.c
+ *
  * Original code by "Billy Tanksley (wtanksle@ucsd.edu)"
  * Use "Makefile.ibm" to compile Angband using this file.
  *

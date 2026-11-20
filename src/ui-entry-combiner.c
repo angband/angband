@@ -1,5 +1,5 @@
 /**
- * \file ui-entry-combiner.h
+ * \file ui-entry-combiner.c
  * \brief Define algorithms for combining property values
  *
  * Copyright (c) 2020 Eric Branlund
