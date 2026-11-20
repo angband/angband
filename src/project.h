@@ -61,46 +61,43 @@ enum
 
 
 /**
- *   NONE: No flags
- *   JUMP: Jump directly to the target location without following a path
- *   BEAM: Work as a beam weapon (affect every grid passed through)
- *   THRU: May continue through the target (used for bolts and beams)
- *   STOP: Stop as soon as we hit a monster (used for bolts)
- *   GRID: May affect terrain in the blast area in some way
- *   ITEM: May affect objects in the blast area in some way
- *   KILL: May affect monsters in the blast area in some way
- *   HIDE: Disable visual feedback from projection
- *   AWARE: Effects are already obvious to the player
- *   SAFE: Doesn't affect monsters of the same race as the caster
- *   ARC: Projection is a sector of circle radiating from the caster
- *   PLAY: May affect the player
- *   INFO: Use believed map rather than truth for player ui
- *   SHORT: Use one quarter of max_range
- *   SELF: May affect the player, even when cast by the player
+ * Bit flags for project()'s flg argument
  */
 enum
 {
-	PROJECT_NONE  = 0x0000,
-	PROJECT_JUMP  = 0x0001,
-	PROJECT_BEAM  = 0x0002,
-	PROJECT_THRU  = 0x0004,
-	PROJECT_STOP  = 0x0008,
-	PROJECT_GRID  = 0x0010,
-	PROJECT_ITEM  = 0x0020,
-	PROJECT_KILL  = 0x0040,
-	PROJECT_HIDE  = 0x0080,
-	PROJECT_AWARE = 0x0100,
-	PROJECT_SAFE  = 0x0200,
-	PROJECT_ARC   = 0x0400,
-	PROJECT_PLAY  = 0x0800,
-	PROJECT_INFO  = 0x1000,
-	PROJECT_SHORT = 0x2000,
-	PROJECT_SELF  = 0x4000,
-	PROJECT_ROCK  = 0x8000,
+	PROJECT_NONE  = 0x0000, /**< no flags */
+	PROJECT_JUMP  = 0x0001, /**< jump directly to the target location
+					without following a path */
+	PROJECT_BEAM  = 0x0002,	/**< work as a beam weapon (affect every grid
+					passed through */
+	PROJECT_THRU  = 0x0004,	/**< may continue through the target (used for
+					bolts and beams) */
+	PROJECT_STOP  = 0x0008, /**< stop as soon as we hit a monster (used for
+					bolts) */
+	PROJECT_GRID  = 0x0010, /**< may affect terrain in the blast area in
+					some way */
+	PROJECT_ITEM  = 0x0020,	/**< may affect objects in the blast area in
+					some way */
+	PROJECT_KILL  = 0x0040, /**< may affect monsters in the blast area in
+					some way */
+	PROJECT_HIDE  = 0x0080, /**< disable visual feedback from projection */
+	PROJECT_AWARE = 0x0100, /**< effects are already obvious to the player */
+	PROJECT_SAFE  = 0x0200, /**< does not affect monsters of the same race
+					as the caster */
+	PROJECT_ARC   = 0x0400, /**< projection is a sector of a circle centered
+					and expanding outward from the caster */
+	PROJECT_PLAY  = 0x0800, /**< may affect the player */
+	PROJECT_INFO  = 0x1000, /**< use believed map rather than truth for
+					player UI */
+	PROJECT_SHORT = 0x2000, /**< use one quarter of max_range */
+	PROJECT_SELF  = 0x4000, /**< may affect the player, even when cast by
+					the player */
+	PROJECT_ROCK  = 0x8000, /**< do not stop at non-initial wall grids */
 };
 
-/* Display attrs and chars */
+/** Display attributes for a projections visual feedback */
 extern uint8_t proj_to_attr[PROJ_MAX][BOLT_MAX];
+/** Display characters for a projections visual feedback */
 extern wchar_t proj_to_char[PROJ_MAX][BOLT_MAX];
 
 void thrust_away(struct loc centre, struct loc target, int grids_away);

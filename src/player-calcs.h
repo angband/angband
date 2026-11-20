@@ -22,59 +22,96 @@
 
 #include "player.h"
 
+/** Bit flag for struct player_upkeep's notice field; combine the pack */
+#define PN_COMBINE      0x00000001L
+/** Bit flag for struct player_upkeep's notice field; ignore stuff */
+#define PN_IGNORE       0x00000002L
 /**
- * Bit flags for the "player->upkeep->notice" variable
+ * Bit flag for struct player_upkeep's notice field; flush monster pain messages
  */
-#define PN_COMBINE      0x00000001L    /* Combine the pack */
-#define PN_IGNORE       0x00000002L    /* Ignore stuff */
-#define PN_MON_MESSAGE	0x00000004L	   /* flush monster pain messages */
+#define PN_MON_MESSAGE	0x00000004L
 
 
-/**
- * Bit flags for the "player->upkeep->update" variable
- */
-#define PU_BONUS		0x00000001L	/* Calculate bonuses */
-#define PU_TORCH		0x00000002L	/* Calculate torch radius */
-#define PU_HP			0x00000004L	/* Calculate chp and mhp */
-#define PU_MANA			0x00000008L	/* Calculate csp and msp */
-#define PU_SPELLS		0x00000010L	/* Calculate spells */
-#define PU_UPDATE_VIEW	0x00000020L	/* Update field of view */
-#define PU_MONSTERS		0x00000040L	/* Update monsters */
-#define PU_DISTANCE		0x00000080L	/* Update distances */
-#define PU_PANEL		0x00000100L	/* Update panel */
-#define PU_INVEN		0x00000200L	/* Update inventory */
+/** Bit flag for struct player_upkeep's update field; calculate bonuses */
+#define PU_BONUS		0x00000001L
+/** Bit flag for struct player_upkeep's update field; calculate torch radius */
+#define PU_TORCH		0x00000002L
+/** Bit flag for struct player_upkeep's update field; calculate hit points */
+#define PU_HP			0x00000004L
+/** Bit flag for struct player_upkeep's update field; calculate mana */
+#define PU_MANA			0x00000008L
+/** Bit flag for struct player_upkeep's update field; calculate spells */
+#define PU_SPELLS		0x00000010L
+/** Bit flag for struct player_upkeep's update field; update field of view */
+#define PU_UPDATE_VIEW		0x00000020L
+/** Bit flag for struct player_upkeep's update field; update monsters */
+#define PU_MONSTERS		0x00000040L
+/** Bit flag for struct player_upkeep's update field; update distances */
+#define PU_DISTANCE		0x00000080L
+/** Bit flag for struct player_upkeep's update field; update panel */
+#define PU_PANEL		0x00000100L
+/** Bit flag for struct player_upkeep's update field; update inventory */
+#define PU_INVEN		0x00000200L
 
 
-/**
- * Bit flags for the "player->upkeep->redraw" variable
- */
-#define PR_MISC			0x00000001L	/* Display Race/Class */
-#define PR_TITLE		0x00000002L	/* Display Title */
-#define PR_LEV			0x00000004L	/* Display Level */
-#define PR_EXP			0x00000008L	/* Display Experience */
-#define PR_STATS		0x00000010L	/* Display Stats */
-#define PR_ARMOR		0x00000020L	/* Display Armor */
-#define PR_HP			0x00000040L	/* Display Hitpoints */
-#define PR_MANA			0x00000080L	/* Display Mana */
-#define PR_GOLD			0x00000100L	/* Display Gold */
-#define PR_HEALTH		0x00000200L	/* Display Health Bar */
-#define PR_SPEED		0x00000400L	/* Display Extra (Speed) */
-#define PR_STUDY		0x00000800L	/* Display Extra (Study) */
-#define PR_DEPTH		0x00001000L	/* Display Depth */
+/** Bit flag for struct player_upkeep's redraw field; redraw race/class */
+#define PR_MISC			0x00000001L
+/** Bit flag for struct player_upkeep's redraw field; redraw title */
+#define PR_TITLE		0x00000002L
+/** Bit flag for struct player_upkeep's redraw field; redraw level */
+#define PR_LEV			0x00000004L
+/** Bit flag for struct player_upkeep's redraw field; redraw experience */
+#define PR_EXP			0x00000008L
+/** Bit flag for struct player_upkeep's redraw field; redraw stats */
+#define PR_STATS		0x00000010L
+/** Bit flag for struct player_upkeep's redraw field; redraw armor */
+#define PR_ARMOR		0x00000020L
+/** Bit flag for struct player_upkeep's redraw field; redraw hit points */
+#define PR_HP			0x00000040L
+/** Bit flag for struct player_upkeep's redraw field; redraw mana */
+#define PR_MANA			0x00000080L
+/** Bit flag for struct player_upkeep's redraw field; redraw gold */
+#define PR_GOLD			0x00000100L
+/** Bit flag for struct player_upkeep's redraw field; redraw health bar */
+#define PR_HEALTH		0x00000200L
+/** Bit flag for struct player_upkeep's redraw field; redraw speed */
+#define PR_SPEED		0x00000400L
+/** Bit flag for struct player_upkeep's redraw field; redraw study indicator */
+#define PR_STUDY		0x00000800L
+/** Bit flag for struct player_upkeep's redraw field; redraw depth */
+#define PR_DEPTH		0x00001000L
+/** Bit flag for struct player_upkeep's redraw field; redraw status line */
 #define PR_STATUS		0x00002000L
-#define PR_DTRAP		0x00004000L	/* Trap detection indicator */
-#define PR_STATE		0x00008000L	/* Display Extra (State) */
-#define PR_MAP			0x00010000L	/* Update whole map */
-#define PR_REFRESH_MAP		0x00020000L	/* Refresh map terminals */
-#define PR_INVEN		0x00040000L	/* Display inven/equip */
-#define PR_EQUIP		0x00080000L	/* Display equip/inven */
-#define PR_MESSAGE		0x00100000L	/* Display messages */
-#define PR_MONSTER		0x00200000L	/* Display monster recall */
-#define PR_OBJECT		0x00400000L	/* Display object recall */
-#define PR_MONLIST		0x00800000L	/* Display monster list */
-#define PR_ITEMLIST		0x01000000L	/* Display item list */
-#define PR_FEELING		0x02000000L	/* Display level feeling */
-#define PR_LIGHT		0x04000000L	/* Display light level */
+/**
+ * Bit flag for struct player_upkeep's redraw field; redraw detection indicator
+ */
+#define PR_DTRAP		0x00004000L
+/**
+ * Bit flag for struct player_upkeep's redraw field; redraw repeat/resting count
+ */
+#define PR_STATE		0x00008000L
+/** Bit flag for struct player_upkeep's redraw field; redraw whole map */
+#define PR_MAP			0x00010000L
+/** Bit flag for struct player_upkeep's redraw field; refresh map terminals */
+#define PR_REFRESH_MAP		0x00020000L
+/** Bit flag for struct player_upkeep's redraw field; redraw inventory */
+#define PR_INVEN		0x00040000L
+/** Bit flag for struct player_upkeep's redraw field; redraw equipment */
+#define PR_EQUIP		0x00080000L
+/** Bit flag for struct player upkeep's redraw field; redraw messages */
+#define PR_MESSAGE		0x00100000L
+/** Bit flag for struct player upkeep's redraw field; redraw monster recall */
+#define PR_MONSTER		0x00200000L
+/** Bit flag for struct player upkeep's redraw field; redraw object recall */
+#define PR_OBJECT		0x00400000L
+/** Bit flag for struct player upkeep's redraw field; redraw monster list */
+#define PR_MONLIST		0x00800000L
+/** Bit flag for struct player upkeep's redraw field; redraw item list */
+#define PR_ITEMLIST		0x01000000L
+/** Bit flag for struct player upkeep's redraw field; redraw level feeling */
+#define PR_FEELING		0x02000000L
+/** Bit flag for struct player upkeep's redraw field; redraw light level */
+#define PR_LIGHT		0x04000000L
 
 /**
  * Display Basic Info

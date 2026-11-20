@@ -42,15 +42,15 @@ enum {
 #define hist_copy(f1, f2)	flag_copy(f1, f2, HIST_SIZE)
 
 /**
- * Player history table
+ * Player history entry
  */
 struct history_info {
-	bitflag type[HIST_SIZE];	/* Kind of history item */
-	int16_t dlev;			/* Dungeon level when this item was recorded */
-	int16_t clev;			/* Character level when this item was recorded */
-	uint8_t a_idx;			/* Artifact this item relates to */
-	int32_t turn;			/* Turn this item was recorded on */
-	char event[80];			/* The text of the item */
+	bitflag type[HIST_SIZE];	/**< Kind of history item */
+	int16_t dlev;			/**< Dungeon level when this entry was recorded */
+	int16_t clev;			/**< Character level when this entry was recorded */
+	uint8_t a_idx;			/**< Artifact index this entry relates to */
+	int32_t turn;			/**< Turn when this entry was recorded */
+	char event[80];			/**< Description of the entry */
 };
 
 void history_clear(struct player *p);

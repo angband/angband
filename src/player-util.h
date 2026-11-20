@@ -23,14 +23,18 @@
 #include "cmd-core.h"
 #include "player.h"
 
-/* Player regeneration constants */
-#define PY_REGEN_NORMAL		197		/* Regen factor*2^16 when full */
-#define PY_REGEN_WEAK		98		/* Regen factor*2^16 when weak */
-#define PY_REGEN_FAINT		33		/* Regen factor*2^16 when fainting */
-#define PY_REGEN_HPBASE		1442	/* Min amount hp regen*2^16 */
-#define PY_REGEN_MNBASE		524		/* Min amount mana regen*2^16 */
+/** Player regeneration constant; regeneration factor * 2^16 when full */
+#define PY_REGEN_NORMAL		197
+/** Player regeneration constant; regeneration factor * 2^16 when weak */
+#define PY_REGEN_WEAK		98
+/** Player regeneration constant; regeneration factor * 2^16 when fainting */
+#define PY_REGEN_FAINT		33
+/** Minimum amount of hit point regeneration * 2^16 */
+#define PY_REGEN_HPBASE		1442
+/** Minimum amount of mana regeneration * 2^16 */
+#define PY_REGEN_MNBASE		524
 
-/* Player over-exertion */
+/** Player over-exertion */
 enum {
 	PY_EXERT_NONE = 0x00,
 	PY_EXERT_CON = 0x01,

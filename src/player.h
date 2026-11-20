@@ -73,30 +73,44 @@ enum
  */
 #define STAT_RANGE 38
 
-/**
- * Player constants
- */
-#define PY_MAX_EXP		99999999L	/* Maximum exp */
-#define PY_KNOW_LEVEL	30			/* Level to know all runes */
-#define PY_MAX_LEVEL	50			/* Maximum level */
+/** Player's maximum amount of experience */
+#define PY_MAX_EXP		99999999L
+/** Player level to know all runes (currently unused */
+#define PY_KNOW_LEVEL	30
+/** Player's maximum level */
+#define PY_MAX_LEVEL	50
+
+/** Bit flag for player.spell_flags[]; spell has been learned */
+#define PY_SPELL_LEARNED    0x01
+/** Bit flag for player.spell_flags[]; spell has been successfully tried */
+#define PY_SPELL_WORKED     0x02
+/** Bit flag for player.spell_flags[]; spell has been forgotten */
+#define PY_SPELL_FORGOTTEN  0x04
+
+/** Scale factor for plus-to-hit before adding to relevant player skill */
+#define BTH_PLUS_ADJ 3
 
 /**
- * Flags for player.spell_flags[]
+ * Bit flag for struct player's noscore field (cheater marking); has used
+ * wizard mode
  */
-#define PY_SPELL_LEARNED    0x01 	/* Spell has been learned */
-#define PY_SPELL_WORKED     0x02 	/* Spell has been successfully tried */
-#define PY_SPELL_FORGOTTEN  0x04 	/* Spell has been forgotten */
-
-#define BTH_PLUS_ADJ    	3 		/* Adjust BTH per plus-to-hit */
-
+#define NOSCORE_WIZARD  0x0002
 /**
- * Ways in which players can be marked as cheaters
+ * Bit flag for struct player's noscore field (cheater marking); has used
+ * a debugging command
  */
-#define NOSCORE_WIZARD		0x0002
-#define NOSCORE_DEBUG		0x0008
-#define NOSCORE_JUMPING     0x0010
+#define NOSCORE_DEBUG   0x0008
+/**
+ * Bit flag for struct player's noscore field (cheater marking); has used
+ * jump level debugging command
+ */
+#define NOSCORE_JUMPING 0x0010
 #ifdef ALLOW_BORG
-#define NOSCORE_BORG		0x0020
+/**
+ * Bit flag for struct player's noscore field (cheater marking); has used
+ * a borg command
+ */
+#define NOSCORE_BORG    0x0020
 #endif
 
 /**
@@ -116,16 +130,16 @@ enum {
  * Skill indexes
  */
 enum {
-	SKILL_DISARM_PHYS,		/* Disarming - physical */
-	SKILL_DISARM_MAGIC,		/* Disarming - magical */
-	SKILL_DEVICE,			/* Magic Devices */
-	SKILL_SAVE,				/* Saving throw */
-	SKILL_SEARCH,			/* Searching ability */
-	SKILL_STEALTH,			/* Stealth factor */
-	SKILL_TO_HIT_MELEE,		/* To hit (normal) */
-	SKILL_TO_HIT_BOW,		/* To hit (shooting) */
-	SKILL_TO_HIT_THROW,		/* To hit (throwing) */
-	SKILL_DIGGING,			/* Digging */
+	SKILL_DISARM_PHYS,		/**< Disarming - physical */
+	SKILL_DISARM_MAGIC,		/**< Disarming - magical */
+	SKILL_DEVICE,			/**< Magic Devices */
+	SKILL_SAVE,			/**< Saving throw */
+	SKILL_SEARCH,			/**< Searching ability */
+	SKILL_STEALTH,			/**< Stealth factor */
+	SKILL_TO_HIT_MELEE,		/**< To hit (normal) */
+	SKILL_TO_HIT_BOW,		/**< To hit (shooting) */
+	SKILL_TO_HIT_THROW,		/**< To hit (throwing) */
+	SKILL_DIGGING,			/**< Digging */
 
 	SKILL_MAX
 };
@@ -135,13 +149,13 @@ enum {
  */
 struct quest
 {
-	struct quest *next;
-	uint8_t index;
-	char *name;
-	uint8_t level;			/* Dungeon level */
-	struct monster_race *race;	/* Monster race */
-	int cur_num;			/* Number killed (unused) */
-	int max_num;			/* Number required (unused) */
+	struct quest *next;		/**< next entry in linked list */
+	uint8_t index;			/**< 0-based index of quest */
+	char *name;			/**< name to display for quest */
+	uint8_t level;			/**< Dungeon level */
+	struct monster_race *race;	/**< Monster race */
+	int cur_num;			/**< Number killed */
+	int max_num;			/**< Number required */
 };
 
 /**
@@ -175,20 +189,20 @@ struct player_race {
 
 	unsigned int ridx;
 
-	int r_mhp;		/**< Hit-dice modifier */
-	int r_exp;		/**< Experience factor */
+	int r_mhp;			/**< Hit-dice modifier */
+	int r_exp;			/**< Experience factor */
 
-	int b_age;		/**< Base age */
-	int m_age;		/**< Mod age */
+	int b_age;			/**< Base age */
+	int m_age;			/**< Mod age */
 
-	int base_hgt;	/**< Base height */
-	int mod_hgt;	/**< Mod height */
-	int base_wgt;	/**< Base weight */
-	int mod_wgt;	/**< Mod weight */
+	int base_hgt;			/**< Base height */
+	int mod_hgt;			/**< Mod height */
+	int base_wgt;			/**< Base weight */
+	int mod_wgt;			/**< Mod weight */
 
-	int infra;		/**< Infra-vision range */
+	int infra;			/**< Infra-vision range */
 
-	int body;		/**< Race body */
+	int body;			/**< Race body */
 
 	int r_adj[STAT_MAX];		/**< Stat bonuses */
 
@@ -223,13 +237,14 @@ struct player_shape {
 	int to_h;				/**< Plusses to hit */
 	int to_d;				/**< Plusses to damage */
 
-	int skills[SKILL_MAX];  /**< Skills */
-	bitflag flags[OF_SIZE];		/**< Shape (object) flags */
-	bitflag pflags[PF_SIZE];	/**< Shape (player) flags */
-	int modifiers[OBJ_MOD_MAX];	/**< Stat and other modifiers*/
-	struct element_info el_info[ELEM_MAX]; /**< Resists */
+	int skills[SKILL_MAX];			/**< Skills */
+	bitflag flags[OF_SIZE];			/**< Shape (object) flags */
+	bitflag pflags[PF_SIZE];		/**< Shape (player) flags */
+	int modifiers[OBJ_MOD_MAX];		/**< Stat and other modifiers*/
+	struct element_info el_info[ELEM_MAX];	/**< Resists */
 
-	struct effect *effect;	/**< Effect on taking this shape (effects.c) */
+	struct effect *effect;			/**< Effect on taking this
+							shape (effects.c) */
 
 	struct player_blow *blows;
 	int num_blows;
@@ -268,7 +283,7 @@ struct class_spell {
 	char *name;
 	char *text;
 
-	struct effect *effect;	/**< The spell's effect */
+	struct effect *effect;			/**< The spell's effect */
 	const struct magic_realm *realm;	/**< The magic realm of this spell */
 
 	int sidx;				/**< The index of this spell for this class */
@@ -283,12 +298,12 @@ struct class_spell {
  * A structure to hold class-dependent information on spell books.
  */
 struct class_book {
-	int tval;							/**< Item type of the book */
-	int sval;							/**< Item sub-type for book */
-	bool dungeon;						/**< Whether this is a dungeon book */
-	int num_spells;						/**< Number of spells in this book */
+	int tval;				/**< Item type of the book */
+	int sval;				/**< Item sub-type for book */
+	bool dungeon;				/**< Whether this is a dungeon book */
+	int num_spells;				/**< Number of spells in this book */
 	const struct magic_realm *realm;	/**< The magic realm of this book */
-	struct class_spell *spells;			/**< Spells in the book*/
+	struct class_spell *spells;		/**< Spells in the book*/
 };
 
 /**
@@ -298,7 +313,7 @@ struct class_magic {
 	int spell_first;			/**< Level of first spell */
 	int spell_weight;			/**< Max armor weight to avoid mana penalties */
 	int num_books;				/**< Number of spellbooks */
-	struct class_book *books;	/**< Details of spellbooks */
+	struct class_book *books;		/**< Details of spellbooks */
 	int total_spells;			/**< Number of spells for this class */
 };
 
@@ -317,15 +332,15 @@ struct player_class {
 	int c_skills[SKILL_MAX];	/**< Class skills */
 	int x_skills[SKILL_MAX];	/**< Extra skills */
 
-	int c_mhp;					/**< Hit-dice adjustment */
-	int c_exp;					/**< Experience factor */
+	int c_mhp;			/**< Hit-dice adjustment */
+	int c_exp;			/**< Experience factor */
 
 	bitflag flags[OF_SIZE];		/**< (Object) flags */
 	bitflag pflags[PF_SIZE];	/**< (Player) flags */
 
-	int max_attacks;			/**< Maximum possible attacks */
-	int min_weight;				/**< Minimum weapon weight for calculations */
-	int att_multiply;			/**< Multiplier for attack calculations */
+	int max_attacks;		/**< Maximum possible attacks */
+	int min_weight;			/**< Minimum weapon weight for calculations */
+	int att_multiply;		/**< Multiplier for attack calculations */
 
 	struct start_item *start_items; /**< Starting inventory */
 
@@ -337,12 +352,12 @@ struct player_class {
  */
 struct player_ability {
 	struct player_ability *next;
-	uint16_t index;			/* PF_*, OF_* or element index */
-	char *type;			/* Ability type */
-	char *name;			/* Ability name */
-	char *desc;			/* Ability description */
-	int group;			/* Ability group (set locally when viewing) */
-	int value;			/* Resistance value for elements */
+	uint16_t index;			/**< PF_*, OF_* or element index */
+	char *type;			/**< Ability type */
+	char *name;			/**< Ability name */
+	char *desc;			/**< Ability description */
+	int group;			/**< Ability group (set locally when viewing) */
+	int value;			/*<* Resistance value for elements */
 };
 
 /**
@@ -389,8 +404,8 @@ struct history_chart {
  */
 struct player_history {
 	struct history_info *entries;	/**< List of entries */
-	size_t next;					/**< First unused entry */
-	size_t length;					/**< Current length */
+	size_t next;			/**< First unused entry */
+	size_t length;			/**< Current length */
 };
 
 /**
@@ -404,9 +419,9 @@ struct player_state {
 	int stat_use[STAT_MAX];	/**< Current modified stats */
 	int stat_top[STAT_MAX];	/**< Maximal modified stats */
 
-	int skills[SKILL_MAX];		/**< Skills */
+	int skills[SKILL_MAX];	/**< Skills */
 
-	int speed;			/**< Current speed */
+	int speed;		/**< Current speed */
 
 	int num_blows;		/**< Number of blows x100 */
 	int num_shots;		/**< Number of shots x10 */
@@ -415,12 +430,12 @@ struct player_state {
 	int ammo_mult;		/**< Ammo multiplier */
 	int ammo_tval;		/**< Ammo variety */
 
-	int ac;				/**< Base ac */
+	int ac;			/**< Base ac */
 	int dam_red;		/**< Damage reduction */
 	int perc_dam_red;	/**< Percentage damage reduction */
-	int to_a;			/**< Bonus to ac */
-	int to_h;			/**< Bonus to hit */
-	int to_d;			/**< Bonus to dam */
+	int to_a;		/**< Bonus to ac */
+	int to_h;		/**< Bonus to hit */
+	int to_d;		/**< Bonus to dam */
 
 	int see_infra;		/**< Infravision range */
 
@@ -432,8 +447,8 @@ struct player_state {
 
 	bool cumber_armor;	/**< Mana draining armor */
 
-	bitflag flags[OF_SIZE];					/**< Status flags from race and items */
-	bitflag pflags[PF_SIZE];				/**< Player intrinsic flags */
+	bitflag flags[OF_SIZE];			/**< Status flags from race and items */
+	bitflag pflags[PF_SIZE];		/**< Player intrinsic flags */
 	struct element_info el_info[ELEM_MAX];	/**< Resists from race and items */
 };
 
@@ -445,53 +460,57 @@ struct player_state {
  * XXX Some of these probably should go to the UI
  */
 struct player_upkeep {
-	bool playing;			/* True if player is playing */
-	bool autosave;			/* True if autosave is pending */
-	bool generate_level;	/* True if level needs regenerating */
-	bool only_partial;		/* True if only partial updates are needed */
-	bool dropping;			/* True if auto-drop is in progress */
+	bool playing;		/**< True if player is playing */
+	bool autosave;		/**< True if autosave is pending */
+	bool generate_level;	/**< True if level needs regenerating */
+	bool only_partial;	/**< True if only partial updates are needed */
+	bool dropping;		/**< True if auto-drop is in progress */
 
-	int energy_use;			/* Energy use this turn */
-	int new_spells;			/* Number of spells available */
+	int energy_use;		/**< Energy use this turn */
+	int new_spells;		/**< Number of spells available */
 
-	struct monster *health_who;			/* Health bar trackee */
-	struct monster_race *monster_race;	/* Monster race trackee */
-	struct object *object;				/* Object trackee */
-	struct object_kind *object_kind;	/* Object kind trackee */
+	struct monster *health_who;		/**< Health bar trackee */
+	struct monster_race *monster_race;	/**< Monster race trackee */
+	struct object *object;			/**< Object trackee */
+	struct object_kind *object_kind;	/**< Object kind trackee */
 
-	uint32_t notice;		/* Bit flags for pending actions such as
-							 * reordering inventory, ignoring, etc. */
-	uint32_t update;		/* Bit flags for recalculations needed
-							 * such as HP, or visible area */
-	uint32_t redraw;		/* Bit flags for things that /have/ changed,
-							 * and just need to be redrawn by the UI,
-							 * such as HP, Speed, etc.*/
+	uint32_t notice;		/**< Bit flags for pending actions such
+						as reordering inventory,
+						ignoring, etc. */
+	uint32_t update;		/**< Bit flags for recalculations needed
+						such as HP, or visible area */
+	uint32_t redraw;		/**< Bit flags for things that /have/
+						changed, and just need to be
+						redrawn by the UI, such as HP,
+						Speed, etc.*/
 
-	int command_wrk;		/* Used by the UI to decide whether
-							 * to start off showing equipment or
-							 * inventory listings when offering
-							 * a choice.  See obj-ui.c */
+	int command_wrk;		/**< Used by the UI to decide whether
+						to start off showing equipment
+						or inventory listings when
+						offering a choice.  See
+						obj-ui.c */
 
-	bool create_up_stair;	/* Create up stair on next level */
-	bool create_down_stair;	/* Create down stair on next level */
-	bool light_level;		/* Level is to be lit on creation */
-	bool arena_level;		/* Current level is an arena */
+	bool create_up_stair;		/**< Create up stair on next level */
+	bool create_down_stair;		/**< Create down stair on next level */
+	bool light_level;		/**< Level is to be lit on creation */
+	bool arena_level;		/**< Current level is an arena */
 
-	int resting;			/* Resting counter */
+	int resting;			/**< Resting counter */
 
-	int running;			/* Running counter */
-	bool running_firststep;		/* Is this our first step running or following a precomputed path? */
+	int running;			/**< Running counter */
+	bool running_firststep;		/**< Is this our first step running or
+						following a precomputed path? */
 
-	struct object **quiver;	/* Quiver objects */
-	struct object **inven;	/* Inventory objects */
-	int total_weight;		/* Total weight being carried */
-	int inven_cnt;			/* Number of items in inventory */
-	int equip_cnt;			/* Number of items in equipment */
-	int quiver_cnt;			/* Number of items in the quiver */
-	int recharge_pow;		/* Power of recharge effect */
-	int step_count;			/* Pathfinding: number of steps left */
-	int16_t *steps;			/* Pathfinding: steps in reverse order */
-	struct loc path_dest;		/* Pathfinding: destination grid */
+	struct object **quiver;		/**< Quiver objects */
+	struct object **inven;		/**< Inventory objects */
+	int total_weight;		/**< Total weight being carried */
+	int inven_cnt;			/**< Number of items in inventory */
+	int equip_cnt;			/**< Number of items in equipment */
+	int quiver_cnt;			/**< Number of items in the quiver */
+	int recharge_pow;		/**< Power of recharge effect */
+	int step_count;			/**< Pathfinding: number of steps left */
+	int16_t *steps;			/**< Pathfinding: steps in reverse order */
+	struct loc path_dest;		/**< Pathfinding: destination grid */
 };
 
 /**
@@ -509,120 +528,114 @@ struct player {
 	const struct player_race *race;
 	const struct player_class *class;
 
-	struct loc grid;	/* Player location */
-	struct loc old_grid;/* Player location before leaving for an arena */
+	struct loc grid;	/**< Player location */
+	struct loc old_grid;	/**< Player location before leaving for an arena */
 
-	uint8_t hitdie;		/* Hit dice (sides) */
-	uint8_t expfact;	/* Experience factor */
+	uint8_t hitdie;		/**< Hit dice (sides) */
+	uint8_t expfact;	/**< Experience factor */
 
-	int16_t age;		/* Characters age */
-	int16_t ht;		/* Height */
-	int16_t wt;		/* Weight */
+	int16_t age;		/**< Characters age */
+	int16_t ht;		/**< Height */
+	int16_t wt;		/**< Weight */
 
-	int32_t au;		/* Current Gold */
+	int32_t au;		/**< Current Gold */
 
-	int16_t max_depth;	/* Max depth */
-	int16_t recall_depth;	/* Recall depth */
-	int16_t depth;		/* Cur depth */
+	int16_t max_depth;	/**< Maximum depth */
+	int16_t recall_depth;	/**< Recall depth */
+	int16_t depth;		/**< Current depth */
 
-	int16_t max_lev;	/* Max level */
-	int16_t lev;		/* Cur level */
+	int16_t max_lev;	/**< Maximum level */
+	int16_t lev;		/**< Current level */
 
-	int32_t max_exp;	/* Max experience */
-	int32_t exp;		/* Cur experience */
-	uint16_t exp_frac;	/* Cur exp frac (times 2^16) */
+	int32_t max_exp;	/**< Maximum experience */
+	int32_t exp;		/**< Current experience */
+	uint16_t exp_frac;	/**< Current experience fraction (times 2^16) */
 
-	int16_t mhp;		/* Max hit pts */
-	int16_t chp;		/* Cur hit pts */
-	uint16_t chp_frac;	/* Cur hit frac (times 2^16) */
+	int16_t mhp;		/**< Maximum hit points */
+	int16_t chp;		/**< Curruent hit points */
+	uint16_t chp_frac;	/**< Current hit point fraction (times 2^16) */
 
-	int16_t msp;		/* Max mana pts */
-	int16_t csp;		/* Cur mana pts */
-	uint16_t csp_frac;	/* Cur mana frac (times 2^16) */
+	int16_t msp;		/**< Maximum mana points */
+	int16_t csp;		/**< Current mana points */
+	uint16_t csp_frac;	/**< Current mana point fraction (times 2^16) */
 
-	int16_t stat_max[STAT_MAX];	/* Current "maximal" stat values */
-	int16_t stat_cur[STAT_MAX];	/* Current "natural" stat values */
-	int16_t stat_map[STAT_MAX];	/* Tracks remapped stats from temp stat swap */
+	int16_t stat_max[STAT_MAX];	/**< Current "maximal" stat values */
+	int16_t stat_cur[STAT_MAX];	/**< Current "natural" stat values */
+	int16_t stat_map[STAT_MAX];	/**< Tracks remapped stats from temp stat swap */
 
-	int16_t *timed;				/* Timed effects */
+	int16_t *timed;		/**< Timed effects */
 
-	int16_t word_recall;			/* Word of recall counter */
-	int16_t deep_descent;			/* Deep Descent counter */
+	int16_t word_recall;	/**< Word of recall counter */
+	int16_t deep_descent;	/**< Deep Descent counter */
 
-	int16_t energy;				/* Current energy */
-	uint32_t total_energy;			/* Total energy used (including resting) */
-	uint32_t resting_turn;			/* Number of player turns spent resting */
+	int16_t energy;		/**< Current energy */
+	uint32_t total_energy;	/**< Total energy used (including resting) */
+	uint32_t resting_turn;	/**< Number of player turns spent resting */
 
-	int16_t food;				/* Current nutrition */
+	int16_t food;		/**< Current nutrition */
 
-	uint8_t unignoring;			/* Unignoring */
+	uint8_t unignoring;	/**< Unignoring */
 
-	uint8_t skip_cmd_coercion;		/* True if bloodlust check
-							should be skipped on
-							the next command
-							(previous command
-							successfully passed
-							the bloodlust check
-							but then was canceled
-							by the user) */
-	struct loc noise_grid;			/* Position of the player the
-							last time the noise
-							was calculated or (0, 0)
-							if the player has not
-							been on the level long
-							enough for the noise
-							to be calculated */
-	uint16_t noise_falloff;			/* The rate, used the last time
-							the noise was
-							calculated, at which
-							the noise drops off
-							with one grid of extra
-							distance */
-	uint8_t *spell_flags;			/* Spell flags */
-	uint8_t *spell_order;			/* Spell order */
+	uint8_t skip_cmd_coercion;	/**< True if bloodlust check should be
+						skipped on the next command
+						(previous command successfully
+						passed the bloodlust check
+						but then was canceled by the
+						user) */
+	struct loc noise_grid;		/**< Position of the player the last
+						time the noise was calculated
+						or (0, 0) if the player has not
+						been on the level long enough
+						for the noise to be calculated */
+	uint16_t noise_falloff;		/**< The rate, used the last time the
+						noise was calculated, at which
+						the noise drops off with one
+						grid of extra distance */
+	uint8_t *spell_flags;		/**< Spell flags */
+	uint8_t *spell_order;		/**< Spell order */
 
-	char full_name[PLAYER_NAME_LEN];	/* Full name */
-	char died_from[80];					/* Cause of death */
-	char *history;						/* Player history */
-	struct quest *quests;				/* Quest history */
-	uint16_t total_winner;			/* Total winner */
+	char full_name[PLAYER_NAME_LEN];	/**< Full name */
+	char died_from[80];			/**< Cause of death */
+	char *history;				/**< Player history */
+	struct quest *quests;			/**< Quest history */
+	uint16_t total_winner;			/**< Total winner */
 
-	uint16_t noscore;			/* Cheating flags */
+	uint16_t noscore;			/**< Cheating flags */
 
-	bool is_dead;				/* Player is dead */
+	bool is_dead;				/**< Player is dead */
 
-	bool wizard;				/* Player is in wizard mode */
+	bool wizard;				/**< Player is in wizard mode */
 
-	int16_t player_hp[PY_MAX_LEVEL];	/* HP gained per level */
+	int16_t player_hp[PY_MAX_LEVEL];	/**< HP gained per level */
 
-	/* Saved values for quickstart */
-	int32_t au_birth;			/* Birth gold when option birth_money is false */
-	int16_t stat_birth[STAT_MAX];		/* Birth "natural" stat values */
-	int16_t ht_birth;			/* Birth Height */
-	int16_t wt_birth;			/* Birth Weight */
+	int32_t au_birth;			/**< Saved value for quickstart;
+							birth gold when option
+							birth_money is false */
+	int16_t stat_birth[STAT_MAX];		/**< Save value for quickstart;
+							birth "natural" stat
+							values */
+	int16_t ht_birth;			/**< Saved value for quickstart;
+							birth height */
+	int16_t wt_birth;			/**< Saved value for quickstart;
+							birth weight */
 
-	struct player_options opts;			/* Player options */
-	struct player_history hist;			/* Player history (see player-history.c) */
+	struct player_options opts;		/**< Player options */
+	struct player_history hist;		/**< Player history (see player-history.c) */
 
-	struct player_body body;			/* Equipment slots available */
-	struct player_shape *shape;			/* Current player shape */
+	struct player_body body;		/**< Equipment slots available */
+	struct player_shape *shape;		/**< Current player shape */
 
-	struct object *gear;				/* Real gear */
-	struct object *gear_k;				/* Known gear */
+	struct object *gear;			/**< Real gear */
+	struct object *gear_k;			/**< Known gear */
 
-	struct object *obj_k;				/* Object knowledge ("runes") */
-	struct chunk *cave;					/* Known version of current level */
+	struct object *obj_k;			/**< Object knowledge ("runes") */
+	struct chunk *cave;			/**< Known version of current level */
 
-	struct player_state state;			/* Calculatable state */
-	struct player_state known_state;	/* What the player can know of the above */
-	struct player_upkeep *upkeep;		/* Temporary player-related values */
+	struct player_state state;		/**< Calculatable state */
+	struct player_state known_state;	/**< What the player can know of the above */
+	struct player_upkeep *upkeep;		/**< Temporary player-related values */
 };
 
-
-/**
- * ------------------------------------------------------------------------
- * Externs
- * ------------------------------------------------------------------------ */
 
 extern struct player_body *bodies;
 extern struct player_race *races;
