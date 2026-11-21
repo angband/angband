@@ -43,7 +43,7 @@ extern bool borg_caution_teleport(int emergency, int turns);
 /*
  * Help determine if "Phase Door" seems like a good idea
  */
-extern bool borg_caution_phase(int emergency, int turns);
+extern bool borg_safe_to_phase(int emergency, int turns);
 
 /*
  * special teleports

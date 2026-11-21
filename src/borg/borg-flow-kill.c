@@ -2863,7 +2863,7 @@ void borg_near_monster_type(int dist)
  * Good Idea on two levels:
  * 1.  We are the right class, we got some good ranged weapons
  * 2.  The possible landing grids are ok.
- * Almost a copy of the borg_caution_phase above.
+ * Almost a copy of the borg_safe_to_phase in borg-escape.c.
  * The emergency is the number of dangerous grids out of 100
  * that we tolerate.  If we have 80, then we accept the risk
  * of landing on a grid that is 80% likely to be bad.  A low

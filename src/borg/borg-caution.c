@@ -1990,7 +1990,7 @@ bool borg_caution(void)
             return true;
         }
 
-        if (borg_caution_phase(50, 1)
+        if (borg_safe_to_phase(50, 1)
             && (borg_read_scroll(sv_scroll_phase_door)
                 || borg_spell_fail(PHASE_DOOR, 30)
                 || borg_spell_fail(PORTAL, 30)
