@@ -985,7 +985,7 @@ bool borg_twitchy(void)
 
     /* try to phase out of it */
     if (borg_allow_teleport()) {
-        if (borg_caution_phase(15, 2)
+        if (borg_safe_to_phase(15, 2)
             && (borg_spell_fail(PHASE_DOOR, 40) || borg_spell_fail(PORTAL, 40)
                 || borg_shadow_shift(40) || borg_activate_item(act_tele_phase)
                 || borg_activate_item(act_tele_long)
