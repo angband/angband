@@ -580,7 +580,7 @@ bool borg_dimension_door(int allow_fail)
 
     /* Require ability (right now) */
     if (!borg_spell_okay_fail(DIMENSION_DOOR, allow_fail))
-        return 0;
+        return false;
 
     /* if we are attacking, calculate gains, but if this is just a teleport */
     /* the current danger is the starting point */
