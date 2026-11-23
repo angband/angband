@@ -1273,7 +1273,6 @@ static void adjust_freqs(struct artifact_set_data *data)
 static void parse_frequencies(struct artifact_set_data *data)
 {
 	size_t i;
-	int j;
 
 	file_putf(log_file, "\n****** BEGINNING GENERATION OF FREQUENCIES\n\n");
 
@@ -1312,9 +1311,10 @@ static void parse_frequencies(struct artifact_set_data *data)
 			(unsigned long) i, data->art_probs[i]);
 
 	/* Build a cumulative frequency table for tvals */
-	for (i = 0; i < TV_MAX; i++)
-		for (j = i; j < TV_MAX; j++)
-			data->tv_freq[j] += data->tv_probs[i];
+	data->tv_freq[0] = data->tv_probs[0];
+	for (i = 1; i < TV_MAX; i++) {
+		data->tv_freq[i] = data->tv_probs[i] + data->tv_freq[i - 1];
+	}
 
 	/* Print out the frequency table, for verification */
 	for (i = 0; i < TV_MAX; i++)
