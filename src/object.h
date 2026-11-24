@@ -67,7 +67,6 @@ struct effect {
 struct chest_trap {
 	struct chest_trap *next;
 	char *name;
-	char *code;
 	int level;
 	struct effect *effect;
 	int pval;
