@@ -1834,23 +1834,51 @@ static void regen_monster(struct monster *mon, int num)
 {
 	/* Regenerate (if needed) */
 	if (mon->hp < mon->maxhp) {
+		int deficit = mon->maxhp - mon->hp;
 		/* Base regeneration */
-		int frac = mon->maxhp / 100;
-
-		/* Minimal regeneration rate */
-		if (!frac) frac = 1;
-
+		int base_amt = mon->maxhp / 100, amt;
 		/* Some monsters regenerate quickly */
-		if (rf_has(mon->race->flags, RF_REGENERATE)) frac *= 2;
+		bool fast = rf_has(mon->race->flags, RF_REGENERATE);
+
+		/* Always have some regeneration */
+		if (!base_amt) base_amt = 1;
 
 		/* Multiply by number of regenerations */
-		frac *= num;
+		assert(num > 0);
+		if (num == 1) {
+			amt = base_amt;
+			if (fast) amt *= 2;
+		} else {
+			if (base_amt < INT_MAX / num) {
+				base_amt *= num;
+				amt = base_amt;
+				if (fast) {
+					if (amt < INT_MAX / 2) {
+						amt *= 2;
+					} else {
+						amt = INT_MAX;
+					}
+				}
+			} else {
+				base_amt = INT_MAX;
+				amt = INT_MAX;
+			}
+		}
+
+		/*
+		 * Learn about the presence or absence of RF_REGENERATE if
+		 * the monster hit point deficit is more than the base
+		 * regeneration.
+		 */
+		if (deficit > base_amt) {
+			struct monster_lore *lore = get_lore(mon->race);
+
+			lore_learn_flag_if_visible(lore, player, mon,
+				RF_REGENERATE);
+		}
 
 		/* Regenerate */
-		mon->hp += frac;
-
-		/* Do not over-regenerate */
-		if (mon->hp > mon->maxhp) mon->hp = mon->maxhp;
+		mon->hp = (deficit > amt) ? mon->hp + amt : mon->maxhp;
 
 		/* Redraw (later) if needed */
 		if (player->upkeep->health_who == mon)
