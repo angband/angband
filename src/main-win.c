@@ -4246,10 +4246,10 @@ static void handle_wm_paint(HWND hWnd)
 			windows_map_aux();
 		} else {
 			/* Get the area that should be updated (rounding up/down) */
-			x1 = ((ps.rcPaint.left - td->size_ow1) / td->tile_wid) - 1;
-			x2 = ((ps.rcPaint.right - td->size_ow1) / td->tile_wid) + 1;
-			y1 = ((ps.rcPaint.top - td->size_oh1) / td->tile_hgt) - 1;
-			y2 = ((ps.rcPaint.bottom - td->size_oh1) / td->tile_hgt) + 1;
+			x1 = ((ps.rcPaint.left - (int)td->size_ow1) / (int)td->tile_wid) - 1;
+			x2 = ((ps.rcPaint.right - (int)td->size_ow1) / (int)td->tile_wid) + 1;
+			y1 = ((ps.rcPaint.top - (int)td->size_oh1) / (int)td->tile_hgt) - 1;
+			y2 = ((ps.rcPaint.bottom - (int)td->size_oh1) / (int)td->tile_hgt) + 1;
 
 			/* Redraw */
 			term_data_redraw_section(td, x1, y1, x2, y2);
