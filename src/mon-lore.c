@@ -1417,6 +1417,11 @@ void lore_append_movement(textblock *tb, const struct monster_race *race,
 
 	/* End this sentence */
 	textblock_append(tb, ".  ");
+
+	if (rf_has(known_flags, RF_FRIGHTENED)) {
+		textblock_append(tb, "%s will always attempt to flee.  ",
+			lore_pronoun_nominative(lore_monster_sex(race), true));
+	}
 }
 
 /**
