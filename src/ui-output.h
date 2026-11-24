@@ -33,11 +33,11 @@
 typedef struct region region;
 
 struct region {
-	int col;	/* x-coordinate of upper right corner */
-	int row;	/* y-coord of upper right coordinate */
-	int width;	/* width of display area. 1 - use system default. */
-				/* non-positive - rel to right of screen */
-	int page_rows;	/* non-positive value is relative to the bottom of the screen */
+	int col;	/**< x-coordinate of upper right corner */
+	int row;	/**< y-coord of upper right coordinate */
+	int width;	/**< width of display area. 1 - use system default.
+				non-positive - rel to right of screen */
+	int page_rows;	/**< non-positive value is relative to the bottom of the screen */
 };
 
 /**

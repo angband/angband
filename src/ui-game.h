@@ -25,14 +25,14 @@
 
 /* These are the allowed modes of operation for play_game(). */
 enum game_mode_type {
-	GAME_LOAD,	/* try to load the game from savefile; if it does not
+	GAME_LOAD,	/**< try to load the game from savefile; if it does not
 				exist or the character is dead, start a new
 				game that'll be stored in that savefile */
-	GAME_NEW,	/* always start a new game regardless of the state
+	GAME_NEW,	/**< always start a new game regardless of the state
 				of the character in savefile; new game will
 				be stored with the name in savefile unless it
 				is empty */
-	GAME_SELECT	/* have the player select with a menu what to do; if
+	GAME_SELECT	/**< have the player select with a menu what to do; if
 				savefile is set and exists that will be the
 				default option in the menu for loading; if
 				savefile is not empty and does not exist,
@@ -48,9 +48,9 @@ typedef struct savefile_getter_impl *savefile_getter;
 
 /* Holds the information that can be gotten back from a savefile_getter. */
 struct savefile_details {
-	char *fnam;	/* holds the file name component of its path */
-	char *desc;	/* holds the result from savefile_get_description() */
-	size_t foff;	/* holds the offset in fnam to get past the
+	char *fnam;	/**< holds the file name component of its path */
+	char *desc;	/**< holds the result from savefile_get_description() */
+	size_t foff;	/**< holds the offset in fnam to get past the
 				player-specific prefix */
 };
 

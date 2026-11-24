@@ -1,5 +1,6 @@
 /**
  * \file ui-term.h
+ * \brief Declarations for a generic, efficient, terminal window package
  *
  * Copyright (c) 1997 Ben Harrison
  *
@@ -15,221 +16,207 @@
 #include "ui-event.h"
 
 
+typedef struct term_win term_win;
+
 /**
- * A term_win is a "window" for a Term
- *
- *	- Cursor Useless/Visible codes
- *	- Cursor Location (see "Useless")
- *
- *	- Array[h] -- Access to the attribute array
- *	- Array[h] -- Access to the character array
- *
- *	- Array[h*w] -- Attribute array
- *	- Array[h*w] -- Character array
- *
- *	- next screen saved
- *	- hook to be called on screen size change
+ * A term_win holds contents (by row and column) for a Term as well as
+ * cursor information.
  *
  * Note that the attr/char pair at (x,y) is a[y][x]/c[y][x]
- * and that the row of attr/chars at (0,y) is a[y]/c[y]
+ * and that the yth row of attr/chars is a[y]/c[y]
  */
-
-typedef struct term_win term_win;
 
 struct term_win
 {
-	bool cu, cv;
-	int cx, cy;
-	int cnx, cny;
+	bool cu;	/**< true if cursor is useless; false otherwise */
+	bool cv;	/**< true if cursor is visible; false otherwise */
+	int cx;		/**< cursor x coordinate */
+	int cy;		/**< cursor y coordinate */
+	int cnx;	/**< cursor width, in columns */
+	int cny;	/**< cursor height, in columns */
 
-	int **a;
-	wchar_t **c;
+	int **a;	/**< pointers into va; a[y][x] is the foreground attribute at (x, y) */
+	wchar_t **c;	/**< pointers into vc; c[y][x] is the foreground character at (x, y) */
 
-	int *va;
-	wchar_t *vc;
+	int *va;	/**< va[y * terminal columns + x] is the foreground attribute at (x, y) */
+	wchar_t *vc;	/**< vc[y * terminal columns + x] is the foreground attribute at (x, y) */
 
-	int **ta;
-	wchar_t **tc;
+	int **ta;	/**< pointers into vta; ta[y][x] is the background (terrain) attribute at (x, y) */
+	wchar_t **tc;	/**< pointers into vtc; tc[y][x] is the background (terrain) character at (x, y) */
 
-	int *vta;
-	wchar_t *vtc;
+	int *vta;	/**< vta[y * terminal columns + x] is the background (terrain) attribute at (x, y) */
+	wchar_t *vtc;	/**< vtc[y * terminal columns + x] is the background (terrain) character at (x, h) */
 
-	term_win *next;
+	term_win *next;	/**< next saved contents in stack */
 };
 
 
-/**
- * An actual "term" structure
- *
- *	- Extra "user" info (used by application)
- *
- *	- Extra "data" info (used by implementation)
- *
- *
- *	- Flag "user_flag"
- *	  An extra "user" flag (used by application)
- *
- *
- *	- Flag "data_flag"
- *	  An extra "data" flag (used by implementation)
- *
- *
- *	- Flag "active_flag"
- *	  This "term" is "active"
- *
- *	- Flag "mapped_flag"
- *	  This "term" is "mapped"
- *
- *	- Flag "total_erase"
- *	  The full contents of this "term" will be sent to the front end the
- *	  next time it is refreshed rather than only sending what is believed
- *	  to have changed
- *
- *	- Flag "fixed_shape"
- *	  This "term" is not allowed to resize
- *
- *	- Flag "icky_corner"
- *	  This "term" has an "icky" corner grid
- *
- *	- Flag "soft_cursor"
- *	  This "term" uses a "software" cursor
- *
- *	- Flag "always_pict"
- *	  Use the "Term_pict()" routine for all text
- *
- *	- Flag "higher_pict"
- *	  Use the "Term_pict()" routine for special text
- *
- *	- Flag "always_text"
- *	  Use the "Term_text()" routine for invisible text
- *
- *	- Flag "xtra_clear"
- *	  Call Term_xtra(TERM_XTRA_CLEAR, 0) the next time this "term" is
- *	  refreshed so the front end clears whatever represents the "term"
- *
- *	- Flag "never_bored"
- *	  Never call the "TERM_XTRA_BORED" action
- *
- *	- Flag "never_frosh"
- *	  Never call the "TERM_XTRA_FROSH" action
- *
- *	- Flag "complex_input"
- *	  Distinguish between Enter/^m/^j, Tab/^i, etc.
- *
- *	- Ignore this pointer
- *
- *	- Keypress Queue -- various data
- *
- *	- Keypress Queue -- pending keys
- *
- *
- *	- Window Width (max 255)
- *	- Window Height (max 255)
- *
- *	- Minimum modified row
- *	- Maximum modified row
- *
- *	- Minimum modified column (per row)
- *	- Maximum modified column (per row)
- *
- *
- *	- Displayed screen image
- *	- Requested screen image
- *
- *	- Temporary screen image
- *	- Memorized screen image
- *
- *
- *	- Hook for init-ing the term
- *	- Hook for nuke-ing the term
- *
- *	- Hook for extra actions
- *
- *	- Hook for placing the cursor
- *
- *	- Hook for drawing some blank spaces
- *
- *	- Hook for drawing a string of chars using an attr
- *
- *	- Hook for drawing a sequence of special attr/char pairs
- *
- *      - Hook to test if an attr/char pair is a double-height tile
- */
 
 typedef struct term term;
 
+/**
+ * An actual "term" structure
+ */
 struct term
 {
-	void *user;
+	void *user;	/**< pointer to data managed by the terminal's application */
 
-	void *data;
+	void *data;	/**< pointer to the data the front end uses to implement the terminal */
 
-	bool user_flag;
+	bool user_flag;	/**< flag used by the terminal's application */
 
-	bool data_flag;
+	bool data_flag;	/**< flag used by the front end implementing the terminal */
 
-	bool active_flag;
-	bool mapped_flag;
-	bool total_erase;
-	bool fixed_shape;
-	bool icky_corner;
-	bool soft_cursor;
-	bool always_pict;
-	bool higher_pict;
-	bool always_text;
-	bool xtra_clear;
-	bool never_bored;
-	bool never_frosh;
-	int sidebar_mode;
+	bool active_flag;	/**< true if the terminal is active (initialized without a subsequent call to term_nuke()) */
+	bool mapped_flag;	/**< true if the terminal is mapped */
+	bool total_erase;	/**< if true, the full contents will be sent to
+					the front end the next time this
+					terminal is refreshed rather than
+					only sending what is believed to have
+					changed; reset to false in a refresh */
+	bool fixed_shape;	/**< if true, this terminal is not allow to resize */
+	bool icky_corner;	/**< if true, the bottom right corner gets
+					special treatment by the front end;
+					typically true for some dumb terminals
+					and false for all others */
+	bool soft_cursor;	/**< if true, the cursor is handled in software
+					rather than being a hardwired aspect
+					of a dumb terminal (or emulator for a
+					dumb terminal) */
+	bool always_pict;	/**< if true, the contents of the terminal are
+					pushed to the front end by pict_hook */
+	bool higher_pict;	/**< if true, always_pict is false, and a grid's
+					attribute has the 0x80 bit set, the
+					contents of the grid are pushed to the
+					front end by pict_hook; otherwise, the
+					grid's contents are pushed to the
+					front end by text_hook or wipe_hook */
+	bool always_text;	/**< sets how a grid whose attribute is zero
+					is pushed to the front end when
+					always_pict is false; if false,
+					wipe_hook will be used and the grid's
+					character is ignored; if true,
+					text_hook is used */
+	bool xtra_clear;	/**< if true, call Term_xtra(TERM_XTRA_CLEAR, 0)
+					the next time the terminal is refreshed
+					so the front end clears the terminal;
+					reset to false in a refresh */
+	bool never_bored;	/**< if true, ui-term.c never calls
+					Term_xtra(TERM_XTRA_BORED, 0) */
+	bool never_frosh;	/**< if true, ui-term.c does not call
+					Term_xtra(TERM_XTRA_FROSH, y) after
+					refreshing the yth row */
+	int sidebar_mode;	/**< for the main terminal, stores how extra
+					data is presented along with the map */
+	bool complex_input;	/**< if true, the front end wants to distinguish
+					between Enter/^m/^j, Tab/^i, etc. */
 
-	bool complex_input;
+	ui_event *key_queue;	/**< circular queue of input events */
 
-	ui_event *key_queue;
-
-	uint16_t key_head;
-	uint16_t key_tail;
+	uint16_t key_head;	/**< index, in key_queue, at which to store the
+					next input event */
+	uint16_t key_tail;	/**< index, in key_queue, of the oldest
+					unprocessed event; if key_tail equals
+					key_head, the queue is empty */
 	uint16_t key_xtra;
-	uint16_t key_size;
+	uint16_t key_size;	/**< the maximum number of events that can be
+					stored in key_queue */
 
-	int wid;
-	int hgt;
+	int wid;		/**< number of columns */
+	int hgt;		/**< number of rows */
 
-	int y1;
-	int y2;
+	int y1;			/**< row index for first modified row; will
+					be hgt if nothing has been modified */
+	int y2;			/**< row index for last modified row; will
+					be zero if nothing has been modified */
 
-	int *x1;
-	int *x2;
+	int *x1;		/**< x1[y] is the column index for the first
+					modified column in row y; x1[y] will
+					be wid if nothing has been modified in
+					the row */
+	int *x2;		/**< x2[y] is the column index for the last
+					modified column in row y; x2[y] will
+					be zero if nothing has been modified
+					in the row */
 
-	/* Offsets used by the map subwindows */
-	int offset_x;
-	int offset_y;
+	int offset_x;		/**< if this terminal represents a map, this is
+					the x coordinate in the cave
+					corresponding to the upper left corner
+					of the map */
+	int offset_y;		/**< if this terminal represents a map, this is
+					the y coordinate in the cave
+					corresponding to the upper right corner
+					of the map */
 
-	term_win *old;
-	term_win *scr;
+	term_win *old;		/**< the contents of the terminal at the last
+					refresh */
+	term_win *scr;		/**< the contents of the terminal to be
+					displayed at the next refresh */
 
-	term_win *tmp;
-	term_win *mem;
+	term_win *tmp;		/**< temporary screen image */
+	term_win *mem;		/**< head of stack of stored screen images */
 
-	/* Number of times saved */
-	uint8_t saved;
+	uint8_t saved;		/**< number of stored screen images */
 
+	/**
+	 * front end's function to complete initialization of the terminal;
+	 * not used if NULL
+	 */
 	void (*init_hook)(term *t);
+
+	/**
+	 * front end's function to clean up what it allocated for a terminal;
+	 * not used if NULL
+	 */
 	void (*nuke_hook)(term *t);
 
+	/**
+	 * front end's function to perform extra actions; not used if NULL but
+	 * then it is not possible to request an input event from the front end
+	 */
 	errr (*xtra_hook)(int n, int v);
 
+	/**
+	 * front end's function to draw (when soft_cursor is true) or move
+	 * (when soft_cursor is false) the cursor
+	 */
 	errr (*curs_hook)(int x, int y);
 
+	/**
+	 * front end's function to draw a big cursor; may be NULL if soft_cursor
+	 * is false
+	 */
 	errr (*bigcurs_hook)(int x, int y);
 
+	/**
+	 * front end's function to render grids whose attribute is zero;
+	 * may be NULL if always_pict is true or always_text is true
+	 */
 	errr (*wipe_hook)(int x, int y, int n);
 
+	/**
+	 * front end's function to render text; may be NULL if always_pict is
+	 * true
+	 */
 	errr (*text_hook)(int x, int y, int n, int a, const wchar_t *s);
 
+	/**
+	 * front end's function to render tiles; may be NULL if always_pict
+	 * and higher_pict are false
+	 */
 	errr (*pict_hook)(int x, int y, int n, const int *ap, const wchar_t *cp, const int *tap, const wchar_t *tcp);
 
+	/**
+	 * front end's function to render a map of the full level; may be NULL
+	 * so that the default rendering in ui-map.c's display_map() is used
+	 */
 	void (*view_map_hook)(term *t);
 
+	/**
+	 * front end's function to test if an attribute/character pair
+	 * corresponds to a double-height tile; may be NULL if always_pict
+	 * and higher_pict are false or double-height tiles are not used
+	 */
         int (*dblh_hook)(int a, wchar_t c);
 
 };
@@ -277,55 +264,121 @@ extern int col_map[SIDEBAR_MAX];
 #define SCREEN_WID	((int)((Term->wid - COL_MAP - 1) / tile_width))
 
 /**
- * Definitions for the "actions" of "Term_xtra()"
- *
- * These values may be used as the first parameter of "Term_xtra()",
- * with the second parameter depending on the "action" itself.  Many
- * of the actions shown below are optional on at least one platform.
- *
- * The "TERM_XTRA_EVENT" action uses "v" to "wait" for an event
- * The "TERM_XTRA_SHAPE" action uses "v" to "show" the cursor
- * The "TERM_XTRA_FROSH" action uses "v" for the index of the row
- * The "TERM_XTRA_ALIVE" action uses "v" to "activate" (or "close")
- * The "TERM_XTRA_LEVEL" action uses "v" to "resume" (or "suspend")
- * The "TERM_XTRA_DELAY" action uses "v" as a "millisecond" value
- *
- * The other actions do not need a "v" code, so "zero" is used.
+ * Value for the first parameter of Term_xtra() to request processing some
+ * pending input events; if the second parameter of Term_xtra() is non-zero,
+ * wait for an event if none is available; otherwise, return immediately if
+ * there are no events available
  */
-#define TERM_XTRA_EVENT    1    /* Process some pending events */
-#define TERM_XTRA_FLUSH 2    /* Flush all pending events */
-#define TERM_XTRA_CLEAR 3    /* Clear the entire window */
-#define TERM_XTRA_SHAPE 4    /* Set cursor shape (optional) */
-#define TERM_XTRA_FROSH 5    /* Flush one row (optional) */
-#define TERM_XTRA_FRESH 6    /* Flush all rows (optional) */
-#define TERM_XTRA_NOISE 7    /* Make a noise (optional) */
-#define TERM_XTRA_BORED 9    /* Handle stuff when bored (optional) */
-#define TERM_XTRA_REACT 10    /* React to global changes (optional) */
-#define TERM_XTRA_ALIVE 11    /* Change the "hard" level (optional) */
-#define TERM_XTRA_LEVEL 12    /* Change the "soft" level (optional) */
-#define TERM_XTRA_DELAY 13    /* Delay some milliseconds (optional) */
-
+#define TERM_XTRA_EVENT 1
 /**
- * Bit flags for the "window_flag" variable.
+ * Value for the first parameter of Term_xtra() to request flushing all
+ * pending input events; the second parameter of Term_xtra is unused
  */
-#define PW_INVEN            0x00000001L /* Display inven/equip */
-#define PW_EQUIP            0x00000002L /* Display equip/inven */
-#define PW_PLAYER_0         0x00000004L /* Display player (basic) */
-#define PW_PLAYER_1         0x00000008L /* Display player (extra) */
-#define PW_PLAYER_2         0x00000010L /* Display player (compact) */
-#define PW_MAP              0x00000020L /* Display dungeon map */
-#define PW_MESSAGE          0x00000040L /* Display messages */
-#define PW_OVERHEAD         0x00000080L /* Display overhead view */
-#define PW_MONSTER          0x00000100L /* Display monster recall */
-#define PW_OBJECT           0x00000200L /* Display object recall */
-#define PW_MONLIST          0x00000400L /* Display monster list */
-#define PW_STATUS           0x00000800L /* Display status */
-#define PW_ITEMLIST         0x00001000L /* Display item list */
-#define PW_PLAYER_3         0x00002000L /* Display player (topbar) */
+#define TERM_XTRA_FLUSH 2
+/**
+ * Value for the first parameter of Term_xtra() to request clearing the
+ * entire window; the second parameter of Term_xtra is unused
+ */
+#define TERM_XTRA_CLEAR 3
+/**
+ * Value for the first parameter of Term_xtra() to request changing the
+ * "shape" of the cursor; currently two values are used for the second
+ * parameter of Term_xtra():  zero to request an invisible cursor and one
+ * to request a normal and visible cursor; implementation by the front end
+ * is optional
+ */
+#define TERM_XTRA_SHAPE 4
+/**
+ * Value for the first parameter of Term_xtra() to signal that a row has
+ * been refreshed; the second parameter of Term_xtra() is the index of the
+ * row; implementation by the front end is optional, and the overhead of
+ * Term_xtra(TERM_XTRA_FROSH, ...) calls can be avoided by setting never_frosh
+ * to true on the terminal
+ */
+#define TERM_XTRA_FROSH 5
+/**
+ * Value for the first parameter of Term_xtra() to signal that a refresh has
+ * completed; the second parameter of Term_xtra is unused; implementation by
+ * the front end is optional
+ */
+#define TERM_XTRA_FRESH 6
+/**
+ * Value for the first parameter of Term_xtra() to request that the front
+ * end make a noise (ring the terminal bell); the second parameter of Term_xtra
+ * is unused; implementation by the front end is optional
+ */
+#define TERM_XTRA_NOISE 7
+/**
+ * Value for the first parameter of Term_xtra() to request that the front
+ * end handle stuff when nothing else is being done; the second parameter of
+ * Term_xtra is unused; implementation by the front end is optional, and the
+ * overhead of Term_xtra(TERM_XTRA_BORED, ...) calls can be avoided by setting
+ * never_bored to true on the terminal
+ */
+#define TERM_XTRA_BORED 9
+/**
+ * Value for the first parameter of Term_xtra() to request that the front
+ * end respond to a global change of some sort (color table change, tile set,
+ * tile size, ...); the second parameter of the Term_xtra is unused;
+ * implementation by the front end is optional
+ */
+#define TERM_XTRA_REACT 10
+/**
+ * Value for the first parameter of Term_xtra() to request changing the
+ * "hard" level; two values are used for the second parameter of Term_xtra():
+ * zero to indicate that the application is being suspended and one to
+ * indicate that the application is being resumed; implementation by the
+ * front end is optional
+ */
+#define TERM_XTRA_ALIVE 11
+/**
+ * Value for the first parameter of Term_xtra() to request changing the
+ * "soft" level; two values are used for the second parameter of Term_xtra():
+ * zero to indicate that the current active terminal, Term, is being replaced
+ * and one to indicate that the switch to a new active terminal, Term, is
+ * complete; implementation by the front end is optional
+ */
+#define TERM_XTRA_LEVEL 12
+/**
+ * Value for the first parameter of Term_xtra() to request that the front end
+ * wait for the number of milliseconds specified in Term_xtra()'s second
+ * parameter; implementation by the front end is optional
+ */
+#define TERM_XTRA_DELAY 13
+
+/** bit flag for window_flag; display inven/equip */
+#define PW_INVEN            0x00000001L
+/** bit flag for window_flag; display equip/inven */
+#define PW_EQUIP            0x00000002L
+/** bit flag for window_flag; display player (basic) */
+#define PW_PLAYER_0         0x00000004L
+/** bit flag for window_flag; display player (extra) */
+#define PW_PLAYER_1         0x00000008L
+/** bit flag for window_flag; display player (compact) */
+#define PW_PLAYER_2         0x00000010L
+/** bit flag for window_flag; display dungeon map */
+#define PW_MAP              0x00000020L
+/** bit flag for window_flag; display messages */
+#define PW_MESSAGE          0x00000040L
+/** bit flag for window_flag; display overhead view */
+#define PW_OVERHEAD         0x00000080L
+/** bit flag for window_flag; display monster recall */
+#define PW_MONSTER          0x00000100L
+/** bit flag for window_flag; display object recall */
+#define PW_OBJECT           0x00000200L
+/** bit flag for window_flag; display monster list */
+#define PW_MONLIST          0x00000400L
+/** bit flag for window_flag; display status */
+#define PW_STATUS           0x00000800L
+/** bit flag for window_flag; display item list */
+#define PW_ITEMLIST         0x00001000L
+/** bit flag for window_flag; display player (topbar) */
+#define PW_PLAYER_3         0x00002000L
 #ifdef ALLOW_BORG
- /* xxx */
-#define PW_BORG_1           0x00004000L /* Display borg messages */
-#define PW_BORG_2           0x00008000L /* Display borg status */
+/** bitflag for window_flag; display borg messages */
+#define PW_BORG_1           0x00004000L
+/** bitflag for window_flag; display borg status */
+#define PW_BORG_2           0x00008000L
 #endif
 
 #define PW_MAPS (PW_MAP | PW_OVERHEAD)
