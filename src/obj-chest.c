@@ -54,13 +54,13 @@ struct chest_trap *chest_traps;
 
 /**
  * ------------------------------------------------------------------------
- * Parsing functions for chest_trap.txt and chest.txt
+ * Parsing functions for chest_trap.txt
  * ------------------------------------------------------------------------ */
 static enum parser_error parse_chest_trap_name(struct parser *p)
 {
-    const char *name = parser_getstr(p, "name");
-    struct chest_trap *h = parser_priv(p);
-    struct chest_trap *t = mem_zalloc(sizeof *t);
+	const char *name = parser_getstr(p, "name");
+	struct chest_trap *h = parser_priv(p);
+	struct chest_trap *t = mem_zalloc(sizeof *t);
 
 	/* Order the traps correctly and set the pval */
 	if (h) {
@@ -70,34 +70,23 @@ static enum parser_error parse_chest_trap_name(struct parser *p)
 		chest_traps = t;
 		t->pval = 1;
 	}
-    t->name = string_make(name);
-    parser_setpriv(p, t);
-    return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_chest_trap_code(struct parser *p)
-{
-    const char *code = parser_getstr(p, "code");
-    struct chest_trap *t = parser_priv(p);
-
-    if (!t)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-    t->code = string_make(code);
-    return PARSE_ERROR_NONE;
+	t->name = string_make(name);
+	parser_setpriv(p, t);
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_chest_trap_level(struct parser *p)
 {
-    struct chest_trap *t = parser_priv(p);
+	struct chest_trap *t = parser_priv(p);
 
-    if (!t)
+	if (!t)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-    t->level = parser_getint(p, "level");
-    return PARSE_ERROR_NONE;
+	t->level = parser_getint(p, "level");
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_chest_trap_effect(struct parser *p) {
-    struct chest_trap *t = parser_priv(p);
+	struct chest_trap *t = parser_priv(p);
 	struct effect *effect;
 	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
 
@@ -196,55 +185,54 @@ static enum parser_error parse_chest_trap_expr(struct parser *p) {
 }
 
 static enum parser_error parse_chest_trap_destroy(struct parser *p) {
-    struct chest_trap *t = parser_priv(p);
+	struct chest_trap *t = parser_priv(p);
 	int val = 0;
 
 	if (!t)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-    val = parser_getint(p, "val");
+	val = parser_getint(p, "val");
 	if (val) {
 		t->destroy = true;
 	}
-    return PARSE_ERROR_NONE;
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_chest_trap_magic(struct parser *p) {
-    struct chest_trap *t = parser_priv(p);
+	struct chest_trap *t = parser_priv(p);
 	int val = 0;
 
 	if (!t)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-    val = parser_getint(p, "val");
+	val = parser_getint(p, "val");
 	if (val) {
 		t->magic = true;
 	}
-    return PARSE_ERROR_NONE;
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_chest_trap_msg(struct parser *p) {
-    struct chest_trap *t = parser_priv(p);
+	struct chest_trap *t = parser_priv(p);
 
 	if (!t)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-    t->msg = string_append(t->msg, parser_getstr(p, "text"));
-    return PARSE_ERROR_NONE;
+	t->msg = string_append(t->msg, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_chest_trap_msg_death(struct parser *p) {
-    struct chest_trap *t = parser_priv(p);
+	struct chest_trap *t = parser_priv(p);
 
 	if (!t)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-    t->msg_death = string_append(t->msg_death, parser_getstr(p, "text"));
-    return PARSE_ERROR_NONE;
+	t->msg_death = string_append(t->msg_death, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
 }
 
 struct parser *init_parse_chest_trap(void) {
-    struct parser *p = parser_new();
-    parser_setpriv(p, NULL);
-    parser_reg(p, "name str name", parse_chest_trap_name);
-    parser_reg(p, "code str code", parse_chest_trap_code);
-    parser_reg(p, "level int level", parse_chest_trap_level);
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_chest_trap_name);
+	parser_reg(p, "level int level", parse_chest_trap_level);
 	parser_reg(p, "effect sym eff ?sym type ?int radius ?int other", parse_chest_trap_effect);
 	parser_reg(p, "dice str dice", parse_chest_trap_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_chest_trap_expr);
@@ -252,11 +240,11 @@ struct parser *init_parse_chest_trap(void) {
 	parser_reg(p, "magic int val", parse_chest_trap_magic);
 	parser_reg(p, "msg str text", parse_chest_trap_msg);
 	parser_reg(p, "msg-death str text", parse_chest_trap_msg_death);
-    return p;
+	return p;
 }
 
 static errr run_parse_chest_trap(struct parser *p) {
-    return parse_file_quit_not_found(p, "chest_trap");
+	return parse_file_quit_not_found(p, "chest_trap");
 }
 
 static errr finish_parse_chest_trap(struct parser *p) {
@@ -270,7 +258,6 @@ static void cleanup_chest_trap(void)
 	while (trap) {
 		struct chest_trap *old = trap;
 		string_free(trap->name);
-		string_free(trap->code);
 		string_free(trap->msg);
 		string_free(trap->msg_death);
 		free_effect(trap->effect);
@@ -280,11 +267,11 @@ static void cleanup_chest_trap(void)
 }
 
 struct file_parser chest_trap_parser = {
-    "chest_trap",
-    init_parse_chest_trap,
-    run_parse_chest_trap,
-    finish_parse_chest_trap,
-    cleanup_chest_trap
+	"chest_trap",
+	init_parse_chest_trap,
+	run_parse_chest_trap,
+	finish_parse_chest_trap,
+	cleanup_chest_trap
 };
 
 /**
