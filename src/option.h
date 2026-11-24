@@ -53,7 +53,6 @@ enum
  * Information for "do_cmd_options()".
  */
 #define OPT_PAGE_MAX				OP_SCORE
-#define OPT_PAGE_BIRTH				1
 
 /**
  * The option data structures
