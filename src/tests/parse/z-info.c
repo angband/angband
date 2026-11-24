@@ -474,6 +474,7 @@ struct test tests[] = {
 	{ "max_range", test_max_range },
 	{ "start_gold", test_start_gold },
 	{ "food_value", test_food_value },
+	{ "lore_cast_threshold", test_lore_cast_threshold },
 	{ "m_crit_debuff_toh", test_m_crit_debuff_toh },
 	{ "m_crit_chance_weight_scl", test_m_crit_chance_weight_scl },
 	{ "m_crit_chance_toh_scl", test_m_crit_chance_toh_scl },
