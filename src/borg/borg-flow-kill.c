@@ -1655,7 +1655,6 @@ bool borg_flow_kill(bool viewable, int nearness)
 
     bool borg_in_hall = false;
     int  hall_y, hall_x, hall_walls = 0;
-    bool skip_monster = false;
 
     borg_grid *ag;
 
@@ -1732,9 +1731,7 @@ bool borg_flow_kill(bool viewable, int nearness)
         int        x9   = kill->pos.x;
         int        y9   = kill->pos.y;
         int        ax, ay, d;
-
-        /* Each monster starts with a clean slate */
-        skip_monster = false;
+        bool       skip_monster = false;
 
         /* Skip dead monsters */
         if (!kill->r_idx)
@@ -1812,9 +1809,29 @@ bool borg_flow_kill(bool viewable, int nearness)
                 continue;
         }
 
-        /* Avoid getting surrounded */
+        /* Avoid getting surrounded: if we are in a hall we want the
+         * monster to be in a hall also.
+         *
+         *  ########################
+         *  ############      S  ###
+         *  #         @'     SSS ###
+         *  # ##########       SS###
+         *  # #        #       Ss###
+         *  # #        ###### ######
+         *  # #             # #
+         * Currently, we would like the borg to avoid
+         * flowing to a situation like the one above.
+         * We would like him to stay in the hall and
+         * attack from a distance.  One problem is the
+         * lower case 's' in the corner, He will show
+         * up as being in a corner, and the borg may
+         * flow to it.  Let's hope that is a rare case.
+         *
+         * The borg might flow to the 'dark' south exit
+         * of the room.  This would be dangerous for
+         * him as well.
+         */
         if (borg_in_hall && (rf_has(r_info[kill->r_idx].flags, RF_GROUP_AI))) {
-            /* check to see if monster is in a hall, */
             hall_walls = 0;
             for (hall_x = -1; hall_x <= 1; hall_x++) {
                 for (hall_y = -1; hall_y <= 1; hall_y++) {
@@ -1829,28 +1846,6 @@ bool borg_flow_kill(bool viewable, int nearness)
                             && (ag->feat <= FEAT_PERM))) {
                         hall_walls++;
                     }
-
-                    /* we want the monster to be in a hall also
-                     *
-                     *  ########################
-                     *  ############      S  ###
-                     *  #         @'     SSS ###
-                     *  # ##########       SS###
-                     *  # #        #       Ss###
-                     *  # #        ###### ######
-                     *  # #             # #
-                     * Currently, we would like the borg to avoid
-                     * flowing to a situation like the one above.
-                     * We would like him to stay in the hall and
-                     * attack from a distance.  One problem is the
-                     * lower case 's' in the corner, He will show
-                     * up as being in a corner, and the borg may
-                     * flow to it.  Let's hope that is a rare case.
-                     *
-                     * The borg might flow to the 'dark' south exit
-                     * of the room.  This would be dangerous for
-                     * him as well.
-                     */
                 }
             }
 
