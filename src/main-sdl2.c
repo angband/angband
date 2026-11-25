@@ -1740,7 +1740,7 @@ static void resize_shortcut_editor(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, int width, int height)
 {
 	struct shortcut_editor_data *pse;
-	int i, x, y, cw, ch, rowh;
+	int i, x, y, cw, ch, cw1, ch1, rowh;
 
 	SDL_assert(d->type_code == SHORTCUT_EDITOR_CODE && d->priv);
 	pse = d->priv;
@@ -1759,40 +1759,46 @@ static void resize_shortcut_editor(struct sdlpui_dialog *d,
 		rowh = 0;
 		(*pse->labels[i].ftb->query_natural_size)(&pse->labels[i], d, w,
 			&cw, &ch);
+		pse->labels[i].rect.x = x;
+		pse->labels[i].rect.y = y;
 		if (pse->labels[i].ftb->resize) {
 			(*pse->labels[i].ftb->resize)(&pse->labels[i], d, w,
 				cw, ch);
+			SDL_assert(pse->labels[i].rect.x == x);
+			SDL_assert(pse->labels[i].rect.y == y);
 		} else {
 			pse->labels[i].rect.w = cw;
 			pse->labels[i].rect.h = ch;
 		}
-		pse->labels[i].rect.x = x;
-		pse->labels[i].rect.y = y;
 		x += cw;
 		rowh = MAX(rowh, ch);
 
+		pse->shortcut_displays[i].rect.x = x;
+		pse->shortcut_displays[i].rect.y = y;
 		if (pse->shortcut_displays[i].ftb->resize) {
 			(*pse->shortcut_displays[i].ftb->resize)(
 				&pse->shortcut_displays[i], d, w, cw * 2, ch);
+			SDL_assert(pse->shortcut_displays[i].rect.x == x);
+			SDL_assert(pse->shortcut_displays[i].rect.y == y);
 		} else {
 			pse->shortcut_displays[i].rect.w = cw * 2;
 			pse->shortcut_displays[i].rect.h = ch;
 		}
-		pse->shortcut_displays[i].rect.x = x;
-		pse->shortcut_displays[i].rect.y = y;
 		x += cw * 2;
 
 		(*pse->change_buttons[i].ftb->query_natural_size)(
 			&pse->change_buttons[i], d, w, &cw, &ch);
+		pse->change_buttons[i].rect.x = x;
+		pse->change_buttons[i].rect.y = y;
 		if (pse->change_buttons[i].ftb->resize) {
 			(*pse->change_buttons[i].ftb->resize)(
 				&pse->change_buttons[i], d, w, cw, ch);
+			SDL_assert(pse->change_buttons[i].rect.x == x);
+			SDL_assert(pse->change_buttons[i].rect.y == y);
 		} else {
 			pse->change_buttons[i].rect.w = cw;
 			pse->change_buttons[i].rect.h = ch;
 		}
-		pse->change_buttons[i].rect.x = x;
-		pse->change_buttons[i].rect.y = y;
 		/*
 		 * Leave 1/8 of the width as space between the change and clear
 		 * buttons.
@@ -1800,17 +1806,19 @@ static void resize_shortcut_editor(struct sdlpui_dialog *d,
 		x += (9 * cw + 7) / 8;
 		rowh = MAX(rowh, ch);
 
+		pse->clear_buttons[i].rect.x = x;
+		pse->clear_buttons[i].rect.y = y;
 		(*pse->clear_buttons[i].ftb->query_natural_size)(
 			&pse->clear_buttons[i], d, w, &cw, &ch);
 		if (pse->clear_buttons[i].ftb->resize) {
 			(*pse->clear_buttons[i].ftb->resize)(
 				&pse->clear_buttons[i], d, w, cw, ch);
+			SDL_assert(pse->clear_buttons[i].rect.x == x);
+			SDL_assert(pse->clear_buttons[i].rect.y == y);
 		} else {
 			pse->clear_buttons[i].rect.w = cw;
 			pse->clear_buttons[i].rect.h = ch;
 		}
-		pse->clear_buttons[i].rect.x = x;
-		pse->clear_buttons[i].rect.y = y;
 		x += cw;
 		rowh = MAX(rowh, ch);
 
@@ -1820,49 +1828,58 @@ static void resize_shortcut_editor(struct sdlpui_dialog *d,
 	(*pse->prompt_label.ftb->query_natural_size)(&pse->prompt_label, d, w,
 		&cw, &ch);
 	SDL_assert(width >= cw);
+	pse->prompt_label.rect.x = 0;
+	pse->prompt_label.rect.y = y;
 	if (pse->prompt_label.ftb->resize) {
 		(*pse->prompt_label.ftb->resize)(&pse->prompt_label, d, w,
 			width, ch);
+		SDL_assert(pse->prompt_label.rect.x == 0);
+		SDL_assert(pse->prompt_label.rect.y == y);
 	} else {
 		pse->prompt_label.rect.w = width;
 		pse->prompt_label.rect.h = ch;
 	}
-	pse->prompt_label.rect.x = 0;
-	pse->prompt_label.rect.y = y;
 	y += ch;
 
 	x = width / 8;
 	rowh = 0;
 	(*pse->close_button.ftb->query_natural_size)(&pse->close_button, d, w,
 		&cw, &ch);
+	(*pse->reset_button.ftb->query_natural_size)(&pse->reset_button, d, w,
+		&cw1, &ch1);
 	SDL_assert(width >= cw * 4);
 	cw = MAX(cw, width / 4);
-	rowh = MAX(rowh, ch);
+	if (ch >= ch1) {
+		rowh = MAX(rowh, ch);
+	} else {
+		rowh = MAX(rowh, ch1);
+	}
+	SDL_assert(y + rowh <= height);
+	pse->close_button.rect.x = x;
+	pse->close_button.rect.y = height - rowh;
 	if (pse->close_button.ftb->resize) {
 		(*pse->close_button.ftb->resize)(
 			&pse->close_button, d, w, cw, ch);
+		SDL_assert(pse->close_button.rect.x == x);
+		SDL_assert(pse->close_button.rect.y == height - rowh);
 	} else {
 		pse->close_button.rect.w = cw;
 		pse->close_button.rect.h = ch;
 	}
-	pse->close_button.rect.x = x;
 	x += cw + width / 4;
-	(*pse->reset_button.ftb->query_natural_size)(&pse->reset_button, d, w,
-		&cw, &ch);
-	SDL_assert(width >= cw * 4);
-	cw = MAX(cw, width / 4);
-	rowh = MAX(rowh, ch);
+	SDL_assert(width >= cw1 * 4);
+	cw1 = MAX(cw1, width / 4);
+	pse->reset_button.rect.x = x;
+	pse->reset_button.rect.y = height - rowh;
 	if (pse->reset_button.ftb->resize) {
 		(*pse->reset_button.ftb->resize)(
-			&pse->reset_button, d, w, cw, ch);
+			&pse->reset_button, d, w, cw1, ch1);
+		SDL_assert(pse->reset_button.rect.x == x);
+		SDL_assert(pse->reset_button.rect.y == height - rowh);
 	} else {
-		pse->reset_button.rect.w = cw;
-		pse->reset_button.rect.h = ch;
+		pse->reset_button.rect.w = cw1;
+		pse->reset_button.rect.h = ch1;
 	}
-	pse->reset_button.rect.x = x;
-	SDL_assert(y + rowh <= height);
-	pse->close_button.rect.y = height - rowh;
-	pse->reset_button.rect.y = height - rowh;
 
 	d->rect.w = width;
 	d->rect.h = height;
@@ -2122,14 +2139,16 @@ static void show_shortcut_editor(struct sdlpui_window *w, int x, int y)
 	sdlpui_register_dialog(w->shorte);
 
 	(*w->shorte->ftb->query_natural_size)(w->shorte, w, &dw, &dh);
+	w->shorte->rect.x = x;
+	w->shorte->rect.y = y;
 	if (w->shorte->ftb->resize) {
 		(*w->shorte->ftb->resize)(w->shorte, w, dw, dh);
+		SDL_assert(w->shorte->rect.x == x);
+		SDL_assert(w->shorte->rect.y == y);
 	} else {
 		w->shorte->rect.w = dw;
 		w->shorte->rect.h = dh;
 	}
-	w->shorte->rect.x = x;
-	w->shorte->rect.y = y;
 	sdlpui_popup_dialog(w->shorte, w, SDL_TRUE);
 }
 

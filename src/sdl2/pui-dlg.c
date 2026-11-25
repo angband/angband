@@ -757,25 +757,29 @@ static void resize_simple_menu(struct sdlpui_dialog *d, struct sdlpui_window *w,
 		if (p->vertical) {
 			p->controls[i].rect.x = 0;
 			p->controls[i].rect.y = work;
-			work += ch;
 			if (p->controls[i].ftb->resize) {
 				(*p->controls[i].ftb->resize)(&p->controls[i],
 					d, w, width, ch);
+				SDL_assert(p->controls[i].rect.x == 0);
+				SDL_assert(p->controls[i].rect.y == work);
 			} else {
 				p->controls[i].rect.w = width;
 				p->controls[i].rect.h = ch;
 			}
+			work += ch;
 		} else {
 			p->controls[i].rect.x = work;
 			p->controls[i].rect.y = 0;
-			work += cw;
 			if (p->controls[i].ftb->resize) {
 				(*p->controls[i].ftb->resize)(&p->controls[i],
 					d, w, cw, height);
+				SDL_assert(p->controls[i].rect.x == work);
+				SDL_assert(p->controls[i].rect.y == 0);
 			} else {
 				p->controls[i].rect.w = cw;
 				p->controls[i].rect.h = height;
 			}
+			work += cw;
 		}
 	}
 
@@ -814,6 +818,8 @@ static void resize_simple_menu(struct sdlpui_dialog *d, struct sdlpui_window *w,
 			if (p->controls[i].ftb->resize) {
 				(*p->controls[i].ftb->resize)(&p->controls[i],
 					d, w, width, ch);
+				SDL_assert(p->controls[i].rect.x == 0);
+				SDL_assert(p->controls[i].rect.y == work);
 			} else {
 				p->controls[i].rect.w = width;
 				p->controls[i].rect.h = ch;
@@ -825,6 +831,8 @@ static void resize_simple_menu(struct sdlpui_dialog *d, struct sdlpui_window *w,
 			if (p->controls[i].ftb->resize) {
 				(*p->controls[i].ftb->resize)(&p->controls[i],
 					d, w, cw, height);
+				SDL_assert(p->controls[i].rect.x == work);
+				SDL_assert(p->controls[i].rect.y == 0);
 			} else {
 				p->controls[i].rect.w = cw;
 				p->controls[i].rect.h = height;
@@ -1043,28 +1051,32 @@ static void resize_simple_info(struct sdlpui_dialog *d, struct sdlpui_window *w,
 	for (i = 0; i < psi->number; ++i) {
 		(*psi->labels[i].ftb->query_natural_size)(&psi->labels[i],
 			d, w, &cw, &ch);
+		psi->labels[i].rect.x = 0;
+		psi->labels[i].rect.y = y;
 		if (psi->labels[i].ftb->resize) {
 			(*psi->labels[i].ftb->resize)(&psi->labels[i], d, w,
 				width, ch);
+			SDL_assert(psi->labels[i].rect.x == 0);
+			SDL_assert(psi->labels[i].rect.y == y);
 		} else {
 			psi->labels[i].rect.w = width;
 			psi->labels[i].rect.h = ch;
 		}
-		psi->labels[i].rect.x = 0;
-		psi->labels[i].rect.y = y;
 		y += ch;
 	}
 	(*psi->button.ftb->query_natural_size)(&psi->button, d, w, &cw, &ch);
-	if (psi->button.ftb->resize) {
-		(*psi->button.ftb->resize)(&psi->button, d, w, cw, ch);
-	} else {
-		psi->button.rect.w = cw;
-		psi->button.rect.h = ch;
-	}
 	SDL_assert(width >= cw);
 	psi->button.rect.x = (width - cw) / 2;
 	SDL_assert(y < height - ch);
 	psi->button.rect.y = height - ch;
+	if (psi->button.ftb->resize) {
+		(*psi->button.ftb->resize)(&psi->button, d, w, cw, ch);
+		SDL_assert(psi->button.rect.x == (width - cw) / 2);
+		SDL_assert(psi->button.rect.y == height - ch);
+	} else {
+		psi->button.rect.w = cw;
+		psi->button.rect.h = ch;
+	}
 	d->rect.w = width;
 	d->rect.h = height;
 }

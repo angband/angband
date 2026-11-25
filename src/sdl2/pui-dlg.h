@@ -200,7 +200,8 @@ struct sdlpui_dialog_funcs {
 	/**
 	 * Resize the dialog so it has the given dimensions.  May be NULL
 	 * if resizing the dialog is as simple as setting d->rect.w and
-	 * d->rect.h to the desired dimensions.
+	 * d->rect.h to the desired dimensions.  The caller will set
+	 * d->rect.x and d->rect.y, and this function must not modify them.
 	 */
 	void (*resize)(struct sdlpui_dialog *d, struct sdlpui_window *w,
 		int width, int height);
