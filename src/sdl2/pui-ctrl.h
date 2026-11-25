@@ -292,11 +292,11 @@ struct sdlpui_control_funcs {
 	 * accept focus or contain the given coordinates, relative to the
 	 * dialog) or one (the control accepts focus and the given coordinates
 	 * are in the control).  For a compound control return zero if there's
-	 * no component that accepts focus and contains the given coordinates.
-	 * May be NULL:  callers will then assume the control is simple,
-	 * accepts focus if get_interactable_component is not NULL and
-	 * returns a non-zero value, and will test the coordinate directly
-	 * against the control's rectangle.
+	 * no component that accepts focus and contains the given coordinates;
+	 * otherwise returns the one-based index of the component at the given
+	 * coordinates.  May be NULL:  callers will then assume the control is
+	 * simple, accepts focus if get_interactable_component is not NULL and
+	 * returns a non-zero value.
 	 */
 	int (*get_interactable_component_at)(struct sdlpui_control *c,
 		Sint32 x, Sint32 y);
@@ -390,7 +390,7 @@ struct sdlpui_label {
 
 /**
  * Holds the private data for a sdlpui_control used to represent a button in
- * menu.  The corressponding type_code value is SDLPUI_CTRL_MENU_BUTTON.
+ * menu.  The corresponding type_code value is SDLPUI_CTRL_MENU_BUTTON.
  */
 struct sdlpui_menu_button {
 	SDL_Rect caption_rect;

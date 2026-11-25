@@ -145,7 +145,7 @@ struct sdlpui_dialog_funcs {
 	 * SDL_FALSE, go to the dialog's previous (with wrap around) control
 	 * before c that can accept focus.  May be NULL if the dialog never
 	 * accepts focus (goto_first_control is NULL or never switches focus
-	 * to a control in the dialog) and find_control_containing is NULL
+	 * to a control in the dialog and find_control_containing is NULL
 	 * or always returns NULL) or if it only has one, simple, control
 	 * that can accept focus.
 	 */
@@ -209,7 +209,7 @@ struct sdlpui_dialog_funcs {
 		struct sdlpui_window *w, int *width, int *height);
 	/**
 	 * Get the minimum size for the dialog.  May be NULL:  the caller
-	 * will assume the natural size is the minimum size.
+	 * will assume the minimum size is the natural size.
 	 */
 	void (*query_minimum_size)(struct sdlpui_dialog *d,
 		struct sdlpui_window *w, int *width, int *height);
@@ -226,6 +226,7 @@ struct sdlpui_dialog_funcs {
 	 */
 	void (*cleanup)(struct sdlpui_dialog *d);
 };
+
 
 /** Represents a menu or dialog displayed on top of a window. */
 struct sdlpui_dialog {
