@@ -122,18 +122,17 @@ static int beam_chance(int tval)
 
 
 /**
- * Print an artifact activation message.
+ * Print an additional message, if any, for an activation.
  */
 static void activation_message(struct object *obj, const struct player *p)
 {
 	const char *message;
 
-	/* See if we have a message, then print it */
-	if (!obj->activation) return;
-	if (!obj->activation->message) return;
+	assert(obj->activation);
 	if (obj->artifact && obj->artifact->alt_msg) {
 		message = obj->artifact->alt_msg;
 	} else {
+		if (!obj->activation->message) return;
 		message = obj->activation->message;
 	}
 	print_custom_message(obj, message, MSG_GENERIC, p);
