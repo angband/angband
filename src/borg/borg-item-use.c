@@ -72,9 +72,9 @@ bool borg_quaff_crit(bool no_check)
 }
 
 /*
- * do an action without repeats (just one time) 
+ * do an action without repeats (just one time)
  */
-void borg_no_repeat_action(char key)
+static void borg_no_repeat_action(char key)
 {
     borg_keypress('0');
     borg_keypress('1');
