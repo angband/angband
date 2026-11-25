@@ -72,6 +72,19 @@ bool borg_quaff_crit(bool no_check)
 }
 
 /*
+ * do an action without repeats (just one time) 
+ */
+void borg_no_repeat_action(char key)
+{
+    borg_keypress('0');
+    borg_keypress('1');
+    borg_keypress(KC_ENTER);
+
+    /* Perform the action */
+    borg_keypress(key);
+}
+
+/*
  * Attempt to quaff the given potion (by sval)
  */
 bool borg_quaff_potion(int sval)
@@ -488,7 +501,7 @@ bool borg_zap_rod(int sval)
     borg_note(format("# Zapping %s.", borg_items[i].desc));
 
     /* Perform the action */
-    borg_keypress('z');
+    borg_no_repeat_action('z');
     borg_keypress(all_letters_nohjkl[i]);
 
     /* Success */
@@ -517,7 +530,7 @@ bool borg_use_staff(int sval)
     borg_note(format("# Using %s.", borg_items[i].desc));
 
     /* Perform the action */
-    borg_keypress('u');
+    borg_no_repeat_action('u');
     borg_keypress(all_letters_nohjkl[i]);
 
     /* Success */
@@ -559,7 +572,7 @@ bool borg_use_unknown(void)
     borg_note(format("# Using unknown Staff %s.", borg_items[n].desc));
 
     /* Perform the action */
-    borg_keypress('u');
+    borg_no_repeat_action('u');
     borg_keypress(all_letters_nohjkl[n]);
 
     /* In case it is ID staff, ESCAPE out. */
@@ -624,7 +637,7 @@ bool borg_use_staff_fail(int sval)
     borg_note(format("# Using %s.", borg_items[i].desc));
 
     /* Perform the action */
-    borg_keypress('u');
+    borg_no_repeat_action('u');
     borg_keypress(all_letters_nohjkl[i]);
 
     /* Success */
@@ -712,7 +725,7 @@ bool borg_aim_wand(int sval)
     borg_note(format("# Aiming %s.", borg_items[i].desc));
 
     /* Perform the action */
-    borg_keypress('a');
+    borg_no_repeat_action('a');
     borg_keypress(all_letters_nohjkl[i]);
 
     /* Success */
@@ -808,7 +821,7 @@ bool borg_activate_ring(int ring_sval)
         borg_note(format("# Activating ring %s.", item->desc));
 
         /* Perform the action */
-        borg_keypress('A');
+        borg_no_repeat_action('A');
         borg_keypress(all_letters_nohjkl[i - INVEN_WIELD]);
 
         /* Success */
@@ -916,7 +929,7 @@ bool borg_activate_dragon(int drag_sval)
     borg_note(format("# Activating dragon scale %s.", item->desc));
 
     /* Perform the action */
-    borg_keypress('A');
+    borg_no_repeat_action('A');
     borg_keypress(all_letters_nohjkl[INVEN_BODY - INVEN_WIELD]);
 
     /* Success */
@@ -953,7 +966,7 @@ bool borg_activate_item(int activation)
         borg_note(format("# Activating item %s.", item->desc));
 
         /* Perform the action */
-        borg_keypress('A');
+        borg_no_repeat_action('A');
         borg_keypress(all_letters_nohjkl[i - INVEN_WIELD]);
 
         /* Success */

@@ -75,8 +75,6 @@ struct borg_wank {
 static int        borg_wank_num = 0;
 static borg_wank *borg_wanks;
 
-bool borg_failure; /* Notice failure */
-
 /*
  * The detection arrays
  */
@@ -1325,7 +1323,7 @@ static void borg_handle_self(char *str)
     q_y = o_w_y / borg_panel_hgt();
 
     /* Handle failure */
-    if (borg_failure) {
+    if (borg.status.failure) {
         borg_note("# Something failed");
     }
 
@@ -3069,7 +3067,7 @@ void borg_update(void)
     borg.oldchp = borg.trait[BI_CURHP];
 
     /* Forget failure */
-    borg_failure = false;
+    borg.status.failure = false;
 
     /* Forget the messages */
     borg_msg_len = 0;

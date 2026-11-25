@@ -311,6 +311,16 @@ static struct keypress generate_keypress(int flush_first)
     borg_parse(NULL);
     borg.dont_react = false;
 
+    /* a failure has occurred and we are repeating a command, stop repeating */
+    if (borg.status.failure && cmd_get_nrepeats() > 0) {
+        borg.status.failure = false;
+        key.code = ESCAPE;
+
+        /* clear the canceled message */
+        borg_keypress(' ');
+        return key;
+    }
+
     /* Check for key on the queue */
     borg_ch = borg_inkey(true);
 

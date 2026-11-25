@@ -26,11 +26,6 @@
 #ifdef ALLOW_BORG
 
 /*
- * Notice failure
- */
-extern bool borg_failure;
-
-/*
  * The detection arrays
  */
 extern bool **borg_detect_wall;

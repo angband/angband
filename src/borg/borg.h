@@ -186,6 +186,8 @@ struct borg_struct {
         bool vault; /* guess that there is a vault on this level */
 
         bool desperate; /* borg is desperate and will take risks */
+
+        bool failure; /* received failure notification */
     } status;
 
     /* times */

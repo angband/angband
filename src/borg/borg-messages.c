@@ -264,7 +264,7 @@ bool borg_get_messages(struct keypress* key, struct loc cursor)
     /* Catch normal messages */
     /* If there is text on the first line... */
     /* And the game wants a command */
-    if (borg_prompt && inkey_flag) {
+    if (borg_prompt && (inkey_flag || cmd_get_nrepeats())) {
         if (borg_cfg[BORG_VERBOSE])
             borg_note("# parse normal message");
         /* Get the message(s) */
@@ -285,9 +285,11 @@ bool borg_get_messages(struct keypress* key, struct loc cursor)
             borg_parse(buf);
         }
 
-        /* Clear the message */
-        key->code = ' ';
-        return true;
+        if (inkey_flag) {
+            /* Clear the message */
+            key->code = ' ';
+            return true;
+        }
     }
 
     return false;
@@ -375,7 +377,7 @@ static void borg_parse_aux(char *msg, int len)
         borg_note("# Normal failure.");
 
         /* Set the failure flag */
-        borg_failure = true;
+        borg.status.failure = true;
 
         /* Flush our key-buffer */
         borg_flush();
@@ -415,6 +417,13 @@ static void borg_parse_aux(char *msg, int len)
     if (prefix(msg, "A small dart "))
         return;
 
+    /* Ignore canceled repeat messages */
+    if (prefix(msg, "Cancelled")) {
+        /* canceling clears old failures */
+        borg.status.failure = false;
+        return;
+    }
+
     if (prefix(msg, "The cave ")) {
         borg_react(msg, "QUAKE:Somebody");
         borg_needs_new_sea = true;
@@ -433,24 +442,29 @@ static void borg_parse_aux(char *msg, int len)
     if (prefix(msg, "You feel your memories fade.")) {
         /* Set the borg flag */
         borg.trait[BI_ISFORGET] = true;
+        return;
     }
     if (streq(msg, "Your memories come flooding back.")) {
         borg.trait[BI_ISFORGET] = false;
+        return;
     }
 
     if (streq(msg, "You have been knocked out.")) {
         borg_note("Ignoring Messages While KO'd");
         borg.dont_react = true;
+        return;
     }
     if (streq(msg, "You are paralyzed")) {
         borg_note("Ignoring Messages While Paralyzed");
         borg.dont_react = true;
+        return;
     }
 
     /* Hallucination -- Open */
     if (streq(msg, "You feel drugged!")) {
         borg_note("# Hallucinating.  Special control of wanks.");
         borg.trait[BI_ISIMAGE] = true;
+        return;
     }
 
     if (streq(msg, "The draining fails.")) {
