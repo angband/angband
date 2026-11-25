@@ -303,7 +303,8 @@ struct sdlpui_control_funcs {
 	/**
 	 * Resize the control so it has the given dimensions.  May be NULL
 	 * if resizing the control is as simple as setting c->rect.w and
-	 * c->rect.h to the desired dimensions.
+	 * c->rect.h to the desired dimensions.  The caller will set
+	 * c->rect.x and c->rect.y, and this function must not modify them.
 	 */
 	void (*resize)(struct sdlpui_control *c, struct sdlpui_dialog *d,
 		struct sdlpui_window *w, int width, int height);
