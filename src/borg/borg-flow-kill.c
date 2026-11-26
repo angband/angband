@@ -145,8 +145,12 @@ static void borg_update_kill_new(int i)
         pct = 100;
     }
 
-    /* Compute estimated HP based on number of * in monster health bar */
-    kill->power  = (m_ptr->maxhp * pct) / 100;
+    /* Compute estimated HP.  The monster's true hit points were cheated
+     * above, so estimate from them directly: routing them through the
+     * rounded percentage loses remainders twice and can score a living
+     * monster at 0 hp (1 of 12 hit points became 9% and then 0).  The
+     * game only kills a monster below 0 hp. */
+    kill->power  = m_ptr->hp;
     kill->injury = 100 - pct;
 
     /* Extract the Level*/
@@ -278,8 +282,12 @@ static void borg_update_kill_old(int i)
         pct = 100;
     }
 
-    /* Compute estimated HP based on number of * in monster health bar */
-    kill->power  = (m_ptr->maxhp * pct) / 100;
+    /* Compute estimated HP.  The monster's true hit points were cheated
+     * above, so estimate from them directly: routing them through the
+     * rounded percentage loses remainders twice and can score a living
+     * monster at 0 hp (1 of 12 hit points became 9% and then 0).  The
+     * game only kills a monster below 0 hp. */
+    kill->power  = m_ptr->hp;
     kill->injury = 100 - pct;
 
     /* Is it sleeping */
