@@ -49,6 +49,28 @@
 #include "borg-think-dungeon-util.h"
 #include "borg.h"
 
+#include "../player-calcs.h"
+
+/*
+ * Poison damage still to come before Recall lifts off: one point per
+ * world turn while the timer, which drops by adj_con_fix(CON) + 1 per
+ * turn, lasts.
+ */
+static int borg_poison_damage_to_liftoff(void)
+{
+    int pois, decr, poison_turns;
+
+    if (!borg.trait[BI_ISPOISONED] || !player->word_recall)
+        return 0;
+
+    pois          = player->timed[TMD_POISONED];
+    decr          = adj_con_fix[player->state.stat_ind[STAT_CON]] + 1;
+    poison_turns  = (pois + decr - 1) / decr;
+
+    return (poison_turns < player->word_recall) ? poison_turns
+                                                : player->word_recall;
+}
+
 /*
  * ** Try healing **
  * this function tries to heal the borg before trying to flee.
@@ -1030,9 +1052,11 @@ bool borg_caution(void)
         }
     }
 
-    /* If I am waiting for recall,  & safe, then stay put. */
+    /* If I am waiting for recall,  & safe, then stay put,
+     * unless the poison would kill me first. */
     if (borg.goal.recalling && borg_check_rest(borg.c.y, borg.c.x)
-        && borg.trait[BI_CDEPTH] && !borg.trait[BI_ISHUNGRY]) {
+        && borg.trait[BI_CDEPTH] && !borg.trait[BI_ISHUNGRY]
+        && borg_poison_damage_to_liftoff() < borg.trait[BI_CURHP]) {
         /* rest here until lift off */
         borg_note("# Resting for Recall.");
         borg_keypress('R');
@@ -1046,6 +1070,12 @@ bool borg_caution(void)
 
         return true;
     }
+
+    /* Waiting for recall, but the poison would kill me first: cure. */
+    if (borg.goal.recalling && borg.trait[BI_CDEPTH]
+        && borg_poison_damage_to_liftoff() >= borg.trait[BI_CURHP]
+        && borg_heal(pos_danger))
+        return true;
 
     /* If I am waiting for recall in town */
     if (borg.goal.recalling && borg.goal.recalling <= (borg_game_ratio * 2)
