@@ -104,6 +104,21 @@ const char *borg_race_name(int r_idx)
 }
 
 /*
+ * Estimate a monster's percentage of hit points from its health bar,
+ * rounded the way the game draws the bar (ui-display.c).
+ */
+static int borg_estimate_percentage_of_hp(const struct monster *m_ptr)
+{
+    int pct;
+
+    if (!m_ptr->maxhp)
+        return 100;
+
+    pct = 100L * m_ptr->hp / MAX(m_ptr->maxhp, 1);
+    return (pct < 10) ? 10 : (pct < 90) ? (pct / 10 + 1) * 10 : 100;
+}
+
+/*
  * Update a "new" monster
  */
 static void borg_update_kill_new(int i)
@@ -138,19 +153,9 @@ static void borg_update_kill_new(int i)
      * Kill->power is used a lot in borg_danger,
      * for calculating damage from breath attacks.
      */
-    if (m_ptr->maxhp) {
-        /* Cheat the "percent" of health */
-        pct = 100L * m_ptr->hp / ((m_ptr->maxhp > 1) ? m_ptr->maxhp : 1);
-    } else {
-        pct = 100;
-    }
-
-    /* Compute estimated HP.  The monster's true hit points were cheated
-     * above, so estimate from them directly: routing them through the
-     * rounded percentage loses remainders twice and can score a living
-     * monster at 0 hp (1 of 12 hit points became 9% and then 0).  The
-     * game only kills a monster below 0 hp. */
-    kill->power  = m_ptr->hp;
+    /* Compute estimated HP based on number of * in monster health bar */
+    pct          = borg_estimate_percentage_of_hp(m_ptr);
+    kill->power  = (m_ptr->maxhp * pct) / 100;
     kill->injury = 100 - pct;
 
     /* Extract the Level*/
@@ -275,19 +280,9 @@ static void borg_update_kill_old(int i)
      * for calculating damage from breath attacks.
      */
 
-    if (m_ptr->maxhp) {
-        /* Cheat the "percent" of health */
-        pct = 100L * m_ptr->hp / ((m_ptr->maxhp > 1) ? m_ptr->maxhp : 1);
-    } else {
-        pct = 100;
-    }
-
-    /* Compute estimated HP.  The monster's true hit points were cheated
-     * above, so estimate from them directly: routing them through the
-     * rounded percentage loses remainders twice and can score a living
-     * monster at 0 hp (1 of 12 hit points became 9% and then 0).  The
-     * game only kills a monster below 0 hp. */
-    kill->power  = m_ptr->hp;
+    /* Compute estimated HP based on number of * in monster health bar */
+    pct          = borg_estimate_percentage_of_hp(m_ptr);
+    kill->power  = (m_ptr->maxhp * pct) / 100;
     kill->injury = 100 - pct;
 
     /* Is it sleeping */
