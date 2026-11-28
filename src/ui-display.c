@@ -1522,7 +1522,7 @@ static void animate(game_event_type type, game_event_data *data, void *user)
 void idle_update(void)
 {
 	if (!animations_allowed) return;
-	if (msg_flag) return;
+	if (!inkey_flag) return;
 	if (!character_dungeon) return;
 	if (!OPT(player, animate_flicker) || (use_graphics != GRAPHICS_NONE))
 		return;
