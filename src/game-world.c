@@ -350,7 +350,7 @@ static void decrease_timeouts(void)
 		if (curse) {
 			int j;
 			for (j = 0; j < z_info->curse_max; j++) {
-				if (curse[j].power) {
+				if (curse[j].power && curse[j].timeout > 0) {
 					curse[j].timeout--;
 					if (!curse[j].timeout) {
 						struct curse *c = &curses[j];
