@@ -206,7 +206,18 @@ static struct object *rd_item(void)
 			rd_byte(&tmp8u);
 			obj->curses[i].power = tmp8u;
 			rd_u16b(&tmp16u);
-			obj->curses[i].timeout = tmp16u;
+			/*
+			 * Versions after https://github.com/angband/angband/commit/a222ddd447ca7ce15524dabf9070175733f88657
+			 * could end up with non-zero timeouts for a curse
+			 * without a randomly firing effect.  The test below
+			 * should screen out those timeouts.  It can be
+			 * dropped when backwards compatibility with those
+			 * save files is no longer necessary.
+			 */
+			if (tmp16u && randcalc(curses[i].obj->time, 0,
+					MAXIMISE) > 0) {
+				obj->curses[i].timeout = tmp16u;
+			}
 		}
 	}
 
